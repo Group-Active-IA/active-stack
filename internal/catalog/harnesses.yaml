@@ -1,0 +1,100 @@
+# JR Stack — Catálogo maestro de harnesses (embebido en el instalador).
+# Fuente de verdad de qué harnesses existen, de qué tipo son, de dónde se
+# obtienen, en qué modo entran y de qué dependen.
+#
+# Convención de modos: un harness de Lite lista [lite, full] (Full incluye a
+# Lite). Un harness exclusivo de Full lista [full]. Custom matchea todos.
+
+harnesses:
+  # ── Externos (no son nuestros repos; se instalan/configuran) ──────────────
+  - id: openspec
+    name: OpenSpec CLI
+    description: CLI de Spec-Driven Development; fuente de verdad del estado.
+    type: external
+    external: { method: npm, pkg: "@fission-ai/openspec" }
+    install_modes: [lite, full]
+
+  - id: engram
+    name: Engram
+    description: Memoria persistente local (SQLite + FTS) vía MCP.
+    type: external
+    external: { method: homebrew, pkg: engram, repo: Gentleman-Programming/engram }
+    install_modes: [lite, full]
+
+  - id: context7
+    name: Context7
+    description: Documentación de librerías al día (MCP remoto).
+    type: external
+    external: { method: mcp, url: "https://mcp.context7.com" }
+    install_modes: [lite, full]
+
+  # ── Configuración (bundleados en el instalador) ───────────────────────────
+  - id: sdd-orchestrator
+    name: SDD Orchestrator
+    description: Configura el orquestador SDD con piezas componibles.
+    type: config
+    toggles: [tdd, engram, model-routing, delegation, governance]
+    install_modes: [lite, full]
+    agents: [claude, opencode]
+
+  - id: permissions
+    name: Permissions (security-first)
+    description: Permisos seguros por defecto (bloquea .env, confirma git destructivo). No es opcional.
+    type: config
+    install_modes: [lite, full]
+    agents: [claude, opencode, gemini, vscode]
+
+  # ── Skills propias ─────────────────────────────────────────────────────────
+  - id: jr-starter
+    name: jr-starter
+    description: Orquestador de la fase de fundación (openspec init → KB → roadmap → skills → AGENTS.md).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-starter, ref: latest, method: clone } # TBD confirmar repo
+    install_modes: [lite, full]
+    depends_on: [openspec]
+
+  - id: kb-creator
+    name: kb-creator
+    description: Genera la knowledge-base canónica del dominio.
+    type: skill
+    source: { repo: JuanCruzRobledo/kb-creator, ref: latest, method: clone }
+    install_modes: [full]
+
+  - id: roadmap-generator
+    name: roadmap-generator
+    description: Genera CHANGES.md (backlog técnico) desde la KB.
+    type: skill
+    source: { repo: JuanCruzRobledo/roadmap-generator, ref: latest, method: clone }
+    install_modes: [full]
+    depends_on: [openspec, kb-creator]
+
+  - id: agent-instruction
+    name: agent-instruction
+    description: Genera AGENTS.md/CLAUDE.md correcto con todas las referencias.
+    type: skill
+    source: { repo: JuanCruzRobledo/agent-instruction, ref: latest, method: clone }
+    install_modes: [full]
+
+  - id: skill-registry
+    name: skill-registry
+    description: Crea/actualiza el registro de skills del proyecto.
+    type: skill
+    source: { repo: JuanCruzRobledo/skill-registry, ref: latest, method: clone } # TBD confirmar repo
+    install_modes: [full]
+
+  # ── Skills de terceros (se descargan con el stack) ────────────────────────
+  - id: find-skill
+    name: find-skill
+    description: Busca y recomienda skills relevantes (registry de Vercel).
+    type: skill
+    third_party: true
+    source: { repo: vercel-labs/skills, ref: latest, method: npx } # TBD confirmar empaquetado
+    install_modes: [full]
+
+  - id: skill-creator
+    name: skill-creator
+    description: Crea nuevas skills siguiendo la spec de Agent Skills.
+    type: skill
+    third_party: true
+    source: { repo: anthropics/skills, ref: latest, method: npx } # TBD confirmar empaquetado
+    install_modes: [full]
