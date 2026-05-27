@@ -1,0 +1,517 @@
+package tui
+
+import (
+	"fmt"
+	"strings"
+
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/JuanCruzRobledo/jr-stack/internal/install"
+	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
+)
+
+// ModelDeps holds the injected dependencies for the TUI model.
+// All fields are interfaces / plain values so tests can inject fakes.
+type ModelDeps struct {
+	// Catalog is the harness catalog (install.Catalog interface).
+	Catalog install.Catalog
+	// Registry maps agents to their adapters (install.Registry interface).
+	Registry install.Registry
+	// HomeDir is the user home directory passed to adapters.
+	HomeDir string
+	// AvailableAgents is the intersection of detected + registered agents
+	// (pre-computed before creating the model).
+	AvailableAgents []model.Agent
+	// BuildPlanFn is the plan-builder function. Defaults to install.BuildPlan.
+	// Tests inject a fake to avoid filesystem side effects.
+	BuildPlanFn func(cat install.Catalog, intent install.Intent, opts install.Options) (install.Plan, error)
+	// RunPlanFn executes the plan and sends progress/done messages to the
+	// program. Tests inject a fake that immediately sends a doneMsg.
+	RunPlanFn func(plan install.Plan, bridge *progressBridge, send func(tea.Msg))
+}
+
+// Model is the top-level Bubbletea model for the install flow.
+type Model struct {
+	Screen    Screen
+	Cursor    int
+	Selection Selection
+
+	// Available* fields are resolved at construction from deps.
+	AvailableAgents   []model.Agent
+	AvailableHarnesses []model.Harness // populated on ScreenCustomPicker entry
+
+	// Review state.
+	ResolvedIDs []string // step IDs from BuildPlan, in topological order
+	ReviewErr   error    // non-nil if BuildPlan failed
+
+	// Progress state (ScreenInstalling).
+	bridge   *progressBridge
+	stepRows []stepRow // one per Apply step in the plan
+
+	// Completion state (ScreenComplete).
+	ExecutionResult pipeline.ExecutionResult
+
+	// Injected dependencies.
+	deps ModelDeps
+}
+
+// stepRow holds the display state of one install step.
+type stepRow struct {
+	stepID string
+	status pipeline.StepStatus
+	err    error
+}
+
+// newModel creates a Model with the provided dependencies.
+func newModel(deps ModelDeps) Model {
+	if deps.BuildPlanFn == nil {
+		deps.BuildPlanFn = install.BuildPlan
+	}
+	if deps.RunPlanFn == nil {
+		deps.RunPlanFn = defaultRunPlan
+	}
+	return Model{
+		Screen:          ScreenWelcome,
+		AvailableAgents: deps.AvailableAgents,
+		deps:            deps,
+	}
+}
+
+// Init is called once when the program starts.
+func (m Model) Init() tea.Cmd {
+	return nil
+}
+
+// Update handles all messages and key events.
+func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+
+	case tea.KeyMsg:
+		return m.handleKey(msg)
+
+	case progressMsg:
+		m.applyProgressEvent(msg.event)
+		return m, listenCmd(m.bridge)
+
+	case doneMsg:
+		m.ExecutionResult = msg.result
+		m.Screen = ScreenComplete
+		return m, nil
+	}
+
+	return m, nil
+}
+
+// handleKey routes keyboard events to the active screen.
+func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch m.Screen {
+
+	case ScreenWelcome:
+		if key.Type == tea.KeyEnter {
+			m.Screen = ScreenDetection
+		}
+
+	case ScreenDetection:
+		switch key.Type {
+		case tea.KeyEnter:
+			m.Screen = ScreenAgents
+			m.Cursor = 0
+		case tea.KeyEsc:
+			if s, ok := prevScreen(m.Screen); ok {
+				m.Screen = s
+			}
+		}
+
+	case ScreenAgents:
+		switch key.Type {
+		case tea.KeyUp, tea.KeyRunes:
+			if key.Type == tea.KeyUp || string(key.Runes) == "k" {
+				if m.Cursor > 0 {
+					m.Cursor--
+				}
+			}
+		case tea.KeyDown:
+			if m.Cursor < len(m.AvailableAgents)-1 {
+				m.Cursor++
+			}
+		case tea.KeySpace:
+			if m.Cursor < len(m.AvailableAgents) {
+				agent := m.AvailableAgents[m.Cursor]
+				m.Selection.Agents = toggleAgent(m.Selection.Agents, agent)
+			}
+		case tea.KeyEnter:
+			if len(m.Selection.Agents) == 0 {
+				// Guard: at least one agent required.
+				break
+			}
+			m.Screen = ScreenMode
+			m.Cursor = 0
+		case tea.KeyEsc:
+			if s, ok := prevScreen(m.Screen); ok {
+				m.Screen = s
+				m.Cursor = 0
+			}
+		}
+
+	case ScreenMode:
+		modes := []model.InstallMode{model.ModeLite, model.ModeFull, model.ModeCustom}
+		switch key.Type {
+		case tea.KeyUp:
+			if m.Cursor > 0 {
+				m.Cursor--
+			}
+		case tea.KeyDown:
+			if m.Cursor < len(modes)-1 {
+				m.Cursor++
+			}
+		case tea.KeyEnter:
+			m.Selection.Mode = modes[m.Cursor]
+			if m.Selection.Mode == model.ModeCustom {
+				// Populate harness list from catalog.
+				if m.deps.Catalog != nil {
+					all := m.deps.Catalog.ForMode(model.ModeCustom)
+					m.AvailableHarnesses = filterHarnessesByAgents(all, m.Selection.Agents)
+				}
+				m.Screen = ScreenCustomPicker
+				m.Cursor = 0
+			} else {
+				// Lite/Full skip custom picker.
+				return m.enterReview()
+			}
+		case tea.KeyEsc:
+			if s, ok := prevScreen(m.Screen); ok {
+				m.Screen = s
+				m.Cursor = 0
+			}
+		}
+
+	case ScreenCustomPicker:
+		switch key.Type {
+		case tea.KeyUp:
+			if m.Cursor > 0 {
+				m.Cursor--
+			}
+		case tea.KeyDown:
+			if m.Cursor < len(m.AvailableHarnesses)-1 {
+				m.Cursor++
+			}
+		case tea.KeySpace:
+			if m.Cursor < len(m.AvailableHarnesses) {
+				id := m.AvailableHarnesses[m.Cursor].ID
+				m.Selection.CustomHarnesses = toggleString(m.Selection.CustomHarnesses, id)
+			}
+		case tea.KeyEnter:
+			return m.enterReview()
+		case tea.KeyEsc:
+			m.Screen = ScreenMode
+			m.Cursor = 0
+		}
+
+	case ScreenReview:
+		switch key.Type {
+		case tea.KeyEnter:
+			if m.ReviewErr != nil {
+				break // stay on review until user fixes selection
+			}
+			return m.startInstall()
+		case tea.KeyEsc:
+			if m.Selection.Mode == model.ModeCustom {
+				m.Screen = ScreenCustomPicker
+			} else {
+				m.Screen = ScreenMode
+			}
+			m.Cursor = 0
+		}
+
+	case ScreenComplete:
+		switch {
+		case key.Type == tea.KeyRunes && string(key.Runes) == "q":
+			return m, tea.Quit
+		case key.Type == tea.KeyCtrlC:
+			return m, tea.Quit
+		}
+	}
+
+	return m, nil
+}
+
+// enterReview calls BuildPlan and transitions to ScreenReview. Pure (no side effects).
+func (m Model) enterReview() (tea.Model, tea.Cmd) {
+	m.ResolvedIDs = nil
+	m.ReviewErr = nil
+
+	if m.deps.Catalog != nil && m.deps.Registry != nil {
+		intent := m.Selection.BuildIntent()
+		opts := install.Options{
+			HomeDir:  m.deps.HomeDir,
+			Registry: m.deps.Registry,
+		}
+		plan, err := m.deps.BuildPlanFn(m.deps.Catalog, intent, opts)
+		if err != nil {
+			m.ReviewErr = err
+		} else {
+			for _, s := range plan.Apply {
+				m.ResolvedIDs = append(m.ResolvedIDs, s.ID())
+			}
+		}
+	}
+
+	m.Screen = ScreenReview
+	return m, nil
+}
+
+// startInstall launches the orchestrator goroutine and transitions to ScreenInstalling.
+func (m Model) startInstall() (tea.Model, tea.Cmd) {
+	m.bridge = newProgressBridge(64)
+
+	// Build step rows from resolved IDs.
+	m.stepRows = make([]stepRow, len(m.ResolvedIDs))
+	for i, id := range m.ResolvedIDs {
+		m.stepRows[i] = stepRow{stepID: id, status: pipeline.StepStatusPending}
+	}
+
+	m.Screen = ScreenInstalling
+
+	// Build the real plan with progress wired.
+	intent := m.Selection.BuildIntent()
+	opts := install.Options{
+		HomeDir:    m.deps.HomeDir,
+		Registry:   m.deps.Registry,
+		OnProgress: m.bridge.OnProgress,
+	}
+
+	var plan install.Plan
+	var buildErr error
+	if m.deps.Catalog != nil && m.deps.Registry != nil {
+		plan, buildErr = m.deps.BuildPlanFn(m.deps.Catalog, intent, opts)
+	}
+
+	if buildErr != nil {
+		// This should not happen (we already validated in review), but handle it.
+		result := pipeline.ExecutionResult{Err: buildErr}
+		m.ExecutionResult = result
+		m.Screen = ScreenComplete
+		return m, nil
+	}
+
+	// Launch the runner goroutine.
+	bridge := m.bridge // capture for goroutine
+	sendFn := func(msg tea.Msg) {} // placeholder — real send set by Program
+	_ = sendFn
+	go m.deps.RunPlanFn(plan, bridge, nil)
+
+	return m, listenCmd(m.bridge)
+}
+
+// applyProgressEvent updates the step row matching the event's StepID.
+func (m *Model) applyProgressEvent(ev pipeline.ProgressEvent) {
+	for i := range m.stepRows {
+		if m.stepRows[i].stepID == ev.StepID {
+			m.stepRows[i].status = ev.Status
+			m.stepRows[i].err = ev.Err
+			return
+		}
+	}
+}
+
+// View renders the current screen.
+func (m Model) View() string {
+	switch m.Screen {
+	case ScreenWelcome:
+		return m.viewWelcome()
+	case ScreenDetection:
+		return m.viewDetection()
+	case ScreenAgents:
+		return m.viewAgents()
+	case ScreenMode:
+		return m.viewMode()
+	case ScreenCustomPicker:
+		return m.viewCustomPicker()
+	case ScreenReview:
+		return m.viewReview()
+	case ScreenInstalling:
+		return m.viewInstalling()
+	case ScreenComplete:
+		return m.viewComplete()
+	default:
+		return ""
+	}
+}
+
+// ── Views (minimal Lipgloss layout, no cosmetic theme) ────────────────────────
+
+var (
+	titleStyle    = lipgloss.NewStyle().Bold(true).MarginBottom(1)
+	selectedStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
+	errorStyle    = lipgloss.NewStyle().Foreground(lipgloss.Color("1"))
+	dimStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
+)
+
+func (m Model) viewWelcome() string {
+	return titleStyle.Render("jr-stack installer") + "\n\n" +
+		"Press Enter to begin.\n"
+}
+
+func (m Model) viewDetection() string {
+	return titleStyle.Render("Detecting environment") + "\n\n" +
+		"Press Enter to continue.\n"
+}
+
+func (m Model) viewAgents() string {
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Select agent(s)") + "\n\n")
+	for i, a := range m.AvailableAgents {
+		cursor := "  "
+		if m.Cursor == i {
+			cursor = "> "
+		}
+		checked := "[ ]"
+		if isAgentSelected(m.Selection.Agents, a) {
+			checked = selectedStyle.Render("[x]")
+		}
+		sb.WriteString(fmt.Sprintf("%s%s %s\n", cursor, checked, a))
+	}
+	if len(m.AvailableAgents) == 0 {
+		sb.WriteString(dimStyle.Render("No agents detected.\n"))
+	}
+	sb.WriteString("\nSpace = toggle  Enter = continue  Esc = back\n")
+	return sb.String()
+}
+
+func (m Model) viewMode() string {
+	modes := []model.InstallMode{model.ModeLite, model.ModeFull, model.ModeCustom}
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Choose install mode") + "\n\n")
+	for i, mode := range modes {
+		cursor := "  "
+		if m.Cursor == i {
+			cursor = "> "
+		}
+		sb.WriteString(fmt.Sprintf("%s%s\n", cursor, mode))
+	}
+	sb.WriteString("\nEnter = select  Esc = back\n")
+	return sb.String()
+}
+
+func (m Model) viewCustomPicker() string {
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Select harnesses") + "\n\n")
+	for i, h := range m.AvailableHarnesses {
+		cursor := "  "
+		if m.Cursor == i {
+			cursor = "> "
+		}
+		checked := "[ ]"
+		if isStringSelected(m.Selection.CustomHarnesses, h.ID) {
+			checked = selectedStyle.Render("[x]")
+		}
+		sb.WriteString(fmt.Sprintf("%s%s %s\n", cursor, checked, h.Name))
+	}
+	sb.WriteString("\nSpace = toggle  Enter = continue  Esc = back\n")
+	return sb.String()
+}
+
+func (m Model) viewReview() string {
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Review") + "\n\n")
+	if m.ReviewErr != nil {
+		sb.WriteString(errorStyle.Render("Error: "+m.ReviewErr.Error()) + "\n\n")
+		sb.WriteString("Esc = go back\n")
+		return sb.String()
+	}
+	sb.WriteString("Steps to install (topological order):\n")
+	for _, id := range m.ResolvedIDs {
+		sb.WriteString("  • " + id + "\n")
+	}
+	if len(m.ResolvedIDs) == 0 {
+		sb.WriteString(dimStyle.Render("  (nothing to install)\n"))
+	}
+	sb.WriteString("\nEnter = install  Esc = back\n")
+	return sb.String()
+}
+
+func (m Model) viewInstalling() string {
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("Installing") + "\n\n")
+	for _, row := range m.stepRows {
+		icon := statusIcon(row.status)
+		sb.WriteString(fmt.Sprintf("  %s %s\n", icon, row.stepID))
+	}
+	sb.WriteString("\n")
+	return sb.String()
+}
+
+func (m Model) viewComplete() string {
+	var sb strings.Builder
+	if m.ExecutionResult.Err != nil {
+		sb.WriteString(titleStyle.Render("Installation failed") + "\n\n")
+		sb.WriteString(errorStyle.Render(m.ExecutionResult.Err.Error()) + "\n\n")
+		if len(m.ExecutionResult.Rollback.Steps) > 0 {
+			sb.WriteString("Rollback: ")
+			if m.ExecutionResult.Rollback.Success {
+				sb.WriteString(selectedStyle.Render("succeeded") + "\n")
+			} else {
+				sb.WriteString(errorStyle.Render("failed") + "\n")
+			}
+		}
+	} else {
+		sb.WriteString(titleStyle.Render("Installation complete!") + "\n\n")
+		sb.WriteString(selectedStyle.Render("All steps succeeded.") + "\n\n")
+	}
+	sb.WriteString("Press q to quit.\n")
+	return sb.String()
+}
+
+func statusIcon(s pipeline.StepStatus) string {
+	switch s {
+	case pipeline.StepStatusRunning:
+		return "⟳"
+	case pipeline.StepStatusSucceeded:
+		return selectedStyle.Render("✓")
+	case pipeline.StepStatusFailed:
+		return errorStyle.Render("✗")
+	case pipeline.StepStatusRolledBack:
+		return dimStyle.Render("↩")
+	default:
+		return "·"
+	}
+}
+
+// ── Selection helpers ─────────────────────────────────────────────────────────
+
+func toggleAgent(agents []model.Agent, a model.Agent) []model.Agent {
+	for i, existing := range agents {
+		if existing == a {
+			return append(agents[:i:i], agents[i+1:]...)
+		}
+	}
+	return append(agents, a)
+}
+
+func toggleString(strs []string, s string) []string {
+	for i, existing := range strs {
+		if existing == s {
+			return append(strs[:i:i], strs[i+1:]...)
+		}
+	}
+	return append(strs, s)
+}
+
+func isAgentSelected(agents []model.Agent, a model.Agent) bool {
+	for _, existing := range agents {
+		if existing == a {
+			return true
+		}
+	}
+	return false
+}
+
+func isStringSelected(strs []string, s string) bool {
+	for _, existing := range strs {
+		if existing == s {
+			return true
+		}
+	}
+	return false
+}
