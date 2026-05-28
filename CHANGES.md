@@ -46,7 +46,7 @@ C-07 harness external                │             │
                           (lite/full/custom, Bubbletea slim)
                             │            │
                             ▼            ▼
-                   C-12 uninstall   C-13 jr-starter
+                   C-12 uninstall   C-13 jr-orchestrator
                    harness-aware    (orquestador fundación)
                             │            │
                             └─────┬──────┘
@@ -188,12 +188,12 @@ estrecha hacia la convergencia en C-11b (la TUI).
 - **Governance**: **ALTO** (restaura/borra config del usuario).
 - **Leer antes**: repo viejo flujo uninstall + `internal/backup/restore.go`, ARCHITECTURE.md §1.1 (nota uninstall).
 
-### C-13 — jr-starter como orquestador de fundación
+### C-13 — jr-orchestrator como orquestador de fundación
 - **Estado**: PENDIENTE.
-- **Scope**: Evolucionar la skill `jr-starter` al orquestador de fundación con lazy-loading (ARCHITECTURE.md §4.2): `openspec init` → `kb-creator` → `roadmap-generator` → `find-skill` → `agent-instruction`.
+- **Scope**: Crear la skill `jr-orchestrator` (thin orchestrator from scratch) con lazy-loading (ARCHITECTURE.md §4.2): `openspec init` → `kb-creator` → `roadmap-generator` → `find-skill` → `agent-instruction`.
 - **Dependencias**: C-11.
 - **Governance**: MEDIO.
-- **Leer antes**: ARCHITECTURE.md §4.2, MANUAL Etapas 1–4, catálogo (skills propias), skill `jr-starter` existente.
+- **Leer antes**: ARCHITECTURE.md §4.2, MANUAL Etapas 1–4, catálogo (skills propias).
 
 ### C-14 — Verify + E2E
 - **Estado**: PENDIENTE.
@@ -210,4 +210,4 @@ estrecha hacia la convergencia en C-11b (la TUI).
 - **Granularidad final de los toggles** de `sdd-orchestrator` (afecta C-09).
 - **Qué harness entra exactamente en cada modo** Lite/Full/Custom (afecta C-11; el catálogo tiene un mapeo provisional).
 - **Empaquetado de skills de terceros** (`find-skill`, `skill-creator`): repos `vercel-labs/skills` y `anthropics/skills` marcados TBD en el catálogo (afecta C-08).
-- **Repos de skills propias** `jr-starter` y `skill-registry`: marcados TBD en el catálogo.
+- ~~**Repos de skills propias** `jr-starter` y `skill-registry`: marcados TBD en el catálogo.~~ → **RESUELTO** (`JuanCruzRobledo/jr-orchestrator` y `JuanCruzRobledo/skill-registry`, ambos públicos).

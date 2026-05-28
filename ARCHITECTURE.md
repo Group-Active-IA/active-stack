@@ -52,7 +52,7 @@ Un **harness** es cualquier módulo que prepara o guía el entorno de la IA.
 
 | Forma | Qué es | Origen | Ejemplos |
 |-------|--------|--------|----------|
-| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, jr-starter, skill-registry (propias); find-skill, skill-creator (terceros) |
+| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, jr-orchestrator, skill-registry (propias); find-skill, skill-creator (terceros) |
 | **Configuración** | Texto/archivos que configuran el agente | bundleado en el instalador | `sdd-orchestrator` (orquestador con toggles: TDD, Engram, …), config de `AGENTS.md`/`CLAUDE.md`, permisos, MCP |
 | **Herramienta externa** | Binario/servicio de terceros | instalado/configurado, no es nuestro repo | Engram, OpenSpec CLI, Context7 (MCP) |
 
@@ -125,7 +125,7 @@ jr-stack install  →  TUI (Bubbletea)
 ### 4.2 Fundación del proyecto (una vez por proyecto)
 
 Un **único comando** que orquesta la fase de fundación con lazy-loading de
-skills, en este orden (evolución de la skill `jr-starter`):
+skills, en este orden (evolución de la skill `jr-orchestrator`):
 
 ```
 1. openspec init        (solo la carpeta openspec/)
@@ -178,7 +178,7 @@ Se descarta: `components/gga`, `components/theme`, `components/persona`
 4. **Adapters slim**: claude + opencode primero (P0), resto después.
 5. **Harness installers**: `skill` (clone+copy), `external` (engram/openspec), `config` (sdd-orchestrator componible).
 6. **TUI**: flujo Lite/Full/Custom leyendo catálogo.
-7. **jr-starter como orquestador de fundación**: lazy-load del flujo §4.2.
+7. **jr-orchestrator como orquestador de fundación**: lazy-load del flujo §4.2.
 8. **Verify + E2E**: health checks + Docker E2E portados.
 
 Cada incremento será un **change OPSX** (dogfooding) en `openspec/` (ignorado por git).
@@ -188,12 +188,12 @@ Cada incremento será un **change OPSX** (dogfooding) en `openspec/` (ignorado p
 ## 7. Decisiones tomadas y abiertas
 
 ### Resueltas
-- **Fetch de skills (C-08) — mixto por tipo**: skills propias (jr-starter, etc.)
+- **Fetch de skills (C-08) — mixto por tipo**: skills propias (jr-orchestrator, etc.)
   → `git clone` del repo; terceros (find-skill, skill-creator) → `npx skills add`;
   core openspec (atadas a la versión del orquestador) → embebidas. El modelo de
   skill necesita un campo de método de fetch (clone/npx/embed), análogo a
   `External.Method`.
-- **jr-starter — activador modular**: orquesta la fase de fundación y activa/llama
+- **jr-orchestrator — activador modular**: orquesta la fase de fundación y activa/llama
   los módulos (kb-creator, roadmap-generator, etc.) según cuáles estén instalados/
   activos (lazy-loading, §4.2). No es una skill monolítica.
 - **Toggles del `sdd-orchestrator`**: el texto sale de los assets del stack viejo.

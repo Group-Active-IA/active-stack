@@ -22,7 +22,7 @@ func TestLoad_KnownHarnessesPresent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
-	for _, id := range []string{"openspec", "engram", "sdd-orchestrator", "jr-starter", "kb-creator"} {
+	for _, id := range []string{"openspec", "engram", "sdd-orchestrator", "jr-orchestrator", "kb-creator"} {
 		if _, ok := c.ByID(id); !ok {
 			t.Errorf("expected harness %q in catalog, not found", id)
 		}

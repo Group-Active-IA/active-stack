@@ -45,11 +45,11 @@ harnesses:
     agents: [claude, opencode, gemini, vscode]
 
   # ── Skills propias ─────────────────────────────────────────────────────────
-  - id: jr-starter
-    name: jr-starter
-    description: Orquestador de la fase de fundación (openspec init → KB → roadmap → skills → AGENTS.md).
+  - id: jr-orchestrator
+    name: jr-orchestrator
+    description: Orquestador delgado de la fase de fundación (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction).
     type: skill
-    source: { repo: JuanCruzRobledo/jr-starter, ref: latest, method: clone } # privado
+    source: { repo: JuanCruzRobledo/jr-orchestrator, ref: latest, method: clone }
     install_modes: [lite, full]
     depends_on: [openspec]
 
