@@ -1,0 +1,59 @@
+# Dockerfile.arch — E2E test image for jr-stack on Arch Linux
+# Builds the jr-stack binary from source and runs the E2E test suite
+# as a non-root user.
+#
+# archlinux:base provides x86_64 only. The --platform=linux/amd64 flag
+# ensures QEMU emulation is used on ARM hosts (e.g. Apple Silicon).
+FROM --platform=linux/amd64 archlinux:base
+
+# ---------------------------------------------------------------------------
+# System dependencies
+# ---------------------------------------------------------------------------
+# DisableSandbox prevents the ALPM seccomp filter that is incompatible with
+# QEMU user-mode emulation on ARM hosts.
+RUN echo 'DisableSandbox' >> /etc/pacman.conf && \
+    pacman -Syu --noconfirm && \
+    pacman -S --noconfirm \
+        git \
+        curl \
+        sudo \
+        go \
+        python \
+        base-devel \
+    && pacman -Scc --noconfirm
+
+# ---------------------------------------------------------------------------
+# Create non-root test user with passwordless sudo
+# ---------------------------------------------------------------------------
+RUN useradd -m -s /bin/bash testuser && \
+    echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+# ---------------------------------------------------------------------------
+# Copy project source and build the jr-stack binary
+# ---------------------------------------------------------------------------
+WORKDIR /build
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+    go build -o /usr/local/bin/jr-stack ./cmd/jr-stack
+
+# ---------------------------------------------------------------------------
+# Prepare test environment
+# ---------------------------------------------------------------------------
+COPY e2e/lib.sh      /home/testuser/e2e/lib.sh
+COPY e2e/e2e_test.sh /home/testuser/e2e/e2e_test.sh
+RUN chmod +x /home/testuser/e2e/e2e_test.sh /home/testuser/e2e/lib.sh && \
+    chown -R testuser:testuser /home/testuser
+
+USER testuser
+
+ENV GOPATH="/home/testuser/go"
+ENV PATH="${GOPATH}/bin:/usr/local/go/bin:${PATH}"
+
+WORKDIR /home/testuser
+
+# ---------------------------------------------------------------------------
+# Default: run Tier 1 tests (no side-effects)
+# ---------------------------------------------------------------------------
+CMD ["bash", "e2e/e2e_test.sh"]
