@@ -118,11 +118,37 @@ func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
 	}
 }
 
+// permissionsKeyFor returns the top-level JSON key that the permissions
+// installer writes for the given agent.
+//
+// Schema source: internal/harness/config/permissions/overlays.go
+//
+//   - Claude  → "permissions" (plural)  — claudeCodeOverlayJSON L13
+//   - OpenCode → "permission" (singular) — openCodeOverlayJSON L32
+//   - default  → "permissions" (plural)  — matches every other overlay that
+//     either uses the same schema (Gemini uses "general", VS Code uses
+//     "chat.tools.autoApprove") or injects no overlay at all. The default
+//     covers future agents until their overlay lands — a failing verify check
+//     will catch any mismatch.
+func permissionsKeyFor(agent model.Agent) string {
+	switch agent {
+	case model.AgentOpenCode:
+		return "permission"
+	default:
+		return "permissions"
+	}
+}
+
 // checkPermissions verifies that the permissions key exists in the agent's
 // settings file (written by internal/harness/config/permissions).
+// The key name is resolved per-agent via permissionsKeyFor to match the exact
+// JSON key each agent's overlay writes (e.g. "permission" for OpenCode,
+// "permissions" for Claude). The error message names the searched key so that
+// future schema drift is self-diagnosing (D4 in design.md).
 func checkPermissions(h model.Harness, adapter Adapter, homeDir string) []Check {
 	settingsPath := adapter.SettingsPath(homeDir)
 	agentID := string(adapter.Agent())
+	key := permissionsKeyFor(adapter.Agent())
 
 	return []Check{
 		{
@@ -140,8 +166,8 @@ func checkPermissions(h model.Harness, adapter Adapter, homeDir string) []Check 
 				if err := json.Unmarshal(data, &raw); err != nil {
 					return fmt.Errorf("parse settings file %q: %w", settingsPath, err)
 				}
-				if _, ok := raw["permissions"]; !ok {
-					return fmt.Errorf("\"permissions\" key not found in %q", settingsPath)
+				if _, ok := raw[key]; !ok {
+					return fmt.Errorf("expected key %q not found in %q", key, settingsPath)
 				}
 				return nil
 			},

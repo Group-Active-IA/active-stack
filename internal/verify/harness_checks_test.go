@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/JuanCruzRobledo/jr-stack/internal/model"
@@ -269,6 +270,157 @@ func TestCheckForPermissionsHarness_FailMissingSettingsFile(t *testing.T) {
 	if !anyFailed {
 		t.Error("expected failure when settings file is missing")
 	}
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// C-18 — per-agent permissions key resolution
+// ─────────────────────────────────────────────────────────────────────────────
+
+// TestCheckPermissionsOpenCodeSingularKey is the RED test for C-18.
+// OpenCode writes the key "permission" (singular) per overlays.go L32-33.
+// Before the fix, checkPermissions searches "permissions" (plural) and
+// MUST fail with a "permissions key not found" style error.
+// After the fix it MUST pass.
+func TestCheckPermissionsOpenCodeSingularKey(t *testing.T) {
+	homeDir := t.TempDir()
+	fa := newFakeAdapter(t, homeDir, model.AgentOpenCode)
+
+	h := model.Harness{
+		ID:   "permissions",
+		Type: model.HarnessConfig,
+	}
+
+	// Write an opencode.json-style settings file with "permission" (singular),
+	// exactly as the permissions installer writes for OpenCode.
+	settings := map[string]interface{}{
+		"permission": map[string]interface{}{
+			"bash": map[string]interface{}{"*": "allow"},
+			"read": map[string]interface{}{"*": "allow"},
+		},
+	}
+	data, err := json.Marshal(settings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(fa.SettingsPath(homeDir), data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	checks := verify.ChecksForHarness(h, []verify.Adapter{fa}, homeDir)
+	if len(checks) == 0 {
+		t.Fatal("expected at least one check for permissions harness")
+	}
+
+	results := runChecks(t, checks)
+	for _, r := range results {
+		if r.Status != verify.CheckStatusPassed {
+			t.Errorf("check %q: status = %q, error = %q, want passed (opencode uses singular \"permission\" key)", r.ID, r.Status, r.Error)
+		}
+	}
+}
+
+// TestCheckPermissionsClaudePluralKey guards against regressions on Claude:
+// Claude writes "permissions" (plural); the fix must not break it.
+func TestCheckPermissionsClaudePluralKey(t *testing.T) {
+	homeDir := t.TempDir()
+	fa := newFakeAdapter(t, homeDir, model.AgentClaude)
+
+	h := model.Harness{
+		ID:   "permissions",
+		Type: model.HarnessConfig,
+	}
+
+	settings := map[string]interface{}{
+		"permissions": map[string]interface{}{
+			"defaultMode": "acceptEdits",
+			"deny":        []string{"Bash(rm -rf /)"},
+		},
+	}
+	data, err := json.Marshal(settings)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(fa.SettingsPath(homeDir), data, 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	checks := verify.ChecksForHarness(h, []verify.Adapter{fa}, homeDir)
+	results := runChecks(t, checks)
+	for _, r := range results {
+		if r.Status != verify.CheckStatusPassed {
+			t.Errorf("check %q: status = %q, error = %q, want passed (claude uses plural \"permissions\" key)", r.ID, r.Status, r.Error)
+		}
+	}
+}
+
+// TestCheckPermissionsFailureMentionsCorrectKey asserts that when the
+// agent-specific key is absent the error message names the searched key,
+// not a hardcoded string. This covers D4 (self-describing failure message).
+func TestCheckPermissionsFailureMentionsCorrectKey(t *testing.T) {
+	tests := []struct {
+		name        string
+		agent       model.Agent
+		settingsJSON string
+		wantKeyInMsg string
+	}{
+		{
+			name:         "opencode missing singular key",
+			agent:        model.AgentOpenCode,
+			settingsJSON: `{"someOtherKey": true}`,
+			wantKeyInMsg: "permission",
+		},
+		{
+			name:         "claude missing plural key",
+			agent:        model.AgentClaude,
+			settingsJSON: `{"someOtherKey": true}`,
+			wantKeyInMsg: "permissions",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			homeDir := t.TempDir()
+			fa := newFakeAdapter(t, homeDir, tt.agent)
+
+			h := model.Harness{
+				ID:   "permissions",
+				Type: model.HarnessConfig,
+			}
+
+			if err := os.WriteFile(fa.SettingsPath(homeDir), []byte(tt.settingsJSON), 0o644); err != nil {
+				t.Fatal(err)
+			}
+
+			checks := verify.ChecksForHarness(h, []verify.Adapter{fa}, homeDir)
+			results := runChecks(t, checks)
+
+			anyFailed := false
+			for _, r := range results {
+				if r.Status == verify.CheckStatusFailed {
+					anyFailed = true
+					if r.Error == "" {
+						t.Errorf("check %q: failed but Error is empty", r.ID)
+						continue
+					}
+					if !containsKey(r.Error, tt.wantKeyInMsg) {
+						t.Errorf("check %q: error = %q, want it to contain key name %q", r.ID, r.Error, tt.wantKeyInMsg)
+					}
+				}
+			}
+			if !anyFailed {
+				t.Errorf("expected at least one failed check when key %q is absent from settings", tt.wantKeyInMsg)
+			}
+		})
+	}
+}
+
+// containsKey reports whether s contains the quoted or unquoted form of key.
+func containsKey(s, key string) bool {
+	return containsStr(s, `"`+key+`"`) || containsStr(s, key)
+}
+
+func containsStr(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(s) > 0 && strings.Contains(s, substr))
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
