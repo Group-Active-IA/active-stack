@@ -1,11 +1,13 @@
 package headless
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"runtime"
 
 	"github.com/JuanCruzRobledo/jr-stack/internal/install"
+	"github.com/JuanCruzRobledo/jr-stack/internal/model"
 	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
 	"github.com/JuanCruzRobledo/jr-stack/internal/system"
 	"github.com/JuanCruzRobledo/jr-stack/internal/verify"
@@ -71,6 +73,29 @@ func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, 
 		return 0
 	}
 
+	// ── Pre-flight dependency gate ───────────────────────────────────────────
+	// Derive the runtime deps required by the selected harnesses and abort
+	// before any filesystem write when any required dep is missing.
+	{
+		selected := selectHarnessesForGate(cat, params.Intent)
+		reqDeps := system.RequiredDependencies(selected, opts.Profile)
+		if len(reqDeps) > 0 {
+			report := detectDepsForFn(context.Background(), reqDeps)
+			if len(report.MissingRequired) > 0 {
+				fmt.Fprint(w, system.RenderDependencyReport(report))
+				fmt.Fprintln(w)
+				// Print per-dep install hints.
+				for _, dep := range report.Dependencies {
+					if dep.Required && !dep.Installed && dep.InstallHint != "" {
+						fmt.Fprintf(w, "  install hint for %s: %s\n", dep.Name, dep.InstallHint)
+					}
+				}
+				fmt.Fprintln(w, "\nInstallation aborted: install the missing dependencies above and retry.")
+				return 1
+			}
+		}
+	}
+
 	// ── Execute the plan via the orchestrator ───────────────────────────────
 
 	// Progress function: print each step lifecycle event to w.
@@ -114,4 +139,41 @@ func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, 
 	fmt.Fprint(w, verify.RenderReport(report))
 
 	return 0
+}
+
+// selectHarnessesForGate derives the harness set the gate should validate.
+// It mirrors main.collectSelectedHarnesses without the dependency-resolution
+// step, keeping the headless package decoupled from main.
+func selectHarnessesForGate(cat install.Catalog, intent install.Intent) []model.Harness {
+	switch intent.Mode {
+	case model.ModeCustom:
+		var out []model.Harness
+		for _, id := range intent.Custom {
+			if h, ok := cat.ByID(id); ok {
+				out = append(out, h)
+			}
+		}
+		return filterByAgents(out, intent.Agents)
+	default:
+		candidates := cat.ForMode(intent.Mode)
+		return filterByAgents(candidates, intent.Agents)
+	}
+}
+
+// filterByAgents returns harnesses that support at least one of the given agents.
+// If agents is empty, all harnesses are returned.
+func filterByAgents(harnesses []model.Harness, agents []model.Agent) []model.Harness {
+	if len(agents) == 0 {
+		return harnesses
+	}
+	var out []model.Harness
+	for _, h := range harnesses {
+		for _, a := range agents {
+			if h.SupportsAgent(a) {
+				out = append(out, h)
+				break
+			}
+		}
+	}
+	return out
 }

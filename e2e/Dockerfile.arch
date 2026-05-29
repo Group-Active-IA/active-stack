@@ -20,6 +20,8 @@ RUN echo 'DisableSandbox' >> /etc/pacman.conf && \
         go \
         python \
         base-devel \
+        nodejs \
+        npm \
     && pacman -Scc --noconfirm
 
 # ---------------------------------------------------------------------------

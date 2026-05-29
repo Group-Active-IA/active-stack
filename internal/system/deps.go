@@ -64,6 +64,12 @@ func defineDependencies(profile PlatformProfile) []Dependency {
 			DetectCmd:   []string{"npm", "--version"},
 			InstallHint: installHintNpm(profile),
 		},
+		{
+			Name:        "npx",
+			Required:    true,
+			DetectCmd:   []string{"npx", "--version"},
+			InstallHint: installHintNode(profile), // npx ships with node; same install hint
+		},
 	}
 
 	// brew is optional and only relevant on macOS.

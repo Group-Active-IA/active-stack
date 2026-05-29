@@ -299,6 +299,16 @@ func (m Model) startInstall() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	// ── Pre-flight dependency gate ────────────────────────────────────────────
+	// Check that all runtimes required by the selected harnesses are present
+	// before starting the orchestrator. On missing deps, abort to ScreenComplete
+	// with an error — no filesystem writes, no rollback.
+	if gateErr := m.checkPreflightDeps(); gateErr != nil {
+		m.ExecutionResult = pipeline.ExecutionResult{Err: gateErr}
+		m.Screen = ScreenComplete
+		return m, nil
+	}
+
 	// Launch the runner goroutine.
 	bridge := m.bridge // capture for goroutine
 	sendFn := func(msg tea.Msg) {} // placeholder — real send set by Program
