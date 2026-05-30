@@ -26,7 +26,7 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 	empty := Plan{}
 
 	// 1. Select harnesses from catalog.
-	selected, err := selectHarnesses(cat, intent)
+	selected, err := SelectHarnesses(cat, intent)
 	if err != nil {
 		return empty, err
 	}
@@ -112,8 +112,23 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 	}, nil
 }
 
-// selectHarnesses returns the harness set to install for the given intent.
-func selectHarnesses(cat Catalog, intent Intent) ([]model.Harness, error) {
+// SecurityFirstHarnessID is the id of the harness that is security-first: it is
+// non-disableable in Custom mode and is always forced into the selection (C-21).
+//
+// This is the SINGLE SOURCE OF TRUTH for "what is forced". Every other layer —
+// the TUI gate (selectTUIHarnesses), the Custom picker (tui/model.go) and the
+// verify hook (cmd collectSelectedHarnesses) — references this const and/or
+// delegates to SelectHarnesses, so the rule lives in exactly one place (C-24).
+const SecurityFirstHarnessID = "permissions"
+
+// SelectHarnesses returns the harness set to install for the given intent.
+//
+// It is the canonical, exported selector and the single source of truth for the
+// security-first rule that forces SecurityFirstHarnessID in Custom mode
+// (C-21/C-24). Semantics are STRICT: an unknown id in Custom mode is an error
+// (safer than silently ignoring it). All callers — headless BuildPlan, the TUI
+// gate, the verify hook — must go through this function.
+func SelectHarnesses(cat Catalog, intent Intent) ([]model.Harness, error) {
 	switch intent.Mode {
 	case model.ModeCustom:
 		var out []model.Harness
@@ -129,12 +144,13 @@ func selectHarnesses(cat Catalog, intent Intent) ([]model.Harness, error) {
 			seen[id] = struct{}{}
 			out = append(out, h)
 		}
-		// C-21: permissions es security-first — no desactivable en Custom.
-		// Lo forzamos en el set aunque el usuario no lo haya elegido. El
-		// filterByAgents final lo descarta si el agente no lo soporta (límite
-		// correcto: no se puede forzar un overlay que no existe para ese agente).
-		if _, picked := seen["permissions"]; !picked {
-			if perm, ok := cat.ByID("permissions"); ok {
+		// C-21/C-24: the security-first harness is non-disableable in Custom.
+		// We force it into the set even when the user didn't pick it. The final
+		// filterByAgents drops it if the selected agent does not support it
+		// (correct boundary: you cannot force an overlay that does not exist for
+		// that agent). THIS is the only place the "force permissions" rule lives.
+		if _, picked := seen[SecurityFirstHarnessID]; !picked {
+			if perm, ok := cat.ByID(SecurityFirstHarnessID); ok {
 				out = append(out, perm)
 			}
 		}

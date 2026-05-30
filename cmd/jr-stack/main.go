@@ -172,52 +172,20 @@ func resolveVerifyAdapters(agentList []model.Agent, reg *agents.Registry) []veri
 	return out
 }
 
-// collectSelectedHarnesses returns the harnesses that would be selected for the
-// given intent. It mirrors the selection logic in install.BuildPlan (selectHarnesses),
-// without the dependency resolution step — just the top-level set selected by mode/custom.
+// collectSelectedHarnesses returns the harnesses selected for the given intent,
+// used to wire the post-install verify hook. It DELEGATES to
+// install.SelectHarnesses — the single source of truth for the security-first
+// rule that forces install.SecurityFirstHarnessID in Custom mode (C-21/C-24).
+// The previously duplicated forcing logic (and its own filterHarnessesByAgents)
+// was removed.
+//
+// Intents reaching this point come from validated flags / the catalog, so
+// SelectHarnesses should not error; if it does (defensive), we degrade to an
+// empty set rather than verifying against an inconsistent selection.
 func collectSelectedHarnesses(c install.Catalog, intent install.Intent) []model.Harness {
-	switch intent.Mode {
-	case model.ModeCustom:
-		var out []model.Harness
-		seen := make(map[string]struct{}, len(intent.Custom)+1)
-		for _, id := range intent.Custom {
-			if _, dup := seen[id]; dup {
-				continue
-			}
-			if h, ok := c.ByID(id); ok {
-				seen[id] = struct{}{}
-				out = append(out, h)
-			}
-		}
-		// C-21: permissions es security-first — no desactivable en Custom.
-		// Espejo de install.selectHarnesses: lo forzamos acá también para que el
-		// verify hook chequee permissions, consistente con lo que se instala.
-		if _, picked := seen["permissions"]; !picked {
-			if perm, ok := c.ByID("permissions"); ok {
-				out = append(out, perm)
-			}
-		}
-		return filterHarnessesByAgents(out, intent.Agents)
-	default:
-		candidates := c.ForMode(intent.Mode)
-		return filterHarnessesByAgents(candidates, intent.Agents)
+	harnesses, err := install.SelectHarnesses(c, intent)
+	if err != nil {
+		return nil
 	}
-}
-
-// filterHarnessesByAgents returns harnesses that support at least one of the
-// given agents. If agents is empty, all harnesses are returned.
-func filterHarnessesByAgents(harnesses []model.Harness, agentList []model.Agent) []model.Harness {
-	if len(agentList) == 0 {
-		return harnesses
-	}
-	var out []model.Harness
-	for _, h := range harnesses {
-		for _, a := range agentList {
-			if h.SupportsAgent(a) {
-				out = append(out, h)
-				break
-			}
-		}
-	}
-	return out
+	return harnesses
 }

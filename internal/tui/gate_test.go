@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -113,6 +114,64 @@ func TestGateTUI_AllDepsPresent_StartsInstall(t *testing.T) {
 		t.Fatalf("all deps present: Screen = %v, want ScreenInstalling", state.Screen)
 	}
 	_ = runPlanCalled // RunPlanFn is called in goroutine, not synchronously
+}
+
+// TestSelectTUIHarnesses_MatchesCanonical verifies the C-24 unification: the TUI
+// selection path (selectTUIHarnesses) resolves the SAME set as the canonical
+// install.SelectHarnesses for a Custom intent, including the forced
+// security-first harness.
+func TestSelectTUIHarnesses_MatchesCanonical(t *testing.T) {
+	cat := &fakeTUICatalog{harnesses: []model.Harness{
+		{
+			ID:           install.SecurityFirstHarnessID,
+			Type:         model.HarnessConfig,
+			InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull},
+			Agents:       []model.Agent{model.AgentClaude},
+		},
+		{
+			ID:           "engram",
+			Type:         model.HarnessExternal,
+			External:     &model.External{Method: "npm"},
+			InstallModes: []model.InstallMode{model.ModeFull},
+			Agents:       []model.Agent{model.AgentClaude},
+		},
+	}}
+
+	intent := install.Intent{
+		Mode:   model.ModeCustom,
+		Agents: []model.Agent{model.AgentClaude},
+		Custom: []string{"engram"}, // permissions NOT requested
+	}
+
+	got := selectTUIHarnesses(cat, intent)
+
+	want, err := install.SelectHarnesses(cat, intent)
+	if err != nil {
+		t.Fatalf("install.SelectHarnesses() error = %v", err)
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("TUI selection diverged from canonical:\n got=%v\nwant=%v",
+			tuiHarnessIDs(got), tuiHarnessIDs(want))
+	}
+
+	found := false
+	for _, h := range got {
+		if h.ID == install.SecurityFirstHarnessID {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected security-first harness forced, got %v", tuiHarnessIDs(got))
+	}
+}
+
+func tuiHarnessIDs(harnesses []model.Harness) []string {
+	ids := make([]string, 0, len(harnesses))
+	for _, h := range harnesses {
+		ids = append(ids, h.ID)
+	}
+	return ids
 }
 
 // ── Fake catalog used only by TUI gate tests ──────────────────────────────────

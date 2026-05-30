@@ -54,34 +54,19 @@ func (m Model) checkPreflightDeps() error {
 	return nil
 }
 
-// selectTUIHarnesses derives the harness set matching the given intent from
-// the catalog. It mirrors selectHarnessesForGate in the headless package,
-// keeping the tui package self-contained.
+// selectTUIHarnesses derives the harness set matching the given intent. It is a
+// thin wrapper that DELEGATES to install.SelectHarnesses — the single source of
+// truth for the security-first rule that forces install.SecurityFirstHarnessID
+// in Custom mode (C-21/C-24). The previously duplicated forcing logic (and the
+// local filterHarnessesByAgents) was removed.
+//
+// The TUI only ever builds intents from catalog ids, so SelectHarnesses should
+// never error here; if it does (defensive), we degrade to an empty set rather
+// than computing preflight deps against an inconsistent selection.
 func selectTUIHarnesses(cat install.Catalog, intent install.Intent) []model.Harness {
-	switch intent.Mode {
-	case model.ModeCustom:
-		var out []model.Harness
-		seen := make(map[string]struct{}, len(intent.Custom)+1)
-		for _, id := range intent.Custom {
-			if _, dup := seen[id]; dup {
-				continue
-			}
-			if h, ok := cat.ByID(id); ok {
-				seen[id] = struct{}{}
-				out = append(out, h)
-			}
-		}
-		// C-21: permissions es security-first — no desactivable en Custom.
-		// Espejo de install.selectHarnesses: forzamos permissions para que el
-		// cálculo de deps preflight y la vista sean consistentes con lo que se instala.
-		if _, picked := seen["permissions"]; !picked {
-			if perm, ok := cat.ByID("permissions"); ok {
-				out = append(out, perm)
-			}
-		}
-		return filterHarnessesByAgents(out, intent.Agents)
-	default:
-		candidates := cat.ForMode(intent.Mode)
-		return filterHarnessesByAgents(candidates, intent.Agents)
+	harnesses, err := install.SelectHarnesses(cat, intent)
+	if err != nil {
+		return nil
 	}
+	return harnesses
 }

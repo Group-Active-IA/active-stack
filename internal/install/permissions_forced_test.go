@@ -121,3 +121,65 @@ func TestBuildPlanCustomPermissionsDroppedForUnsupportedAgent(t *testing.T) {
 		t.Errorf("permissions cannot be forced for an agent that does not support it, got %v", ids)
 	}
 }
+
+// ── C-24: single source of truth — install.SelectHarnesses ────────────────────
+
+// TestSelectHarnessesForcesPermissions verifies the canonical selector forces
+// the security-first harness in Custom mode even when not requested. This is the
+// ONE place the rule lives; the TUI gate, the picker and the verify hook all
+// delegate here (C-24).
+func TestSelectHarnessesForcesPermissions(t *testing.T) {
+	cat := &fakeCatalog{harnesses: []model.Harness{
+		{ID: "engram", Type: model.HarnessExternal, Agents: []model.Agent{model.AgentClaude}},
+		permissionsHarness(),
+	}}
+
+	intent := install.Intent{
+		Mode:   model.ModeCustom,
+		Agents: []model.Agent{model.AgentClaude},
+		Custom: []string{"engram"}, // permissions deliberately omitted
+	}
+
+	got, err := install.SelectHarnesses(cat, intent)
+	if err != nil {
+		t.Fatalf("SelectHarnesses() error = %v", err)
+	}
+
+	if !harnessSetContains(got, install.SecurityFirstHarnessID) {
+		t.Errorf("expected %q forced in Custom mode, got %v", install.SecurityFirstHarnessID, idsOf(got))
+	}
+}
+
+// TestSelectHarnessesUnknownIDIsError verifies the canonical selector keeps the
+// strict semantics: an unknown id in Custom mode is an error (safer than the
+// laxer "ignore unknown" behaviour the TUI duplicates used to have).
+func TestSelectHarnessesUnknownIDIsError(t *testing.T) {
+	cat := &fakeCatalog{harnesses: []model.Harness{permissionsHarness()}}
+
+	intent := install.Intent{
+		Mode:   model.ModeCustom,
+		Agents: []model.Agent{model.AgentClaude},
+		Custom: []string{"does-not-exist"},
+	}
+
+	if _, err := install.SelectHarnesses(cat, intent); err == nil {
+		t.Fatalf("expected error for unknown harness id, got nil")
+	}
+}
+
+func harnessSetContains(harnesses []model.Harness, id string) bool {
+	for _, h := range harnesses {
+		if h.ID == id {
+			return true
+		}
+	}
+	return false
+}
+
+func idsOf(harnesses []model.Harness) []string {
+	ids := make([]string, 0, len(harnesses))
+	for _, h := range harnesses {
+		ids = append(ids, h.ID)
+	}
+	return ids
+}
