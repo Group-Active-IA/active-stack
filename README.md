@@ -8,6 +8,7 @@
   <img src="https://img.shields.io/badge/binario-único%20cross--platform-6366f1" alt="Binario único cross-platform">
   <img src="https://img.shields.io/badge/agentes-Claude%20%C2%B7%20OpenCode-06b6d4" alt="Agentes soportados">
   <img src="https://img.shields.io/badge/ciclo-OPSX-14b8a6" alt="OPSX">
+  <img src="https://img.shields.io/badge/licencia-MIT-22c55e" alt="Licencia MIT">
 </p>
 
 <p align="center">
@@ -255,7 +256,7 @@ go test ./...                          # suite completa
 
 ## Licencia
 
-> ⚠️ **Por definir.** Todavía no hay archivo `LICENSE` en el repo. Hasta que se agregue, todos los derechos quedan reservados por defecto.
+Distribuido bajo licencia **MIT**. Usalo, forkealo, modificalo — ver [`LICENSE`](LICENSE) para los detalles.
 
 ---
 
