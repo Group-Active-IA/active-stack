@@ -29,3 +29,39 @@ build linux   amd64
 echo
 echo "Listo. Binarios en la raiz del repo:"
 ls -lh jr-stack_*
+
+# ----------------------------------------------------------------------------
+# Acceso directo en el escritorio (best-effort, idempotente).
+# Solo Linux por ahora: macOS no usa .desktop y la matriz no compila un binario
+# darwin nativo; Termux/WSL no tienen escritorio estandar. Falla blanda: nunca
+# rompe el build.
+# ----------------------------------------------------------------------------
+desktop_shortcut() {
+  local os; os="$(uname -s 2>/dev/null || echo unknown)"
+  case "$os" in
+    Linux)
+      local bin="$PWD/jr-stack_linux_amd64"
+      local desk="${XDG_DESKTOP_DIR:-$HOME/Desktop}"
+      [ -x "$bin" ]  || { echo "  (sin binario Linux nativo; omito acceso directo)"; return 0; }
+      [ -d "$desk" ] || { echo "  (sin carpeta de escritorio en $desk; omito acceso directo)"; return 0; }
+      local lnk="$desk/jr-stack.desktop"
+      printf '%s\n' \
+        '[Desktop Entry]' \
+        'Type=Application' \
+        'Name=JR Stack' \
+        "Exec=$bin" \
+        "Path=$PWD" \
+        'Terminal=true' \
+        'Categories=Development;' > "$lnk"
+      chmod +x "$lnk"
+      echo "  -> $lnk"
+      ;;
+    *)
+      echo "  (acceso directo automatico solo en Linux/Windows por ahora; SO: $os)"
+      ;;
+  esac
+}
+
+echo
+echo "== Acceso directo en el escritorio =="
+desktop_shortcut || true
