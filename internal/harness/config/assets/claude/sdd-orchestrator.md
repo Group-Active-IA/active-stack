@@ -14,6 +14,15 @@ OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The u
 2. **Delegate, don't inflate.** If work inflates your context without need → delegate it to a sub-agent via the Agent tool.
 3. **Engram persists context.** Use engram to save decisions, discoveries, and progress so they survive across sessions and compactions.
 
+## Starting Work on a Project
+
+BEFORE touching anything, determine the project's CURRENT STATE. Never start implementing on an unknown state — knowing where the project stands is step zero.
+
+1. **Does the project already have its foundation?** (an `openspec/` directory, a complete `CLAUDE.md`/`AGENTS.md`)
+   - NO, and the `jr-orchestrator` skill IS available → invoke `jr-orchestrator`. It reads the project state and triggers ONLY the missing foundation step (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction). It is idempotent at the flow level: it never re-runs what already exists.
+   - NO, and `jr-orchestrator` is NOT available (Lite installs) → set up the substrate by hand.
+2. **Foundation already in place?** → run `openspec list` and `openspec status` to locate yourself before any explore/propose/apply.
+
 <!-- jr-stack:sdd-delegation -->
 ## Delegation Rules
 
@@ -159,37 +168,12 @@ Save significant decisions, discoveries, or progress to engram via mem_save with
 - **Apply**: ALWAYS delegate — it reads context files + writes implementation code
 - **Archive**: delegate — it reads artifacts, checks completion, moves files
 
-## Engram Integration
+## Engram × OPSX (orchestration wiring)
 
-### Session Start
+The full Engram protocol (save triggers, search, session close, after-compaction) lives further below. This section is ONLY the OPSX-specific wiring the generic protocol does not cover:
 
-At the beginning of every session:
-
-1. Call `mem_context` to recover recent session history
-2. Call `mem_search(query: "opsx", project: "{project}")` to find prior OPSX work
-3. Use recovered context to brief sub-agents accurately
-
-### Proactive Saves
-
-After EVERY completed action, save to engram:
-
-```
-mem_save(
-  title: "OPSX: {action} completed for {change-name}",
-  type: "architecture",
-  project: "{project}",
-  topic_key: "opsx/{change-name}/{phase}",
-  content: "**What**: {summary}\n**Where**: {files affected}\n**Next**: {recommended next action}"
-)
-```
-
-### Session End
-
-Before ending a session, call `mem_session_summary` with:
-- Goal: what we were working on
-- Accomplished: completed items
-- Next Steps: what remains
-- Relevant Files: paths and what changed
+- **On start**: after recovering memory (`mem_context` / `mem_search "opsx"`), use that context to BRIEF your sub-agents accurately — each sub-agent starts with NO context of its own.
+- **After every completed OPSX action** (explore/propose/apply/archive): save with `topic_key: "opsx/{change-name}/{phase}"` and a title like `"OPSX: {action} completed for {change-name}"`, noting the recommended next action. This keeps each change's progress reconstructable across sessions and compactions.
 
 ## Artifact Lifecycle
 
