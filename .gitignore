@@ -1,5 +1,6 @@
 # Binaries
 /jr-stack
+/jr-stack_*
 *.exe
 *.dll
 *.so

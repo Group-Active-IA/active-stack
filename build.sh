@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ============================================================================
 #  build.sh - JR Stack
-#  Cross-compila binarios estaticos (CGO desactivado) a dist/.
+#  Cross-compila binarios estaticos (CGO desactivado) a la raiz del repo.
 #  Uso:  ./build.sh        (chmod +x build.sh la primera vez)
 #  Requiere: Go 1.26+ en el PATH.
 #  Sirve en Linux, macOS, WSL y Termux.
@@ -9,8 +9,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
-OUT=dist
-mkdir -p "$OUT"
+OUT=.
 export CGO_ENABLED=0
 
 # build <goos> <goarch> [ext]
@@ -28,5 +27,5 @@ build windows amd64 .exe
 build linux   amd64
 
 echo
-echo "Listo. Binarios en ${OUT}/:"
-ls -lh "$OUT"
+echo "Listo. Binarios en la raiz del repo:"
+ls -lh jr-stack_*

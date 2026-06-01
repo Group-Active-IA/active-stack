@@ -1,15 +1,14 @@
 @echo off
 REM ============================================================================
 REM  build.bat - JR Stack
-REM  Cross-compila binarios estaticos (CGO desactivado) a dist/.
+REM  Cross-compila binarios estaticos (CGO desactivado) a la raiz del repo.
 REM  Uso: doble-click, o desde terminal:  build.bat
 REM  Requiere: Go 1.26+ en el PATH.
 REM ============================================================================
 setlocal
 cd /d "%~dp0"
 
-set "OUT=dist"
-if not exist "%OUT%" mkdir "%OUT%"
+set "OUT=."
 
 set "CGO_ENABLED=0"
 
@@ -22,8 +21,8 @@ set "GOOS=linux" & set "GOARCH=amd64"
 go build -trimpath -o "%OUT%\jr-stack_linux_amd64" ./cmd/jr-stack || goto :err
 
 echo.
-echo Listo. Binarios en %OUT%\:
-dir /b "%OUT%"
+echo Listo. Binarios en la raiz del repo:
+dir /b jr-stack_*
 echo.
 echo Tip: para otras arquitecturas (ej. ARM), cambia GOARCH=arm64 o agrega una linea.
 endlocal
