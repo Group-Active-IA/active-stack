@@ -28,6 +28,9 @@ var githubBaseURL = "https://github.com"
 // binaryInstallDirFn resolves where binaries are installed; replaceable in tests.
 var binaryInstallDirFn = binaryInstallDir
 
+// addToUserPath persists the install dir onto the user PATH; replaceable in tests.
+var addToUserPath = system.AddToUserPath
+
 func installHomebrew(ctx context.Context, h model.Harness, profile system.PlatformProfile) (Result, error) {
 	pkg := h.External.Pkg
 	if pkg == "" {
@@ -113,6 +116,15 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 			return "", fmt.Errorf("download %s tar.gz: %w", repo, err)
 		}
 	}
+
+	// El binario quedó en installDir — en Windows eso es %LOCALAPPDATA%\jr-stack\bin,
+	// que NO está en el PATH del usuario por defecto. Lo agregamos al PATH de usuario
+	// (persistente vía registro, sin admin; fuera de Windows solo toca el PATH del
+	// proceso). Best-effort a propósito: si falla (p. ej. ExecutionPolicy de
+	// PowerShell) NO abortamos — el binario ya está en disco y el health check de
+	// PATH es Soft (verify.checkBinaryInPATH), que reportará el warning si quedó
+	// inaccesible.
+	_ = addToUserPath(installDir)
 
 	return outPath, nil
 }

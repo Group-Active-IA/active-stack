@@ -3,12 +3,24 @@ package external
 import (
 	"context"
 	"errors"
+	"os"
 	"strings"
 	"testing"
 
 	"github.com/JuanCruzRobledo/jr-stack/internal/model"
 	"github.com/JuanCruzRobledo/jr-stack/internal/system"
 )
+
+// TestMain neutralizes addToUserPath for the whole package so any test that
+// reaches downloadBinary never mutates the real user PATH. On Windows the real
+// AddToUserPath runs PowerShell and writes the user-scoped PATH in the registry;
+// letting that fire during `go test` would pollute the developer's PATH with
+// throwaway TempDirs. Tests that need to assert the call override addToUserPath
+// locally with a defer-restore.
+func TestMain(m *testing.M) {
+	addToUserPath = func(string) error { return nil }
+	os.Exit(m.Run())
+}
 
 // ── helpers ────────────────────────────────────────────────────────────────
 

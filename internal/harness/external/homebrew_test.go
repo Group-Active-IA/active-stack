@@ -381,6 +381,52 @@ func TestDownloadBinary_UsesRepoOverPkg(t *testing.T) {
 	}
 }
 
+// TestDownloadBinary_AddsInstallDirToPath verifies that after a successful
+// download the install dir is added to the user PATH — otherwise the binary
+// (e.g. engram on Windows, landing in %LOCALAPPDATA%\jr-stack\bin) is on disk
+// but not invocable as a command.
+func TestDownloadBinary_AddsInstallDirToPath(t *testing.T) {
+	tarGzData := buildTarGz(t, "engram", []byte("fake-engram-binary"))
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/releases/latest") {
+			json.NewEncoder(w).Encode(map[string]string{"tag_name": "v1.0.0"})
+			return
+		}
+		w.Write(tarGzData)
+	}))
+	defer srv.Close()
+
+	origBase := githubBaseURL
+	githubBaseURL = srv.URL
+	defer func() { githubBaseURL = origBase }()
+
+	origClient := httpClient
+	httpClient = srv.Client()
+	defer func() { httpClient = origClient }()
+
+	installDir := t.TempDir()
+	origFn := binaryInstallDirFn
+	binaryInstallDirFn = func(string) string { return installDir }
+	defer func() { binaryInstallDirFn = origFn }()
+
+	// Override the package-level (TestMain no-op) hook to capture the dir.
+	var gotDir string
+	origAdd := addToUserPath
+	addToUserPath = func(dir string) error { gotDir = dir; return nil }
+	defer func() { addToUserPath = origAdd }()
+
+	h := harnessWithMethod("homebrew", "engram", "")
+	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
+
+	if _, err := downloadBinary(nil, h, profile); err != nil {
+		t.Fatalf("downloadBinary failed: %v", err)
+	}
+	if gotDir != installDir {
+		t.Errorf("AddToUserPath called with %q, want installDir %q", gotDir, installDir)
+	}
+}
+
 // ── installHomebrew with brew available ────────────────────────────────────
 
 func TestInstallHomebrew_UsesBrewWhenAvailable(t *testing.T) {
