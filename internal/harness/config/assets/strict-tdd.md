@@ -74,10 +74,6 @@ When Strict TDD Mode is active, your return summary MUST include:
 
 ## Rules
 
-- NEVER write production code before writing its test
-- NEVER skip the GREEN execution gate — you MUST run tests and confirm they pass
-- NEVER skip triangulation when the spec defines multiple scenarios
-- NEVER write trivial assertions (tautologies, type-only checks, ghost loops)
-- ALWAYS run the Safety Net before modifying existing files
-- ALWAYS report the TDD Cycle Evidence table
-- Prefer pure functions — TDD naturally pushes you toward them
+The cycle above is binding (its GATEs, the Three Laws, the Safety Net, the Evidence table). One rule it does NOT make obvious:
+
+- NEVER write trivial assertions (tautologies, type-only checks, ghost loops) — they pass without exercising behavior.

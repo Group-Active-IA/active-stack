@@ -197,14 +197,16 @@ func (s *configStep) Rollback() error {
 var permissionsInstallFn = func(
 	homeDir string,
 	adapters []perminstaller.PermissionsAdapter,
+	tier model.PermissionTier,
 ) (perminstaller.Result, error) {
-	return perminstaller.Install(homeDir, adapters)
+	return perminstaller.Install(homeDir, adapters, tier)
 }
 
 type permissionsStep struct {
 	h        model.Harness
 	adapters []AgentAdapter
 	homeDir  string
+	tier     model.PermissionTier
 	manifest *backup.Manifest
 }
 
@@ -213,7 +215,7 @@ func (s *permissionsStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *permissionsStep) Run() error {
 	perm := toPermissionsAdapters(s.adapters)
-	_, err := permissionsInstallFn(s.homeDir, perm)
+	_, err := permissionsInstallFn(s.homeDir, perm, s.tier)
 	return err
 }
 

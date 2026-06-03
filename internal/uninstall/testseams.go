@@ -23,6 +23,13 @@ func SetMarkerRemovalFn(fn func(path, sectionID string) error) (restore func()) 
 	return func() { markerRemovalFn = old }
 }
 
+// SetStalePurgeFn replaces the stalePurgeFn for testing.
+func SetStalePurgeFn(fn func(path string) error) (restore func()) {
+	old := stalePurgeFn
+	stalePurgeFn = fn
+	return func() { stalePurgeFn = old }
+}
+
 // SetSkillRemovalFn replaces the skillRemovalFn for testing.
 func SetSkillRemovalFn(fn func(path string) error) (restore func()) {
 	old := skillRemovalFn

@@ -18,6 +18,10 @@ type claudeAdapter struct {
 func (c claudeAdapter) Agent() model.Agent              { return model.AgentClaude }
 func (c claudeAdapter) InstructionsPath(_ string) string { return c.path }
 func (c claudeAdapter) VariantKey() string               { return "claude" }
+func (c claudeAdapter) SettingsPath(_ string) string     { return "" }
+func (c claudeAdapter) ConfigDelivery() model.ConfigDelivery {
+	return model.ConfigDeliveryInstructions
+}
 
 // TestInstall_EndToEnd verifies the full flow: compose + inject + idempotency.
 func TestInstall_EndToEnd(t *testing.T) {

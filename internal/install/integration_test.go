@@ -74,6 +74,7 @@ func TestHeadlessInstallIntegration(t *testing.T) {
 	restorePerm := install.SetPermissionsInstallFn(func(
 		_ string,
 		_ []perminstaller.PermissionsAdapter,
+		_ model.PermissionTier,
 	) (perminstaller.Result, error) {
 		executionOrder = append(executionOrder, "permissions")
 		return perminstaller.Result{}, nil

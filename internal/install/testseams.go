@@ -94,7 +94,7 @@ func SetConfigInstallFn(fn func(h model.Harness, adapters interface{}, homeDir s
 }
 
 // SetPermissionsInstallFn replaces permissionsInstallFn for testing.
-func SetPermissionsInstallFn(fn func(homeDir string, adapters []perminstaller.PermissionsAdapter) (perminstaller.Result, error)) (restore func()) {
+func SetPermissionsInstallFn(fn func(homeDir string, adapters []perminstaller.PermissionsAdapter, tier model.PermissionTier) (perminstaller.Result, error)) (restore func()) {
 	old := permissionsInstallFn
 	permissionsInstallFn = fn
 	return func() { permissionsInstallFn = old }

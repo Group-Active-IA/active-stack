@@ -108,7 +108,7 @@ Read the skill file at `~/.codeium/windsurf/skills/{skill-name}/SKILL.md` and fo
 
 ### Domain skills (apply phase)
 
-Before writing any code during apply, check if the project has a skill registry (`.agents/SKILLS.md` or equivalent). If it exists, read it and identify which domain skills match the change's tasks. Load ALL matching skill SKILL.md files before implementing — they contain project-specific patterns, conventions, and templates that must be followed.
+Before writing any code during apply, check if the project has a skill registry (`.atl/skill-registry.md`, `.agents/SKILLS.md`, or equivalent). If it exists, read it and identify which domain skills match the change's tasks. Load ALL matching skill SKILL.md files before implementing — they contain project-specific patterns, conventions, and templates that must be followed.
 
 ## Artifact Lifecycle
 
@@ -179,8 +179,6 @@ Before ending a session, call `mem_session_summary` with:
 - If the user asks about the old `/sdd-*` commands, explain that OPSX replaced them
 - You execute phases inline — do NOT try to delegate them to sub-agents
 - Use Plan Mode for explore/propose on Medium/Large changes, Code Mode for apply
-- Save progress to engram after every completed phase
-
 <!-- jr-stack:sdd-model-assignments -->
 ## Model Assignments
 

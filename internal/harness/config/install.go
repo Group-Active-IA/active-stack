@@ -25,29 +25,55 @@ func Install(h model.Harness, adapters []AgentAdapter, homeDir string) (Result, 
 	allAlready := true
 
 	for _, adapter := range adapters {
-		path := adapter.InstructionsPath(homeDir)
-		if path == "" {
-			// Adapter explicitly opts out of injection.
-			continue
-		}
-
-		// Compose the block for this adapter's variant.
-		composed, err := Compose(h.Toggles, adapter.VariantKey())
-		if err != nil {
-			return Result{}, fmt.Errorf("config.Install: compose for agent %q: %w", adapter.Agent(), err)
-		}
-
 		snapshotDir := filepath.Join(homeDir, ".jr-stack", "backups",
 			fmt.Sprintf("%s-%s", h.ID, adapter.Agent()))
 
-		wr, err := Inject(path, composed, snapshotDir)
-		if err != nil {
-			return Result{}, fmt.Errorf("config.Install: inject for agent %q: %w", adapter.Agent(), err)
+		var (
+			wr          InjectResult
+			writtenPath string
+		)
+
+		switch adapter.ConfigDelivery() {
+		case model.ConfigDeliveryPrimaryAgent:
+			// Register as a tab-able primary agent in the settings JSON, and
+			// clean any orchestrator section out of the instructions file so it
+			// no longer leaks into every agent.
+			settingsPath := adapter.SettingsPath(homeDir)
+			if settingsPath == "" {
+				// Adapter opts out of primary-agent injection.
+				continue
+			}
+			composed, err := Compose(h.Toggles, adapter.VariantKey())
+			if err != nil {
+				return Result{}, fmt.Errorf("config.Install: compose for agent %q: %w", adapter.Agent(), err)
+			}
+			r, err := InjectPrimaryAgent(h.ID, composed, adapter.InstructionsPath(homeDir), settingsPath, snapshotDir)
+			if err != nil {
+				return Result{}, fmt.Errorf("config.Install: primary-agent inject for agent %q: %w", adapter.Agent(), err)
+			}
+			wr, writtenPath = r, settingsPath
+
+		default:
+			// Inject the composed block into the agent's instructions file.
+			path := adapter.InstructionsPath(homeDir)
+			if path == "" {
+				// Adapter explicitly opts out of injection.
+				continue
+			}
+			composed, err := Compose(h.Toggles, adapter.VariantKey())
+			if err != nil {
+				return Result{}, fmt.Errorf("config.Install: compose for agent %q: %w", adapter.Agent(), err)
+			}
+			r, err := Inject(path, composed, snapshotDir)
+			if err != nil {
+				return Result{}, fmt.Errorf("config.Install: inject for agent %q: %w", adapter.Agent(), err)
+			}
+			wr, writtenPath = r, path
 		}
 
 		if wr.Changed {
 			allAlready = false
-			written = append(written, path)
+			written = append(written, writtenPath)
 		}
 	}
 

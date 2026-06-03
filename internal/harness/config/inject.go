@@ -19,6 +19,44 @@ var SnapshotterCreate = func(snapshotDir string, paths []string) error {
 	return err
 }
 
+// ownedSectionIDs is the registry of markdown section IDs the config installer
+// manages. It is the single source of truth for the purge policy: any
+// jr-stack-marked section found in a target file whose ID is NOT in this set is
+// treated as stale (a leftover from a previous installer layout) and removed
+// before the current block is injected.
+//
+// Why include the nested children — `sdd-delegation` and `sdd-model-assignments`
+// live inside the `sdd-orchestrator` block (toggle-controlled). They are ours,
+// so they must never be purged as standalone stale sections.
+//
+// When a new owned section is added in the future, register it here.
+var ownedSectionIDs = map[string]bool{
+	"sdd-orchestrator":      true,
+	"sdd-delegation":        true,
+	"sdd-model-assignments": true,
+}
+
+// PurgeStaleSections removes every jr-stack-marked section in content whose ID
+// is not owned by the current installer. This cleans up legacy/renamed sections
+// from older layouts (e.g. persona, engram-protocol, strict-tdd-mode) so neither
+// a re-install nor an uninstall leaves orphaned, duplicated blocks behind.
+//
+// It is the single source of truth for the stale-section policy, shared by the
+// install path (pre-injection cleanup) and the uninstall path (footprint
+// teardown). Owned sections are never touched here — on uninstall the owned
+// section is removed separately by its own marker-removal step.
+//
+// Only well-formed sections (matching open+close markers) are touched; a
+// half-written marker is ignored by filemerge.MarkedSectionIDs and left intact.
+func PurgeStaleSections(content string) string {
+	for _, id := range filemerge.MarkedSectionIDs(content) {
+		if !ownedSectionIDs[id] {
+			content = filemerge.InjectMarkdownSection(content, id, "")
+		}
+	}
+	return content
+}
+
 // InjectResult describes the outcome of a single file injection.
 type InjectResult struct {
 	// Changed is true when the file was written (new content differs from existing).
@@ -52,6 +90,11 @@ func Inject(path, composed, snapshotDir string) (InjectResult, error) {
 
 	// Read current content.
 	existing := readFileOrEmpty(path)
+
+	// Purge stale sections from older installer layouts BEFORE injecting, so a
+	// re-install does not accumulate orphaned, duplicated blocks. The backup
+	// above already snapshotted the pre-purge state.
+	existing = PurgeStaleSections(existing)
 
 	// Inject (or replace) the sdd-orchestrator section.
 	updated := filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", composed)

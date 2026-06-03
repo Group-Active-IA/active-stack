@@ -166,6 +166,11 @@ func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []
 			} else {
 				for _, a := range adapters {
 					add(a.InstructionsPath(homeDir))
+					// Primary-agent delivery also touches the settings JSON, so
+					// snapshot it too for a complete rollback point.
+					if a.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
+						add(a.SettingsPath(homeDir))
+					}
 				}
 			}
 		case model.HarnessSkill:

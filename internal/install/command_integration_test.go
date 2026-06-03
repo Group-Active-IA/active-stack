@@ -51,6 +51,9 @@ func (a integrationCommandAdapter) SettingsPath(h string) string        { return
 func (a integrationCommandAdapter) MCPConfigPath(h, s string) string    { return h + "/mcp/" + s + ".json" }
 func (a integrationCommandAdapter) MCPStrategy() external.MCPStrategy { return external.StrategySeparateFile }
 func (a integrationCommandAdapter) VariantKey() string                  { return a.variantKey }
+func (a integrationCommandAdapter) ConfigDelivery() model.ConfigDelivery {
+	return model.ConfigDeliveryInstructions
+}
 func (a integrationCommandAdapter) PathsFor(base string, t model.InstallTarget) model.AgentPaths {
 	return model.AgentPaths{
 		InstructionsPath: base + "/instr.md",

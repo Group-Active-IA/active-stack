@@ -14,15 +14,21 @@ type Selection struct {
 	// CustomHarnesses holds the harness IDs chosen in the Custom picker.
 	// Populated only when Mode == ModeCustom.
 	CustomHarnesses []string
+	// Tier is the permission tier the user chose on ScreenPermissions.
+	// Zero-value normalizes defensively to TierBalanceado (never TierBypass)
+	// both in BuildIntent and defensively in the permissions installer.
+	Tier model.PermissionTier
 }
 
 // BuildIntent converts the user's selections into an install.Intent.
 // For Lite/Full, Custom is left nil (catalog.ForMode owns the harness set).
 // For Custom, Custom is populated from CustomHarnesses.
+// The Tier is normalized to TierBalanceado if zero (never TierBypass).
 func (s Selection) BuildIntent() install.Intent {
 	intent := install.Intent{
 		Agents: s.Agents,
 		Mode:   s.Mode,
+		Tier:   s.Tier.Normalize(), // defensive: zero-value → balanceado
 	}
 	if s.Mode == model.ModeCustom {
 		intent.Custom = append([]string(nil), s.CustomHarnesses...)

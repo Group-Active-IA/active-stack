@@ -65,6 +65,29 @@ const (
 	AgentAntigravity Agent = "antigravity"
 )
 
+// ConfigDelivery is how a config-type harness materializes for a given agent.
+//
+// Why this exists: a config harness like sdd-orchestrator is the SAME content
+// for every agent, but agents disagree on WHERE it must live to take effect.
+// Claude reads a flat instructions file (CLAUDE.md); OpenCode only treats a
+// block as a tab-able "primary agent" when it is registered under the "agent"
+// key of opencode.json with "mode": "primary". Injecting the orchestrator into
+// OpenCode's AGENTS.md instead leaks it into every agent (plan/build) and
+// registers no new tab — the exact bug this type fixes.
+type ConfigDelivery int
+
+const (
+	// ConfigDeliveryInstructions injects the composed block into the agent's
+	// instructions file (e.g. ~/.claude/CLAUDE.md) via markdown markers.
+	// This is the default and the zero value.
+	ConfigDeliveryInstructions ConfigDelivery = iota
+	// ConfigDeliveryPrimaryAgent registers the composed block as a dedicated
+	// primary agent inside the agent's settings JSON (e.g. opencode.json under
+	// agent.<id> with mode:primary), so the host TUI exposes it as a tab-able
+	// agent instead of folding it into the shared instructions.
+	ConfigDeliveryPrimaryAgent
+)
+
 // Source locates a skill harness in a git repository.
 type Source struct {
 	Repo   string `yaml:"repo"`             // e.g. JuanCruzRobledo/kb-creator

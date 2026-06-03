@@ -14,6 +14,15 @@ OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The u
 2. **Delegate, don't inflate.** If work inflates your context without need → delegate it to a sub-agent via the Agent tool.
 3. **Engram persists context.** Use engram to save decisions, discoveries, and progress so they survive across sessions and compactions.
 
+## Starting Work on a Project
+
+BEFORE touching anything, determine the project's CURRENT STATE. Never start implementing on an unknown state — knowing where the project stands is step zero.
+
+1. **Does the project already have its foundation?** (an `openspec/` directory, a complete `CLAUDE.md`/`AGENTS.md`)
+   - NO, and the `jr-orchestrator` skill IS available → invoke `jr-orchestrator`. It reads the project state and triggers ONLY the missing foundation step (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction). It is idempotent at the flow level: it never re-runs what already exists.
+   - NO, and `jr-orchestrator` is NOT available (Lite installs) → set up the substrate by hand.
+2. **Foundation already in place?** → run `openspec list` and `openspec status` to locate yourself before any explore/propose/apply.
+
 <!-- jr-stack:sdd-delegation -->
 ## Delegation Rules
 
@@ -85,12 +94,12 @@ Parse `applyRequires` and `artifacts` to understand what exists and what's neede
 
 ### For each action, delegate to a sub-agent:
 
-| User intent | Skill | Model |
-|-------------|-------|-------|
-| "explore", "think about", "investigate" | `openspec-explore` | sonnet |
-| "propose", "create a change", "new feature" | `openspec-propose` | opus |
-| "implement", "apply", "write code" | `openspec-apply-change` | sonnet |
-| "archive", "close", "done with" | `openspec-archive-change` | haiku |
+| User intent | Skill |
+|-------------|-------|
+| "explore", "think about", "investigate" | `openspec-explore` |
+| "propose", "create a change", "new feature" | `openspec-propose` |
+| "implement", "apply", "write code" | `openspec-apply-change` |
+| "archive", "close", "done with" | `openspec-archive-change` |
 
 **You delegate the skill's work to a sub-agent. You don't replicate skill logic inline.**
 
@@ -131,7 +140,7 @@ Execute the `{skill-name}` skill for change "{change-name}".
 
 ## Project Standards (auto-resolved)
 {Follow the Skill Resolver Protocol to resolve and inject compact rules here.
- Read the skill registry, match skills to the change's tasks, and paste the
+ Read the skill registry (`.atl/skill-registry.md`, or `.agents/SKILLS.md` if present), match skills to the change's tasks, and paste the
  compact rules blocks for each matching skill.
  If no skill registry exists, omit this section and note it in the prompt so
  the sub-agent can self-resolve from `.agents/SKILLS.md` if available.}
@@ -151,45 +160,6 @@ Save significant decisions, discoveries, or progress to engram via mem_save with
 - project: "{project-name}"
 - topic_key: "opsx/{change-name}/{phase}"
 ```
-
-### Important delegation rules
-
-- **Explore**: delegate when user enters explore mode — it's a thinking session
-- **Propose**: ALWAYS delegate — it creates multiple artifacts (proposal, design, tasks)
-- **Apply**: ALWAYS delegate — it reads context files + writes implementation code
-- **Archive**: delegate — it reads artifacts, checks completion, moves files
-
-## Engram Integration
-
-### Session Start
-
-At the beginning of every session:
-
-1. Call `mem_context` to recover recent session history
-2. Call `mem_search(query: "opsx", project: "{project}")` to find prior OPSX work
-3. Use recovered context to brief sub-agents accurately
-
-### Proactive Saves
-
-After EVERY completed action, save to engram:
-
-```
-mem_save(
-  title: "OPSX: {action} completed for {change-name}",
-  type: "architecture",
-  project: "{project}",
-  topic_key: "opsx/{change-name}/{phase}",
-  content: "**What**: {summary}\n**Where**: {files affected}\n**Next**: {recommended next action}"
-)
-```
-
-### Session End
-
-Before ending a session, call `mem_session_summary` with:
-- Goal: what we were working on
-- Accomplished: completed items
-- Next Steps: what remains
-- Relevant Files: paths and what changed
 
 ## Artifact Lifecycle
 
@@ -235,7 +205,6 @@ openspec instructions apply --change "<name>" --json
 - NEVER do apply or propose work inline — ALWAYS delegate via Agent tool
 - If a change name is ambiguous, run `openspec list --json` and ask the user
 - If the user asks about the old `/sdd-*` commands, explain that OPSX replaced them
-- Save progress to engram after every completed phase
 
 <!-- jr-stack:sdd-model-assignments -->
 ## Model Assignments
@@ -273,15 +242,18 @@ This governance model (from the JR Stack Methodology, Stage 4) defines how much 
 3. At **MEDIUM** level: implement in steps; surface non-obvious decisions for review.
 4. At **LOW** level: proceed autonomously; report what was done in the summary.
 
-### Why This Matters
-
-Without explicit governance levels, agents treat all domains with the same autonomy — exposing high-risk components (like user dotfile injection or backup) to the same behavior as simple utility code. This model makes the risk explicit and actionable.
-
 
 ## Engram Persistent Memory — Protocol
 
 You have access to Engram, a persistent memory system that survives across sessions and compactions.
 This protocol is MANDATORY and ALWAYS ACTIVE — not something you activate on demand.
+
+### OPSX wiring (orchestrator-specific)
+
+The rest of this protocol applies as-is. This adds ONLY the OPSX-specific wiring:
+
+- **On start**: after recovering memory (`mem_context` / `mem_search "opsx"`), use that context to BRIEF your sub-agents accurately — each sub-agent starts with NO context of its own.
+- **After every completed OPSX action** (explore/propose/apply/archive): save with `topic_key: "opsx/{change-name}/{phase}"` and a title like `"OPSX: {action} completed for {change-name}"`, noting the recommended next action. This keeps each change's progress reconstructable across sessions and compactions.
 
 ### PROACTIVE SAVE TRIGGERS (mandatory — do NOT wait for user to ask)
 
@@ -363,6 +335,32 @@ If you see a compaction message or "FIRST ACTION REQUIRED":
 
 Do not skip step 1. Without it, everything done before compaction is lost from memory.
 
+### GIT SYNC — version project memory in its repo
+
+Engram can version **this project's** memory in its git repo, so it travels with the code and is recoverable on another machine or by the team. The CLI already ships the mechanism:
+
+- `engram sync` → exports NEW observations **for the project of this directory** to `.engram/chunks/*.jsonl.gz` (compressed). Filters by the `project_name` in `.engram/config.json`.
+- `engram sync --import` → imports the chunks in `.engram/` into the local DB.
+
+**Workflow (do it as part of the push, without being asked):**
+
+- **When pushing** a repo that versions `.engram/`: BEFORE `git push`, run `engram sync`, then `git add .engram` and commit the chunks (own commit `chore(engram): sync project memory`, or folded into the push commit).
+- **When cloning or `git pull`** of a repo with `.engram/`: run `engram sync --import` to recover that memory into your local DB.
+
+**⚠️ Privacy guardrail — NON-negotiable:**
+
+- **NEVER `engram sync --all`** in this flow. Engram's DB is global and cross-project — `--all` would leak EVERY project's memory into a single repo. Always use the per-directory filter (plain `engram sync`, or `--project <name>`).
+- **Before versioning `.engram/` in a PUBLIC repo**, confirm with the user: project memory becomes visible to anyone. If it is sensitive, do NOT version it.
+- `.engram/` must not be in `.gitignore` if you want to version it (check: `git check-ignore .engram`).
+
+**Optional shortcut** — a git alias that joins both steps into one command:
+
+```bash
+git config alias.sync '!f() { if [ "$1" = "--import" ]; then git pull --ff-only && engram sync --import; else engram sync && git add .engram && { git diff --cached --quiet || git commit -m "chore(engram): sync project memory"; } && git push; fi; }; f'
+```
+
+With that: `git sync` exports + commits + pushes the project memory; `git sync --import` pulls changes + imports into your local DB.
+
 
 Strict TDD Mode: enabled
 
@@ -442,10 +440,6 @@ When Strict TDD Mode is active, your return summary MUST include:
 
 ## Rules
 
-- NEVER write production code before writing its test
-- NEVER skip the GREEN execution gate — you MUST run tests and confirm they pass
-- NEVER skip triangulation when the spec defines multiple scenarios
-- NEVER write trivial assertions (tautologies, type-only checks, ghost loops)
-- ALWAYS run the Safety Net before modifying existing files
-- ALWAYS report the TDD Cycle Evidence table
-- Prefer pure functions — TDD naturally pushes you toward them
+The cycle above is binding (its GATEs, the Three Laws, the Safety Net, the Evidence table). One rule it does NOT make obvious:
+
+- NEVER write trivial assertions (tautologies, type-only checks, ghost loops) — they pass without exercising behavior.

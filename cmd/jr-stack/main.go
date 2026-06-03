@@ -24,12 +24,16 @@ import (
 )
 
 func main() {
+	// Sin argumentos (caso típico: doble-click del .exe en Windows) → lanzar el
+	// flujo interactivo. JR Stack es methodology-first para usuario final: el
+	// doble-click debe ABRIR la TUI, no imprimir un usage y cerrarse. runInstall
+	// con args vacíos resuelve a TUI == true vía ParseInstallFlags.
 	if len(os.Args) < 2 {
-		fmt.Fprintf(os.Stderr, "Usage: jr-stack <command>\n")
-		fmt.Fprintf(os.Stderr, "Commands:\n")
-		fmt.Fprintf(os.Stderr, "  install   Launch the interactive install flow\n")
-		fmt.Fprintf(os.Stderr, "  starter   Manage and apply starter packs\n")
-		os.Exit(1)
+		if err := runInstall(nil); err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+		return
 	}
 
 	switch os.Args[1] {

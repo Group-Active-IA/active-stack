@@ -68,13 +68,15 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 	}
 
 	// 5. Build the Apply steps in topological order.
+	// Normalize the tier defensively so no intent zero-value can produce bypass behavior.
+	tier := intent.Tier.Normalize()
 	applySteps := make([]pipeline.Step, 0, len(resolved.OrderedIDs))
 	for _, id := range resolved.OrderedIDs {
 		h, ok := cat.ByID(id)
 		if !ok {
 			return empty, fmt.Errorf("install: harness %q not found in catalog", id)
 		}
-		step, err := buildHarnessStep(h, adapters, opts, effectiveBase)
+		step, err := buildHarnessStep(h, adapters, opts, effectiveBase, tier)
 		if err != nil {
 			return empty, fmt.Errorf("install: build step for harness %q: %w", id, err)
 		}
@@ -408,12 +410,13 @@ func buildMCPSteps(starter *model.Starter, adapters []AgentAdapter, effectiveBas
 }
 
 // buildHarnessStep constructs the correct pipeline.Step for a single harness.
-// The "permissions" config harness is special: it uses the permissions installer.
+// The "permissions" config harness is special: it uses the permissions installer
+// and receives the permission tier from the install intent.
 //
 // effectiveBase is the resolved base directory for this install (homeDir for
 // Machine target, projectRoot for Project target). Steps store it as homeDir
 // for backward compatibility with existing step implementations.
-func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, effectiveBase string) (pipeline.Step, error) {
+func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, effectiveBase string, tier model.PermissionTier) (pipeline.Step, error) {
 	switch h.Type {
 	case model.HarnessExternal:
 		return &externalStep{
@@ -445,6 +448,7 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 				h:        h,
 				adapters: adapters,
 				homeDir:  effectiveBase,
+				tier:     tier,
 			}, nil
 		}
 		return &configStep{
@@ -477,8 +481,8 @@ type verifyStep struct {
 	fn func() error
 }
 
-func (s *verifyStep) ID() string   { return "verify-hook" }
-func (s *verifyStep) Run() error   { return s.fn() }
+func (s *verifyStep) ID() string { return "verify-hook" }
+func (s *verifyStep) Run() error { return s.fn() }
 
 // skillRunner is the interface required by skill.NewInstaller.
 type skillRunner interface {

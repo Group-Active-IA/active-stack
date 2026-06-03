@@ -8,15 +8,16 @@ package tui
 type Screen int
 
 const (
-	ScreenUnknown     Screen = iota
-	ScreenWelcome            // entry point
-	ScreenDetection          // show OS/agent detection results
-	ScreenAgents             // agent multi-select
-	ScreenMode               // Lite / Full / Custom radio
-	ScreenCustomPicker       // per-harness checkbox (Custom only)
-	ScreenReview             // show resolved plan; BuildPlan error shown here
-	ScreenInstalling         // live progress subscribed to ProgressFunc
-	ScreenComplete           // success / failure summary
+	ScreenUnknown      Screen = iota
+	ScreenWelcome             // entry point
+	ScreenDetection           // show OS/agent detection results
+	ScreenAgents              // agent multi-select
+	ScreenMode                // Lite / Full / Custom radio
+	ScreenCustomPicker        // per-harness checkbox (Custom only)
+	ScreenPermissions         // permission-tier radio: estricto / balanceado / bypass
+	ScreenReview              // show resolved plan; BuildPlan error shown here
+	ScreenInstalling          // live progress subscribed to ProgressFunc
+	ScreenComplete            // success / failure summary
 )
 
 // String returns a display label for the screen (used in tests/logs).
@@ -32,6 +33,8 @@ func (s Screen) String() string {
 		return "mode"
 	case ScreenCustomPicker:
 		return "custom-picker"
+	case ScreenPermissions:
+		return "permissions"
 	case ScreenReview:
 		return "review"
 	case ScreenInstalling:

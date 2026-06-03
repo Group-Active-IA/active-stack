@@ -3,6 +3,13 @@
 You have access to Engram, a persistent memory system that survives across sessions and compactions.
 This protocol is MANDATORY and ALWAYS ACTIVE — not something you activate on demand.
 
+### OPSX wiring (orchestrator-specific)
+
+The rest of this protocol applies as-is. This adds ONLY the OPSX-specific wiring:
+
+- **On start**: after recovering memory (`mem_context` / `mem_search "opsx"`), use that context to BRIEF your sub-agents accurately — each sub-agent starts with NO context of its own.
+- **After every completed OPSX action** (explore/propose/apply/archive): save with `topic_key: "opsx/{change-name}/{phase}"` and a title like `"OPSX: {action} completed for {change-name}"`, noting the recommended next action. This keeps each change's progress reconstructable across sessions and compactions.
+
 ### PROACTIVE SAVE TRIGGERS (mandatory — do NOT wait for user to ask)
 
 Call `mem_save` IMMEDIATELY and WITHOUT BEING ASKED after any of these:
@@ -82,3 +89,29 @@ If you see a compaction message or "FIRST ACTION REQUIRED":
 3. Only THEN continue working
 
 Do not skip step 1. Without it, everything done before compaction is lost from memory.
+
+### GIT SYNC — version project memory in its repo
+
+Engram can version **this project's** memory in its git repo, so it travels with the code and is recoverable on another machine or by the team. The CLI already ships the mechanism:
+
+- `engram sync` → exports NEW observations **for the project of this directory** to `.engram/chunks/*.jsonl.gz` (compressed). Filters by the `project_name` in `.engram/config.json`.
+- `engram sync --import` → imports the chunks in `.engram/` into the local DB.
+
+**Workflow (do it as part of the push, without being asked):**
+
+- **When pushing** a repo that versions `.engram/`: BEFORE `git push`, run `engram sync`, then `git add .engram` and commit the chunks (own commit `chore(engram): sync project memory`, or folded into the push commit).
+- **When cloning or `git pull`** of a repo with `.engram/`: run `engram sync --import` to recover that memory into your local DB.
+
+**⚠️ Privacy guardrail — NON-negotiable:**
+
+- **NEVER `engram sync --all`** in this flow. Engram's DB is global and cross-project — `--all` would leak EVERY project's memory into a single repo. Always use the per-directory filter (plain `engram sync`, or `--project <name>`).
+- **Before versioning `.engram/` in a PUBLIC repo**, confirm with the user: project memory becomes visible to anyone. If it is sensitive, do NOT version it.
+- `.engram/` must not be in `.gitignore` if you want to version it (check: `git check-ignore .engram`).
+
+**Optional shortcut** — a git alias that joins both steps into one command:
+
+```bash
+git config alias.sync '!f() { if [ "$1" = "--import" ]; then git pull --ff-only && engram sync --import; else engram sync && git add .engram && { git diff --cached --quiet || git commit -m "chore(engram): sync project memory"; } && git push; fi; }; f'
+```
+
+With that: `git sync` exports + commits + pushes the project memory; `git sync --import` pulls changes + imports into your local DB.

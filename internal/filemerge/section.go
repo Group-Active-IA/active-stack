@@ -10,6 +10,46 @@ const (
 	closePrefix  = "<!-- /jr-stack:"
 )
 
+// MarkedSectionIDs returns the distinct section IDs that have a well-formed
+// jr-stack marker pair (both an opening <!-- jr-stack:ID --> and a matching
+// closing <!-- /jr-stack:ID --> marker) in content, in first-seen order.
+//
+// Malformed markers are ignored — an opening marker with no matching close, an
+// ID containing whitespace, or a stray closing marker are never reported. This
+// keeps callers that purge by ID from ever acting on a half-written section.
+func MarkedSectionIDs(content string) []string {
+	var ids []string
+	seen := make(map[string]bool)
+
+	offset := 0
+	for {
+		rel := strings.Index(content[offset:], markerPrefix)
+		if rel < 0 {
+			break
+		}
+		idStart := offset + rel + len(markerPrefix)
+		end := strings.Index(content[idStart:], markerSuffix)
+		if end < 0 {
+			break
+		}
+		id := content[idStart : idStart+end]
+		offset = idStart + end + len(markerSuffix)
+
+		if id == "" || strings.ContainsAny(id, " \t\r\n") {
+			continue
+		}
+		if seen[id] {
+			continue
+		}
+		if strings.Contains(content, closeMarker(id)) {
+			seen[id] = true
+			ids = append(ids, id)
+		}
+	}
+
+	return ids
+}
+
 // openMarker returns the opening marker for a section ID.
 func openMarker(sectionID string) string {
 	return markerPrefix + sectionID + markerSuffix

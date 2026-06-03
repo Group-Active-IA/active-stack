@@ -12,11 +12,15 @@ type fakeAdapter struct {
 	agent    model.Agent
 	path     string
 	variant  string
+	settings string
+	delivery model.ConfigDelivery
 }
 
 func (f fakeAdapter) Agent() model.Agent              { return f.agent }
 func (f fakeAdapter) InstructionsPath(homeDir string) string { return f.path }
 func (f fakeAdapter) VariantKey() string               { return f.variant }
+func (f fakeAdapter) SettingsPath(homeDir string) string     { return f.settings }
+func (f fakeAdapter) ConfigDelivery() model.ConfigDelivery   { return f.delivery }
 
 // Compile-time check: fakeAdapter implements AgentAdapter.
 var _ config.AgentAdapter = fakeAdapter{}

@@ -14,6 +14,15 @@ OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The u
 2. **Delegate, don't inflate.** If work inflates your context without need → delegate it to a sub-agent via the Agent tool.
 3. **Engram persists context.** Use engram to save decisions, discoveries, and progress so they survive across sessions and compactions.
 
+## Starting Work on a Project
+
+BEFORE touching anything, determine the project's CURRENT STATE. Never start implementing on an unknown state — knowing where the project stands is step zero.
+
+1. **Does the project already have its foundation?** (an `openspec/` directory, a complete `CLAUDE.md`/`AGENTS.md`)
+   - NO, and the `jr-orchestrator` skill IS available → invoke `jr-orchestrator`. It reads the project state and triggers ONLY the missing foundation step (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction). It is idempotent at the flow level: it never re-runs what already exists.
+   - NO, and `jr-orchestrator` is NOT available (Lite installs) → set up the substrate by hand.
+2. **Foundation already in place?** → run `openspec list` and `openspec status` to locate yourself before any explore/propose/apply.
+
 <!-- jr-stack:sdd-delegation -->
 ## Delegation Rules
 
@@ -85,12 +94,12 @@ Parse `applyRequires` and `artifacts` to understand what exists and what's neede
 
 ### For each action, delegate to a sub-agent:
 
-| User intent | Skill | Model |
-|-------------|-------|-------|
-| "explore", "think about", "investigate" | `openspec-explore` | sonnet |
-| "propose", "create a change", "new feature" | `openspec-propose` | opus |
-| "implement", "apply", "write code" | `openspec-apply-change` | sonnet |
-| "archive", "close", "done with" | `openspec-archive-change` | haiku |
+| User intent | Skill |
+|-------------|-------|
+| "explore", "think about", "investigate" | `openspec-explore` |
+| "propose", "create a change", "new feature" | `openspec-propose` |
+| "implement", "apply", "write code" | `openspec-apply-change` |
+| "archive", "close", "done with" | `openspec-archive-change` |
 
 **You delegate the skill's work to a sub-agent. You don't replicate skill logic inline.**
 
@@ -114,45 +123,6 @@ Each sub-agent starts with NO context. You must brief it completely:
 2. **Context**: Relevant artifact file paths (from `openspec status`), NOT content — the sub-agent reads them
 3. **Project info**: Tech stack, conventions (from `openspec/config.yaml` or engram)
 4. **Engram instruction**: Tell the sub-agent to save progress to engram
-
-### Important delegation rules
-
-- **Explore**: delegate when user enters explore mode — it's a thinking session
-- **Propose**: ALWAYS delegate — it creates multiple artifacts (proposal, design, tasks)
-- **Apply**: ALWAYS delegate — it reads context files + writes implementation code
-- **Archive**: delegate — it reads artifacts, checks completion, moves files
-
-## Engram Integration
-
-### Session Start
-
-At the beginning of every session:
-
-1. Call `mem_context` to recover recent session history
-2. Call `mem_search(query: "opsx", project: "{project}")` to find prior OPSX work
-3. Use recovered context to brief sub-agents accurately
-
-### Proactive Saves
-
-After EVERY completed action, save to engram:
-
-```
-mem_save(
-  title: "OPSX: {action} completed for {change-name}",
-  type: "architecture",
-  project: "{project}",
-  topic_key: "opsx/{change-name}/{phase}",
-  content: "**What**: {summary}\n**Where**: {files affected}\n**Next**: {recommended next action}"
-)
-```
-
-### Session End
-
-Before ending a session, call `mem_session_summary` with:
-- Goal: what we were working on
-- Accomplished: completed items
-- Next Steps: what remains
-- Relevant Files: paths and what changed
 
 ## Artifact Lifecycle
 
@@ -189,8 +159,6 @@ openspec instructions apply --change "<name>" --json
 - NEVER do apply or propose work inline — ALWAYS delegate via Agent tool
 - If a change name is ambiguous, run `openspec list --json` and ask the user
 - If the user asks about the old `/sdd-*` commands, explain that OPSX replaced them
-- Save progress to engram after every completed phase
-
 <!-- jr-stack:sdd-model-assignments -->
 ## Model Assignments
 

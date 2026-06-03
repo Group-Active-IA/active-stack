@@ -14,15 +14,18 @@ type fakeAdapter struct {
 	agent model.Agent
 }
 
-func (f fakeAdapter) Agent() model.Agent                                              { return f.agent }
-func (f fakeAdapter) InstructionsPath(_ string) string                                { return "" }
-func (f fakeAdapter) SkillsDir(_ string) string                                       { return "" }
-func (f fakeAdapter) CommandsDir(_ string) string                                     { return "" }
-func (f fakeAdapter) SettingsPath(_ string) string                                    { return "" }
-func (f fakeAdapter) MCPConfigPath(_, _ string) string                                { return "" }
-func (f fakeAdapter) MCPStrategy() external.MCPStrategy                               { return external.StrategySeparateFile }
-func (f fakeAdapter) VariantKey() string                                              { return string(f.agent) }
-func (f fakeAdapter) PathsFor(_ string, _ model.InstallTarget) model.AgentPaths      { return model.AgentPaths{} }
+func (f fakeAdapter) Agent() model.Agent                { return f.agent }
+func (f fakeAdapter) InstructionsPath(_ string) string  { return "" }
+func (f fakeAdapter) SkillsDir(_ string) string         { return "" }
+func (f fakeAdapter) CommandsDir(_ string) string       { return "" }
+func (f fakeAdapter) SettingsPath(_ string) string      { return "" }
+func (f fakeAdapter) MCPConfigPath(_, _ string) string  { return "" }
+func (f fakeAdapter) MCPStrategy() external.MCPStrategy { return external.StrategySeparateFile }
+func (f fakeAdapter) VariantKey() string                { return string(f.agent) }
+func (f fakeAdapter) PathsFor(_ string, _ model.InstallTarget) model.AgentPaths {
+	return model.AgentPaths{}
+}
+func (f fakeAdapter) ConfigDelivery() model.ConfigDelivery { return model.ConfigDeliveryInstructions }
 
 // Compile-time check: fakeAdapter satisfies agents.Adapter.
 var _ agents.Adapter = fakeAdapter{}

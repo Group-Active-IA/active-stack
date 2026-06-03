@@ -104,3 +104,11 @@ func (a *Adapter) PathsFor(base string, t model.InstallTarget) model.AgentPaths 
 		return filepath.Join(openCodeDir, "opencode.json")
 	}).WithMCPStrategy(model.MCPStrategyMergeIntoSettings)
 }
+
+// ConfigDelivery returns model.ConfigDeliveryPrimaryAgent — OpenCode only treats
+// a block as a tab-able agent when it is registered under agent.<id> with
+// mode:primary in opencode.json. Injecting into the shared AGENTS.md instead
+// leaks the orchestrator into every agent (plan/build) and registers no tab.
+func (a *Adapter) ConfigDelivery() model.ConfigDelivery {
+	return model.ConfigDeliveryPrimaryAgent
+}

@@ -158,6 +158,69 @@ func TestCheckForConfigHarness_Pass(t *testing.T) {
 	}
 }
 
+// TestCheckForConfigHarness_PrimaryAgent_Pass verifies that for an agent that
+// delivers config as a primary agent (OpenCode), the health check looks in the
+// settings JSON for agent.<id> with mode:primary — NOT the AGENTS.md marker,
+// which is intentionally absent in this delivery mode.
+func TestCheckForConfigHarness_PrimaryAgent_Pass(t *testing.T) {
+	homeDir := t.TempDir()
+	fa := fakeAdapter{
+		agent:            model.AgentOpenCode,
+		instructionsPath: filepath.Join(homeDir, "AGENTS.md"), // intentionally has no marker
+		settingsPath:     filepath.Join(homeDir, "opencode.json"),
+		delivery:         model.ConfigDeliveryPrimaryAgent,
+	}
+
+	h := model.Harness{ID: "sdd-orchestrator", Type: model.HarnessConfig}
+
+	settings := `{"agent":{"sdd-orchestrator":{"mode":"primary","prompt":"x"},"build":{"mode":"primary"}}}`
+	if err := os.WriteFile(fa.SettingsPath(homeDir), []byte(settings), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	checks := verify.ChecksForHarness(h, []verify.Adapter{fa}, homeDir)
+	results := runChecks(t, checks)
+	if len(results) == 0 {
+		t.Fatal("expected at least one check")
+	}
+	for _, r := range results {
+		if r.Status != verify.CheckStatusPassed {
+			t.Errorf("check %q: status = %q, error = %q, want passed", r.ID, r.Status, r.Error)
+		}
+	}
+}
+
+// TestCheckForConfigHarness_PrimaryAgent_FailAbsent verifies the check fails
+// when the primary agent entry is missing from the settings JSON.
+func TestCheckForConfigHarness_PrimaryAgent_FailAbsent(t *testing.T) {
+	homeDir := t.TempDir()
+	fa := fakeAdapter{
+		agent:            model.AgentOpenCode,
+		instructionsPath: filepath.Join(homeDir, "AGENTS.md"),
+		settingsPath:     filepath.Join(homeDir, "opencode.json"),
+		delivery:         model.ConfigDeliveryPrimaryAgent,
+	}
+
+	h := model.Harness{ID: "sdd-orchestrator", Type: model.HarnessConfig}
+
+	// Settings exist but only have an unrelated agent — orchestrator absent.
+	if err := os.WriteFile(fa.SettingsPath(homeDir), []byte(`{"agent":{"build":{"mode":"primary"}}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	checks := verify.ChecksForHarness(h, []verify.Adapter{fa}, homeDir)
+	results := runChecks(t, checks)
+	anyFailed := false
+	for _, r := range results {
+		if r.Status == verify.CheckStatusFailed {
+			anyFailed = true
+		}
+	}
+	if !anyFailed {
+		t.Error("expected failure when primary-agent entry is absent")
+	}
+}
+
 func TestCheckForConfigHarness_FailMarkerAbsent(t *testing.T) {
 	homeDir := t.TempDir()
 	fa := newFakeAdapter(t, homeDir, model.AgentClaude)

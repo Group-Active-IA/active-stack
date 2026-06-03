@@ -29,4 +29,9 @@ type Adapter interface {
 	// MCPConfigPath returns the path where an MCP server config was written.
 	// serverName is the harness ID (e.g. "context7", "engram").
 	MCPConfigPath(homeDir, serverName string) string
+
+	// ConfigDelivery reports how a config-type harness materializes for this
+	// agent, so the health check looks in the right place: the marker in the
+	// instructions file, or the primary-agent entry in the settings JSON.
+	ConfigDelivery() model.ConfigDelivery
 }

@@ -303,6 +303,7 @@ func TestPermissionsStepCallsPermissionsInstaller(t *testing.T) {
 	restore := install.SetPermissionsInstallFn(func(
 		homeDir string,
 		_ []perminstaller.PermissionsAdapter,
+		_ model.PermissionTier,
 	) (perminstaller.Result, error) {
 		called = true
 		gotHomeDir = homeDir
@@ -353,6 +354,7 @@ func TestPermissionsStepPathResolvedViaAdapter(t *testing.T) {
 	restore := install.SetPermissionsInstallFn(func(
 		homeDir string,
 		adapters []perminstaller.PermissionsAdapter,
+		_ model.PermissionTier,
 	) (perminstaller.Result, error) {
 		if len(adapters) > 0 {
 			gotSettingsPath = adapters[0].SettingsPath(homeDir)

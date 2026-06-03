@@ -16,6 +16,15 @@ type AgentAdapter interface {
 	// (e.g. "claude", "codex", "generic").
 	// If no asset directory matches the key, the installer falls back to "generic".
 	VariantKey() string
+	// SettingsPath returns the path to the agent's settings JSON file
+	// (e.g. ~/.config/opencode/opencode.json). Used only when ConfigDelivery
+	// is ConfigDeliveryPrimaryAgent. An empty string means the agent has no
+	// settings file and primary-agent delivery is skipped.
+	SettingsPath(homeDir string) string
+	// ConfigDelivery reports how this agent expects a config-type harness to
+	// materialize: injected into the instructions file (default) or registered
+	// as a primary agent in the settings JSON.
+	ConfigDelivery() model.ConfigDelivery
 }
 
 // Result describes the outcome of a config harness installation.

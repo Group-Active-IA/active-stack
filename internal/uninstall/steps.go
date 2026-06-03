@@ -1,12 +1,14 @@
 package uninstall
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
 	"github.com/JuanCruzRobledo/jr-stack/internal/filemerge"
+	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
 	"github.com/JuanCruzRobledo/jr-stack/internal/model"
 )
 
@@ -60,6 +62,79 @@ var markerRemovalFn = func(path, sectionID string) error {
 	return err
 }
 
+// stalePurgeFn removes every jr-stack-marked section the current installer no
+// longer owns (legacy/renamed sections from older layouts: persona,
+// engram-protocol, strict-tdd-mode, …). It mirrors the install-time cleanup so
+// uninstall leaves no orphaned blocks behind, and reuses config.PurgeStaleSections
+// as the single source of truth for the owned/stale policy.
+//
+// It is a package-level variable so tests can swap it out.
+var stalePurgeFn = func(path string) error {
+	existing, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// File doesn't exist — nothing to purge; no-op.
+			return nil
+		}
+		return fmt.Errorf("read instructions file %q: %w", path, err)
+	}
+	updated := config.PurgeStaleSections(string(existing))
+	if updated == string(existing) {
+		// No stale sections present; no-op.
+		return nil
+	}
+	_, err = filemerge.WriteFileAtomic(path, []byte(updated), 0o644)
+	return err
+}
+
+// primaryAgentRemovalFn removes the agent.<id> entry from a settings JSON file
+// (e.g. opencode.json), preserving all other user config. It is the mirror of
+// the install-time primary-agent registration. No-op when the file is missing,
+// malformed, or already has no such entry. It is a package-level variable so
+// tests can inject a fake.
+var primaryAgentRemovalFn = func(settingsPath, agentID string) error {
+	if settingsPath == "" {
+		return nil
+	}
+	raw, err := os.ReadFile(settingsPath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return nil
+		}
+		return fmt.Errorf("read settings file %q: %w", settingsPath, err)
+	}
+
+	var root map[string]any
+	if err := json.Unmarshal(raw, &root); err != nil {
+		// Malformed settings — leave it untouched rather than risk clobbering
+		// the user's file. Restore-from-snapshot remains the safety net.
+		return nil
+	}
+
+	agentSection, ok := root["agent"].(map[string]any)
+	if !ok {
+		return nil // nothing to remove
+	}
+	if _, present := agentSection[agentID]; !present {
+		return nil // no-op
+	}
+	delete(agentSection, agentID)
+	// Drop the agent object entirely if it is now empty, leaving no footprint.
+	if len(agentSection) == 0 {
+		delete(root, "agent")
+	}
+
+	encoded, err := json.MarshalIndent(root, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal settings %q: %w", settingsPath, err)
+	}
+	encoded = append(encoded, '\n')
+	if _, err := filemerge.WriteFileAtomic(settingsPath, encoded, 0o644); err != nil {
+		return fmt.Errorf("write settings %q: %w", settingsPath, err)
+	}
+	return nil
+}
+
 type markerRemovalStep struct {
 	h        model.Harness
 	adapters []AgentAdapter
@@ -73,8 +148,21 @@ func (s *markerRemovalStep) setManifest(m *backup.Manifest) { s.manifest = m }
 func (s *markerRemovalStep) Run() error {
 	for _, a := range s.adapters {
 		path := a.InstructionsPath(s.homeDir)
+		// Remove this harness's own section first…
 		if err := markerRemovalFn(path, s.h.ID); err != nil {
 			return fmt.Errorf("marker removal for harness %q on agent %q: %w", s.h.ID, a.Agent(), err)
+		}
+		// …then purge any legacy jr-stack sections from older layouts so the
+		// uninstall leaves no orphaned blocks behind.
+		if err := stalePurgeFn(path); err != nil {
+			return fmt.Errorf("stale section purge for harness %q on agent %q: %w", s.h.ID, a.Agent(), err)
+		}
+		// Primary-agent delivery lives in the settings JSON, not the markdown
+		// instructions file — remove it there too.
+		if a.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
+			if err := primaryAgentRemovalFn(a.SettingsPath(s.homeDir), s.h.ID); err != nil {
+				return fmt.Errorf("primary-agent removal for harness %q on agent %q: %w", s.h.ID, a.Agent(), err)
+			}
 		}
 	}
 	return nil

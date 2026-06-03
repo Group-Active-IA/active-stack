@@ -57,14 +57,18 @@ type fakeExecAdapter struct {
 	agent model.Agent
 }
 
-func (a fakeExecAdapter) Agent() model.Agent                              { return a.agent }
-func (a fakeExecAdapter) InstructionsPath(homeDir string) string          { return homeDir + "/CLAUDE.md" }
-func (a fakeExecAdapter) SkillsDir(homeDir string) string                 { return homeDir + "/skills" }
-func (a fakeExecAdapter) CommandsDir(homeDir string) string               { return homeDir + "/commands" }
-func (a fakeExecAdapter) SettingsPath(homeDir string) string              { return homeDir + "/settings.json" }
-func (a fakeExecAdapter) MCPConfigPath(homeDir, s string) string          { return homeDir + "/mcp/" + s + ".json" }
-func (a fakeExecAdapter) MCPStrategy() extinstaller.MCPStrategy           { return extinstaller.StrategySeparateFile }
-func (a fakeExecAdapter) VariantKey() string                              { return string(a.agent) }
+func (a fakeExecAdapter) Agent() model.Agent                     { return a.agent }
+func (a fakeExecAdapter) InstructionsPath(homeDir string) string { return homeDir + "/CLAUDE.md" }
+func (a fakeExecAdapter) SkillsDir(homeDir string) string        { return homeDir + "/skills" }
+func (a fakeExecAdapter) CommandsDir(homeDir string) string      { return homeDir + "/commands" }
+func (a fakeExecAdapter) SettingsPath(homeDir string) string     { return homeDir + "/settings.json" }
+func (a fakeExecAdapter) MCPConfigPath(homeDir, s string) string {
+	return homeDir + "/mcp/" + s + ".json"
+}
+func (a fakeExecAdapter) MCPStrategy() extinstaller.MCPStrategy {
+	return extinstaller.StrategySeparateFile
+}
+func (a fakeExecAdapter) VariantKey() string { return string(a.agent) }
 func (a fakeExecAdapter) PathsFor(base string, _ model.InstallTarget) model.AgentPaths {
 	return model.AgentPaths{
 		InstructionsPath: base + "/CLAUDE.md",
@@ -72,6 +76,9 @@ func (a fakeExecAdapter) PathsFor(base string, _ model.InstallTarget) model.Agen
 		SettingsPath:     base + "/settings.json",
 		CommandsDir:      base + "/commands",
 	}.WithMCPConfigFn(func(s string) string { return base + "/mcp/" + s + ".json" })
+}
+func (a fakeExecAdapter) ConfigDelivery() model.ConfigDelivery {
+	return model.ConfigDeliveryInstructions
 }
 
 // fakeExecRegistry maps one agent.
@@ -101,9 +108,9 @@ func TestHeadlessExecutorDryRun(t *testing.T) {
 	}}
 
 	params := headless.ParsedFlags{
-		TUI:  false,
-		DryRun: true,
-		Yes:  true,
+		TUI:     false,
+		DryRun:  true,
+		Yes:     true,
 		HomeDir: t.TempDir(),
 		Intent: install.Intent{
 			Agents: []model.Agent{model.AgentClaude},
@@ -416,9 +423,9 @@ func TestHeadlessExecutorDryRunNoPipelineExecution(t *testing.T) {
 	defer restoreExt()
 
 	params := headless.ParsedFlags{
-		TUI:    false,
-		DryRun: true,
-		Yes:    true,
+		TUI:     false,
+		DryRun:  true,
+		Yes:     true,
 		HomeDir: homeDir,
 		Intent: install.Intent{
 			Agents: []model.Agent{model.AgentClaude},

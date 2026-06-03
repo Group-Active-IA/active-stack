@@ -55,4 +55,9 @@ type Adapter interface {
 	// The per-agent layout difference lives inside the adapter implementation,
 	// never in the caller. This is the single target-aware resolver added by C-27.
 	PathsFor(base string, t model.InstallTarget) model.AgentPaths
+
+	// ConfigDelivery reports how a config-type harness materializes for this
+	// agent: injected into the instructions file (default) or registered as a
+	// primary agent in the settings JSON.
+	ConfigDelivery() model.ConfigDelivery
 }

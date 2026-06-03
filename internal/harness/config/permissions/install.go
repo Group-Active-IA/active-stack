@@ -44,18 +44,24 @@ var osReadFile = func(path string) ([]byte, error) {
 //
 // For each adapter:
 //  1. Resolve the settings file path via adapter.SettingsPath(homeDir).
-//  2. Determine the overlay for the agent. If nil → skip without error (no-op).
+//  2. Determine the overlay for the agent and tier. If nil → skip without error (no-op).
 //  3. If the settings file exists → create a backup snapshot FIRST.
 //     If the backup fails → abort; the settings file is NOT touched.
 //  4. Merge the overlay into the existing settings (idempotent deep-merge).
 //  5. Write atomically; skip if byte-identical (WriteFileAtomic).
 //
+// The tier controls which permission level is composed. A zero-value tier
+// normalizes defensively to TierBalanceado — NEVER TierBypass.
+//
 // Governance: ALTO. The backup is mandatory and cannot be disabled.
-func Install(homeDir string, adapters []PermissionsAdapter) (Result, error) {
+func Install(homeDir string, adapters []PermissionsAdapter, tier model.PermissionTier) (Result, error) {
+	// Defensive normalization: never let a zero-value produce bypass behavior.
+	tier = tier.Normalize()
+
 	var result Result
 
 	for _, adapter := range adapters {
-		changed, path, err := installOne(homeDir, adapter)
+		changed, path, err := installOne(homeDir, adapter, tier)
 		if err != nil {
 			return Result{}, err
 		}
@@ -68,14 +74,14 @@ func Install(homeDir string, adapters []PermissionsAdapter) (Result, error) {
 	return result, nil
 }
 
-func installOne(homeDir string, adapter PermissionsAdapter) (changed bool, path string, err error) {
+func installOne(homeDir string, adapter PermissionsAdapter, tier model.PermissionTier) (changed bool, path string, err error) {
 	settingsPath := adapter.SettingsPath(homeDir)
 	if settingsPath == "" {
 		// Explicit no-op: agent has no injectable settings path.
 		return false, "", nil
 	}
 
-	overlay := agentOverlay(adapter.Agent())
+	overlay := agentOverlay(adapter.Agent(), tier)
 	if overlay == nil {
 		// Explicit no-op: agent does not support settings.json permission injection.
 		return false, "", nil

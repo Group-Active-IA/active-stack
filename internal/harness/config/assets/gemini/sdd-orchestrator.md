@@ -166,8 +166,6 @@ Before ending a session, call `mem_session_summary` with:
 - If a change name is ambiguous, run `openspec list --json` and ask the user
 - Load the appropriate skill for each action — don't replicate skill logic inline
 - If the user asks about the old `/sdd-*` commands, explain that OPSX replaced them
-- Save progress to engram after every completed phase
-
 <!-- jr-stack:sdd-model-assignments -->
 ## Model Assignments
 

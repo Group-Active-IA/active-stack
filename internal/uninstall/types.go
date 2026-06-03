@@ -50,6 +50,7 @@ type AgentAdapter interface {
 	InstructionsPath(homeDir string) string
 	SkillsDir(homeDir string) string
 	SettingsPath(homeDir string) string
+	ConfigDelivery() model.ConfigDelivery
 }
 
 // Registry maps agents to their adapters. It is satisfied by *agents.Registry.

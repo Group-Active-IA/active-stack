@@ -48,14 +48,16 @@ func (f *fakeCatalog) ForAgent(a model.Agent) []model.Harness {
 // ─────────────────────────────────────────────────────────────────
 
 type fakeAdapter struct {
-	agent   model.Agent
-	homeDir string
+	agent    model.Agent
+	homeDir  string
+	delivery model.ConfigDelivery
 }
 
 func (a fakeAdapter) Agent() model.Agent                     { return a.agent }
 func (a fakeAdapter) InstructionsPath(homeDir string) string { return homeDir + "/instr.md" }
 func (a fakeAdapter) SkillsDir(homeDir string) string        { return homeDir + "/skills" }
 func (a fakeAdapter) SettingsPath(homeDir string) string     { return homeDir + "/settings.json" }
+func (a fakeAdapter) ConfigDelivery() model.ConfigDelivery   { return a.delivery }
 
 // fakeAdapterCustomPath allows overriding individual paths for path-resolution tests.
 type fakeAdapterCustomPath struct {
@@ -63,9 +65,11 @@ type fakeAdapterCustomPath struct {
 	instructionsPath string
 	skillsDir        string
 	settingsPath     string
+	delivery         model.ConfigDelivery
 }
 
-func (a fakeAdapterCustomPath) Agent() model.Agent { return a.agent }
+func (a fakeAdapterCustomPath) Agent() model.Agent                   { return a.agent }
+func (a fakeAdapterCustomPath) ConfigDelivery() model.ConfigDelivery { return a.delivery }
 func (a fakeAdapterCustomPath) InstructionsPath(homeDir string) string {
 	if a.instructionsPath != "" {
 		return a.instructionsPath

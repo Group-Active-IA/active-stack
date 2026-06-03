@@ -15,6 +15,7 @@ type fakeAdapter struct {
 	instructionsPath string
 	settingsPath    string
 	mcpConfigPath   string
+	delivery        model.ConfigDelivery
 }
 
 func (a fakeAdapter) Agent() model.Agent                              { return a.agent }
@@ -22,6 +23,7 @@ func (a fakeAdapter) SkillsDir(homeDir string) string                 { return a
 func (a fakeAdapter) InstructionsPath(homeDir string) string          { return a.instructionsPath }
 func (a fakeAdapter) SettingsPath(homeDir string) string              { return a.settingsPath }
 func (a fakeAdapter) MCPConfigPath(homeDir, serverName string) string { return a.mcpConfigPath }
+func (a fakeAdapter) ConfigDelivery() model.ConfigDelivery            { return a.delivery }
 
 // TestAdapterInterfaceIsSatisfiedByFake verifies that a zero-import fake struct
 // satisfies verify.Adapter by structural typing (compile-time check).

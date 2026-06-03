@@ -31,6 +31,9 @@ func (a starterAddTestAdapter) MCPStrategy() extinstaller.MCPStrategy {
 	return extinstaller.StrategySeparateFile
 }
 func (a starterAddTestAdapter) VariantKey() string               { return string(a.agent) }
+func (a starterAddTestAdapter) ConfigDelivery() model.ConfigDelivery {
+	return model.ConfigDeliveryInstructions
+}
 func (a starterAddTestAdapter) PathsFor(base string, _ model.InstallTarget) model.AgentPaths {
 	return model.AgentPaths{
 		InstructionsPath: base + "/CLAUDE.md",

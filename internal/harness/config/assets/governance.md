@@ -17,7 +17,3 @@ This governance model (from the JR Stack Methodology, Stage 4) defines how much 
 2. At **HIGH** or **CRITICAL** level: describe the planned change and wait for user confirmation before writing.
 3. At **MEDIUM** level: implement in steps; surface non-obvious decisions for review.
 4. At **LOW** level: proceed autonomously; report what was done in the summary.
-
-### Why This Matters
-
-Without explicit governance levels, agents treat all domains with the same autonomy — exposing high-risk components (like user dotfile injection or backup) to the same behavior as simple utility code. This model makes the risk explicit and actionable.

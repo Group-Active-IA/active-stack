@@ -1,0 +1,22 @@
+# Normalización de fin de línea (cross-platform: Windows/macOS/Linux/WSL/Termux).
+# Por defecto: tratar como texto y checkout en LF, así git autocrlf no rompe
+# tests de comparación byte-a-byte (p.ej. los golden de compose).
+* text=auto eol=lf
+
+# Fuente y fixtures: SIEMPRE LF.
+*.go      text eol=lf
+*.golden  text eol=lf
+*.md      text eol=lf
+*.yaml    text eol=lf
+*.yml     text eol=lf
+*.json    text eol=lf
+*.sh      text eol=lf
+
+# Scripts batch de Windows: CRLF (lo requiere cmd.exe).
+*.bat     text eol=crlf
+
+# Binarios: que git no toque su contenido.
+*.exe     binary
+*.dll     binary
+*.so      binary
+*.dylib   binary

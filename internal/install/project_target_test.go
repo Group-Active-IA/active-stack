@@ -35,6 +35,9 @@ func (a projectAdapter) MCPConfigPath(homeDir, serverName string) string {
 }
 func (a projectAdapter) MCPStrategy() external.MCPStrategy { return external.StrategySeparateFile }
 func (a projectAdapter) VariantKey() string                { return string(a.agent) }
+func (a projectAdapter) ConfigDelivery() model.ConfigDelivery {
+	return model.ConfigDeliveryInstructions
+}
 func (a projectAdapter) PathsFor(base string, t model.InstallTarget) model.AgentPaths {
 	// Claude: same .claude/ layout for both machine and project.
 	dir := filepath.Join(base, ".claude")

@@ -65,6 +65,24 @@ type stepRow struct {
 	err    error
 }
 
+// modeOrder is the single source of truth for the order in which install modes
+// are presented on ScreenMode. ScreenMode (key handling and render) reads this
+// slice so the order can never drift between the two.
+var modeOrder = []model.InstallMode{model.ModeLite, model.ModeFull, model.ModeCustom}
+
+// defaultModeCursor returns the index into modeOrder of the mode pre-selected
+// when the user reaches ScreenMode. Full is the recommended baseline (sustrato
+// + fundación guiada), so the radio starts on it. Computed from modeOrder so a
+// reorder of the modes cannot leave a stale hardcoded index behind.
+func defaultModeCursor() int {
+	for i, mode := range modeOrder {
+		if mode == model.ModeFull {
+			return i
+		}
+	}
+	return 0
+}
+
 // newModel creates a Model with the provided dependencies.
 func newModel(deps ModelDeps) Model {
 	if deps.BuildPlanFn == nil {
@@ -107,6 +125,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 // handleKey routes keyboard events to the active screen.
 func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
+	// Normalización cross-platform de la barra espaciadora. En Windows el driver
+	// de consola de bubbletea (key_windows.go: VK_SPACE → KeyRunes) entrega el
+	// espacio como KeyRunes con rune ' ', mientras que en unix el parser ANSI lo
+	// entrega como KeySpace. Sin esta normalización, en Windows el espacio cae en
+	// el case de navegación (tea.KeyUp, tea.KeyRunes) de ScreenAgents, que lo
+	// descarta, y el case tea.KeySpace queda inalcanzable: el toggle nunca
+	// dispara (y de paso el Enter queda bloqueado por el guard de selección).
+	// Unificamos a KeySpace para que cada pantalla maneje el espacio igual en
+	// ambas plataformas.
+	if key.Type == tea.KeyRunes && len(key.Runes) == 1 && key.Runes[0] == ' ' {
+		key.Type = tea.KeySpace
+		key.Runes = nil
+	}
+
 	switch m.Screen {
 
 	case ScreenWelcome:
@@ -148,7 +180,7 @@ func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 				break
 			}
 			m.Screen = ScreenMode
-			m.Cursor = 0
+			m.Cursor = defaultModeCursor() // Full por defecto
 		case tea.KeyEsc:
 			if s, ok := prevScreen(m.Screen); ok {
 				m.Screen = s
@@ -157,7 +189,7 @@ func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 		}
 
 	case ScreenMode:
-		modes := []model.InstallMode{model.ModeLite, model.ModeFull, model.ModeCustom}
+		modes := modeOrder
 		switch key.Type {
 		case tea.KeyUp:
 			if m.Cursor > 0 {
@@ -185,7 +217,11 @@ func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 				m.Screen = ScreenCustomPicker
 				m.Cursor = 0
 			} else {
-				// Lite/Full skip custom picker.
+				// Lite/Full: show ScreenPermissions if at least one tier-capable agent is selected.
+				// D8: if no tier-capable agent, skip directly to review.
+				if anyTierCapable(m.Selection.Agents) {
+					return m.enterPermissions(), nil
+				}
 				return m.enterReview()
 			}
 		case tea.KeyEsc:
@@ -215,11 +251,18 @@ func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 				}
 			}
 		case tea.KeyEnter:
+			// D8: only show ScreenPermissions when at least one tier-capable agent is selected.
+			if anyTierCapable(m.Selection.Agents) {
+				return m.enterPermissions(), nil
+			}
 			return m.enterReview()
 		case tea.KeyEsc:
 			m.Screen = ScreenMode
-			m.Cursor = 0
+			m.Cursor = defaultModeCursor() // Full por defecto al volver al modo
 		}
+
+	case ScreenPermissions:
+		return m.handlePermissionsKey(key)
 
 	case ScreenReview:
 		switch key.Type {
@@ -229,12 +272,18 @@ func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			}
 			return m.startInstall()
 		case tea.KeyEsc:
-			if m.Selection.Mode == model.ModeCustom {
+			// Go back: if tier-capable agents were selected, go back to ScreenPermissions.
+			// Otherwise go back to ScreenCustomPicker (Custom) or ScreenMode (Lite/Full).
+			if anyTierCapable(m.Selection.Agents) {
+				m.Screen = ScreenPermissions
+				m.Cursor = defaultTierCursor()
+			} else if m.Selection.Mode == model.ModeCustom {
 				m.Screen = ScreenCustomPicker
+				m.Cursor = 0
 			} else {
 				m.Screen = ScreenMode
+				m.Cursor = defaultModeCursor()
 			}
-			m.Cursor = 0
 		}
 
 	case ScreenComplete:
@@ -353,6 +402,8 @@ func (m Model) View() string {
 		return m.viewMode()
 	case ScreenCustomPicker:
 		return m.viewCustomPicker()
+	case ScreenPermissions:
+		return m.viewPermissions()
 	case ScreenReview:
 		return m.viewReview()
 	case ScreenInstalling:
@@ -405,7 +456,7 @@ func (m Model) viewAgents() string {
 }
 
 func (m Model) viewMode() string {
-	modes := []model.InstallMode{model.ModeLite, model.ModeFull, model.ModeCustom}
+	modes := modeOrder
 	var sb strings.Builder
 	sb.WriteString(titleStyle.Render("Choose install mode") + "\n\n")
 	for i, mode := range modes {

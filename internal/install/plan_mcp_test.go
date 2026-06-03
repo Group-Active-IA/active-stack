@@ -43,6 +43,9 @@ func (a mcpProjectAdapter) MCPConfigPath(homeDir, serverName string) string {
 // MCPStrategy returns the legacy machine strategy (unchanged).
 func (a mcpProjectAdapter) MCPStrategy() external.MCPStrategy { return external.StrategySeparateFile }
 func (a mcpProjectAdapter) VariantKey() string                { return string(a.agent) }
+func (a mcpProjectAdapter) ConfigDelivery() model.ConfigDelivery {
+	return model.ConfigDeliveryInstructions
+}
 func (a mcpProjectAdapter) PathsFor(base string, t model.InstallTarget) model.AgentPaths {
 	switch t {
 	case model.Project:
@@ -77,6 +80,9 @@ func (a mcpOpenCodeAdapter) SettingsPath(homeDir string) string              { r
 func (a mcpOpenCodeAdapter) MCPConfigPath(homeDir, _ string) string          { return filepath.Join(homeDir, ".opencode", "opencode.json") }
 func (a mcpOpenCodeAdapter) MCPStrategy() external.MCPStrategy                { return external.StrategyMergeIntoSettings }
 func (a mcpOpenCodeAdapter) VariantKey() string                              { return "opencode" }
+func (a mcpOpenCodeAdapter) ConfigDelivery() model.ConfigDelivery {
+	return model.ConfigDeliveryPrimaryAgent
+}
 func (a mcpOpenCodeAdapter) PathsFor(base string, t model.InstallTarget) model.AgentPaths {
 	dir := filepath.Join(base, ".opencode")
 	return model.AgentPaths{

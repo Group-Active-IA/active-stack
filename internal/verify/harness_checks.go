@@ -93,6 +93,12 @@ func checkSkill(h model.Harness, adapter Adapter, homeDir string) []Check {
 // in the agent's instructions file. Uses the same sectionID the config installer
 // writes (internal/harness/config/inject.go: "sdd-orchestrator").
 func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
+	// Primary-agent delivery (e.g. OpenCode) writes to the settings JSON, not
+	// the instructions file — verify it where it actually lives.
+	if adapter.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
+		return checkPrimaryAgentConfig(h, adapter, homeDir)
+	}
+
 	instrPath := adapter.InstructionsPath(homeDir)
 	agentID := string(adapter.Agent())
 	openMarker := "<!-- jr-stack:" + sddOrchestratorSectionID + " -->"
@@ -172,6 +178,47 @@ func checkPermissions(h model.Harness, adapter Adapter, homeDir string) []Check 
 				}
 				if _, ok := raw[key]; !ok {
 					return fmt.Errorf("expected key %q not found in %q", key, settingsPath)
+				}
+				return nil
+			},
+		},
+	}
+}
+
+// checkPrimaryAgentConfig verifies that a config harness delivered as a primary
+// agent is registered under agent.<id> with mode:primary in the settings JSON
+// (e.g. opencode.json) — the entry that makes it a tab-able agent. Mirrors the
+// install-time registration in internal/harness/config/primary_agent.go.
+func checkPrimaryAgentConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
+	settingsPath := adapter.SettingsPath(homeDir)
+	agentID := string(adapter.Agent())
+
+	return []Check{
+		{
+			ID:          fmt.Sprintf("config:%s:%s", h.ID, agentID),
+			Description: fmt.Sprintf("primary agent %q registered (mode:primary) in %s settings", h.ID, agentID),
+			Run: func(_ context.Context) error {
+				data, err := os.ReadFile(settingsPath)
+				if err != nil {
+					if os.IsNotExist(err) {
+						return fmt.Errorf("settings file not found at %q", settingsPath)
+					}
+					return fmt.Errorf("read settings file: %w", err)
+				}
+				var root struct {
+					Agent map[string]struct {
+						Mode string `json:"mode"`
+					} `json:"agent"`
+				}
+				if err := json.Unmarshal(data, &root); err != nil {
+					return fmt.Errorf("parse settings file %q: %w", settingsPath, err)
+				}
+				entry, ok := root.Agent[h.ID]
+				if !ok {
+					return fmt.Errorf("agent %q not found in %q (harness not installed?)", h.ID, settingsPath)
+				}
+				if entry.Mode != "primary" {
+					return fmt.Errorf("agent %q has mode %q, want \"primary\" (not tab-able) in %q", h.ID, entry.Mode, settingsPath)
 				}
 				return nil
 			},

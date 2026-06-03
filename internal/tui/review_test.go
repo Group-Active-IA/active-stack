@@ -82,6 +82,8 @@ func (s *fakeStep) Run() error  { return nil }
 
 // TestReviewShowsResolvedPlanInOrder verifies that entering review calls
 // BuildPlan and populates ResolvedIDs in topological order.
+// Uses AgentGemini (not tier-capable) so ScreenPermissions is skipped and
+// ScreenMode → ScreenReview is direct.
 func TestReviewShowsResolvedPlanInOrder(t *testing.T) {
 	wantIDs := []string{"snapshot", "sdd-orchestrator", "engram"}
 
@@ -92,7 +94,7 @@ func TestReviewShowsResolvedPlanInOrder(t *testing.T) {
 	}
 	m := newModel(deps)
 	m.Screen = ScreenMode
-	m.Selection.Agents = []model.Agent{model.AgentClaude}
+	m.Selection.Agents = []model.Agent{model.AgentGemini} // not tier-capable → skip ScreenPermissions
 	m.Selection.Mode = model.ModeLite
 
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
@@ -116,6 +118,7 @@ func TestReviewShowsResolvedPlanInOrder(t *testing.T) {
 
 // TestReviewShowsErrorWithNoInstall verifies that a BuildPlan error is
 // displayed on ScreenReview and prevents advancing to ScreenInstalling.
+// Uses AgentGemini (not tier-capable) so ScreenPermissions is skipped.
 func TestReviewShowsErrorWithNoInstall(t *testing.T) {
 	deps := ModelDeps{
 		Catalog:     &fakeCatalog{},
@@ -124,7 +127,7 @@ func TestReviewShowsErrorWithNoInstall(t *testing.T) {
 	}
 	m := newModel(deps)
 	m.Screen = ScreenMode
-	m.Selection.Agents = []model.Agent{model.AgentClaude}
+	m.Selection.Agents = []model.Agent{model.AgentGemini} // not tier-capable → skip ScreenPermissions
 	m.Selection.Mode = model.ModeLite
 
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
@@ -147,6 +150,7 @@ func TestReviewShowsErrorWithNoInstall(t *testing.T) {
 }
 
 // TestReviewViewContainsStepIDs verifies that the review view renders step IDs.
+// Uses AgentGemini (not tier-capable) so ScreenPermissions is skipped.
 func TestReviewViewContainsStepIDs(t *testing.T) {
 	deps := ModelDeps{
 		Catalog:     &fakeCatalog{},
@@ -156,7 +160,7 @@ func TestReviewViewContainsStepIDs(t *testing.T) {
 	m := newModel(deps)
 	m.Screen = ScreenMode
 	m.Selection.Mode = model.ModeLite
-	m.Selection.Agents = []model.Agent{model.AgentClaude}
+	m.Selection.Agents = []model.Agent{model.AgentGemini} // not tier-capable → skip ScreenPermissions
 
 	updated, _ := m.Update(tea.KeyMsg{Type: tea.KeyEnter})
 	state := updated.(Model)
