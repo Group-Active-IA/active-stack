@@ -115,19 +115,318 @@ harnesses:
     source: { repo: anthropics/skills, ref: latest, method: clone, path: skills/skill-creator }
     install_modes: [full]
 
+  # ── C-30: Skills curadas del starter pack ─────────────────────────────────
+  # Clasificación (C-30 design.md):
+  #   PROPIAS/FORK (14): apuntan al monorepo JuanCruzRobledo/jr-skills, SIN third_party.
+  #   TERCEROS   (16): third_party: true, best_effort: true, apuntan al upstream confirmado.
+  # install_modes: [full] — materializadas vía `jr-stack starter add`, no por modo base.
+
+  # ── Propias puras (8) — contenido 100% del usuario ────────────────────────
+  - id: fastapi-domain-service
+    name: FastAPI Domain Service
+    description: Patrón de servicio de dominio con FastAPI (arquitectura por capas).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/fastapi-domain-service }
+    install_modes: [full]
+
+  - id: alembic-migrations
+    name: Alembic Migrations
+    description: Gestión de migraciones de base de datos con Alembic + SQLAlchemy.
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/alembic-migrations }
+    install_modes: [full]
+
+  - id: zustand-store-pattern
+    name: Zustand Store Pattern
+    description: Patrón de store global con Zustand para React.
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/zustand-store-pattern }
+    install_modes: [full]
+
+  - id: react19-form-pattern
+    name: React 19 Form Pattern
+    description: Patrón de formularios con React 19 (Server Actions + useFormState).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/react19-form-pattern }
+    install_modes: [full]
+
+  - id: dashboard-crud-page
+    name: Dashboard CRUD Page
+    description: Página de dashboard con operaciones CRUD completas.
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/dashboard-crud-page }
+    install_modes: [full]
+
+  - id: ws-frontend-subscription
+    name: WebSocket Frontend Subscription
+    description: Patrón de suscripción WebSocket en el frontend (React + reconnect).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/ws-frontend-subscription }
+    install_modes: [full]
+
+  - id: help-system-content
+    name: Help System Content
+    description: Patrón de contenido para sistemas de ayuda in-app.
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/help-system-content }
+    install_modes: [full]
+
+  - id: monorepo-scaffold
+    name: Monorepo Scaffold
+    description: Scaffold de monorepo (Turborepo / pnpm workspaces).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/monorepo-scaffold }
+    install_modes: [full]
+
+  # ── Forks expandidos (6) — upstream existe pero contenido es el del usuario ─
+  - id: postgresql-table-design
+    name: PostgreSQL Table Design
+    description: Diseño de tablas PostgreSQL (fork expandido de wshobson/agents).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/postgresql-table-design }
+    install_modes: [full]
+
+  - id: tailwind-design-system
+    name: Tailwind Design System
+    description: Sistema de diseño basado en Tailwind CSS (fork expandido).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/tailwind-design-system }
+    install_modes: [full]
+
+  - id: typescript-advanced-types
+    name: TypeScript Advanced Types
+    description: Tipos avanzados de TypeScript — generics, utility types, branded types (fork expandido).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/typescript-advanced-types }
+    install_modes: [full]
+
+  - id: interface-design
+    name: Interface Design
+    description: Patrón de diseño de interfaces UI (fork expandido).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/interface-design }
+    install_modes: [full]
+
+  - id: clean-architecture
+    name: Clean Architecture
+    description: Arquitectura limpia por capas (fork expandido — capa de dominio + aplicación + infra).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/clean-architecture }
+    install_modes: [full]
+
+  - id: fastapi-code-review
+    name: FastAPI Code Review
+    description: Checklist de code review para APIs FastAPI (fork expandido de wshobson/agents).
+    type: skill
+    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/fastapi-code-review }
+    install_modes: [full]
+
+  # ── Terceros — capa base/transversal (6) ──────────────────────────────────
+  - id: test-driven-development
+    name: Test-Driven Development
+    description: Ciclo TDD — red/green/refactor (obra/superpowers).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: obra/superpowers, ref: latest, method: clone, path: skills/test-driven-development }
+    install_modes: [full]
+
+  - id: systematic-debugging
+    name: Systematic Debugging
+    description: Metodología de debugging sistemático (obra/superpowers).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: obra/superpowers, ref: latest, method: clone, path: skills/systematic-debugging }
+    install_modes: [full]
+
+  - id: requesting-code-review
+    name: Requesting Code Review
+    description: Guía para solicitar code reviews efectivos (obra/superpowers).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: obra/superpowers, ref: latest, method: clone, path: skills/requesting-code-review }
+    install_modes: [full]
+
+  - id: receiving-code-review
+    name: Receiving Code Review
+    description: Guía para recibir y procesar code reviews (obra/superpowers).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: obra/superpowers, ref: latest, method: clone, path: skills/receiving-code-review }
+    install_modes: [full]
+
+  - id: code-review-excellence
+    name: Code Review Excellence
+    description: Excelencia en code review — cómo dar reviews de calidad (wshobson/agents).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: wshobson/agents, ref: latest, method: clone, path: skills/code-review-excellence }
+    install_modes: [full]
+
+  - id: agile-product-owner
+    name: Agile Product Owner
+    description: Rol y responsabilidades del Product Owner ágil (alirezarezvani/claude-skills).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: alirezarezvani/claude-skills, ref: latest, method: clone, path: skills/agile-product-owner }
+    install_modes: [full]
+
+  # ── Terceros — capa backend (6) ───────────────────────────────────────────
+  - id: fastapi-templates
+    name: FastAPI Templates
+    description: Templates de proyecto FastAPI (wshobson/agents).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: wshobson/agents, ref: latest, method: clone, path: skills/fastapi-templates }
+    install_modes: [full]
+
+  - id: python-testing-patterns
+    name: Python Testing Patterns
+    description: Patrones de testing en Python con pytest (wshobson/agents).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: wshobson/agents, ref: latest, method: clone, path: skills/python-testing-patterns }
+    install_modes: [full]
+
+  - id: postgresql-optimization
+    name: PostgreSQL Optimization
+    description: Optimización de consultas y esquema PostgreSQL (github/awesome-copilot).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: github/awesome-copilot, ref: latest, method: clone, path: skills/postgresql-optimization }
+    install_modes: [full]
+
+  - id: api-security-best-practices
+    name: API Security Best Practices
+    description: Prácticas de seguridad para APIs REST (sickn33/antigravity-awesome-skills).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: sickn33/antigravity-awesome-skills, ref: latest, method: clone, path: skills/api-security-best-practices }
+    install_modes: [full]
+
+  - id: multi-stage-dockerfile
+    name: Multi-Stage Dockerfile
+    description: Dockerfiles multi-etapa optimizados (github/awesome-copilot).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: github/awesome-copilot, ref: latest, method: clone, path: skills/multi-stage-dockerfile }
+    install_modes: [full]
+
+  - id: redis-best-practices
+    name: Redis Best Practices
+    description: Mejores prácticas para Redis (Mindrally/skills — upstream confirmado, raíz del repo).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: Mindrally/skills, ref: latest, method: clone, path: redis-best-practices }
+    install_modes: [full]
+
+  - id: websocket-engineer
+    name: WebSocket Engineer
+    description: Ingeniería de WebSockets full-stack (Jeffallan/claude-skills — upstream confirmado v1.1.0+).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: Jeffallan/claude-skills, ref: latest, method: clone, path: skills/websocket-engineer }
+    install_modes: [full]
+
+  # ── Terceros — capa frontend/ux-ui (3) ────────────────────────────────────
+  - id: vercel-react-best-practices
+    name: Vercel React Best Practices
+    description: Mejores prácticas de React según Vercel (vercel-labs/agent-skills).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: vercel-labs/agent-skills, ref: latest, method: clone, path: skills/vercel-react-best-practices }
+    install_modes: [full]
+
+  - id: playwright-best-practices
+    name: Playwright Best Practices
+    description: Mejores prácticas de testing E2E con Playwright (currents-dev/playwright-skills).
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: currents-dev/playwright-skills, ref: latest, method: clone, path: skills/playwright-best-practices }
+    install_modes: [full]
+
+  - id: pwa-development
+    name: PWA Development
+    description: |
+      Desarrollo de Progressive Web Apps (alinaqi/claude-bootstrap — upstream confirmado).
+      WATCH: usa arquitectura modular con base.md; clonar el subdir puede dejar la skill incompleta.
+    type: skill
+    third_party: true
+    best_effort: true
+    source: { repo: alinaqi/claude-bootstrap, ref: latest, method: clone, path: skills/pwa-development }
+    install_modes: [full]
+
 # ── Starters (bundles curados de harnesses, componibles vía includes) ─────────
-# Entradas mínimas/placeholder. Curación real del contenido: C-30.
-# Composición: active-ia agrupa ux-ui + backend; sin duplicar harnesses compartidos.
+# C-30: composición curada. Cada starter resuelve su set total vía ResolveStarter.
+# Convención de includes: starter hijo → starter padre provee los transversales.
 starters:
-  - id: active-ia
-    name: Active IA
-    description: Stack completo para proyectos de IA activa (compone ux-ui + backend).
-    includes: [ux-ui, backend]
+  # base: 6 harnesses transversales compartidos por todos los starters de dominio.
+  - id: base
+    name: Base
+    description: Transversales metodológicos compartidos por todos los starters (TDD, debugging, code review, producto ágil).
+    harnesses:
+      - test-driven-development
+      - systematic-debugging
+      - requesting-code-review
+      - receiving-code-review
+      - code-review-excellence
+      - agile-product-owner
 
-  - id: ux-ui
-    name: UX/UI
-    description: Placeholder para el stack de harnesses de UX/UI (curación en C-30).
-
+  # backend: base + 12 harnesses de capa backend.
   - id: backend
     name: Backend
-    description: Placeholder para el stack de harnesses de backend (curación en C-30).
+    description: Stack de backend Python/FastAPI con arquitectura limpia, BD, seguridad y contenedores.
+    includes: [base]
+    harnesses:
+      - clean-architecture
+      - fastapi-domain-service
+      - fastapi-code-review
+      - redis-best-practices
+      - websocket-engineer
+      - alembic-migrations
+      - fastapi-templates
+      - python-testing-patterns
+      - postgresql-table-design
+      - postgresql-optimization
+      - api-security-best-practices
+      - multi-stage-dockerfile
+
+  # ux-ui: base + 11 harnesses de capa frontend/UX.
+  - id: ux-ui
+    name: UX/UI
+    description: Stack de frontend React con diseño, estado, formularios, WebSockets y testing E2E.
+    includes: [base]
+    harnesses:
+      - vercel-react-best-practices
+      - zustand-store-pattern
+      - react19-form-pattern
+      - dashboard-crud-page
+      - ws-frontend-subscription
+      - help-system-content
+      - interface-design
+      - pwa-development
+      - typescript-advanced-types
+      - tailwind-design-system
+      - playwright-best-practices
+
+  # active-ia: backend + ux-ui + monorepo-scaffold. base se deduplica automáticamente.
+  - id: active-ia
+    name: Active IA
+    description: Stack completo para proyectos de IA activa (compone backend + ux-ui + monorepo).
+    includes: [backend, ux-ui]
+    harnesses:
+      - monorepo-scaffold
