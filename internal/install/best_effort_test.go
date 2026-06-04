@@ -135,6 +135,163 @@ func TestSkillStep_BestEffort_EmitsWarningViaProgressCallback(t *testing.T) {
 	}
 }
 
+// Task 1.3 (C-32 RED) — best-effort skillStep emits StepStatusDegraded (NOT StepStatusFailed)
+// and Run() still returns nil (no abort).
+func TestSkillStep_BestEffort_EmitsDegradedNotFailed(t *testing.T) {
+	installErr := errors.New("skill path not found in repo")
+
+	restore := install.SetSkillInstallFn(func(
+		_ interface{},
+		_ fs.FS,
+		_ context.Context,
+		_ model.Harness,
+		_ []skillinstaller.AgentAdapter,
+		_, _ string,
+	) ([]skillinstaller.Result, error) {
+		return nil, installErr
+	})
+	defer restore()
+
+	restoreSnap := install.SetSnapshotCreate(func(dir string, paths []string) (backup.Manifest, error) {
+		return backup.Manifest{}, nil
+	})
+	defer restoreSnap()
+
+	h := model.Harness{
+		ID:           "best-effort-skill",
+		Type:         model.HarnessSkill,
+		BestEffort:   true,
+		Source:       &model.Source{Repo: "third-party/skills", Method: "clone"},
+		InstallModes: []model.InstallMode{model.ModeFull},
+	}
+	cat := &fakeCatalog{harnesses: []model.Harness{h}}
+	reg := &fakeRegistry{adapters: map[model.Agent]install.AgentAdapter{
+		model.AgentClaude: fakeAdapter{agent: model.AgentClaude},
+	}}
+	homeDir := t.TempDir()
+	intent := install.Intent{Agents: []model.Agent{model.AgentClaude}, Mode: model.ModeFull}
+
+	var receivedEvents []pipeline.ProgressEvent
+	progressFn := func(ev pipeline.ProgressEvent) {
+		receivedEvents = append(receivedEvents, ev)
+	}
+
+	opts := buildOptionsWithProgress(homeDir, reg, nil, progressFn)
+	plan, err := install.BuildPlan(cat, intent, opts)
+	if err != nil {
+		t.Fatalf("BuildPlan() error = %v", err)
+	}
+
+	orch := pipeline.NewOrchestrator(
+		pipeline.DefaultRollbackPolicy(),
+		pipeline.WithProgressFunc(plan.OnProgress),
+	)
+	result := orch.Execute(plan.StagePlan)
+
+	// Run() must return nil — the pipeline must NOT abort.
+	if result.Err != nil {
+		t.Errorf("best-effort step must not abort pipeline, got error: %v", result.Err)
+	}
+
+	// The emitted event must use StepStatusDegraded, NOT StepStatusFailed.
+	var degradedEvent *pipeline.ProgressEvent
+	var failedEvent *pipeline.ProgressEvent
+	for i := range receivedEvents {
+		ev := &receivedEvents[i]
+		if ev.StepID != "skill:best-effort-skill" {
+			continue
+		}
+		if ev.Status == pipeline.StepStatusDegraded {
+			degradedEvent = ev
+		}
+		if ev.Status == pipeline.StepStatusFailed {
+			failedEvent = ev
+		}
+	}
+	if degradedEvent == nil {
+		t.Errorf("expected a StepStatusDegraded progress event for skill:best-effort-skill; got events: %+v", receivedEvents)
+	}
+	if failedEvent != nil {
+		t.Errorf("best-effort failure must NOT emit StepStatusFailed; got StepStatusFailed event: %+v", failedEvent)
+	}
+	if degradedEvent != nil && degradedEvent.Err == nil {
+		t.Errorf("degraded event must carry a non-nil Err describing the reason")
+	}
+}
+
+// Task 1.5 TRIANGULATE (C-32) — NON-best-effort failure emits StepStatusFailed (not Degraded)
+// and the pipeline ABORTS. This is the regression guard for the C-19/C-22 policy.
+func TestSkillStep_NonBestEffort_EmitsFailedNotDegraded(t *testing.T) {
+	installErr := errors.New("clone failed: no such repo")
+
+	restore := install.SetSkillInstallFn(func(
+		_ interface{},
+		_ fs.FS,
+		_ context.Context,
+		_ model.Harness,
+		_ []skillinstaller.AgentAdapter,
+		_, _ string,
+	) ([]skillinstaller.Result, error) {
+		return nil, installErr
+	})
+	defer restore()
+
+	restoreSnap := install.SetSnapshotCreate(func(dir string, paths []string) (backup.Manifest, error) {
+		return backup.Manifest{ID: "snap", RootDir: dir}, nil
+	})
+	defer restoreSnap()
+
+	restoreRestore := install.SetRestoreFn(func(_ backup.Manifest) error { return nil })
+	defer restoreRestore()
+
+	h := model.Harness{
+		ID:           "hard-fail-skill",
+		Type:         model.HarnessSkill,
+		BestEffort:   false, // explicit hard failure
+		Source:       &model.Source{Repo: "JuanCruzRobledo/required-skill", Method: "clone"},
+		InstallModes: []model.InstallMode{model.ModeFull},
+	}
+	cat := &fakeCatalog{harnesses: []model.Harness{h}}
+	reg := &fakeRegistry{adapters: map[model.Agent]install.AgentAdapter{
+		model.AgentClaude: fakeAdapter{agent: model.AgentClaude},
+	}}
+	homeDir := t.TempDir()
+	intent := install.Intent{Agents: []model.Agent{model.AgentClaude}, Mode: model.ModeFull}
+
+	var receivedEvents []pipeline.ProgressEvent
+	progressFn := func(ev pipeline.ProgressEvent) {
+		receivedEvents = append(receivedEvents, ev)
+	}
+
+	opts := buildOptionsWithProgress(homeDir, reg, nil, progressFn)
+	plan, err := install.BuildPlan(cat, intent, opts)
+	if err != nil {
+		t.Fatalf("BuildPlan() error = %v", err)
+	}
+
+	orch := pipeline.NewOrchestrator(
+		pipeline.DefaultRollbackPolicy(),
+		pipeline.WithProgressFunc(plan.OnProgress),
+	)
+	result := orch.Execute(plan.StagePlan)
+
+	// Hard failure MUST abort the pipeline.
+	if result.Err == nil {
+		t.Error("non-best-effort failure must abort the pipeline (result.Err expected non-nil)")
+	}
+
+	// The runner should emit StepStatusFailed for the step (not Degraded).
+	var hasDegraded bool
+	for _, ev := range receivedEvents {
+		if ev.StepID == "skill:hard-fail-skill" && ev.Status == pipeline.StepStatusDegraded {
+			hasDegraded = true
+		}
+	}
+	if hasDegraded {
+		t.Error("hard-failure skill must NOT emit StepStatusDegraded")
+	}
+}
+
 // Task 2.3 — NON-best-effort skillStep whose install fn fails → Run() returns the
 // error (unchanged abort behavior — regression guard).
 func TestSkillStep_NonBestEffort_FailReturnsError(t *testing.T) {

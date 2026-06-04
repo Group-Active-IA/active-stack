@@ -540,7 +540,27 @@ func (m Model) viewComplete() string {
 		}
 	} else {
 		sb.WriteString(titleStyle.Render("Installation complete!") + "\n\n")
-		sb.WriteString(selectedStyle.Render("All steps succeeded.") + "\n\n")
+		// C-32: collect degraded rows for an honest summary.
+		var degraded []stepRow
+		for _, row := range m.stepRows {
+			if row.status == pipeline.StepStatusDegraded {
+				degraded = append(degraded, row)
+			}
+		}
+		if len(degraded) == 0 {
+			sb.WriteString(selectedStyle.Render("All steps succeeded.") + "\n\n")
+		} else {
+			sb.WriteString(selectedStyle.Render("Installation succeeded with degraded harnesses.") + "\n\n")
+			sb.WriteString(dimStyle.Render("Degraded (best-effort) harnesses:") + "\n")
+			for _, row := range degraded {
+				reason := ""
+				if row.err != nil {
+					reason = ": " + row.err.Error()
+				}
+				sb.WriteString(fmt.Sprintf("  %s %s%s\n", dimStyle.Render("⚠"), row.stepID, reason))
+			}
+			sb.WriteString("\n")
+		}
 	}
 	sb.WriteString("Press q to quit.\n")
 	return sb.String()
@@ -554,6 +574,9 @@ func statusIcon(s pipeline.StepStatus) string {
 		return selectedStyle.Render("✓")
 	case pipeline.StepStatusFailed:
 		return errorStyle.Render("✗")
+	case pipeline.StepStatusDegraded:
+		// C-32: distinct warning glyph for best-effort degraded steps.
+		return dimStyle.Render("⚠")
 	case pipeline.StepStatusRolledBack:
 		return dimStyle.Render("↩")
 	default:

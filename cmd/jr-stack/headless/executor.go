@@ -32,6 +32,30 @@ import (
 // VerifyHookFn is injected, matching the "no hook" TUI path for the test cases
 // that don't supply harnesses with verify checks).
 func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, w io.Writer) int {
+	// ── Build the progress function before opts so we can wire it as
+	// opts.OnProgress. The skill step emits StepStatusDegraded via its own
+	// onProgress field (set at plan-build time from opts.OnProgress), so opts
+	// must carry the SAME function we pass to the orchestrator (C-32 D3 seam).
+	//
+	// Accumulate degraded events for the honest end-of-run summary (C-32).
+	var degradedEvents []pipeline.ProgressEvent
+	progressFn := func(e pipeline.ProgressEvent) {
+		switch e.Status {
+		case pipeline.StepStatusRunning:
+			fmt.Fprintf(w, "  → %s running...\n", e.StepID)
+		case pipeline.StepStatusSucceeded:
+			fmt.Fprintf(w, "  ✓ %s\n", e.StepID)
+		case pipeline.StepStatusFailed:
+			fmt.Fprintf(w, "  ✗ %s: %v\n", e.StepID, e.Err)
+		case pipeline.StepStatusDegraded:
+			// C-32: distinct glyph for degraded (best-effort) steps.
+			fmt.Fprintf(w, "  ⚠ %s (degraded, best-effort): %v\n", e.StepID, e.Err)
+			degradedEvents = append(degradedEvents, e)
+		case pipeline.StepStatusRolledBack:
+			fmt.Fprintf(w, "  ↩ %s (rolled back)\n", e.StepID)
+		}
+	}
+
 	// Build install options. Profile.OS is populated from runtime.GOOS so that
 	// external-harness steps build a well-formed GitHub Releases asset URL.
 	// (An empty OS would produce a double-underscore filename like
@@ -45,6 +69,7 @@ func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, 
 		Profile:               system.PlatformProfile{OS: runtime.GOOS},
 		NoSelfInstall:         params.NoSelfInstall,
 		SelfInstallBinaryPath: params.BinaryPath,
+		OnProgress:            progressFn,
 	}
 
 	// Wire verify hook.
@@ -102,21 +127,6 @@ func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, 
 	}
 
 	// ── Execute the plan via the orchestrator ───────────────────────────────
-
-	// Progress function: print each step lifecycle event to w.
-	progressFn := func(e pipeline.ProgressEvent) {
-		switch e.Status {
-		case pipeline.StepStatusRunning:
-			fmt.Fprintf(w, "  → %s running...\n", e.StepID)
-		case pipeline.StepStatusSucceeded:
-			fmt.Fprintf(w, "  ✓ %s\n", e.StepID)
-		case pipeline.StepStatusFailed:
-			fmt.Fprintf(w, "  ✗ %s: %v\n", e.StepID, e.Err)
-		case pipeline.StepStatusRolledBack:
-			fmt.Fprintf(w, "  ↩ %s (rolled back)\n", e.StepID)
-		}
-	}
-
 	orch := pipeline.NewOrchestrator(
 		pipeline.DefaultRollbackPolicy(),
 		pipeline.WithProgressFunc(progressFn),
@@ -142,6 +152,20 @@ func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, 
 	// "all passed" summary manually.
 	report := verify.BuildReport(nil) // zero checks → Ready == true
 	fmt.Fprint(w, verify.RenderReport(report))
+
+	// ── Print degraded (best-effort) summary if any (C-32) ─────────────────
+	// Exit code STAYS 0: degraded harnesses are soft failures. The summary
+	// enumerates them so the operator knows which best-effort skills degraded.
+	if len(degradedEvents) > 0 {
+		fmt.Fprintln(w, "\nDegraded (best-effort) harnesses:")
+		for _, ev := range degradedEvents {
+			reason := ""
+			if ev.Err != nil {
+				reason = ev.Err.Error()
+			}
+			fmt.Fprintf(w, "  ⚠ %s: %s\n", ev.StepID, reason)
+		}
+	}
 
 	return 0
 }

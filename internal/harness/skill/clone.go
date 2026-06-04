@@ -21,7 +21,14 @@ func cloneInstaller(
 		return Result{}, fmt.Errorf("skill %q: source.repo is empty (placeholder not yet confirmed)", skillID)
 	}
 
-	repoURL := "https://github.com/" + repo
+	// If repo already contains a URL scheme (e.g. "file://", "https://"), use it
+	// as-is; otherwise treat it as a GitHub owner/repo short path.
+	// This allows hermetic E2E tests to supply file:// fixture repos without
+	// network access while keeping the default production behaviour unchanged.
+	repoURL := repo
+	if !strings.Contains(repo, "://") {
+		repoURL = "https://github.com/" + repo
+	}
 
 	// Clone into a fresh temp directory.
 	tempDir, err := os.MkdirTemp("", "jr-stack-clone-*")

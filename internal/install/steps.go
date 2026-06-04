@@ -129,13 +129,15 @@ func (s *skillStep) Run() error {
 	if !s.bestEffort {
 		return err
 	}
-	// Best-effort: emit a warning and return nil so the pipeline continues.
+	// Best-effort: emit a degraded event (C-32: distinct from hard failure) and
+	// return nil so the pipeline continues. The degraded status is NOT the same
+	// as StepStatusFailed — it must not be conflated with an abort-causing failure.
 	warningMsg := fmt.Sprintf("[best-effort] skill %q install failed (continuing): %v", s.h.ID, err)
 	if s.onProgress != nil {
 		s.onProgress(pipeline.ProgressEvent{
 			StepID: s.ID(),
 			Stage:  pipeline.StageApply,
-			Status: pipeline.StepStatusFailed,
+			Status: pipeline.StepStatusDegraded,
 			Err:    fmt.Errorf("%s", warningMsg),
 		})
 	} else {
