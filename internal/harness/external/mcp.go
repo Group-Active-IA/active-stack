@@ -48,7 +48,15 @@ func installMCP(
 			}
 		}
 
-		overlay := buildOverlay(h, adapter)
+		var overlay map[string]any
+		if h.External.MCP != nil && adapter.Agent() != model.AgentOpenCode {
+			// Claude (and any agent that is not OpenCode): the remote endpoint of
+			// this MCP requires authentication → prefer the local stdio server
+			// (npx), which needs no auth.
+			overlay = buildStdioOverlay(*h.External.MCP, adapter)
+		} else {
+			overlay = buildOverlay(h, adapter)
+		}
 		overlayJSON, err := json.Marshal(overlay)
 		if err != nil {
 			return Result{}, fmt.Errorf("marshal mcp overlay for %s: %w", adapter.Agent(), err)
@@ -197,19 +205,21 @@ func buildStdioOverlay(mcp model.MCP, adapter AgentAdapter) map[string]any {
 			if len(mcp.Env) > 0 {
 				localEntry["env"] = mcp.Env
 			}
+			// Wrap in __replace__ so any stale remote entry (e.g. {"type":"remote","url":...})
+			// is fully discarded on reinstall — a deep merge would leave orphan keys.
 			return map[string]any{
 				"mcp": map[string]any{
-					mcp.Name: localEntry,
+					mcp.Name: map[string]any{"__replace__": localEntry},
 				},
 			}
 		}
-		// Generic merge-into-settings: standard mcpServers key with type discriminator.
-		// Claude Code (and any future generic agent) requires "type":"stdio" to
-		// recognise the entry as a local stdio MCP server in ~/.claude.json.
+		// Generic merge-into-settings (Claude → ~/.claude.json): replace the whole
+		// server object atomically so a stale remote entry (e.g. {"type":"http","url":...})
+		// is fully discarded on reinstall — a deep merge would leave the orphan "url".
 		entry["type"] = "stdio"
 		return map[string]any{
 			"mcpServers": map[string]any{
-				mcp.Name: entry,
+				mcp.Name: map[string]any{"__replace__": entry},
 			},
 		}
 

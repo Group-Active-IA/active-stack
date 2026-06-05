@@ -29,7 +29,13 @@ harnesses:
     name: Context7
     description: Documentación de librerías al día (MCP remoto).
     type: external
-    external: { method: mcp, url: "https://mcp.context7.com" }
+    external:
+      method: mcp
+      url: "https://mcp.context7.com"
+      mcp:
+        name: context7
+        command: npx
+        args: ["-y", "--package=@upstash/context7-mcp@2.2.5", "--", "context7-mcp"]
     install_modes: [lite, full]
 
   # ── Configuración (bundleados en el instalador) ───────────────────────────

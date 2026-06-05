@@ -450,8 +450,11 @@ func TestBuildStdioOverlay_SeparateFile(t *testing.T) {
 
 // TestBuildStdioOverlay_MergeIntoSettings_Generic asserts that
 // buildStdioOverlay for a generic StrategyMergeIntoSettings (non-OpenCode)
-// adapter returns:
-//   {"mcpServers": {"<name>": {"command":..., "args":[...]}}}
+// adapter wraps the server object in the __replace__ sentinel:
+//   {"mcpServers": {"<name>": {"__replace__": {"type":"stdio","command":...,"args":[...]}}}}
+//
+// Updated: the server object is now wrapped in {"__replace__": ...} so that
+// MergeJSONObjects replaces any stale base entry atomically (no orphan "url").
 func TestBuildStdioOverlay_MergeIntoSettings_Generic(t *testing.T) {
 	mcp := model.MCP{Name: "engram", Command: "engram", Args: []string{"mcp"}}
 	adapter := &fakeAdapter{agent: model.AgentGemini, strategy: StrategyMergeIntoSettings}
@@ -462,9 +465,14 @@ func TestBuildStdioOverlay_MergeIntoSettings_Generic(t *testing.T) {
 	if !ok {
 		t.Fatalf("overlay should have 'mcpServers', got keys: %v", mapKeys(overlay))
 	}
-	server, ok := servers["engram"].(map[string]any)
+	// Server entry is a sentinel: {"__replace__": {actual fields}}.
+	sentinel, ok := servers["engram"].(map[string]any)
 	if !ok {
-		t.Fatalf("mcpServers should have 'engram', got: %v", mapKeys(servers))
+		t.Fatalf("mcpServers['engram'] should be a sentinel map, got: %T %v", servers["engram"], servers["engram"])
+	}
+	server, ok := sentinel["__replace__"].(map[string]any)
+	if !ok {
+		t.Fatalf("sentinel should have '__replace__' key with server map, got: %v", mapKeys(sentinel))
 	}
 	if server["command"] != "engram" {
 		t.Errorf("command = %v, want engram", server["command"])
@@ -475,8 +483,11 @@ func TestBuildStdioOverlay_MergeIntoSettings_Generic(t *testing.T) {
 }
 
 // TestBuildStdioOverlay_OpenCode asserts that buildStdioOverlay for an
-// OpenCode adapter returns:
-//   {"mcp": {"<name>": {"type":"local","command":...,"args":[...],"enabled":true}}}
+// OpenCode adapter wraps the localEntry in the __replace__ sentinel:
+//   {"mcp": {"<name>": {"__replace__": {"type":"local","command":...,"args":[...],"enabled":true}}}}
+//
+// Updated: localEntry is now wrapped in {"__replace__": ...} so that
+// MergeJSONObjects replaces any stale remote entry atomically (no orphan keys).
 func TestBuildStdioOverlay_OpenCode(t *testing.T) {
 	mcp := model.MCP{Name: "engram", Command: "engram", Args: []string{"mcp"}}
 	adapter := &fakeAdapter{agent: model.AgentOpenCode, strategy: StrategyMergeIntoSettings}
@@ -487,9 +498,14 @@ func TestBuildStdioOverlay_OpenCode(t *testing.T) {
 	if !ok {
 		t.Fatalf("OpenCode overlay should have 'mcp' key, got keys: %v", mapKeys(overlay))
 	}
-	server, ok := mcpMap["engram"].(map[string]any)
+	// Entry is a sentinel: {"__replace__": {actual fields}}.
+	sentinel, ok := mcpMap["engram"].(map[string]any)
 	if !ok {
-		t.Fatalf("mcp should have 'engram' key, got: %v", mapKeys(mcpMap))
+		t.Fatalf("mcp['engram'] should be a sentinel map, got: %T %v", mcpMap["engram"], mcpMap["engram"])
+	}
+	server, ok := sentinel["__replace__"].(map[string]any)
+	if !ok {
+		t.Fatalf("sentinel should have '__replace__' key with server map, got: %v", mapKeys(sentinel))
 	}
 	if server["type"] != "local" {
 		t.Errorf("type = %v, want local", server["type"])
