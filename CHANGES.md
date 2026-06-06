@@ -29,9 +29,11 @@ uninstall-subcommand
    tui-menu-hub
    (reestructura ScreenWelcome en hub multi-opción)
           │
-          ▼
-   tui-update-stack
-   (opción "Update stack" en el menú)
+          ├────────────────────┐
+          ▼                    ▼
+   tui-update-stack     tui-configure-models
+   (opción "Update      (opción "Configure models":
+    stack" en el menú)   model-routing claude + opencode)
 
 claude-agent-switch-research
   — independiente, cualquier ola —
@@ -48,6 +50,9 @@ claude-agent-switch-research
 > - `tui-menu-hub` depende del executor headless de uninstall (`uninstall-subcommand`)
 >   porque la pantalla ScreenUninstall lo invoca.
 > - `tui-update-stack` depende del menú hub (agrega una entrada al hub).
+> - `tui-configure-models` también depende del menú hub (agrega la entrada
+>   "Configure models"); es hermano paralelo de `tui-update-stack` (ambos cuelgan
+>   del hub y no se bloquean entre sí).
 > - `claude-agent-switch-research` es un change de investigación pura; puede
 >   ejecutarse en cualquier ola, en paralelo con cualquier otro.
 
@@ -59,8 +64,8 @@ claude-agent-switch-research
 |---|---|---|---|
 | 0 | `openspec-init-cleanup`, `opencode-orchestrator-parity` | nada / nada | Independientes; `openspec-init-cleanup` es XS en repo de skills |
 | 1 | `uninstall-subcommand`, `claude-agent-switch-research` | `tui-menu-hub` / — | `uninstall-subcommand` habilita el menú; research corre en paralelo libre |
-| 2 | `tui-menu-hub` | `tui-update-stack` | Punto de convergencia TUI; necesita executor del uninstall (ola 1) |
-| 3 | `tui-update-stack` | — | Cierre del epic TUI; agrega la entrada Update al hub |
+| 2 | `tui-menu-hub` | `tui-update-stack`, `tui-configure-models` | Punto de convergencia TUI; necesita executor del uninstall (ola 1) |
+| 3 | `tui-update-stack`, `tui-configure-models` | — | Cierre del epic TUI; ambos cuelgan del hub en paralelo |
 
 **Camino crítico del epic**: `uninstall-subcommand → tui-menu-hub → tui-update-stack` (3 changes).
 Es la cadena más larga; el resto corre en paralelo o es independiente.
@@ -76,7 +81,7 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 | Ola 0 | `opencode-orchestrator-parity` (auditoría assets + golden test) | `openspec-init-cleanup` (SKILL.md del jr-orchestrator) |
 | Ola 1 | `uninstall-subcommand` (wiring CLI Go) | `claude-agent-switch-research` (investigación) |
 | Ola 2 | `tui-menu-hub` (reestructura TUI Bubbletea) | — |
-| Ola 3 | `tui-update-stack` (port internal/update + opción menú) | — |
+| Ola 3 | `tui-update-stack` (port internal/update + opción menú) | `tui-configure-models` (port model-routing picker claude+opencode) |
 
 ---
 
@@ -258,6 +263,16 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
   - Tests: unit tests para la lógica de check de versiones y upgrade; mock de la
     GitHub Releases API. TDD estricto activo.
 - **Decisiones / notas clave**:
+  - **UX: replicar la riqueza del legacy (decisión del operador, 2026-06-06).** El
+    hub legacy NO tenía un solo "Update stack" — tenía **tres** entradas separadas
+    (`Upgrade tools`, `Sync configs`, `Upgrade + Sync`) más un **badge dinámico ★**
+    en el ítem del menú cuando hay updates disponibles (o sufijo `(up to date)` tras
+    el chequeo). Portar esa UX: las 3 acciones + el badge ★ vivo en el hub. Hoy el
+    hub (de `tui-menu-hub`) muestra solo "Update stack (coming soon)" como placeholder
+    inline (`hubNotice`); este change lo reemplaza por la entrada/entradas reales.
+  - Referencia legacy: `internal/tui/screens/welcome.go` (`WelcomeOptions` con el
+    badge ★ vía `update.HasUpdates`), `screens/upgrade.go`, `screens/sync_screen.go`,
+    `screens/upgrade_sync.go`.
   - El rename-trick para Windows (escribir `.new`, mover target a `.old`, renombrar
     `.new` → target, best-effort remove `.old`) ya está resuelto en `binary-self-install`
     (`internal/install/self_install.go`) — reutilizarlo o factorizarlo a `internal/system`.
@@ -277,6 +292,56 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
   - `internal/harness/config/` — instalador de config-harnesses (para el re-sync).
   - `tui-menu-hub` change (debe estar terminado — depende de él).
   - `CLAUDE.md` §3 regla "SIEMPRE limpiar leftovers gentle-ai / gentle-stack / Gentleman.Dots".
+
+---
+
+### `tui-configure-models` — Configurar model-routing desde la TUI (claude + opencode)
+
+- **Estado**: PENDIENTE. (Origen: el hub legacy tenía "Configure models" y el
+  operador decidió, 2026-06-06, portarlo a v2 como change nuevo — no entró en
+  `tui-menu-hub`, que ya está cerrado con 6 opciones.)
+- **Scope**:
+  - Agregar la opción **"Configure models"** al hub (`tui-menu-hub` ya existe).
+  - Pantalla de entrada `ScreenModelConfig`: menú `Configure Claude models` /
+    `Configure OpenCode models` / `Back` (espeja `screens/model_config.go` del legacy).
+  - Pantalla `ScreenClaudeModelPicker`: presets **balanced / performance / economy /
+    custom**; en modo custom, lista por fase OPSX (orchestrator, explore, propose,
+    apply, archive, default) cicleando alias **opus → sonnet → haiku** con Enter
+    (espeja `screens/claude_model_picker.go` del legacy).
+  - Pantalla equivalente para **OpenCode** (su propio set de modelos/aliases — NO
+    asumir paridad 1:1 con Claude; opencode tiene su propio catálogo de modelos).
+  - Al confirmar, **re-inyectar la tabla de model-routing en el bloque del
+    `sdd-orchestrator`** de los agentes detectados, vía el pipeline existente
+    (backup + markers idempotentes) en modo "solo config" — NO reescribir lógica
+    de inyección. El toggle `model-routing` del `sdd-orchestrator` es el destino real
+    del routing configurado ("si se chequea, aparece el routing correcto").
+  - Limpieza obligatoria al portar del legacy: eliminar leftovers
+    `gentle-ai`/`gentle-stack`/`Gentleman.Dots`/theme cosmético.
+  - Tests Bubbletea con `teatest` (skill `go-testing`): presets, ciclado de alias
+    en custom, navegación, y el wiring de re-inyección con fakes (nunca el entorno real).
+- **Decisiones / notas clave**:
+  - Los presets de Claude del legacy (balanced/performance/economy/custom) y el
+    ciclado opus→sonnet→haiku son la referencia de UX — reusarlos. Verificar que
+    los presets sigan vigentes con el model-routing actual del `sdd-orchestrator` v2.
+  - **OpenCode NO es un clon de Claude**: necesita su propio picker con su catálogo
+    de modelos. Resolver `(TBD)` qué modelos/aliases expone opencode antes del apply.
+  - El destino del routing es el harness `config` `sdd-orchestrator` (toggle
+    `model-routing`), no un archivo nuevo — pasa por el mismo install pipeline parcial
+    que usará `tui-update-stack` para el re-sync.
+- **Dependencias**: `tui-menu-hub` (el hub debe existir para agregar la entrada).
+  Hermano paralelo de `tui-update-stack` (ambos cuelgan del hub, no se bloquean).
+  No habilita nada (hoja del epic TUI).
+- **Governance**: MEDIO (re-inyección en config de agentes — toca `CLAUDE.md`/
+  `AGENTS.md` del usuario vía markers + backup). Implementar con checkpoints;
+  superficiar el diseño del re-sync al operador antes del apply.
+- **Leer antes**:
+  - Legacy `internal/tui/screens/model_config.go` — pantalla de entrada (3 opciones).
+  - Legacy `internal/tui/screens/claude_model_picker.go` — presets + custom por fase + ciclado.
+  - Legacy `internal/tui/screens/model_picker.go` y `model_config_test.go` — picker genérico + tests modelo.
+  - `internal/harness/config/` — instalador del `sdd-orchestrator` (toggle `model-routing`), destino del re-sync.
+  - `internal/agents/` — adapters por agente (detectar qué agentes reciben el routing).
+  - `tui-menu-hub` change (debe estar terminado — depende de él).
+  - `CLAUDE.md` §1 (prohibido theme cosmético) y §3 ("SIEMPRE limpiar leftovers gentle-ai…").
 
 ---
 
@@ -345,10 +410,11 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 | `openspec-init-cleanup` | 0 (paralelo) | BAJO | — | — | ✅ COMPLETADO |
 | `uninstall-subcommand` | 1 | **ALTO** | — | `tui-menu-hub` | ✅ IMPLEMENTADO |
 | `claude-agent-switch-research` | 1+ (libre) | BAJO | — | — |
-| `tui-menu-hub` | 2 | BAJO/MEDIO | `uninstall-subcommand` | `tui-update-stack` |
+| `tui-menu-hub` | 2 | BAJO/MEDIO | `uninstall-subcommand` | `tui-update-stack`, `tui-configure-models` | ✅ IMPLEMENTADO (pend. archive) |
 | `tui-update-stack` | 3 | MEDIO | `tui-menu-hub` | — |
+| `tui-configure-models` | 3 | MEDIO | `tui-menu-hub` | — |
 
-**Camino crítico**: `uninstall-subcommand → tui-menu-hub → tui-update-stack` (3 changes).
+**Camino crítico**: `uninstall-subcommand → tui-menu-hub → {tui-update-stack ‖ tui-configure-models}` (3 changes; los dos últimos en paralelo).
 
-**Primer change recomendado**: `opencode-orchestrator-parity` (prioridad #1 declarada,
-ola 0, sin dependencias) en paralelo con `openspec-init-cleanup` (XS, ola 0).
+**Próximo paso**: archivar `tui-menu-hub` (implementado, suite verde) y luego encarar
+en paralelo `tui-update-stack` y `tui-configure-models` (ambos cuelgan del hub).
