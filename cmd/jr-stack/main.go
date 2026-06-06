@@ -20,6 +20,7 @@ import (
 	"github.com/JuanCruzRobledo/jr-stack/internal/install"
 	"github.com/JuanCruzRobledo/jr-stack/internal/model"
 	"github.com/JuanCruzRobledo/jr-stack/internal/tui"
+	"github.com/JuanCruzRobledo/jr-stack/internal/uninstall"
 	"github.com/JuanCruzRobledo/jr-stack/internal/verify"
 )
 
@@ -76,6 +77,23 @@ func main() {
 		if exitCode != 0 {
 			os.Exit(exitCode)
 		}
+	case "uninstall":
+		// No wireEmbeddedFS / SkillsFS needed — uninstall copies no skills (D7/D8).
+		cat, err := catalog.Load()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: load catalog: %v\n", err)
+			os.Exit(1)
+		}
+		reg, err := agents.NewDefaultRegistry()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: create agent registry: %v\n", err)
+			os.Exit(1)
+		}
+		regWrapper := uninstallRegistryAdapter{r: reg}
+		exitCode := runUninstallDispatch(os.Args[2:], cat, regWrapper, os.Stderr)
+		if exitCode != 0 {
+			os.Exit(exitCode)
+		}
 	default:
 		fmt.Fprintf(os.Stderr, "unknown command: %q\n", os.Args[1])
 		os.Exit(1)
@@ -89,6 +107,19 @@ func main() {
 type agentRegistryAdapter struct{ r *agents.Registry }
 
 func (a agentRegistryAdapter) Get(agent model.Agent) (install.AgentAdapter, bool) {
+	adapter, ok := a.r.Get(agent)
+	if !ok {
+		return nil, false
+	}
+	return adapter, true
+}
+
+// uninstallRegistryAdapter wraps *agents.Registry to satisfy uninstall.Registry.
+// agents.Adapter is a structural superset of uninstall.AgentAdapter (its 5-method
+// subset), so the wrapper is just a cast — mirrors agentRegistryAdapter (D1).
+type uninstallRegistryAdapter struct{ r *agents.Registry }
+
+func (a uninstallRegistryAdapter) Get(agent model.Agent) (uninstall.AgentAdapter, bool) {
 	adapter, ok := a.r.Get(agent)
 	if !ok {
 		return nil, false

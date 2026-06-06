@@ -36,3 +36,10 @@ func SetSkillRemovalFn(fn func(path string) error) (restore func()) {
 	skillRemovalFn = fn
 	return func() { skillRemovalFn = old }
 }
+
+// SetCommandRemovalFn replaces the commandRemovalFn for testing.
+func SetCommandRemovalFn(fn func(path string) error) (restore func()) {
+	old := commandRemovalFn
+	commandRemovalFn = fn
+	return func() { commandRemovalFn = old }
+}

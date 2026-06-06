@@ -442,6 +442,112 @@ func TestBuildPlanUnknownAgentReturnsError(t *testing.T) {
 	}
 }
 
+// TestBuildPlanCommandHarnessUsesCommandRemovalStep verifies that a command
+// harness maps to a command-removal step (not an error) and is included in
+// the plan. This is the regression test for the HarnessCommand bug: the engine
+// previously crashed with "unknown harness type" when BuildPlan encountered a
+// command harness (e.g. starter-add-command in lite mode).
+//
+// RED: fails until uninstall.AgentAdapter gets CommandsDir+VariantKey and
+// buildUninstallStep handles model.HarnessCommand.
+func TestBuildPlanCommandHarnessUsesCommandRemovalStep(t *testing.T) {
+	h := model.Harness{
+		ID:           "starter-add-command",
+		Type:         model.HarnessCommand,
+		Agents:       []model.Agent{model.AgentClaude, model.AgentOpenCode},
+		InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull},
+	}
+
+	restoreSnap := uninstall.SetSnapshotCreate(func(dir string, paths []string) (backup.Manifest, error) {
+		return backup.Manifest{}, nil
+	})
+	defer restoreSnap()
+
+	cat := &fakeCatalog{harnesses: []model.Harness{h}}
+	homeDir := t.TempDir()
+	reg := &fakeRegistry{adapters: map[model.Agent]uninstall.AgentAdapter{
+		model.AgentClaude: fakeAdapter{agent: model.AgentClaude, homeDir: homeDir},
+	}}
+
+	plan, err := uninstall.BuildPlan(cat, uninstall.Intent{
+		Agents:   []model.Agent{model.AgentClaude},
+		Mode:     model.ModeLite,
+		Strategy: uninstall.StrategyTargeted,
+	}, buildUninstallOptions(homeDir, reg))
+	if err != nil {
+		t.Fatalf("BuildPlan() must not error for command harness, got: %v", err)
+	}
+
+	ids := rawStepIDs(plan)
+	const cmdPrefix = "command-removal:"
+	found := false
+	for _, id := range ids {
+		if len(id) >= len(cmdPrefix) && id[:len(cmdPrefix)] == cmdPrefix {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected command-removal: step for command harness, got %v", ids)
+	}
+}
+
+// TestBuildPlanCommandHarnessSnapshotsCaptureCommandPaths verifies that
+// collectUninstallPaths includes the command file paths when a command harness
+// is in the plan. The snapshot must cover the files that commandRemovalStep
+// will delete.
+func TestBuildPlanCommandHarnessSnapshotsCaptureCommandPaths(t *testing.T) {
+	h := model.Harness{
+		ID:           "starter-add-command",
+		Type:         model.HarnessCommand,
+		Agents:       []model.Agent{model.AgentClaude, model.AgentOpenCode},
+		InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull},
+	}
+
+	homeDir := t.TempDir()
+	adapter := fakeAdapter{agent: model.AgentClaude, homeDir: homeDir}
+
+	var gotPaths []string
+	restoreSnap := uninstall.SetSnapshotCreate(func(dir string, paths []string) (backup.Manifest, error) {
+		gotPaths = paths
+		return backup.Manifest{}, nil
+	})
+	defer restoreSnap()
+
+	cat := &fakeCatalog{harnesses: []model.Harness{h}}
+	reg := &fakeRegistry{adapters: map[model.Agent]uninstall.AgentAdapter{
+		model.AgentClaude: adapter,
+	}}
+
+	plan, err := uninstall.BuildPlan(cat, uninstall.Intent{
+		Agents:   []model.Agent{model.AgentClaude},
+		Mode:     model.ModeLite,
+		Strategy: uninstall.StrategyTargeted,
+	}, buildUninstallOptions(homeDir, reg))
+	if err != nil {
+		t.Fatalf("BuildPlan() error = %v", err)
+	}
+
+	for _, step := range plan.Prepare {
+		if err := step.Run(); err != nil {
+			t.Fatalf("prepare step error = %v", err)
+		}
+	}
+
+	// The adapter's CommandsDir + RelPathForVariant("claude") = expected path.
+	expectedPath := filepath.Join(adapter.CommandsDir(homeDir), "jr", "starter-add.md")
+	found := false
+	for _, p := range gotPaths {
+		if p == expectedPath {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected command path %q in snapshot paths %v", expectedPath, gotPaths)
+	}
+}
+
 // ─────────────────────────────────────────────────────────────────
 // helpers
 // ─────────────────────────────────────────────────────────────────
@@ -451,7 +557,7 @@ func applyStepIDs(plan uninstall.Plan) []string {
 	var ids []string
 	for _, s := range plan.Apply {
 		id := s.ID()
-		for _, prefix := range []string{"marker:", "skill-removal:", "permissions-removal:", "external-skip:", "restore-from-backup"} {
+		for _, prefix := range []string{"marker:", "skill-removal:", "permissions-removal:", "external-skip:", "restore-from-backup", "command-removal:"} {
 			if id == prefix {
 				id = prefix
 				break

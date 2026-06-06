@@ -247,6 +247,40 @@ func TestInstaller_Backup_ChangedContent(t *testing.T) {
 
 // ── §5.7 TRIANGULATE: focused-agents-only + both happy paths ─────────────────
 
+// ── RelPathForVariant export ──────────────────────────────────────────────────
+
+// TestRelPathForVariant_Claude asserts that the exported RelPathForVariant
+// returns the correct relative path for the "claude" variant.
+// RED: fails until RelPathForVariant is exported from installer.go.
+func TestRelPathForVariant_Claude(t *testing.T) {
+	got := command.RelPathForVariant("claude")
+	want := filepath.Join("jr", "starter-add.md")
+	if got != want {
+		t.Errorf("RelPathForVariant(%q) = %q, want %q", "claude", got, want)
+	}
+}
+
+// TestRelPathForVariant_OpenCode asserts that the exported RelPathForVariant
+// returns the correct relative path for the "opencode" variant.
+func TestRelPathForVariant_OpenCode(t *testing.T) {
+	got := command.RelPathForVariant("opencode")
+	want := "jr-starter-add.md"
+	if got != want {
+		t.Errorf("RelPathForVariant(%q) = %q, want %q", "opencode", got, want)
+	}
+}
+
+// TestRelPathForVariant_UnknownVariant asserts that an unknown variant key
+// returns "" (the caller should skip silently).
+func TestRelPathForVariant_UnknownVariant(t *testing.T) {
+	got := command.RelPathForVariant("gemini")
+	if got != "" {
+		t.Errorf("RelPathForVariant(%q) = %q, want empty string for unknown variant", "gemini", got)
+	}
+}
+
+// ── §5.7 TRIANGULATE: focused-agents-only + both happy paths ─────────────────
+
 // TestInstaller_FocusedAgentsOnly_NoOutputForUnknownAgent asserts that an
 // adapter with an unknown variant key produces no result silently
 // (the asset path doesn't exist, but since commandsDir is empty it's skipped).

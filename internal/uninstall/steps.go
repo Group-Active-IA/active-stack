@@ -8,6 +8,7 @@ import (
 
 	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
 	"github.com/JuanCruzRobledo/jr-stack/internal/filemerge"
+	"github.com/JuanCruzRobledo/jr-stack/internal/harness/command"
 	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
 	"github.com/JuanCruzRobledo/jr-stack/internal/model"
 )
@@ -206,6 +207,57 @@ func (s *skillRemovalStep) Run() error {
 }
 
 func (s *skillRemovalStep) Rollback() error {
+	if s.manifest == nil {
+		return nil
+	}
+	return restoreFn(*s.manifest)
+}
+
+// ─────────────────────────────────────────────────────────────────
+// commandRemovalStep — command harnesses: removes the per-agent command file.
+// ─────────────────────────────────────────────────────────────────
+
+// commandRemovalFn is the backing function for removing a single command file.
+// It is a package-level variable so tests can inject a fake.
+var commandRemovalFn = func(path string) error {
+	err := os.Remove(path)
+	if os.IsNotExist(err) {
+		return nil // already absent — idempotent no-op
+	}
+	return err
+}
+
+type commandRemovalStep struct {
+	h        model.Harness
+	adapters []AgentAdapter
+	homeDir  string
+	manifest *backup.Manifest
+}
+
+func (s *commandRemovalStep) ID() string { return "command-removal:" + s.h.ID }
+func (s *commandRemovalStep) setManifest(m *backup.Manifest) { s.manifest = m }
+
+func (s *commandRemovalStep) Run() error {
+	for _, a := range s.adapters {
+		commandsDir := a.CommandsDir(s.homeDir)
+		if commandsDir == "" {
+			// Adapter does not support commands; skip silently.
+			continue
+		}
+		relPath := command.RelPathForVariant(a.VariantKey())
+		if relPath == "" {
+			// Unknown variant — no command file to remove; skip silently.
+			continue
+		}
+		commandPath := filepath.Join(commandsDir, relPath)
+		if err := commandRemovalFn(commandPath); err != nil {
+			return fmt.Errorf("command removal for harness %q on agent %q: %w", s.h.ID, a.Agent(), err)
+		}
+	}
+	return nil
+}
+
+func (s *commandRemovalStep) Rollback() error {
 	if s.manifest == nil {
 		return nil
 	}

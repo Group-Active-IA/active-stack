@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
+	"github.com/JuanCruzRobledo/jr-stack/internal/harness/command"
 	"github.com/JuanCruzRobledo/jr-stack/internal/model"
 	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
 )
@@ -179,6 +180,20 @@ func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []
 			}
 		case model.HarnessExternal:
 			// External harnesses are skipped — no paths to snapshot.
+		case model.HarnessCommand:
+			// Command harnesses write a single file per adapter under CommandsDir.
+			// Skip adapters with empty CommandsDir or unknown VariantKey.
+			for _, a := range adapters {
+				commandsDir := a.CommandsDir(homeDir)
+				if commandsDir == "" {
+					continue
+				}
+				relPath := command.RelPathForVariant(a.VariantKey())
+				if relPath == "" {
+					continue
+				}
+				add(filepath.Join(commandsDir, relPath))
+			}
 		}
 	}
 
@@ -207,6 +222,13 @@ func buildUninstallStep(h model.Harness, adapters []AgentAdapter, opts Options) 
 			}, nil
 		}
 		return &markerRemovalStep{
+			h:        h,
+			adapters: adapters,
+			homeDir:  opts.HomeDir,
+		}, nil
+
+	case model.HarnessCommand:
+		return &commandRemovalStep{
 			h:        h,
 			adapters: adapters,
 			homeDir:  opts.HomeDir,

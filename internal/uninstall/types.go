@@ -51,6 +51,14 @@ type AgentAdapter interface {
 	SkillsDir(homeDir string) string
 	SettingsPath(homeDir string) string
 	ConfigDelivery() model.ConfigDelivery
+	// CommandsDir returns the path to the agent's slash-command directory.
+	// An empty string signals that this agent does not support commands.
+	// Added to support HarnessCommand uninstall (C-bugfix).
+	CommandsDir(homeDir string) string
+	// VariantKey returns the asset base key used to select the per-agent
+	// command asset path (e.g. "claude", "opencode"). Used by the command
+	// uninstall step to compute the correct file path via command.RelPathForVariant.
+	VariantKey() string
 }
 
 // Registry maps agents to their adapters. It is satisfied by *agents.Registry.

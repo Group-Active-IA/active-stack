@@ -116,7 +116,12 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ### `uninstall-subcommand` — Exponer `jr-stack uninstall` en la CLI
 
-- **Estado**: PENDIENTE.
+- **Estado**: IMPLEMENTADO (2026-06-06, rama `feat/uninstall-subcommand`). Wiring completo
+  (flags + executor exportado + dispatch + `case "uninstall"`). **Bonus fix de engine**:
+  `internal/uninstall` no manejaba `model.HarnessCommand` → `uninstall --mode lite/full`
+  crasheaba con el catálogo real (`starter-add-command` es type:command). Se agregó
+  `commandRemovalStep` + `CommandsDir`/`VariantKey` en la interfaz + `RelPathForVariant`
+  exportado de `internal/harness/command`. TDD estricto, suite completa verde. Pendiente: archive OPSX.
 - **Scope**:
   - Nuevo `cmd/jr-stack/headless/uninstall_flags.go`: tipo `ParsedUninstallFlags` +
     función `ParseUninstallFlags(args []string)`. Flags: `--mode`, `--agent`,
@@ -277,7 +282,14 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ### `openspec-init-cleanup` — Limpiar basura del `openspec init` en `jr-orchestrator`
 
-- **Estado**: PENDIENTE.
+- **Estado**: COMPLETADO (2026-06-06). Cleanup `rm -rf .claude/skills/openspec-*`
+  agregado al Step 1 del `SKILL.md` del `jr-orchestrator` (justo después de
+  `openspec init`), via glob future-proof. Aplicado en el repo fuente
+  (`SKILLS/jr-orchestrator`, v2.0) **y** en la copia instalada
+  (`~/.claude/skills/jr-orchestrator`, v2.1) que es la que realmente corre.
+  ⚠️ Descubierto: el repo fuente (v2.0) está DESACTUALIZADO respecto a la copia
+  instalada (v2.1, con checkpoint protocol + skill-registry) — la v2.1 nunca se
+  pusheó al repo. Reconciliar source ↔ instalado es follow-up aparte.
 - **⚠️ ARTEFACTO: SKILL `jr-orchestrator` — este change NO modifica el repo Go.**
   El fix vive en el `SKILL.md` del skill `jr-orchestrator` (repo
   `JuanCruzRobledo/jr-orchestrator`, archivo `SKILL.md` o equivalente de la skill).
@@ -330,8 +342,8 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 | Change | Ola | Governance | Depende de | Habilita |
 |---|---|---|---|---|
 | `opencode-orchestrator-parity` | 0 (paralelo) | BAJO/MEDIO | — | — |
-| `openspec-init-cleanup` | 0 (paralelo) | BAJO | — | — |
-| `uninstall-subcommand` | 1 | **ALTO** | — | `tui-menu-hub` |
+| `openspec-init-cleanup` | 0 (paralelo) | BAJO | — | — | ✅ COMPLETADO |
+| `uninstall-subcommand` | 1 | **ALTO** | — | `tui-menu-hub` | ✅ IMPLEMENTADO |
 | `claude-agent-switch-research` | 1+ (libre) | BAJO | — | — |
 | `tui-menu-hub` | 2 | BAJO/MEDIO | `uninstall-subcommand` | `tui-update-stack` |
 | `tui-update-stack` | 3 | MEDIO | `tui-menu-hub` | — |

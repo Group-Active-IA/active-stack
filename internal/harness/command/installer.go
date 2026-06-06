@@ -110,29 +110,47 @@ func (ins *Installer) installForAdapter(
 	return Result{CommandPath: destFile}, nil
 }
 
-// assetAndRelPathForVariant returns the embedded FS asset path and the
-// relative path (under commandsDir) for the given agent variant key.
-//
-// The asset path follows the structure: commands/<variantKey>/<relPath>.
-// The relative path encodes the per-agent naming convention:
+// RelPathForVariant returns the relative file path (under commandsDir) for
+// the given agent variant key. This is the single authoritative source of the
+// per-agent naming convention, used by both the command installer and the
+// uninstall engine (DRY — one place to change when naming evolves):
 //
 //	claude   → "jr/starter-add.md"  (namespaced; invoked as /jr:starter-add)
 //	opencode → "jr-starter-add.md"  (flat, hyphenated; invoked as /jr-starter-add)
 //
-// An unknown variantKey returns ("", "") — the caller skips silently.
-func assetAndRelPathForVariant(variantKey string) (assetPath, relPath string) {
+// An unknown variantKey returns "" — the caller must skip silently.
+func RelPathForVariant(variantKey string) string {
 	switch variantKey {
 	case "claude":
-		relPath = filepath.Join("jr", "starter-add.md")
-		assetPath = "commands/claude/jr/starter-add.md"
-		return assetPath, relPath
+		return filepath.Join("jr", "starter-add.md")
 	case "opencode":
-		relPath = "jr-starter-add.md"
-		assetPath = "commands/opencode/jr-starter-add.md"
-		return assetPath, relPath
+		return "jr-starter-add.md"
 	default:
+		return ""
+	}
+}
+
+// assetAndRelPathForVariant returns the embedded FS asset path and the
+// relative path (under commandsDir) for the given agent variant key.
+//
+// The asset path follows the structure: commands/<variantKey>/<relPath>.
+// Delegates to RelPathForVariant for the relative path (single source of truth).
+//
+// An unknown variantKey returns ("", "") — the caller skips silently.
+func assetAndRelPathForVariant(variantKey string) (assetPath, relPath string) {
+	relPath = RelPathForVariant(variantKey)
+	if relPath == "" {
 		return "", ""
 	}
+	// The asset path mirrors: commands/<variantKey>/<relPath>, but uses
+	// forward slashes (embedded FS always uses /).
+	switch variantKey {
+	case "claude":
+		assetPath = "commands/claude/jr/starter-add.md"
+	case "opencode":
+		assetPath = "commands/opencode/jr-starter-add.md"
+	}
+	return assetPath, relPath
 }
 
 // snapshotCommandFile backs up the existing command file at destFile into a

@@ -48,9 +48,10 @@ func (f *fakeCatalog) ForAgent(a model.Agent) []model.Harness {
 // ─────────────────────────────────────────────────────────────────
 
 type fakeAdapter struct {
-	agent    model.Agent
-	homeDir  string
-	delivery model.ConfigDelivery
+	agent       model.Agent
+	homeDir     string
+	delivery    model.ConfigDelivery
+	variantKey  string // defaults to "claude" when empty
 }
 
 func (a fakeAdapter) Agent() model.Agent                     { return a.agent }
@@ -58,6 +59,13 @@ func (a fakeAdapter) InstructionsPath(homeDir string) string { return homeDir + 
 func (a fakeAdapter) SkillsDir(homeDir string) string        { return homeDir + "/skills" }
 func (a fakeAdapter) SettingsPath(homeDir string) string     { return homeDir + "/settings.json" }
 func (a fakeAdapter) ConfigDelivery() model.ConfigDelivery   { return a.delivery }
+func (a fakeAdapter) CommandsDir(homeDir string) string      { return homeDir + "/commands" }
+func (a fakeAdapter) VariantKey() string {
+	if a.variantKey != "" {
+		return a.variantKey
+	}
+	return "claude"
+}
 
 // fakeAdapterCustomPath allows overriding individual paths for path-resolution tests.
 type fakeAdapterCustomPath struct {
@@ -65,6 +73,8 @@ type fakeAdapterCustomPath struct {
 	instructionsPath string
 	skillsDir        string
 	settingsPath     string
+	commandsDir      string
+	variantKey       string
 	delivery         model.ConfigDelivery
 }
 
@@ -87,6 +97,20 @@ func (a fakeAdapterCustomPath) SettingsPath(homeDir string) string {
 		return a.settingsPath
 	}
 	return homeDir + "/settings.json"
+}
+func (a fakeAdapterCustomPath) CommandsDir(homeDir string) string {
+	// Note: we cannot use the "" sentinel as "not set" here because the test
+	// uses "" to mean "this agent does not support commands". We store a special
+	// marker field to distinguish "use homeDir default" vs "empty = skip".
+	// Since fakeAdapterCustomPath is used ONLY in tests and explicitly sets
+	// commandsDir = "" to mean "skip", we return "" as-is (no fallback).
+	return a.commandsDir
+}
+func (a fakeAdapterCustomPath) VariantKey() string {
+	if a.variantKey != "" {
+		return a.variantKey
+	}
+	return "claude"
 }
 
 // ─────────────────────────────────────────────────────────────────
