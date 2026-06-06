@@ -169,6 +169,13 @@ func Prune(backupDir string, retentionCount int) ([]string, error) {
 	return deleted, nil
 }
 
+// ListManifests reads all backup directories inside backupDir and returns the
+// parsed manifests. Subdirectories without a readable manifest.json are skipped.
+// This is a read-only operation; it does not modify any backup.
+func ListManifests(backupDir string) ([]Manifest, error) {
+	return listManifests(backupDir)
+}
+
 // listManifests reads all backup directories inside backupDir and returns the
 // parsed manifests. Subdirectories without a readable manifest.json are skipped.
 func listManifests(backupDir string) ([]Manifest, error) {
