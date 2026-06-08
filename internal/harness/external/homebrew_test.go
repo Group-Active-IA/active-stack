@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
@@ -517,4 +518,91 @@ func buildZip(t *testing.T, filename string, content []byte) []byte {
 	io.Copy(f, bytes.NewReader(content))
 	zw.Close()
 	return buf.Bytes()
+}
+
+// ── writeExecutable replaces an in-use (locked) binary ─────────────────────
+
+// TestWriteExecutable_ReplacesInUseBinary covers the reinstall case: the target
+// already holds a binary that cannot be truncated in place. On Windows a running
+// .exe is locked, so os.OpenFile with O_TRUNC fails ("being used by another
+// process"). We reproduce that portably with a read-only (0o400) file: opening
+// it O_WRONLY|O_TRUNC fails the same way on every OS, yet it can still be
+// renamed. writeExecutable must move the stale binary aside to "<path>.old" and
+// write the new content fresh — the self-update pattern for in-use executables.
+func TestWriteExecutable_ReplacesInUseBinary(t *testing.T) {
+	dir := t.TempDir()
+	outPath := filepath.Join(dir, "engram.exe")
+
+	if err := os.WriteFile(outPath, []byte("old-binary"), 0o400); err != nil {
+		t.Fatalf("seed read-only binary: %v", err)
+	}
+	t.Cleanup(func() { os.Chmod(outPath, 0o600); os.Chmod(outPath+".old", 0o600) })
+
+	if err := writeExecutable(strings.NewReader("new-binary"), outPath); err != nil {
+		t.Fatalf("writeExecutable failed: %v", err)
+	}
+
+	got, err := os.ReadFile(outPath)
+	if err != nil {
+		t.Fatalf("read new binary: %v", err)
+	}
+	if string(got) != "new-binary" {
+		t.Errorf("new binary content = %q, want %q", got, "new-binary")
+	}
+
+	aside, err := os.ReadFile(outPath + ".old")
+	if err != nil {
+		t.Fatalf("stale binary not moved aside: %v", err)
+	}
+	if string(aside) != "old-binary" {
+		t.Errorf(".old content = %q, want %q", aside, "old-binary")
+	}
+}
+
+// TestWriteExecutable_FreshWrite is the happy path: no pre-existing target, so
+// the binary is written in place and no ".old" sidecar is left behind. Guards
+// the rename-aside branch from firing (and littering) on a normal first install.
+func TestWriteExecutable_FreshWrite(t *testing.T) {
+	dir := t.TempDir()
+	outPath := filepath.Join(dir, "engram.exe")
+
+	if err := writeExecutable(strings.NewReader("fresh"), outPath); err != nil {
+		t.Fatalf("writeExecutable failed: %v", err)
+	}
+
+	got, err := os.ReadFile(outPath)
+	if err != nil || string(got) != "fresh" {
+		t.Fatalf("content = %q (err %v), want %q", got, err, "fresh")
+	}
+	if _, err := os.Stat(outPath + ".old"); !os.IsNotExist(err) {
+		t.Errorf("unexpected .old sidecar created on a fresh write (stat err: %v)", err)
+	}
+}
+
+// TestWriteExecutable_ClearsStaleAside verifies a leftover ".old" from a prior
+// replace does not block a new replace: it is cleared before the rename, so the
+// freshly displaced binary takes its place.
+func TestWriteExecutable_ClearsStaleAside(t *testing.T) {
+	dir := t.TempDir()
+	outPath := filepath.Join(dir, "engram.exe")
+	if err := os.WriteFile(outPath, []byte("v1"), 0o400); err != nil {
+		t.Fatalf("seed read-only binary: %v", err)
+	}
+	if err := os.WriteFile(outPath+".old", []byte("ancient"), 0o600); err != nil {
+		t.Fatalf("seed stale aside: %v", err)
+	}
+	t.Cleanup(func() { os.Chmod(outPath, 0o600); os.Chmod(outPath+".old", 0o600) })
+
+	if err := writeExecutable(strings.NewReader("v2"), outPath); err != nil {
+		t.Fatalf("writeExecutable failed: %v", err)
+	}
+
+	got, _ := os.ReadFile(outPath)
+	if string(got) != "v2" {
+		t.Errorf("new binary = %q, want %q", got, "v2")
+	}
+	aside, _ := os.ReadFile(outPath + ".old")
+	if string(aside) != "v1" {
+		t.Errorf(".old = %q, want the displaced v1 (ancient leftover should be cleared)", aside)
+	}
 }

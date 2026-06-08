@@ -318,13 +318,43 @@ func writeExecutable(r io.Reader, outPath string) error {
 	if err := os.MkdirAll(filepath.Dir(outPath), 0o755); err != nil {
 		return fmt.Errorf("create parent dir: %w", err)
 	}
-	f, err := os.OpenFile(outPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	f, err := openTruncExecutable(outPath)
 	if err != nil {
-		return fmt.Errorf("create %s: %w", outPath, err)
+		return err
 	}
 	defer f.Close()
 	if _, err := io.Copy(f, r); err != nil {
 		return fmt.Errorf("write %s: %w", outPath, err)
 	}
 	return nil
+}
+
+// openTruncExecutable opens outPath for writing, truncating any prior content.
+// If the target already exists but cannot be truncated in place — the classic
+// Windows reinstall case where the old binary is still running and therefore
+// locked ("being used by another process") — it moves the stale binary aside to
+// "<path>.old" and retries. Windows forbids truncating or deleting a running
+// .exe but DOES allow renaming it, so the old process keeps running under the
+// renamed file while the new binary lands in place. This is the standard
+// self-update pattern; on Unix the rename path is a harmless fallback.
+func openTruncExecutable(outPath string) (*os.File, error) {
+	f, err := os.OpenFile(outPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	if err == nil {
+		return f, nil
+	}
+	// Only recoverable when the file actually exists; otherwise the failure is
+	// something else (e.g. an unwritable parent dir) and we must not mask it.
+	if _, statErr := os.Stat(outPath); statErr != nil {
+		return nil, fmt.Errorf("create %s: %w", outPath, err)
+	}
+	aside := outPath + ".old"
+	_ = os.Remove(aside) // clear a leftover from a prior replace; ignore if absent/locked
+	if mvErr := os.Rename(outPath, aside); mvErr != nil {
+		return nil, fmt.Errorf("create %s: %w", outPath, err)
+	}
+	f, retryErr := os.OpenFile(outPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	if retryErr != nil {
+		return nil, fmt.Errorf("create %s: %w", outPath, retryErr)
+	}
+	return f, nil
 }
