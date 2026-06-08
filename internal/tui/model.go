@@ -2,11 +2,13 @@ package tui
 
 import (
 	"fmt"
+	"io"
 	"runtime"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/JuanCruzRobledo/jr-stack/cmd/jr-stack/headless"
 	"github.com/JuanCruzRobledo/jr-stack/internal/install"
 	"github.com/JuanCruzRobledo/jr-stack/internal/model"
 	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
@@ -31,7 +33,45 @@ type ModelDeps struct {
 	// RunPlanFn executes the plan and sends progress/done messages to the
 	// program. Tests inject a fake that immediately sends a doneMsg.
 	RunPlanFn func(plan install.Plan, bridge *progressBridge, send func(tea.Msg))
+
+	// Starters is the list of available starters (pre-computed from catalog.AllStarters()).
+	Starters []model.Starter
+	// BackupDir is the directory where backups are stored.
+	BackupDir string
+	// RunUninstall invokes the headless uninstall executor with the given flags
+	// and writer. Returns 0 on success, 1 on failure.
+	// Wraps RunHeadlessUninstall with real catalog/registry injected.
+	RunUninstall func(flags headless.ParsedUninstallFlags, w io.Writer) int
+	// RunStarter invokes the starter-add executor for the given starter ID.
+	// projectPath is the target project directory; agents are the focal agents.
+	// Returns 0 on success, 1 on failure.
+	RunStarter func(starterID, projectPath string, agents []model.Agent, w io.Writer) int
 }
+
+// hubItem is one item in the welcome hub menu.
+type hubItem struct {
+	label string
+}
+
+// hubItems defines the canonical ordered list of hub menu options.
+var hubItems = []hubItem{
+	{label: "Install"},
+	{label: "Starters"},
+	{label: "Manage backups"},
+	{label: "Uninstall"},
+	{label: "Update stack"},
+	{label: "Quit"},
+}
+
+// Hub item indices (single source of truth).
+const (
+	hubInstall  = 0
+	hubStarters = 1
+	hubBackups  = 2
+	hubUninstall = 3
+	hubUpdate   = 4
+	hubQuit     = 5
+)
 
 // Model is the top-level Bubbletea model for the install flow.
 type Model struct {
@@ -53,6 +93,20 @@ type Model struct {
 
 	// Completion state (ScreenComplete).
 	ExecutionResult pipeline.ExecutionResult
+
+	// Hub navigation state.
+	prevScreen Screen  // set when entering a child screen from the hub
+	hubNotice  string  // inline message on hub (e.g. "coming soon")
+
+	// Backups screen state.
+	backups backupsState
+
+	// Uninstall screen state.
+	uninstallSel      uninstallSelections
+	uninstallLines    []string
+	uninstallDone     bool
+	uninstallExitCode int
+	uninstallBridge   *uninstallProgressBridge
 
 	// Injected dependencies.
 	deps ModelDeps
@@ -105,6 +159,11 @@ func (m Model) Init() tea.Cmd {
 
 // Update handles all messages and key events.
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// Handle uninstall-specific messages before the generic switch.
+	if updated, cmd, handled := m.applyUninstallMsg(msg); handled {
+		return updated, cmd
+	}
+
 	switch msg := msg.(type) {
 
 	case tea.KeyMsg:
@@ -142,9 +201,8 @@ func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch m.Screen {
 
 	case ScreenWelcome:
-		if key.Type == tea.KeyEnter {
-			m.Screen = ScreenDetection
-		}
+		return m.handleWelcomeKey(key)
+
 
 	case ScreenDetection:
 		switch key.Type {
@@ -263,6 +321,21 @@ func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case ScreenPermissions:
 		return m.handlePermissionsKey(key)
+
+	case ScreenStarters:
+		return m.handleStartersKey(key)
+
+	case ScreenBackups:
+		return m.handleBackupsKey(key)
+
+	case ScreenUninstallAgents, ScreenUninstallMode, ScreenUninstallStrategy:
+		return m.handleUninstallFlowKey(key)
+
+	case ScreenUninstallConfirm:
+		return m.handleUninstallConfirmKey(key)
+
+	case ScreenUninstalling:
+		return m.handleUninstallingKey(key)
 
 	case ScreenReview:
 		switch key.Type {
@@ -410,6 +483,16 @@ func (m Model) View() string {
 		return m.viewInstalling()
 	case ScreenComplete:
 		return m.viewComplete()
+	case ScreenStarters:
+		return m.viewStarters()
+	case ScreenBackups:
+		return m.viewBackups()
+	case ScreenUninstallAgents, ScreenUninstallMode, ScreenUninstallStrategy:
+		return m.viewUninstallFlow()
+	case ScreenUninstallConfirm:
+		return m.viewUninstallConfirm()
+	case ScreenUninstalling:
+		return m.viewUninstalling()
 	default:
 		return ""
 	}
@@ -424,9 +507,60 @@ var (
 	dimStyle      = lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 )
 
+// handleWelcomeKey handles keyboard input on the ScreenWelcome hub.
+func (m Model) handleWelcomeKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch key.Type {
+	case tea.KeyUp:
+		if m.Cursor > 0 {
+			m.Cursor--
+		}
+		m.hubNotice = ""
+	case tea.KeyDown:
+		if m.Cursor < len(hubItems)-1 {
+			m.Cursor++
+		}
+		m.hubNotice = ""
+	case tea.KeyEnter:
+		m.hubNotice = ""
+		switch m.Cursor {
+		case hubInstall:
+			// Enter existing install flow.
+			m.prevScreen = ScreenWelcome
+			m.Screen = ScreenDetection
+		case hubStarters:
+			m.prevScreen = ScreenWelcome
+			return m.enterStarters()
+		case hubBackups:
+			m.prevScreen = ScreenWelcome
+			return m.enterBackups()
+		case hubUninstall:
+			m.prevScreen = ScreenWelcome
+			m.Screen = ScreenUninstallAgents
+			m.Cursor = 0
+		case hubUpdate:
+			m.hubNotice = "coming soon"
+		case hubQuit:
+			return m, tea.Quit
+		}
+	}
+	return m, nil
+}
+
 func (m Model) viewWelcome() string {
-	return titleStyle.Render("jr-stack installer") + "\n\n" +
-		"Press Enter to begin.\n"
+	var sb strings.Builder
+	sb.WriteString(titleStyle.Render("jr-stack") + "\n\n")
+	for i, item := range hubItems {
+		cursor := "  "
+		if m.Cursor == i {
+			cursor = "> "
+		}
+		sb.WriteString(cursor + item.label + "\n")
+	}
+	if m.hubNotice != "" {
+		sb.WriteString("\n" + dimStyle.Render(m.hubNotice) + "\n")
+	}
+	sb.WriteString("\nUp/Down = navigate  Enter = select\n")
+	return sb.String()
 }
 
 func (m Model) viewDetection() string {

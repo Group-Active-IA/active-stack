@@ -199,6 +199,7 @@ func runInstall(args []string) error {
 	availableAgents := tui.AvailableAgentsList(detectedAgents, reg.SupportedAgents())
 
 	// 5. Build the TUI deps with the embedded skills FS wired.
+	uninstallRegWrapper := uninstallRegistryAdapter{r: reg}
 	deps := tui.ModelDeps{
 		Catalog:         cat,
 		Registry:        regWrapper,
@@ -216,6 +217,11 @@ func runInstall(args []string) error {
 
 			return install.BuildPlan(c, intent, opts)
 		},
+		// Hub child deps (tui-menu-hub).
+		Starters:     cat.AllStarters(),
+		BackupDir:    resolveBackupDir(homeDir),
+		RunUninstall: buildRunUninstallCallback(cat, uninstallRegWrapper),
+		RunStarter:   buildRunStarterCallback(cat, regWrapper),
 	}
 
 	// 6. Launch the TUI program.
