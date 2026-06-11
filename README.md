@@ -1,8 +1,4 @@
 <p align="center">
-  <img src="docs/img/banner.svg" alt="Active Stack — Instalador del harness metodológico para agentes de IA" width="100%">
-</p>
-
-<p align="center">
   <img src="https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white" alt="Go 1.26">
   <img src="https://img.shields.io/badge/TUI-Bubbletea-8b5cf6" alt="Bubbletea">
   <img src="https://img.shields.io/badge/binario-único%20cross--platform-6366f1" alt="Binario único cross-platform">
