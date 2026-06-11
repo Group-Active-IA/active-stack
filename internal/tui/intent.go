@@ -1,8 +1,8 @@
 package tui
 
 import (
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // Selection holds the user's choices collected across the install-flow screens.
@@ -45,7 +45,7 @@ func availableAgents(detected []model.Agent, registered []model.Agent) []model.A
 }
 
 // AvailableAgentsList is the exported version of availableAgents, for use by
-// cmd/jr-stack and other callers outside the package.
+// cmd/active-stack and other callers outside the package.
 func AvailableAgentsList(detected []model.Agent, registered []model.Agent) []model.Agent {
 	regSet := make(map[model.Agent]bool, len(registered))
 	for _, a := range registered {

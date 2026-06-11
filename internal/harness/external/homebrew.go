@@ -15,8 +15,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/system"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
 
 // httpClient is used for GitHub API and asset downloads; replaceable in tests.
@@ -118,7 +118,7 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 		}
 	}
 
-	// El binario quedó en installDir — en Windows eso es %LOCALAPPDATA%\jr-stack\bin,
+	// El binario quedó en installDir — en Windows eso es %LOCALAPPDATA%\active-stack\bin,
 	// que NO está en el PATH del usuario por defecto. Lo agregamos al PATH de usuario
 	// (persistente vía registro, sin admin; fuera de Windows solo toca el PATH del
 	// proceso). Best-effort a propósito: si falla (p. ej. ExecutionPolicy de

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
 )
 
 // TestBackups_RestoreShowsConfirmation verifies that pressing 'r' enters

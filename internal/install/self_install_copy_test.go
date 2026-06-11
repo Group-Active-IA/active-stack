@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/install"
 )
 
 // TestCopyBinaryRenameReplace_PreexistingTarget verifies that install.CopyBinaryRenameReplace
@@ -18,7 +18,7 @@ func TestCopyBinaryRenameReplace_PreexistingTarget(t *testing.T) {
 	}
 
 	dstDir := t.TempDir()
-	dst := filepath.Join(dstDir, "jr-stack")
+	dst := filepath.Join(dstDir, "active-stack")
 	// Pre-existing target with different content.
 	if err := os.WriteFile(dst, []byte("old-binary-content"), 0o755); err != nil {
 		t.Fatalf("write dst: %v", err)
@@ -56,7 +56,7 @@ func TestCopyBinaryRenameReplace_FreshInstall(t *testing.T) {
 		t.Fatalf("write src: %v", err)
 	}
 
-	dst := filepath.Join(t.TempDir(), "jr-stack")
+	dst := filepath.Join(t.TempDir(), "active-stack")
 	// dst does NOT exist.
 
 	if err := install.CopyBinaryRenameReplace(src, dst); err != nil {
@@ -85,7 +85,7 @@ func TestCopyBinaryRenameReplace_OldRemovalNoOp(t *testing.T) {
 	}
 
 	dstDir := t.TempDir()
-	dst := filepath.Join(dstDir, "jr-stack")
+	dst := filepath.Join(dstDir, "active-stack")
 	if err := os.WriteFile(dst, []byte("v1"), 0o755); err != nil {
 		t.Fatalf("write dst: %v", err)
 	}

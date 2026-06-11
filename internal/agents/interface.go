@@ -1,8 +1,8 @@
 package agents
 
 import (
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // Adapter is the public interface for an agent adapter.

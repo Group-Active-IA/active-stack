@@ -5,8 +5,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/verify"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/verify"
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -19,7 +19,7 @@ func TestBuildHookReturnsNilWhenAllChecksPass(t *testing.T) {
 	homeDir := t.TempDir()
 
 	h := model.Harness{
-		ID:   "jr-orchestrator",
+		ID:   "active-orchestrator",
 		Type: model.HarnessSkill,
 	}
 
@@ -48,7 +48,7 @@ func TestBuildHookReturnsErrorWhenHardCheckFails(t *testing.T) {
 	homeDir := t.TempDir()
 
 	h := model.Harness{
-		ID:   "jr-orchestrator",
+		ID:   "active-orchestrator",
 		Type: model.HarnessSkill,
 	}
 

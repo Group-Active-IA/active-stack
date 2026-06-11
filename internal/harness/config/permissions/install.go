@@ -5,9 +5,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/filemerge"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/filemerge"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // snapshotterCreate is the function used to create a backup snapshot.
@@ -111,7 +111,7 @@ func backupIfExists(homeDir string, agent model.Agent, settingsPath string) erro
 		return fmt.Errorf("permissions: stat settings file %q: %w", settingsPath, err)
 	}
 
-	snapshotDir := filepath.Join(homeDir, ".jr-stack", "backups", fmt.Sprintf("permissions-%s", string(agent)))
+	snapshotDir := filepath.Join(homeDir, ".active-stack", "backups", fmt.Sprintf("permissions-%s", string(agent)))
 	if err := snapshotterCreate(snapshotDir, []string{settingsPath}); err != nil {
 		return fmt.Errorf("permissions: backup settings for agent %q: %w", agent, err)
 	}

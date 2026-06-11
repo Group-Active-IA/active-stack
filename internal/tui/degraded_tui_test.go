@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
 
 // Task 4.1 RED — statusIcon for StepStatusDegraded returns a distinct glyph

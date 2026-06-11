@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
 )
 
 // backupAction represents the current action being performed on a backup.

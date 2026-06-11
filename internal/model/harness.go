@@ -90,7 +90,7 @@ const (
 
 // Source locates a skill harness in a git repository.
 type Source struct {
-	Repo   string `yaml:"repo"`             // e.g. JuanCruzRobledo/kb-creator
+	Repo   string `yaml:"repo"`             // e.g. Group-Active-IA/kb-creator
 	Ref    string `yaml:"ref,omitempty"`    // tag/branch/commit; defaults to "latest"
 	Method string `yaml:"method,omitempty"` // clone | embed; inferred if empty
 	// Path is the subdir within the cloned repo where the SKILL.md lives.
@@ -120,7 +120,7 @@ const (
 	// install plan. All harnesses without an explicit scope are global.
 	ScopeGlobal ScopeKind = "global"
 	// ScopeStarterOnly marks a harness that ONLY materializes scope-project
-	// via `jr-stack starter add`. It must never appear in the global install
+	// via `active-stack starter add`. It must never appear in the global install
 	// plan (ForMode must exclude it).
 	ScopeStarterOnly ScopeKind = "starter-only"
 )

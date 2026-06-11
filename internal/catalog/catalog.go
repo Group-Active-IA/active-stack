@@ -6,7 +6,7 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 	"gopkg.in/yaml.v3"
 )
 
@@ -231,7 +231,7 @@ func (c *Catalog) AllHarnesses() []model.Harness {
 
 // ForMode returns the harnesses that belong to the given install mode, in
 // catalog order. Starter-only harnesses (Scope==ScopeStarterOnly) are excluded
-// from every mode: their only installation path is `jr-stack starter add`.
+// from every mode: their only installation path is `active-stack starter add`.
 // InMode semantics are unchanged — the scope filter is applied here, not in InMode.
 func (c *Catalog) ForMode(m model.InstallMode) []model.Harness {
 	var out []model.Harness

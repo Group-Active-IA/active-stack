@@ -4,8 +4,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/agents/opencode"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/agents/opencode"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // TestOpenCodeAdapter_ProjectTarget verifies that the OpenCode adapter resolves

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 func TestVerify_NPM_BinaryFound(t *testing.T) {

@@ -1,4 +1,4 @@
-module github.com/JuanCruzRobledo/jr-stack
+module github.com/Group-Active-IA/active-stack
 
 go 1.26
 

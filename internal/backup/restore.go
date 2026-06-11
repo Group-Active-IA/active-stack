@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/filemerge"
+	"github.com/Group-Active-IA/active-stack/internal/filemerge"
 )
 
 type RestoreService struct{}
@@ -21,7 +21,7 @@ func (s RestoreService) Restore(manifest Manifest) error {
 // It extracts the tar.gz archive into a temp directory, then restores each
 // entry by resolving the relative SnapshotPath inside that temp directory.
 func (s RestoreService) restoreCompressed(manifest Manifest) error {
-	tempDir, err := os.MkdirTemp("", "jr-stack-restore-*")
+	tempDir, err := os.MkdirTemp("", "active-stack-restore-*")
 	if err != nil {
 		return fmt.Errorf("create temp restore dir: %w", err)
 	}

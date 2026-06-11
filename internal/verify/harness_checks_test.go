@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/verify"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/verify"
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -44,7 +44,7 @@ func TestCheckForSkillHarness_Pass(t *testing.T) {
 	fa := newFakeAdapter(t, homeDir, model.AgentClaude)
 
 	h := model.Harness{
-		ID:   "jr-orchestrator",
+		ID:   "active-orchestrator",
 		Type: model.HarnessSkill,
 	}
 
@@ -75,7 +75,7 @@ func TestCheckForSkillHarness_FailMissingSKILLMD(t *testing.T) {
 	fa := newFakeAdapter(t, homeDir, model.AgentClaude)
 
 	h := model.Harness{
-		ID:   "jr-orchestrator",
+		ID:   "active-orchestrator",
 		Type: model.HarnessSkill,
 	}
 
@@ -102,7 +102,7 @@ func TestCheckForSkillHarness_FailEmptySKILLMD(t *testing.T) {
 	fa := newFakeAdapter(t, homeDir, model.AgentClaude)
 
 	h := model.Harness{
-		ID:   "jr-orchestrator",
+		ID:   "active-orchestrator",
 		Type: model.HarnessSkill,
 	}
 
@@ -142,8 +142,8 @@ func TestCheckForConfigHarness_Pass(t *testing.T) {
 	}
 
 	// Write instructions file with the idempotent marker exactly once.
-	marker := "<!-- jr-stack:sdd-orchestrator -->"
-	closeMarker := "<!-- /jr-stack:sdd-orchestrator -->"
+	marker := "<!-- active-stack:sdd-orchestrator -->"
+	closeMarker := "<!-- /active-stack:sdd-orchestrator -->"
 	content := "# Instructions\n\n" + marker + "\nsome content\n" + closeMarker + "\n"
 	if err := os.WriteFile(fa.InstructionsPath(homeDir), []byte(content), 0o644); err != nil {
 		t.Fatal(err)
@@ -258,8 +258,8 @@ func TestCheckForConfigHarness_FailDuplicateMarker(t *testing.T) {
 	}
 
 	// Write instructions file with duplicate markers (idempotency violated).
-	marker := "<!-- jr-stack:sdd-orchestrator -->"
-	closeMarker := "<!-- /jr-stack:sdd-orchestrator -->"
+	marker := "<!-- active-stack:sdd-orchestrator -->"
+	closeMarker := "<!-- /active-stack:sdd-orchestrator -->"
 	content := marker + "\ncontent\n" + closeMarker + "\n" +
 		marker + "\ncontent again\n" + closeMarker + "\n"
 	if err := os.WriteFile(fa.InstructionsPath(homeDir), []byte(content), 0o644); err != nil {
@@ -510,7 +510,7 @@ func TestCheckForSkillHarness_NonBestEffort_CheckIsHard(t *testing.T) {
 	fa := newFakeAdapter(t, homeDir, model.AgentClaude)
 
 	h := model.Harness{
-		ID:         "jr-orchestrator",
+		ID:         "active-orchestrator",
 		Type:       model.HarnessSkill,
 		BestEffort: false,
 	}
@@ -712,7 +712,7 @@ func TestCheckForSkillHarness_MultipleAdapters(t *testing.T) {
 	}
 
 	h := model.Harness{
-		ID:   "jr-orchestrator",
+		ID:   "active-orchestrator",
 		Type: model.HarnessSkill,
 	}
 

@@ -1,6 +1,6 @@
 package config
 
-import "github.com/JuanCruzRobledo/jr-stack/internal/model"
+import "github.com/Group-Active-IA/active-stack/internal/model"
 
 // AgentAdapter is the minimal interface the config installer needs per agent.
 // Full adapters are implemented in internal/agents (C-10).

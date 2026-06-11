@@ -5,41 +5,41 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/assets"
+	"github.com/Group-Active-IA/active-stack/assets"
 )
 
-// TestCommandsFS_ClaudeVariant_ResolvesAndContainsJRStackInvocation asserts that:
-// - the embedded CommandsFS contains the Claude variant at commands/claude/jr/starter-add.md
-// - the body contains "jr-stack starter add" (thin wrapper requirement)
+// TestCommandsFS_ClaudeVariant_ResolvesAndContainsActiveStackInvocation asserts that:
+// - the embedded CommandsFS contains the Claude variant at commands/claude/active/starter-add.md
+// - the body contains "active-stack starter add" (thin wrapper requirement)
 // - the body contains "$ARGUMENTS" (the confirmed argument token from TBD-1)
 // RED: fails until CommandsFS and the Claude asset file are added (4.2).
-func TestCommandsFS_ClaudeVariant_ResolvesAndContainsJRStackInvocation(t *testing.T) {
-	data, err := fs.ReadFile(assets.CommandsFS, "commands/claude/jr/starter-add.md")
+func TestCommandsFS_ClaudeVariant_ResolvesAndContainsActiveStackInvocation(t *testing.T) {
+	data, err := fs.ReadFile(assets.CommandsFS, "commands/claude/active/starter-add.md")
 	if err != nil {
 		t.Fatalf("CommandsFS: failed to read Claude variant: %v", err)
 	}
 	body := string(data)
-	if !strings.Contains(body, "jr-stack starter add") {
-		t.Errorf("Claude variant body must contain 'jr-stack starter add'; got:\n%s", body)
+	if !strings.Contains(body, "active-stack starter add") {
+		t.Errorf("Claude variant body must contain 'active-stack starter add'; got:\n%s", body)
 	}
 	if !strings.Contains(body, "$ARGUMENTS") {
 		t.Errorf("Claude variant body must contain '$ARGUMENTS' (confirmed from TBD-1); got:\n%s", body)
 	}
 }
 
-// TestCommandsFS_OpenCodeVariant_ResolvesAndContainsJRStackInvocation asserts that:
-// - the embedded CommandsFS contains the OpenCode variant at commands/opencode/jr-starter-add.md
-// - the body contains "jr-stack starter add" (thin wrapper requirement)
+// TestCommandsFS_OpenCodeVariant_ResolvesAndContainsActiveStackInvocation asserts that:
+// - the embedded CommandsFS contains the OpenCode variant at commands/opencode/active-starter-add.md
+// - the body contains "active-stack starter add" (thin wrapper requirement)
 // - the body contains "$ARGUMENTS" (the confirmed argument token from TBD-1)
 // RED: fails until CommandsFS and the OpenCode asset file are added (4.2).
-func TestCommandsFS_OpenCodeVariant_ResolvesAndContainsJRStackInvocation(t *testing.T) {
-	data, err := fs.ReadFile(assets.CommandsFS, "commands/opencode/jr-starter-add.md")
+func TestCommandsFS_OpenCodeVariant_ResolvesAndContainsActiveStackInvocation(t *testing.T) {
+	data, err := fs.ReadFile(assets.CommandsFS, "commands/opencode/active-starter-add.md")
 	if err != nil {
 		t.Fatalf("CommandsFS: failed to read OpenCode variant: %v", err)
 	}
 	body := string(data)
-	if !strings.Contains(body, "jr-stack starter add") {
-		t.Errorf("OpenCode variant body must contain 'jr-stack starter add'; got:\n%s", body)
+	if !strings.Contains(body, "active-stack starter add") {
+		t.Errorf("OpenCode variant body must contain 'active-stack starter add'; got:\n%s", body)
 	}
 	if !strings.Contains(body, "$ARGUMENTS") {
 		t.Errorf("OpenCode variant body must contain '$ARGUMENTS' (confirmed from TBD-1); got:\n%s", body)
@@ -48,10 +48,10 @@ func TestCommandsFS_OpenCodeVariant_ResolvesAndContainsJRStackInvocation(t *test
 
 // TestCommandsFS_ClaudeVariant_Frontmatter_RichFields asserts that the Claude
 // variant frontmatter carries name, description, category, and tags (per D2 + spec).
-// TRIANGULATE (4.3): the namespaced /jr:starter-add semantics are expressed via
-// the file path (jr/starter-add.md) — the path drives the invocation name.
+// TRIANGULATE (4.3): the namespaced /active:starter-add semantics are expressed via
+// the file path (active/starter-add.md) — the path drives the invocation name.
 func TestCommandsFS_ClaudeVariant_Frontmatter_RichFields(t *testing.T) {
-	data, err := fs.ReadFile(assets.CommandsFS, "commands/claude/jr/starter-add.md")
+	data, err := fs.ReadFile(assets.CommandsFS, "commands/claude/active/starter-add.md")
 	if err != nil {
 		t.Fatalf("CommandsFS: failed to read Claude variant: %v", err)
 	}
@@ -67,7 +67,7 @@ func TestCommandsFS_ClaudeVariant_Frontmatter_RichFields(t *testing.T) {
 // OpenCode variant frontmatter carries only description (flat, hyphenated, per D2 + spec).
 // TRIANGULATE (4.3): no name/category/tags — those are Claude-only.
 func TestCommandsFS_OpenCodeVariant_Frontmatter_DescriptionOnly(t *testing.T) {
-	data, err := fs.ReadFile(assets.CommandsFS, "commands/opencode/jr-starter-add.md")
+	data, err := fs.ReadFile(assets.CommandsFS, "commands/opencode/active-starter-add.md")
 	if err != nil {
 		t.Fatalf("CommandsFS: failed to read OpenCode variant: %v", err)
 	}
@@ -86,11 +86,11 @@ func TestCommandsFS_OpenCodeVariant_Frontmatter_DescriptionOnly(t *testing.T) {
 // reimplements starter resolution logic — both are thin wrappers.
 // TRIANGULATE (4.3): the thin-wrapper requirement from D3.
 func TestCommandsFS_NoStarterLogicInBody(t *testing.T) {
-	claudeData, err := fs.ReadFile(assets.CommandsFS, "commands/claude/jr/starter-add.md")
+	claudeData, err := fs.ReadFile(assets.CommandsFS, "commands/claude/active/starter-add.md")
 	if err != nil {
 		t.Fatalf("read Claude variant: %v", err)
 	}
-	opencodeData, err := fs.ReadFile(assets.CommandsFS, "commands/opencode/jr-starter-add.md")
+	opencodeData, err := fs.ReadFile(assets.CommandsFS, "commands/opencode/active-starter-add.md")
 	if err != nil {
 		t.Fatalf("read OpenCode variant: %v", err)
 	}

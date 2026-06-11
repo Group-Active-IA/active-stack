@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
 )
 
 // Installer materializes slash-command files from the embedded CommandsFS into
@@ -115,16 +115,16 @@ func (ins *Installer) installForAdapter(
 // per-agent naming convention, used by both the command installer and the
 // uninstall engine (DRY — one place to change when naming evolves):
 //
-//	claude   → "jr/starter-add.md"  (namespaced; invoked as /jr:starter-add)
-//	opencode → "jr-starter-add.md"  (flat, hyphenated; invoked as /jr-starter-add)
+//	claude   → "active/starter-add.md"  (namespaced; invoked as /active:starter-add)
+//	opencode → "active-starter-add.md"  (flat, hyphenated; invoked as /active-starter-add)
 //
 // An unknown variantKey returns "" — the caller must skip silently.
 func RelPathForVariant(variantKey string) string {
 	switch variantKey {
 	case "claude":
-		return filepath.Join("jr", "starter-add.md")
+		return filepath.Join("active", "starter-add.md")
 	case "opencode":
-		return "jr-starter-add.md"
+		return "active-starter-add.md"
 	default:
 		return ""
 	}
@@ -146,9 +146,9 @@ func assetAndRelPathForVariant(variantKey string) (assetPath, relPath string) {
 	// forward slashes (embedded FS always uses /).
 	switch variantKey {
 	case "claude":
-		assetPath = "commands/claude/jr/starter-add.md"
+		assetPath = "commands/claude/active/starter-add.md"
 	case "opencode":
-		assetPath = "commands/opencode/jr-starter-add.md"
+		assetPath = "commands/opencode/active-starter-add.md"
 	}
 	return assetPath, relPath
 }

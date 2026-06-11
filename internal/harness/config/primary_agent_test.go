@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // opencodeAdapter is a fake adapter that delivers config harnesses as a
@@ -61,7 +61,7 @@ func TestInstall_PrimaryAgent_RegistersTabableAgent(t *testing.T) {
 	// Pre-existing AGENTS.md carrying a STALE orchestrator section from an older
 	// (buggy) install, plus user content that must survive.
 	staleInstr := "# My global rules\n\nkeep me\n\n" +
-		"<!-- jr-stack:sdd-orchestrator -->\nOLD orchestrator block\n<!-- /jr-stack:sdd-orchestrator -->\n"
+		"<!-- active-stack:sdd-orchestrator -->\nOLD orchestrator block\n<!-- /active-stack:sdd-orchestrator -->\n"
 	if err := os.WriteFile(instrPath, []byte(staleInstr), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -118,7 +118,7 @@ func TestInstall_PrimaryAgent_RegistersTabableAgent(t *testing.T) {
 	// 4. The stale AGENTS.md orchestrator section was purged (no leak into the
 	//    shared instructions — this is what made build behave like the orchestrator).
 	instrAfter, _ := os.ReadFile(instrPath)
-	if strings.Contains(string(instrAfter), "jr-stack:sdd-orchestrator") {
+	if strings.Contains(string(instrAfter), "active-stack:sdd-orchestrator") {
 		t.Error("stale sdd-orchestrator section must be purged from AGENTS.md")
 	}
 	if !strings.Contains(string(instrAfter), "keep me") {
@@ -126,7 +126,7 @@ func TestInstall_PrimaryAgent_RegistersTabableAgent(t *testing.T) {
 	}
 
 	// 5. Backup created before any write.
-	entries, err := os.ReadDir(filepath.Join(dir, ".jr-stack", "backups"))
+	entries, err := os.ReadDir(filepath.Join(dir, ".active-stack", "backups"))
 	if err != nil || len(entries) == 0 {
 		t.Errorf("backup should have been created on first install (err=%v)", err)
 	}

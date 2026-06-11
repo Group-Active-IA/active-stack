@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/img/banner.svg" alt="JR Stack — Instalador del harness metodológico para agentes de IA" width="100%">
+  <img src="docs/img/banner.svg" alt="Active Stack — Instalador del harness metodológico para agentes de IA" width="100%">
 </p>
 
 <p align="center">
@@ -19,15 +19,15 @@
 
 ## ¿Qué es esto?
 
-**JR Stack** es un **instalador _methodology-first_**: un único binario en Go que toma tu agente de IA (Claude Code, OpenCode…) y le **inyecta, de forma modular y actualizable, todo el sustrato que exige una metodología de desarrollo asistido por IA.**
+**Active Stack** es un **instalador _methodology-first_**: un único binario en Go que toma tu agente de IA (Claude Code, OpenCode…) y le **inyecta, de forma modular y actualizable, todo el sustrato que exige una metodología de desarrollo asistido por IA.**
 
 No es un framework que corre en tu app. Es un **configurador del entorno del agente**. Corrés un comando, elegís un modo, y el stack deja tu proyecto listo para el ciclo **OPSX** (`explore → propose → apply → verify → archive`).
 
 La idea central, en una frase:
 
-> **JR Stack es un harness que instala harnesses.**
+> **Active Stack es un harness que instala harnesses.**
 
-Un *harness* es cualquier módulo que prepara o guía el entorno de la IA. JR Stack lleva embebido un **catálogo maestro** de harnesses y sabe cómo materializar cada uno según su tipo.
+Un *harness* es cualquier módulo que prepara o guía el entorno de la IA. Active Stack lleva embebido un **catálogo maestro** de harnesses y sabe cómo materializar cada uno según su tipo.
 
 ### ¿Qué NO es?
 
@@ -46,7 +46,7 @@ Es una herramienta enfocada: **instalar y configurar el sustrato metodológico, 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#eef2ff','primaryBorderColor':'#6366f1','primaryTextColor':'#1e293b','lineColor':'#94a3b8','fontFamily':'sans-serif'}}}%%
 flowchart TD
-    BIN["🧩 jr-stack (binario único)"] --> CAT["📚 Catálogo embebido<br/>(harnesses.yaml)"]
+    BIN["🧩 active-stack (binario único)"] --> CAT["📚 Catálogo embebido<br/>(harnesses.yaml)"]
     CAT --> T1
     CAT --> T2
     CAT --> T3
@@ -73,7 +73,7 @@ Hay **tres tipos** de harness, y el instalador no instala "repos": instala harne
 
 | Tipo | Qué es | De dónde sale | Ejemplos |
 |------|--------|---------------|----------|
-| **`skill`** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se clona al instalar | `kb-creator`, `roadmap-generator`, `jr-orchestrator`, `find-skill` |
+| **`skill`** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se clona al instalar | `kb-creator`, `roadmap-generator`, `active-orchestrator`, `find-skill` |
 | **`config`** | Texto/archivos que configuran al agente | bundleado en el binario | `sdd-orchestrator`, `permissions` |
 | **`external`** | Binario/servicio de terceros | se instala/configura (no es nuestro) | `OpenSpec`, `Engram`, `Context7` |
 
@@ -85,27 +85,27 @@ Hay **tres tipos** de harness, y el instalador no instala "repos": instala harne
 
 ```bash
 # 1. Cloná y compilá
-git clone https://github.com/JuanCruzRobledo/jr-stack.git
-cd jr-stack
-go build -o jr-stack ./cmd/jr-stack
+git clone https://github.com/Group-Active-IA/active-stack.git
+cd active-stack
+go build -o active-stack ./cmd/active-stack
 
 # 2. Instalá el stack (TUI interactiva)
-./jr-stack install
+./active-stack install
 ```
 
 ### Modos de uso del comando
 
 ```bash
-jr-stack install                 # TUI interactiva (Bubbletea): elegís agente y modo
-jr-stack install --dry-run       # Muestra el plan de instalación, no ejecuta nada
-jr-stack install --mode full     # Instalación headless (no interactiva)
-jr-stack install --agent claude  # Apuntá a un agente concreto
-jr-stack install --help          # Todos los flags
+active-stack install                 # TUI interactiva (Bubbletea): elegís agente y modo
+active-stack install --dry-run       # Muestra el plan de instalación, no ejecuta nada
+active-stack install --mode full     # Instalación headless (no interactiva)
+active-stack install --agent claude  # Apuntá a un agente concreto
+active-stack install --help          # Todos los flags
 ```
 
 Pasar `--mode` o `--agent` activa el modo **headless** automáticamente (ideal para CI o scripts).
 
-> 💡 **¿Usuario final en Windows?** Una vez que tengas el binario (`jr-stack.exe`), hacé **doble-click** para arrancar la TUI: autodetecta tus agentes instalados y te guía paso a paso — sin escribir un solo flag ni abrir una terminal.
+> 💡 **¿Usuario final en Windows?** Una vez que tengas el binario (`active-stack.exe`), hacé **doble-click** para arrancar la TUI: autodetecta tus agentes instalados y te guía paso a paso — sin escribir un solo flag ni abrir una terminal.
 
 ---
 
@@ -116,7 +116,7 @@ El catálogo agrupa los harnesses en tres presets. Convención: un harness de Li
 | Modo | Qué instala | Para qué |
 |------|-------------|----------|
 | **Lite** | El **sustrato** mínimo: `openspec`, `engram`, `context7`, `sdd-orchestrator`, `permissions` | Empezar a trabajar con la metodología ya |
-| **Full** | Sustrato **+ fundación guiada**: `jr-orchestrator` y las skills que orquesta (`kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-registry`, `find-skill`, `skill-creator`) | El ecosistema completo, proyecto desde cero |
+| **Full** | Sustrato **+ fundación guiada**: `active-orchestrator` y las skills que orquesta (`kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-registry`, `find-skill`, `skill-creator`) | El ecosistema completo, proyecto desde cero |
 | **Custom** | Vos elegís cada harness | Control total — con una excepción 👇 |
 
 > 🔒 **`permissions` no es desactivable.** Incluso en Custom, el harness de seguridad (permisos *security-first*) queda forzado. La seguridad no es opcional.
@@ -125,7 +125,7 @@ El catálogo agrupa los harnesses en tres presets. Convención: un harness de Li
 
 ## El catálogo de harnesses
 
-Lo que JR Stack puede instalar hoy (fuente de verdad: [`internal/catalog/harnesses.yaml`](internal/catalog/harnesses.yaml)):
+Lo que Active Stack puede instalar hoy (fuente de verdad: [`internal/catalog/harnesses.yaml`](internal/catalog/harnesses.yaml)):
 
 | Harness | Tipo | Modo | Qué hace |
 |---------|------|------|----------|
@@ -134,7 +134,7 @@ Lo que JR Stack puede instalar hoy (fuente de verdad: [`internal/catalog/harness
 | **Context7** | external | lite · full | Documentación de librerías al día (MCP remoto) |
 | **SDD Orchestrator** | config | lite · full | Orquestador SDD componible por toggles (TDD, Engram, model-routing, delegación, governance) |
 | **Permissions** | config | lite · full | Permisos seguros por defecto (bloquea `.env`, confirma git destructivo) — **no opcional** |
-| **jr-orchestrator** | skill | full | Orquestador delgado de la fase de fundación |
+| **active-orchestrator** | skill | full | Orquestador delgado de la fase de fundación |
 | **kb-creator** | skill | full | Genera la knowledge-base canónica del dominio |
 | **roadmap-generator** | skill | full | Genera `CHANGES.md` (backlog técnico) desde la KB |
 | **agent-instruction** | skill | full | Genera `AGENTS.md`/`CLAUDE.md` con todas las referencias |
@@ -148,7 +148,7 @@ El **`sdd-orchestrator`** es el harness clave: es de tipo `config` y se compone 
 
 ## Cómo funciona la instalación
 
-`jr-stack install` no copia archivos a lo bruto. Resuelve dependencias, hace backup, inyecta con markers idempotentes y verifica:
+`active-stack install` no copia archivos a lo bruto. Resuelve dependencias, hace backup, inyecta con markers idempotentes y verifica:
 
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#eef2ff','primaryBorderColor':'#6366f1','primaryTextColor':'#1e293b','lineColor':'#94a3b8','fontFamily':'sans-serif'}}}%%
@@ -196,7 +196,7 @@ flowchart TD
     class O1,O2,O3,O4,O5 opsx;
 ```
 
-El `jr-orchestrator` coordina la fundación con lazy-loading de skills; durante el ciclo, **OpenSpec CLI es la fuente de verdad del estado** y el orquestador delega el trabajo pesado a sub-agentes.
+El `active-orchestrator` coordina la fundación con lazy-loading de skills; durante el ciclo, **OpenSpec CLI es la fuente de verdad del estado** y el orquestador delega el trabajo pesado a sub-agentes.
 
 ---
 
@@ -218,10 +218,10 @@ El `jr-orchestrator` coordina la fundación con lazy-loading de skills; durante 
 
 ## Arquitectura
 
-JR Stack es Go 1.26 + [Bubbletea](https://github.com/charmbracelet/bubbletea)/Lipgloss para la TUI, con el catálogo embebido en el binario vía `//go:embed`.
+Active Stack es Go 1.26 + [Bubbletea](https://github.com/charmbracelet/bubbletea)/Lipgloss para la TUI, con el catálogo embebido en el binario vía `//go:embed`.
 
 ```
-cmd/jr-stack/            entrypoint CLI
+cmd/active-stack/        entrypoint CLI
 internal/
   system/                detección OS/arch/WSL/Termux, deps, guards
   catalog/               parseo del harnesses.yaml embebido
@@ -244,9 +244,9 @@ El blueprint completo del diseño vive en **[ARCHITECTURE.md](ARCHITECTURE.md)**
 ## Build desde fuente
 
 ```bash
-git clone https://github.com/JuanCruzRobledo/jr-stack.git
-cd jr-stack
-go build -o jr-stack ./cmd/jr-stack   # binario
+git clone https://github.com/Group-Active-IA/active-stack.git
+cd active-stack
+go build -o active-stack ./cmd/active-stack   # binario
 go test ./...                          # suite completa
 ```
 

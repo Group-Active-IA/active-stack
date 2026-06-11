@@ -20,10 +20,10 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	skillinstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/skill"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	skillinstaller "github.com/Group-Active-IA/active-stack/internal/harness/skill"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // ─────────────────────────────────────────────────────────────────────────────

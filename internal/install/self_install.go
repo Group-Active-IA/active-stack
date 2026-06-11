@@ -7,9 +7,9 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
-	"github.com/JuanCruzRobledo/jr-stack/internal/system"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -132,9 +132,9 @@ func (s *selfInstallStep) warn(msg string) {
 
 func binaryFilename(goos string) string {
 	if goos == "windows" {
-		return "jr-stack.exe"
+		return "active-stack.exe"
 	}
-	return "jr-stack"
+	return "active-stack"
 }
 
 // ─────────────────────────────────────────────────────────────────

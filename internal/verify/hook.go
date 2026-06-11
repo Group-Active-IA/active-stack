@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // BuildHook constructs a func() error suitable for install.Options.VerifyHook.

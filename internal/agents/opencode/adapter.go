@@ -4,8 +4,8 @@ package opencode
 import (
 	"path/filepath"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // Adapter resolves OpenCode-specific filesystem paths and config strategies.

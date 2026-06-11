@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
 )
 
 // checkIdempotent inspects the destination directory for skillID inside

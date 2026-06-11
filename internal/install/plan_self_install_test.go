@@ -4,10 +4,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/system"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
 
 // minimalCatAndReg returns a minimal catalog+registry for plan tests that
@@ -211,8 +211,8 @@ func TestBuildPlan_SnapshotIncludesSelfInstallPath(t *testing.T) {
 		}
 	}
 
-	// The bin dir's jr-stack path must be in captured paths.
-	wantTarget := filepath.Join(binDir, "jr-stack")
+	// The bin dir's active-stack path must be in captured paths.
+	wantTarget := filepath.Join(binDir, "active-stack")
 	found := false
 	for _, p := range capturedPaths {
 		if p == wantTarget {
@@ -260,7 +260,7 @@ func TestBuildPlan_SnapshotNoSelfInstallPath(t *testing.T) {
 		_ = s.Run()
 	}
 
-	wantTarget := filepath.Join(binDir, "jr-stack")
+	wantTarget := filepath.Join(binDir, "active-stack")
 	for _, p := range capturedPaths {
 		if p == wantTarget {
 			t.Errorf("self-install target %q must NOT be in snapshot when NoSelfInstall=true", wantTarget)

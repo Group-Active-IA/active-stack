@@ -19,11 +19,11 @@ OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The u
 BEFORE touching anything, determine the project's CURRENT STATE. Never start implementing on an unknown state — knowing where the project stands is step zero.
 
 1. **Does the project already have its foundation?** (an `openspec/` directory, a complete `CLAUDE.md`/`AGENTS.md`)
-   - NO, and the `jr-orchestrator` skill IS available → invoke `jr-orchestrator`. It reads the project state and triggers ONLY the missing foundation step (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction). It is idempotent at the flow level: it never re-runs what already exists.
-   - NO, and `jr-orchestrator` is NOT available (Lite installs) → set up the substrate by hand.
+   - NO, and the `active-orchestrator` skill IS available → invoke `active-orchestrator`. It reads the project state and triggers ONLY the missing foundation step (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction). It is idempotent at the flow level: it never re-runs what already exists.
+   - NO, and `active-orchestrator` is NOT available (Lite installs) → set up the substrate by hand.
 2. **Foundation already in place?** → run `openspec list` and `openspec status` to locate yourself before any explore/propose/apply.
 
-<!-- jr-stack:sdd-delegation -->
+<!-- active-stack:sdd-delegation -->
 ## Delegation Rules
 
 Core principle: **does this inflate my context without need?** If yes → delegate. If no → do it inline.
@@ -43,7 +43,7 @@ Anti-patterns — these ALWAYS inflate context:
 - Writing a feature across multiple files inline → delegate
 - Running tests or builds inline → delegate
 - Reading files as preparation for edits, then editing → delegate the whole thing together
-<!-- /jr-stack:sdd-delegation -->
+<!-- /active-stack:sdd-delegation -->
 
 ## OPSX Workflow
 
@@ -208,7 +208,7 @@ openspec instructions apply --change "<name>" --json
 - If a change name is ambiguous, run `openspec list --json` and ask the user
 - If the user asks about the old `/sdd-*` commands, explain that OPSX replaced them
 
-<!-- jr-stack:sdd-model-assignments -->
+<!-- active-stack:sdd-model-assignments -->
 ## Model Assignments
 
 Read this table at session start (or before first delegation), cache it for the session, and pass the mapped alias in every Agent tool call via the `model` parameter. If a phase is missing, use the `default` row. If you do not have access to the assigned model (for example, no Opus access), substitute `sonnet` and continue.
@@ -222,4 +222,4 @@ Read this table at session start (or before first delegation), cache it for the 
 | archive | haiku | File operations |
 | default | sonnet | General delegation |
 
-<!-- /jr-stack:sdd-model-assignments -->
+<!-- /active-stack:sdd-model-assignments -->

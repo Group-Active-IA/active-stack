@@ -3,9 +3,9 @@ package agents
 import (
 	"fmt"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/agents/claude"
-	"github.com/JuanCruzRobledo/jr-stack/internal/agents/opencode"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
+	"github.com/Group-Active-IA/active-stack/internal/agents/opencode"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // NewAdapter returns a concrete Adapter for the given agent.

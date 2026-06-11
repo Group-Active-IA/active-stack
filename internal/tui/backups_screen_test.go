@@ -5,7 +5,7 @@ import (
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
 )
 
 // makeTestBackupsState returns a Model at ScreenBackups with pre-loaded manifests.

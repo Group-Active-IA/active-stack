@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# e2e_test.sh — JR Stack end-to-end test suite (harness-first).
+# e2e_test.sh — Active Stack end-to-end test suite (harness-first).
 #
 # Tier 1 (default, no side-effects):
 #   Binary exists, --help / --dry-run run without panic, valid modes accepted,
@@ -30,8 +30,8 @@ source "$SCRIPT_DIR/lib.sh"
 # ---------------------------------------------------------------------------
 BIN="$(resolve_binary)"
 if [ -z "$BIN" ]; then
-    printf "${RED}[FATAL]${NC} jr-stack binary not found. Build with:\n"
-    printf "  CGO_ENABLED=0 go build -o jr-stack ./cmd/jr-stack\n"
+    printf "${RED}[FATAL]${NC} active-stack binary not found. Build with:\n"
+    printf "  CGO_ENABLED=0 go build -o active-stack ./cmd/active-stack\n"
     exit 1
 fi
 log_info "Binary: $BIN"
@@ -48,7 +48,7 @@ RUN_BACKUP_TESTS="${RUN_BACKUP_TESTS:-0}"
 # ---------------------------------------------------------------------------
 # make_sandbox — create a temporary directory to use as --home for isolation.
 make_sandbox() {
-    mktemp -d /tmp/jr-stack-e2e-XXXXXX
+    mktemp -d /tmp/active-stack-e2e-XXXXXX
 }
 
 # ---------------------------------------------------------------------------
@@ -71,7 +71,7 @@ else
     log_fail "Binary is not executable: $BIN"
 fi
 
-# T1.2 — jr-stack install --help exits 0 (or 2) and does not panic
+# T1.2 — active-stack install --help exits 0 (or 2) and does not panic
 log_test "T1.2: install --help does not panic"
 HELP_OUT=$("$BIN" install --help 2>&1 || true)
 assert_output_not_contains "$HELP_OUT" "panic" "install --help: no panic"
@@ -250,17 +250,17 @@ else
         fi
 
         # ── Skill harnesses: SKILL.md present in skills dir ───────────────────
-        # jr-orchestrator is a skill harness included in lite+full.
-        local skill_md="$skills_dir/jr-orchestrator/SKILL.md"
+        # active-orchestrator is a skill harness included in lite+full.
+        local skill_md="$skills_dir/active-orchestrator/SKILL.md"
         if [ -d "$skills_dir" ]; then
             # We can't clone real repos in a hermetic container; skip if git is
             # unavailable or the skill wasn't cloned (network unavailable = skip, not fail).
             if git ls-remote --heads >/dev/null 2>&1 || true; then
                 if [ -f "$skill_md" ]; then
-                    assert_file_exists "$skill_md" "jr-orchestrator SKILL.md present (agent=$agent)"
-                    assert_file_size_min "$skill_md" 1 "jr-orchestrator SKILL.md non-empty"
+                    assert_file_exists "$skill_md" "active-orchestrator SKILL.md present (agent=$agent)"
+                    assert_file_size_min "$skill_md" 1 "active-orchestrator SKILL.md non-empty"
                 else
-                    log_skip "jr-orchestrator SKILL.md not cloned (network unavailable?): $skill_md"
+                    log_skip "active-orchestrator SKILL.md not cloned (network unavailable?): $skill_md"
                 fi
             fi
         else
@@ -381,7 +381,7 @@ else
         fi
 
         # Check that backup dir was created by the installer.
-        BACKUP_DIR="$SANDBOX/.jr-stack/backups"
+        BACKUP_DIR="$SANDBOX/.active-stack/backups"
         if [ -d "$BACKUP_DIR" ]; then
             log_pass "T3.2: Backup directory created: $BACKUP_DIR"
             BACKUP_COUNT=$(find "$BACKUP_DIR" -type f 2>/dev/null | wc -l | tr -d ' ')

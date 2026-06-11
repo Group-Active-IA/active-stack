@@ -3,7 +3,7 @@ package planner
 import (
 	"fmt"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 type dependencyResolver struct{}

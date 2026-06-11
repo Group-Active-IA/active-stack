@@ -8,8 +8,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config/permissions"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config/permissions"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // --- stub adapters ---
@@ -425,7 +425,7 @@ func TestInstallBackupCreatedBeforeWrite(t *testing.T) {
 		t.Fatalf("Install() error = %v", err)
 	}
 
-	backupDir := filepath.Join(home, ".jr-stack", "backups", fmt.Sprintf("permissions-%s", string(model.AgentClaude)))
+	backupDir := filepath.Join(home, ".active-stack", "backups", fmt.Sprintf("permissions-%s", string(model.AgentClaude)))
 	info, err := os.Stat(backupDir)
 	if err != nil {
 		t.Fatalf("backup dir not created at %q: %v", backupDir, err)

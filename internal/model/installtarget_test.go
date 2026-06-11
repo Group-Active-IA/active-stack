@@ -3,7 +3,7 @@ package model_test
 import (
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 func TestInstallTarget_ZeroValueIsMachine(t *testing.T) {

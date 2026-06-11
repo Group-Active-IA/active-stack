@@ -1,6 +1,6 @@
 package uninstall
 
-import "github.com/JuanCruzRobledo/jr-stack/internal/backup"
+import "github.com/Group-Active-IA/active-stack/internal/backup"
 
 // SetSnapshotCreate replaces the snapshotCreate function for testing.
 func SetSnapshotCreate(fn func(dir string, paths []string) (backup.Manifest, error)) (restore func()) {

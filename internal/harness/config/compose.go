@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/filemerge"
+	"github.com/Group-Active-IA/active-stack/internal/filemerge"
 )
 
 // knownToggles is the catalogue of recognised toggle names.
@@ -24,8 +24,8 @@ var knownToggles = map[string]bool{
 // Assembly order (deterministic, independent of toggle slice order):
 //
 //  1. base (always): assets/<variant>/sdd-orchestrator.md
-//  2. Subtractive: if "delegation" NOT active → remove <!-- jr-stack:sdd-delegation --> section
-//  3. Subtractive: if "model-routing" NOT active → remove <!-- jr-stack:sdd-model-assignments --> section
+//  2. Subtractive: if "delegation" NOT active → remove <!-- active-stack:sdd-delegation --> section
+//  3. Subtractive: if "model-routing" NOT active → remove <!-- active-stack:sdd-model-assignments --> section
 //  4. Additive: if "governance" active → append assets/governance.md
 //  5. Additive: if "engram" active → append assets/engram-protocol.md
 //  6. Additive: if "tdd" active → append inline TDD flag + assets/strict-tdd.md

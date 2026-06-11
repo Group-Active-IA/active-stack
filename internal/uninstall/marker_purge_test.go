@@ -5,25 +5,25 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
 
 // legacyClaudeMD mirrors a real bloated install: the current owned section
 // (sdd-orchestrator, with its nested owned children) plus standalone legacy
 // sections from older layouts (persona, engram-protocol, strict-tdd-mode).
 const legacyClaudeMD = "# My Config\n\nUser-written intro.\n\n" +
-	"<!-- jr-stack:persona -->\nlegacy persona\n<!-- /jr-stack:persona -->\n\n" +
-	"<!-- jr-stack:engram-protocol -->\nlegacy engram\n<!-- /jr-stack:engram-protocol -->\n\n" +
-	"<!-- jr-stack:sdd-orchestrator -->\norchestrator\n" +
-	"<!-- jr-stack:sdd-delegation -->\ndeleg\n<!-- /jr-stack:sdd-delegation -->\n" +
-	"<!-- /jr-stack:sdd-orchestrator -->\n\n" +
-	"<!-- jr-stack:strict-tdd-mode -->\nStrict TDD Mode: enabled\n<!-- /jr-stack:strict-tdd-mode -->\n\n" +
+	"<!-- active-stack:persona -->\nlegacy persona\n<!-- /active-stack:persona -->\n\n" +
+	"<!-- active-stack:engram-protocol -->\nlegacy engram\n<!-- /active-stack:engram-protocol -->\n\n" +
+	"<!-- active-stack:sdd-orchestrator -->\norchestrator\n" +
+	"<!-- active-stack:sdd-delegation -->\ndeleg\n<!-- /active-stack:sdd-delegation -->\n" +
+	"<!-- /active-stack:sdd-orchestrator -->\n\n" +
+	"<!-- active-stack:strict-tdd-mode -->\nStrict TDD Mode: enabled\n<!-- /active-stack:strict-tdd-mode -->\n\n" +
 	"# User footer\n"
 
 // TestMarkerRemovalStepPurgesStaleSections verifies that uninstalling the config
-// harness removes its OWN section AND purges every legacy jr-stack section left
+// harness removes its OWN section AND purges every legacy active-stack section left
 // by older layouts, leaving only the user's own content behind.
 func TestMarkerRemovalStepPurgesStaleSections(t *testing.T) {
 	homeDir := t.TempDir()
@@ -76,20 +76,20 @@ func TestMarkerRemovalStepPurgesStaleSections(t *testing.T) {
 	}
 	got := string(raw)
 
-	// EVERY jr-stack section (owned + legacy + nested) must be gone.
+	// EVERY active-stack section (owned + legacy + nested) must be gone.
 	for _, id := range []string{
 		"persona", "engram-protocol", "strict-tdd-mode",
 		"sdd-orchestrator", "sdd-delegation",
 	} {
-		if contains(got, "<!-- jr-stack:"+id+" -->") {
+		if contains(got, "<!-- active-stack:"+id+" -->") {
 			t.Errorf("section %q opening marker still present after uninstall:\n%s", id, got)
 		}
-		if contains(got, "<!-- /jr-stack:"+id+" -->") {
+		if contains(got, "<!-- /active-stack:"+id+" -->") {
 			t.Errorf("section %q closing marker still present after uninstall:\n%s", id, got)
 		}
 	}
 
-	// User content outside jr-stack markers must survive.
+	// User content outside active-stack markers must survive.
 	if !contains(got, "# My Config") || !contains(got, "User-written intro.") || !contains(got, "# User footer") {
 		t.Errorf("user content was lost during uninstall:\n%s", got)
 	}

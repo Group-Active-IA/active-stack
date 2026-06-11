@@ -4,13 +4,13 @@
 package agents_test
 
 import (
-	claudeadapter "github.com/JuanCruzRobledo/jr-stack/internal/agents/claude"
-	opencodeadapter "github.com/JuanCruzRobledo/jr-stack/internal/agents/opencode"
-	"github.com/JuanCruzRobledo/jr-stack/internal/agents"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config/permissions"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/skill"
+	claudeadapter "github.com/Group-Active-IA/active-stack/internal/agents/claude"
+	opencodeadapter "github.com/Group-Active-IA/active-stack/internal/agents/opencode"
+	"github.com/Group-Active-IA/active-stack/internal/agents"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config/permissions"
+	"github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/harness/skill"
 )
 
 // Task 5.1 — claude adapter satisfies all four installer interfaces.

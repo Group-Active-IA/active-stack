@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // Install runs the config installer for the given harness and adapters.
@@ -25,7 +25,7 @@ func Install(h model.Harness, adapters []AgentAdapter, homeDir string) (Result, 
 	allAlready := true
 
 	for _, adapter := range adapters {
-		snapshotDir := filepath.Join(homeDir, ".jr-stack", "backups",
+		snapshotDir := filepath.Join(homeDir, ".active-stack", "backups",
 			fmt.Sprintf("%s-%s", h.ID, adapter.Agent()))
 
 		var (

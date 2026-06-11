@@ -1,6 +1,6 @@
 ## Agent Governance — Autonomy by Domain
 
-This governance model (from the JR Stack Methodology, Stage 4) defines how much autonomy the agent has based on the criticality of the domain being modified. It applies to **all agents**, regardless of provider.
+This governance model (from the Active Stack Methodology, Stage 4) defines how much autonomy the agent has based on the criticality of the domain being modified. It applies to **all agents**, regardless of provider.
 
 ### Governance Levels
 

@@ -280,7 +280,7 @@ func TestRestore_Security_PreexistingDirSurvivesRollback(t *testing.T) {
 	}
 
 	// Simulate what the install does: add another skill inside the dir.
-	installSkill := filepath.Join(skillsDir, "jr-orchestrator", "SKILL.md")
+	installSkill := filepath.Join(skillsDir, "active-orchestrator", "SKILL.md")
 	if err := os.MkdirAll(filepath.Dir(installSkill), 0o755); err != nil {
 		t.Fatalf("MkdirAll install skill dir: %v", err)
 	}
@@ -328,7 +328,7 @@ func TestRestore_NewDir_RemovedByRollback(t *testing.T) {
 	}
 
 	// Simulate install: create the dir and add a skill inside.
-	installSkill := filepath.Join(skillsDir, "jr-orchestrator", "SKILL.md")
+	installSkill := filepath.Join(skillsDir, "active-orchestrator", "SKILL.md")
 	if err := os.MkdirAll(filepath.Dir(installSkill), 0o755); err != nil {
 		t.Fatalf("MkdirAll: %v", err)
 	}

@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // TestBuildPlanMachineTarget_SnapshotDirUnderHomeDir is the explicit
@@ -55,7 +55,7 @@ func TestBuildPlanMachineTarget_SnapshotDirUnderHomeDir(t *testing.T) {
 		_ = step.Run()
 	}
 
-	wantSnapDir := filepath.Join(homeDir, ".jr-stack", "backups", "install")
+	wantSnapDir := filepath.Join(homeDir, ".active-stack", "backups", "install")
 	if capturedSnapDir != wantSnapDir {
 		t.Errorf("machine snapshot dir = %q, want %q", capturedSnapDir, wantSnapDir)
 	}

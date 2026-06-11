@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/filemerge"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/filemerge"
 )
 
 // SnapshotterCreate is the function used to create a backup snapshot before
@@ -21,7 +21,7 @@ var SnapshotterCreate = func(snapshotDir string, paths []string) error {
 
 // ownedSectionIDs is the registry of markdown section IDs the config installer
 // manages. It is the single source of truth for the purge policy: any
-// jr-stack-marked section found in a target file whose ID is NOT in this set is
+// active-stack-marked section found in a target file whose ID is NOT in this set is
 // treated as stale (a leftover from a previous installer layout) and removed
 // before the current block is injected.
 //
@@ -36,7 +36,7 @@ var ownedSectionIDs = map[string]bool{
 	"sdd-model-assignments": true,
 }
 
-// PurgeStaleSections removes every jr-stack-marked section in content whose ID
+// PurgeStaleSections removes every active-stack-marked section in content whose ID
 // is not owned by the current installer. This cleans up legacy/renamed sections
 // from older layouts (e.g. persona, engram-protocol, strict-tdd-mode) so neither
 // a re-install nor an uninstall leaves orphaned, duplicated blocks behind.

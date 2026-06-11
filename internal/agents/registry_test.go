@@ -4,9 +4,9 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/agents"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/agents"
+	"github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // fakeAdapter is a minimal test double that satisfies agents.Adapter.

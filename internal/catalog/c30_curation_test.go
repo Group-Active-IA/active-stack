@@ -11,7 +11,7 @@ package catalog
 import (
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -393,7 +393,7 @@ func TestC30_CuratedCatalog_NoDuplicateHarnessIDs(t *testing.T) {
 
 // TestC30_CuratedSkillHarnesses_OwnPointAtMonorepo asserts that all 14
 // own/fork curated skills (identified by absence of third_party=true) point at
-// the published monorepo JuanCruzRobledo/jr-skills with method=clone and a
+// the published monorepo Group-Active-IA/active-skills with method=clone and a
 // non-empty path.
 //
 // RED: fails because the 14 curated own skill harnesses do not exist yet.
@@ -422,7 +422,7 @@ func TestC30_CuratedSkillHarnesses_OwnPointAtMonorepo(t *testing.T) {
 		"fastapi-code-review",
 	}
 
-	const wantRepo = "JuanCruzRobledo/jr-skills"
+	const wantRepo = "Group-Active-IA/active-skills"
 
 	for _, id := range ownCuratedIDs {
 		h, ok := c.ByID(id)

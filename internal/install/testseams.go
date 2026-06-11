@@ -4,13 +4,13 @@ import (
 	"context"
 	"io/fs"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	extinstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	cfginstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
-	perminstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/config/permissions"
-	skillinstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/skill"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/system"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	extinstaller "github.com/Group-Active-IA/active-stack/internal/harness/external"
+	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
+	perminstaller "github.com/Group-Active-IA/active-stack/internal/harness/config/permissions"
+	skillinstaller "github.com/Group-Active-IA/active-stack/internal/harness/skill"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
 
 // SetSnapshotCreate replaces the snapshotCreate function for testing.

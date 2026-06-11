@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // ─── helpers ─────────────────────────────────────────────────────────────────

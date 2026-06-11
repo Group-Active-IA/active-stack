@@ -3,8 +3,8 @@ package install_test
 import (
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // permissionsHarness returns a catalog entry mirroring the real "permissions"

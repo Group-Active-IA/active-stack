@@ -1,5 +1,5 @@
-# Dockerfile.arch — E2E test image for jr-stack on Arch Linux
-# Builds the jr-stack binary from source and runs the E2E test suite
+# Dockerfile.arch — E2E test image for active-stack on Arch Linux
+# Builds the active-stack binary from source and runs the E2E test suite
 # as a non-root user.
 #
 # archlinux:base provides x86_64 only. The --platform=linux/amd64 flag
@@ -31,14 +31,14 @@ RUN useradd -m -s /bin/bash testuser && \
     echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # ---------------------------------------------------------------------------
-# Copy project source and build the jr-stack binary
+# Copy project source and build the active-stack binary
 # ---------------------------------------------------------------------------
 WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -o /usr/local/bin/jr-stack ./cmd/jr-stack
+    go build -o /usr/local/bin/active-stack ./cmd/active-stack
 
 # ---------------------------------------------------------------------------
 # Prepare test environment

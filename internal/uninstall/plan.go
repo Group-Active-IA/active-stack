@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/command"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/harness/command"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
 
 // BuildPlan converts an Intent into a Plan ready for execution.
@@ -71,7 +71,7 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 	}
 
 	// 5. Collect all paths that Apply steps will touch; build the snapshot step.
-	snapshotDir := filepath.Join(opts.HomeDir, ".jr-stack", "backups", "uninstall")
+	snapshotDir := filepath.Join(opts.HomeDir, ".active-stack", "backups", "uninstall")
 	prepareSteps := []pipeline.Step{
 		&snapshotStep{
 			id:         "uninstall-snapshot",

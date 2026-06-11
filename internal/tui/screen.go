@@ -1,4 +1,4 @@
-// Package tui provides the slim Bubbletea install-flow TUI for jr-stack.
+// Package tui provides the slim Bubbletea install-flow TUI for active-stack.
 // It is a thin driver: collect intent → call install.BuildPlan → run the plan
 // via pipeline.NewOrchestrator with a ProgressFunc bridge.
 // No orchestration, backup, or rollback logic lives here.

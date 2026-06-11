@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-#  build.sh - JR Stack
+#  build.sh - Active Stack
 #  Cross-compila binarios estaticos (CGO desactivado) a la raiz del repo.
 #  Uso:  ./build.sh        (chmod +x build.sh la primera vez)
 #  Requiere: Go 1.26+ en el PATH.
@@ -17,7 +17,7 @@ build() {
   local goos=$1 goarch=$2 ext=${3:-}
   echo "== ${goos} ${goarch} =="
   GOOS="$goos" GOARCH="$goarch" \
-    go build -trimpath -o "${OUT}/jr-stack_${goos}_${goarch}${ext}" ./cmd/jr-stack
+    go build -trimpath -o "${OUT}/active-stack_${goos}_${goarch}${ext}" ./cmd/active-stack
 }
 
 # Matriz de targets. Agrega lineas para mas plataformas, p.ej.:
@@ -28,7 +28,7 @@ build linux   amd64
 
 echo
 echo "Listo. Binarios en la raiz del repo:"
-ls -lh jr-stack_*
+ls -lh active-stack_*
 
 # ----------------------------------------------------------------------------
 # Acceso directo en el escritorio (best-effort, idempotente).
@@ -40,15 +40,15 @@ desktop_shortcut() {
   local os; os="$(uname -s 2>/dev/null || echo unknown)"
   case "$os" in
     Linux)
-      local bin="$PWD/jr-stack_linux_amd64"
+      local bin="$PWD/active-stack_linux_amd64"
       local desk="${XDG_DESKTOP_DIR:-$HOME/Desktop}"
       [ -x "$bin" ]  || { echo "  (sin binario Linux nativo; omito acceso directo)"; return 0; }
       [ -d "$desk" ] || { echo "  (sin carpeta de escritorio en $desk; omito acceso directo)"; return 0; }
-      local lnk="$desk/jr-stack.desktop"
+      local lnk="$desk/active-stack.desktop"
       printf '%s\n' \
         '[Desktop Entry]' \
         'Type=Application' \
-        'Name=JR Stack' \
+        'Name=Active Stack' \
         "Exec=$bin" \
         "Path=$PWD" \
         'Terminal=true' \
@@ -68,5 +68,5 @@ desktop_shortcut || true
 
 echo
 echo "Siguiente paso: copia el binario compilado a un directorio en tu PATH y ejecuta:"
-echo "  jr-stack install"
+echo "  active-stack install"
 echo "Esto instala los harnesses Y registra el binario en tu PATH automaticamente."

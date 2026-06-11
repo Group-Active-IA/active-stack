@@ -1,6 +1,6 @@
 package permissions
 
-import "github.com/JuanCruzRobledo/jr-stack/internal/model"
+import "github.com/Group-Active-IA/active-stack/internal/model"
 
 // PermissionsAdapter is the minimal interface the permissions installer needs
 // per agent. Full adapters are implemented in internal/agents (C-10).

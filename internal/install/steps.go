@@ -7,15 +7,15 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	extinstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	cfginstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
-	perminstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/config/permissions"
-	skillinstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/skill"
-	cmdinstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/command"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
-	"github.com/JuanCruzRobledo/jr-stack/internal/system"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	extinstaller "github.com/Group-Active-IA/active-stack/internal/harness/external"
+	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
+	perminstaller "github.com/Group-Active-IA/active-stack/internal/harness/config/permissions"
+	skillinstaller "github.com/Group-Active-IA/active-stack/internal/harness/skill"
+	cmdinstaller "github.com/Group-Active-IA/active-stack/internal/harness/command"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -243,7 +243,7 @@ func writeMCPEntry(mcp model.MCP, configPath string, strategy model.MCPStrategy)
 	case model.MCPStrategySingleFileMerge, model.MCPStrategyMergeIntoSettings:
 		// Both project merge strategies use the same write path:
 		// backup + MergeJSONObjects + WriteFileAtomic.
-		snapshotDir := filepath.Join(filepath.Dir(configPath), ".jr-stack", "backups", "mcp", mcp.Name)
+		snapshotDir := filepath.Join(filepath.Dir(configPath), ".active-stack", "backups", "mcp", mcp.Name)
 		_, err := extinstaller.WriteMCPProjectEntry(mcp, configPath, snapshotDir)
 		return err
 	default:

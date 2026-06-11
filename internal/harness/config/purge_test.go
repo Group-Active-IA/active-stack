@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
 )
 
 // legacyClaudeMD reproduces the real-world bloated state reported by the user:
@@ -14,16 +14,16 @@ import (
 // strict-tdd-mode sections, plus a previous sdd-orchestrator block whose nested
 // engram + tdd content now duplicates what the current installer inlines.
 const legacyClaudeMD = "# My Project Config\n\n" +
-	"<!-- jr-stack:persona -->\n## Rules\nlegacy persona body\n<!-- /jr-stack:persona -->\n\n" +
-	"<!-- jr-stack:engram-protocol -->\n## Engram Protocol\nlegacy engram body\n<!-- /jr-stack:engram-protocol -->\n\n" +
-	"<!-- jr-stack:sdd-orchestrator -->\n# Old OPSX\n" +
-	"<!-- jr-stack:sdd-delegation -->\nold delegation\n<!-- /jr-stack:sdd-delegation -->\n" +
-	"<!-- jr-stack:sdd-model-assignments -->\nold routing\n<!-- /jr-stack:sdd-model-assignments -->\n" +
-	"<!-- /jr-stack:sdd-orchestrator -->\n\n" +
-	"<!-- jr-stack:strict-tdd-mode -->\nStrict TDD Mode: enabled\n<!-- /jr-stack:strict-tdd-mode -->\n"
+	"<!-- active-stack:persona -->\n## Rules\nlegacy persona body\n<!-- /active-stack:persona -->\n\n" +
+	"<!-- active-stack:engram-protocol -->\n## Engram Protocol\nlegacy engram body\n<!-- /active-stack:engram-protocol -->\n\n" +
+	"<!-- active-stack:sdd-orchestrator -->\n# Old OPSX\n" +
+	"<!-- active-stack:sdd-delegation -->\nold delegation\n<!-- /active-stack:sdd-delegation -->\n" +
+	"<!-- active-stack:sdd-model-assignments -->\nold routing\n<!-- /active-stack:sdd-model-assignments -->\n" +
+	"<!-- /active-stack:sdd-orchestrator -->\n\n" +
+	"<!-- active-stack:strict-tdd-mode -->\nStrict TDD Mode: enabled\n<!-- /active-stack:strict-tdd-mode -->\n"
 
 // TestInject_PurgesStaleSections verifies that a re-install cleans up every
-// jr-stack-marked section the current installer no longer owns BEFORE injecting,
+// active-stack-marked section the current installer no longer owns BEFORE injecting,
 // so legacy orphans (persona / engram-protocol / strict-tdd-mode) do not pile up.
 func TestInject_PurgesStaleSections(t *testing.T) {
 	dir := t.TempDir()
@@ -48,16 +48,16 @@ func TestInject_PurgesStaleSections(t *testing.T) {
 	// Stale, non-owned sections must be gone entirely (open and close markers).
 	staleIDs := []string{"persona", "engram-protocol", "strict-tdd-mode"}
 	for _, id := range staleIDs {
-		if strings.Contains(got, "<!-- jr-stack:"+id+" -->") {
+		if strings.Contains(got, "<!-- active-stack:"+id+" -->") {
 			t.Errorf("stale section %q opening marker should have been purged", id)
 		}
-		if strings.Contains(got, "<!-- /jr-stack:"+id+" -->") {
+		if strings.Contains(got, "<!-- /active-stack:"+id+" -->") {
 			t.Errorf("stale section %q closing marker should have been purged", id)
 		}
 	}
 
 	// The owned section must remain, exactly once, with the fresh content.
-	if c := strings.Count(got, "<!-- jr-stack:sdd-orchestrator -->"); c != 1 {
+	if c := strings.Count(got, "<!-- active-stack:sdd-orchestrator -->"); c != 1 {
 		t.Errorf("sdd-orchestrator marker count = %d, want 1", c)
 	}
 	if !strings.Contains(got, "Fresh orchestrator block.") {
@@ -67,7 +67,7 @@ func TestInject_PurgesStaleSections(t *testing.T) {
 		t.Error("old orchestrator body should have been replaced")
 	}
 
-	// User content outside any jr-stack marker must be preserved.
+	// User content outside any active-stack marker must be preserved.
 	if !strings.Contains(got, "# My Project Config") {
 		t.Error("user content outside markers must be preserved")
 	}
@@ -85,8 +85,8 @@ func TestInject_PreservesOwnedNestedChildren(t *testing.T) {
 
 	// Compose a block that itself carries the nested owned children.
 	composed := "# OPSX\n" +
-		"<!-- jr-stack:sdd-delegation -->\nnew delegation\n<!-- /jr-stack:sdd-delegation -->\n" +
-		"<!-- jr-stack:sdd-model-assignments -->\nnew routing\n<!-- /jr-stack:sdd-model-assignments -->\n"
+		"<!-- active-stack:sdd-delegation -->\nnew delegation\n<!-- /active-stack:sdd-delegation -->\n" +
+		"<!-- active-stack:sdd-model-assignments -->\nnew routing\n<!-- /active-stack:sdd-model-assignments -->\n"
 	snapshotDir := filepath.Join(dir, "backups")
 
 	if _, err := config.Inject(target, composed, snapshotDir); err != nil {
@@ -100,7 +100,7 @@ func TestInject_PreservesOwnedNestedChildren(t *testing.T) {
 	got := string(raw)
 
 	for _, id := range []string{"sdd-delegation", "sdd-model-assignments"} {
-		if !strings.Contains(got, "<!-- jr-stack:"+id+" -->") {
+		if !strings.Contains(got, "<!-- active-stack:"+id+" -->") {
 			t.Errorf("owned nested child %q must be preserved", id)
 		}
 	}

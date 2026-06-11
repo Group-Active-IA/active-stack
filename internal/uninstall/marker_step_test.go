@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -27,7 +27,7 @@ func TestMarkerRemovalStepRemovesSection(t *testing.T) {
 	}
 
 	const sectionID = "sdd-orchestrator"
-	original := "# My Config\n\nSome content.\n\n<!-- jr-stack:sdd-orchestrator -->\norchestrator block\n<!-- /jr-stack:sdd-orchestrator -->\n\nMore content.\n"
+	original := "# My Config\n\nSome content.\n\n<!-- active-stack:sdd-orchestrator -->\norchestrator block\n<!-- /active-stack:sdd-orchestrator -->\n\nMore content.\n"
 	if err := os.WriteFile(instrPath, []byte(original), 0o644); err != nil {
 		t.Fatalf("setup: %v", err)
 	}
@@ -71,7 +71,7 @@ func TestMarkerRemovalStepRemovesSection(t *testing.T) {
 		t.Fatalf("read instructions: %v", err)
 	}
 
-	if contains(string(got), "<!-- jr-stack:sdd-orchestrator -->") {
+	if contains(string(got), "<!-- active-stack:sdd-orchestrator -->") {
 		t.Errorf("marker still present after removal:\n%s", got)
 	}
 	if contains(string(got), "orchestrator block") {
@@ -155,7 +155,7 @@ func TestMarkerRemovalStepRepeatedRunIsNoop(t *testing.T) {
 	}
 
 	const sectionID = "sdd-orchestrator"
-	original := "# Config\n\n<!-- jr-stack:sdd-orchestrator -->\nblock\n<!-- /jr-stack:sdd-orchestrator -->\n"
+	original := "# Config\n\n<!-- active-stack:sdd-orchestrator -->\nblock\n<!-- /active-stack:sdd-orchestrator -->\n"
 	if err := os.WriteFile(instrPath, []byte(original), 0o644); err != nil {
 		t.Fatalf("setup: %v", err)
 	}
@@ -216,7 +216,7 @@ func TestMarkerRemovalStepPathResolvedViaAdapter(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(customPath), 0o755); err != nil {
 		t.Fatalf("setup: %v", err)
 	}
-	content := "# Custom\n\n<!-- jr-stack:test-h -->\ncontent\n<!-- /jr-stack:test-h -->\n"
+	content := "# Custom\n\n<!-- active-stack:test-h -->\ncontent\n<!-- /active-stack:test-h -->\n"
 	if err := os.WriteFile(customPath, []byte(content), 0o644); err != nil {
 		t.Fatalf("setup: %v", err)
 	}
@@ -258,7 +258,7 @@ func TestMarkerRemovalStepPathResolvedViaAdapter(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read custom path: %v", err)
 	}
-	if contains(string(got), "<!-- jr-stack:test-h -->") {
+	if contains(string(got), "<!-- active-stack:test-h -->") {
 		t.Errorf("marker still present; adapter path was not used:\n%s", got)
 	}
 }

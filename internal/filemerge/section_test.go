@@ -8,7 +8,7 @@ import (
 func TestInjectMarkdownSection_EmptyFile(t *testing.T) {
 	result := InjectMarkdownSection("", "sdd", "## SDD Config\nSome content here.\n")
 
-	want := "<!-- jr-stack:sdd -->\n## SDD Config\nSome content here.\n<!-- /jr-stack:sdd -->\n"
+	want := "<!-- active-stack:sdd -->\n## SDD Config\nSome content here.\n<!-- /active-stack:sdd -->\n"
 	if result != want {
 		t.Fatalf("empty file inject:\ngot:  %q\nwant: %q", result, want)
 	}
@@ -18,40 +18,40 @@ func TestInjectMarkdownSection_AppendToExistingContent(t *testing.T) {
 	existing := "# My Config\n\nSome existing content.\n"
 	result := InjectMarkdownSection(existing, "persona", "You are a senior architect.\n")
 
-	want := "# My Config\n\nSome existing content.\n\n<!-- jr-stack:persona -->\nYou are a senior architect.\n<!-- /jr-stack:persona -->\n"
+	want := "# My Config\n\nSome existing content.\n\n<!-- active-stack:persona -->\nYou are a senior architect.\n<!-- /active-stack:persona -->\n"
 	if result != want {
 		t.Fatalf("append to existing:\ngot:  %q\nwant: %q", result, want)
 	}
 }
 
 func TestInjectMarkdownSection_UpdateExistingSection(t *testing.T) {
-	existing := "# Config\n\n<!-- jr-stack:sdd -->\nOld SDD content.\n<!-- /jr-stack:sdd -->\n\nOther stuff.\n"
+	existing := "# Config\n\n<!-- active-stack:sdd -->\nOld SDD content.\n<!-- /active-stack:sdd -->\n\nOther stuff.\n"
 	result := InjectMarkdownSection(existing, "sdd", "New SDD content.\n")
 
-	want := "# Config\n\n<!-- jr-stack:sdd -->\nNew SDD content.\n<!-- /jr-stack:sdd -->\n\nOther stuff.\n"
+	want := "# Config\n\n<!-- active-stack:sdd -->\nNew SDD content.\n<!-- /active-stack:sdd -->\n\nOther stuff.\n"
 	if result != want {
 		t.Fatalf("update existing section:\ngot:  %q\nwant: %q", result, want)
 	}
 }
 
 func TestInjectMarkdownSection_MultipleSectionsOnlyTargetedOneUpdated(t *testing.T) {
-	existing := "# Config\n\n<!-- jr-stack:persona -->\nPersona content.\n<!-- /jr-stack:persona -->\n\n<!-- jr-stack:sdd -->\nOld SDD.\n<!-- /jr-stack:sdd -->\n\n<!-- jr-stack:skills -->\nSkills content.\n<!-- /jr-stack:skills -->\n"
+	existing := "# Config\n\n<!-- active-stack:persona -->\nPersona content.\n<!-- /active-stack:persona -->\n\n<!-- active-stack:sdd -->\nOld SDD.\n<!-- /active-stack:sdd -->\n\n<!-- active-stack:skills -->\nSkills content.\n<!-- /active-stack:skills -->\n"
 
 	result := InjectMarkdownSection(existing, "sdd", "Updated SDD.\n")
 
 	// persona and skills should be unchanged
-	want := "# Config\n\n<!-- jr-stack:persona -->\nPersona content.\n<!-- /jr-stack:persona -->\n\n<!-- jr-stack:sdd -->\nUpdated SDD.\n<!-- /jr-stack:sdd -->\n\n<!-- jr-stack:skills -->\nSkills content.\n<!-- /jr-stack:skills -->\n"
+	want := "# Config\n\n<!-- active-stack:persona -->\nPersona content.\n<!-- /active-stack:persona -->\n\n<!-- active-stack:sdd -->\nUpdated SDD.\n<!-- /active-stack:sdd -->\n\n<!-- active-stack:skills -->\nSkills content.\n<!-- /active-stack:skills -->\n"
 	if result != want {
 		t.Fatalf("multiple sections:\ngot:  %q\nwant: %q", result, want)
 	}
 }
 
 func TestInjectMarkdownSection_PreserveUserContentBeforeAndAfter(t *testing.T) {
-	existing := "# User's custom intro\n\nHand-written notes.\n\n<!-- jr-stack:persona -->\nAuto persona.\n<!-- /jr-stack:persona -->\n\n# User's custom footer\n\nMore hand-written content.\n"
+	existing := "# User's custom intro\n\nHand-written notes.\n\n<!-- active-stack:persona -->\nAuto persona.\n<!-- /active-stack:persona -->\n\n# User's custom footer\n\nMore hand-written content.\n"
 
 	result := InjectMarkdownSection(existing, "persona", "Updated persona.\n")
 
-	want := "# User's custom intro\n\nHand-written notes.\n\n<!-- jr-stack:persona -->\nUpdated persona.\n<!-- /jr-stack:persona -->\n\n# User's custom footer\n\nMore hand-written content.\n"
+	want := "# User's custom intro\n\nHand-written notes.\n\n<!-- active-stack:persona -->\nUpdated persona.\n<!-- /active-stack:persona -->\n\n# User's custom footer\n\nMore hand-written content.\n"
 	if result != want {
 		t.Fatalf("preserve user content:\ngot:  %q\nwant: %q", result, want)
 	}
@@ -59,7 +59,7 @@ func TestInjectMarkdownSection_PreserveUserContentBeforeAndAfter(t *testing.T) {
 
 func TestInjectMarkdownSection_MalformedMarkersTreatedAsNotFound(t *testing.T) {
 	// Only opening marker, no closing marker — treat as not found, append.
-	existing := "# Config\n\n<!-- jr-stack:sdd -->\nOrphaned content.\n"
+	existing := "# Config\n\n<!-- active-stack:sdd -->\nOrphaned content.\n"
 	result := InjectMarkdownSection(existing, "sdd", "New SDD content.\n")
 
 	// Should append since closing marker is missing.
@@ -68,7 +68,7 @@ func TestInjectMarkdownSection_MalformedMarkersTreatedAsNotFound(t *testing.T) {
 	}
 
 	// Result should contain the new properly-formed section.
-	wantOpen := "<!-- jr-stack:sdd -->\nNew SDD content.\n<!-- /jr-stack:sdd -->\n"
+	wantOpen := "<!-- active-stack:sdd -->\nNew SDD content.\n<!-- /active-stack:sdd -->\n"
 	if !strings.Contains(result, wantOpen) {
 		t.Fatalf("malformed markers: result should contain proper section:\ngot: %q", result)
 	}
@@ -76,18 +76,18 @@ func TestInjectMarkdownSection_MalformedMarkersTreatedAsNotFound(t *testing.T) {
 
 func TestInjectMarkdownSection_CloseBeforeOpenTreatedAsNotFound(t *testing.T) {
 	// Closing marker appears before opening — treat as not found.
-	existing := "<!-- /jr-stack:sdd -->\nSome content.\n<!-- jr-stack:sdd -->\n"
+	existing := "<!-- /active-stack:sdd -->\nSome content.\n<!-- active-stack:sdd -->\n"
 	result := InjectMarkdownSection(existing, "sdd", "New content.\n")
 
 	// Should append the section, not replace.
-	wantSuffix := "<!-- jr-stack:sdd -->\nNew content.\n<!-- /jr-stack:sdd -->\n"
+	wantSuffix := "<!-- active-stack:sdd -->\nNew content.\n<!-- /active-stack:sdd -->\n"
 	if !strings.HasSuffix(result, wantSuffix) {
 		t.Fatalf("close-before-open: expected appended section:\ngot: %q\nwant suffix: %q", result, wantSuffix)
 	}
 }
 
 func TestInjectMarkdownSection_EmptyContentRemovesSection(t *testing.T) {
-	existing := "# Config\n\n<!-- jr-stack:sdd -->\nSDD content here.\n<!-- /jr-stack:sdd -->\n\nOther stuff.\n"
+	existing := "# Config\n\n<!-- active-stack:sdd -->\nSDD content here.\n<!-- /active-stack:sdd -->\n\nOther stuff.\n"
 	result := InjectMarkdownSection(existing, "sdd", "")
 
 	want := "# Config\n\nOther stuff.\n"
@@ -108,7 +108,7 @@ func TestInjectMarkdownSection_EmptyContentOnMissingSectionNoOp(t *testing.T) {
 func TestInjectMarkdownSection_ContentWithoutTrailingNewline(t *testing.T) {
 	result := InjectMarkdownSection("", "test", "no trailing newline")
 
-	want := "<!-- jr-stack:test -->\nno trailing newline\n<!-- /jr-stack:test -->\n"
+	want := "<!-- active-stack:test -->\nno trailing newline\n<!-- /active-stack:test -->\n"
 	if result != want {
 		t.Fatalf("content without trailing newline:\ngot:  %q\nwant: %q", result, want)
 	}
@@ -118,7 +118,7 @@ func TestInjectMarkdownSection_ExistingWithoutTrailingNewline(t *testing.T) {
 	existing := "# Title"
 	result := InjectMarkdownSection(existing, "test", "Content.\n")
 
-	want := "# Title\n\n<!-- jr-stack:test -->\nContent.\n<!-- /jr-stack:test -->\n"
+	want := "# Title\n\n<!-- active-stack:test -->\nContent.\n<!-- /active-stack:test -->\n"
 	if result != want {
 		t.Fatalf("existing without trailing newline:\ngot:  %q\nwant: %q", result, want)
 	}

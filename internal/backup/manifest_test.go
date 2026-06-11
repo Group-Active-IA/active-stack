@@ -129,7 +129,7 @@ func TestOldManifestRemainsReadable(t *testing.T) {
 	oldJSON := `{
   "id": "20260322150405.000000000",
   "created_at": "2026-03-22T15:04:05Z",
-  "root_dir": "/home/user/.jr-stack/backups/20260322150405.000000000",
+  "root_dir": "/home/user/.active-stack/backups/20260322150405.000000000",
   "entries": []
 }`
 
@@ -161,7 +161,7 @@ func TestOldManifestRemainsReadable(t *testing.T) {
 
 // TestNewManifestOmitsEmptySourceFromJSON verifies that omitempty is respected:
 // when Source is not set, it should not appear in the serialized JSON, keeping
-// existing manifest files readable by older versions of jr-stack.
+// existing manifest files readable by older versions of active-stack.
 func TestNewManifestOmitsEmptySourceFromJSON(t *testing.T) {
 	m := Manifest{
 		ID:        "test",
@@ -230,7 +230,7 @@ func TestManifestFileCountField(t *testing.T) {
 		oldJSON := `{
   "id": "old-no-fc",
   "created_at": "2026-03-22T15:04:05Z",
-  "root_dir": "/home/user/.jr-stack/backups/old",
+  "root_dir": "/home/user/.active-stack/backups/old",
   "entries": []
 }`
 		dir := t.TempDir()
@@ -293,7 +293,7 @@ func TestManifestCreatedByVersionField(t *testing.T) {
 		oldJSON := `{
   "id": "old-no-ver",
   "created_at": "2026-03-22T15:04:05Z",
-  "root_dir": "/home/user/.jr-stack/backups/old",
+  "root_dir": "/home/user/.active-stack/backups/old",
   "entries": []
 }`
 		dir := t.TempDir()
@@ -721,7 +721,7 @@ func TestManifestNewFields(t *testing.T) {
 		oldJSON := `{
   "id": "old-no-new-fields",
   "created_at": "2026-03-22T15:04:05Z",
-  "root_dir": "/home/user/.jr-stack/backups/old",
+  "root_dir": "/home/user/.active-stack/backups/old",
   "entries": []
 }`
 		dir := t.TempDir()

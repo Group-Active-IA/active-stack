@@ -1,6 +1,6 @@
 package planner
 
-import "github.com/JuanCruzRobledo/jr-stack/internal/model"
+import "github.com/Group-Active-IA/active-stack/internal/model"
 
 // BuildReviewPayload constructs the data shown on the TUI confirmation screen
 // before installation begins. It labels each harness as "selected" (user

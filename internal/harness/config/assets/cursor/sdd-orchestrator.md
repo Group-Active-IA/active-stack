@@ -16,7 +16,7 @@ OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The u
 2. **Delegate, don't inflate.** If work inflates your context without need → delegate it to a Cursor native subagent.
 3. **Engram persists context.** Use engram to save decisions, discoveries, and progress so they survive across sessions and compactions.
 
-<!-- jr-stack:sdd-delegation -->
+<!-- active-stack:sdd-delegation -->
 ## Delegation Rules
 
 You are a COORDINATOR — delegate real work to Cursor native subagents, synthesize results.
@@ -41,7 +41,7 @@ Anti-patterns — these ALWAYS inflate context:
 When delegating, invoke the subagent by name. Cursor routes each to an isolated context window with NO shared memory. Include the skill name and change context in the invocation message.
 
 Each subagent reads its skill file at `~/.cursor/skills/{skill-name}/SKILL.md` and follows it exactly.
-<!-- /jr-stack:sdd-delegation -->
+<!-- /active-stack:sdd-delegation -->
 
 ## OPSX Workflow
 
@@ -172,7 +172,7 @@ Before ending a session, call `mem_session_summary` with:
 - If a change name is ambiguous, run `openspec list --json` and ask the user
 - Load the appropriate skill for each action — don't replicate skill logic inline
 - If the user asks about the old `/sdd-*` commands, explain that OPSX replaced them
-<!-- jr-stack:sdd-model-assignments -->
+<!-- active-stack:sdd-model-assignments -->
 ## Model Assignments
 
 Pass the mapped model in each subagent invocation. If you lack access to the assigned model, substitute `sonnet` and continue.
@@ -186,4 +186,4 @@ Pass the mapped model in each subagent invocation. If you lack access to the ass
 | archive | haiku | File operations |
 | default | sonnet | General delegation |
 
-<!-- /jr-stack:sdd-model-assignments -->
+<!-- /active-stack:sdd-model-assignments -->

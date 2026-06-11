@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
 
 // TestCommandRemovalStep_DeletesCommandFile asserts that commandRemovalStep
@@ -19,7 +19,7 @@ func TestCommandRemovalStep_DeletesCommandFile(t *testing.T) {
 	adapter := fakeAdapter{agent: model.AgentClaude, homeDir: homeDir, variantKey: "claude"}
 
 	// Pre-create the command file at the expected path.
-	commandFile := filepath.Join(adapter.CommandsDir(homeDir), "jr", "starter-add.md")
+	commandFile := filepath.Join(adapter.CommandsDir(homeDir), "active", "starter-add.md")
 	if err := os.MkdirAll(filepath.Dir(commandFile), 0o755); err != nil {
 		t.Fatalf("setup: mkdir: %v", err)
 	}

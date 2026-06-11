@@ -3,7 +3,7 @@ package permissions
 import (
 	"encoding/json"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // securityFloorDeny is the single source of truth for the C-21 deny rules that

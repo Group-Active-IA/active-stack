@@ -5,14 +5,14 @@ import (
 )
 
 const (
-	markerPrefix = "<!-- jr-stack:"
+	markerPrefix = "<!-- active-stack:"
 	markerSuffix = " -->"
-	closePrefix  = "<!-- /jr-stack:"
+	closePrefix  = "<!-- /active-stack:"
 )
 
 // MarkedSectionIDs returns the distinct section IDs that have a well-formed
-// jr-stack marker pair (both an opening <!-- jr-stack:ID --> and a matching
-// closing <!-- /jr-stack:ID --> marker) in content, in first-seen order.
+// active-stack marker pair (both an opening <!-- active-stack:ID --> and a matching
+// closing <!-- /active-stack:ID --> marker) in content, in first-seen order.
 //
 // Malformed markers are ignored — an opening marker with no matching close, an
 // ID containing whitespace, or a stray closing marker are never reported. This
@@ -61,7 +61,7 @@ func closeMarker(sectionID string) string {
 }
 
 // InjectMarkdownSection replaces or appends a marked section in a markdown file.
-// Markers use HTML comments: <!-- jr-stack:SECTION_ID --> ... <!-- /jr-stack:SECTION_ID -->
+// Markers use HTML comments: <!-- active-stack:SECTION_ID --> ... <!-- /active-stack:SECTION_ID -->
 // If the section already exists, its content is replaced.
 // If it doesn't exist, it's appended at the end.
 // Content outside markers is never touched.

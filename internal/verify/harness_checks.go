@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // sddOrchestratorSectionID is the marker section written by the config harness
@@ -101,7 +101,7 @@ func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
 
 	instrPath := adapter.InstructionsPath(homeDir)
 	agentID := string(adapter.Agent())
-	openMarker := "<!-- jr-stack:" + sddOrchestratorSectionID + " -->"
+	openMarker := "<!-- active-stack:" + sddOrchestratorSectionID + " -->"
 
 	return []Check{
 		{
