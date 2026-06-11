@@ -23,39 +23,39 @@ func TestMarkedSectionIDs(t *testing.T) {
 		},
 		{
 			name:    "single well-formed section",
-			content: "<!-- jr-stack:persona -->\nbody\n<!-- /jr-stack:persona -->\n",
+			content: "<!-- active-stack:persona -->\nbody\n<!-- /active-stack:persona -->\n",
 			want:    []string{"persona"},
 		},
 		{
 			name: "multiple sections in document order",
-			content: "<!-- jr-stack:persona -->\na\n<!-- /jr-stack:persona -->\n" +
-				"<!-- jr-stack:engram-protocol -->\nb\n<!-- /jr-stack:engram-protocol -->\n" +
-				"<!-- jr-stack:sdd-orchestrator -->\nc\n<!-- /jr-stack:sdd-orchestrator -->\n",
+			content: "<!-- active-stack:persona -->\na\n<!-- /active-stack:persona -->\n" +
+				"<!-- active-stack:engram-protocol -->\nb\n<!-- /active-stack:engram-protocol -->\n" +
+				"<!-- active-stack:sdd-orchestrator -->\nc\n<!-- /active-stack:sdd-orchestrator -->\n",
 			want: []string{"persona", "engram-protocol", "sdd-orchestrator"},
 		},
 		{
 			name: "nested owned children reported alongside parent",
-			content: "<!-- jr-stack:sdd-orchestrator -->\n" +
+			content: "<!-- active-stack:sdd-orchestrator -->\n" +
 				"intro\n" +
-				"<!-- jr-stack:sdd-delegation -->\nx\n<!-- /jr-stack:sdd-delegation -->\n" +
-				"<!-- jr-stack:sdd-model-assignments -->\ny\n<!-- /jr-stack:sdd-model-assignments -->\n" +
-				"<!-- /jr-stack:sdd-orchestrator -->\n",
+				"<!-- active-stack:sdd-delegation -->\nx\n<!-- /active-stack:sdd-delegation -->\n" +
+				"<!-- active-stack:sdd-model-assignments -->\ny\n<!-- /active-stack:sdd-model-assignments -->\n" +
+				"<!-- /active-stack:sdd-orchestrator -->\n",
 			want: []string{"sdd-orchestrator", "sdd-delegation", "sdd-model-assignments"},
 		},
 		{
 			name:    "open marker without close is ignored",
-			content: "<!-- jr-stack:orphan -->\nbody but no close marker\n",
+			content: "<!-- active-stack:orphan -->\nbody but no close marker\n",
 			want:    nil,
 		},
 		{
 			name:    "close marker alone is not treated as an open",
-			content: "leftover close\n<!-- /jr-stack:ghost -->\n",
+			content: "leftover close\n<!-- /active-stack:ghost -->\n",
 			want:    nil,
 		},
 		{
 			name: "duplicate id reported once",
-			content: "<!-- jr-stack:dup -->\nfirst\n<!-- /jr-stack:dup -->\n" +
-				"<!-- jr-stack:dup -->\nsecond\n<!-- /jr-stack:dup -->\n",
+			content: "<!-- active-stack:dup -->\nfirst\n<!-- /active-stack:dup -->\n" +
+				"<!-- active-stack:dup -->\nsecond\n<!-- /active-stack:dup -->\n",
 			want: []string{"dup"},
 		},
 	}

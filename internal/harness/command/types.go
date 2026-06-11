@@ -6,7 +6,7 @@
 // Added in C-31.
 package command
 
-import "github.com/JuanCruzRobledo/jr-stack/internal/model"
+import "github.com/Group-Active-IA/active-stack/internal/model"
 
 // AgentAdapter is the minimal interface the command installer needs per agent.
 // Follows the local-interface pattern established in internal/harness/skill/types.go.

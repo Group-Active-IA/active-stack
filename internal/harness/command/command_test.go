@@ -15,8 +15,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/command"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/harness/command"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -37,24 +37,24 @@ func (f fakeAdapter) VariantKey() string                  { return f.variantKey 
 // and OpenCode command variants at the expected asset paths.
 func makeCommandsFS() fstest.MapFS {
 	return fstest.MapFS{
-		"commands/claude/jr/starter-add.md": {
-			Data: []byte("---\nname: JR: Starter Add\ndescription: test\ncategory: Workflow\ntags:\n  - jr-stack\n---\njr-stack starter add $ARGUMENTS"),
+		"commands/claude/active/starter-add.md": {
+			Data: []byte("---\nname: Active: Starter Add\ndescription: test\ncategory: Workflow\ntags:\n  - active-stack\n---\nactive-stack starter add $ARGUMENTS"),
 		},
-		"commands/opencode/jr-starter-add.md": {
-			Data: []byte("---\ndescription: test\n---\njr-stack starter add $ARGUMENTS"),
+		"commands/opencode/active-starter-add.md": {
+			Data: []byte("---\ndescription: test\n---\nactive-stack starter add $ARGUMENTS"),
 		},
 	}
 }
 
 // relPath returns the relative command file path for the given adapter's variant.
-// Claude  → "jr/starter-add.md" (namespaced under a subdir)
-// OpenCode→ "jr-starter-add.md" (flat, hyphenated)
+// Claude  → "active/starter-add.md" (namespaced under a subdir)
+// OpenCode→ "active-starter-add.md" (flat, hyphenated)
 func relPath(variantKey string) string {
 	switch variantKey {
 	case "claude":
-		return filepath.Join("jr", "starter-add.md")
+		return filepath.Join("active", "starter-add.md")
 	case "opencode":
-		return "jr-starter-add.md"
+		return "active-starter-add.md"
 	default:
 		return ""
 	}
@@ -77,15 +77,15 @@ func TestInstaller_WritesCommandFileForAdapter(t *testing.T) {
 			name:       "claude",
 			agentAgent: model.AgentClaude,
 			variant:    "claude",
-			assetPath:  "commands/claude/jr/starter-add.md",
-			expectRel:  filepath.Join("jr", "starter-add.md"),
+			assetPath:  "commands/claude/active/starter-add.md",
+			expectRel:  filepath.Join("active", "starter-add.md"),
 		},
 		{
 			name:       "opencode",
 			agentAgent: model.AgentOpenCode,
 			variant:    "opencode",
-			assetPath:  "commands/opencode/jr-starter-add.md",
-			expectRel:  "jr-starter-add.md",
+			assetPath:  "commands/opencode/active-starter-add.md",
+			expectRel:  "active-starter-add.md",
 		},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -111,8 +111,8 @@ func TestInstaller_WritesCommandFileForAdapter(t *testing.T) {
 			if err != nil {
 				t.Fatalf("expected command file at %q: %v", destFile, err)
 			}
-			if !strings.Contains(string(data), "jr-stack starter add") {
-				t.Errorf("written file should contain 'jr-stack starter add'; got:\n%s", data)
+			if !strings.Contains(string(data), "active-stack starter add") {
+				t.Errorf("written file should contain 'active-stack starter add'; got:\n%s", data)
 			}
 		})
 	}
@@ -155,7 +155,7 @@ func TestInstaller_Idempotent_IdenticalContent(t *testing.T) {
 	}
 
 	// Record mtime before the second install.
-	destFile := filepath.Join(commandsDir, "jr", "starter-add.md")
+	destFile := filepath.Join(commandsDir, "active", "starter-add.md")
 	info1, err := os.Stat(destFile)
 	if err != nil {
 		t.Fatalf("stat after first install: %v", err)
@@ -181,7 +181,7 @@ func TestInstaller_Idempotent_IdenticalContent(t *testing.T) {
 	if info2.ModTime() != info1.ModTime() {
 		// ModTime may differ by < 1ns on some platforms; compare content instead.
 		data, _ := os.ReadFile(destFile)
-		orig, _ := commandsFS.ReadFile("commands/claude/jr/starter-add.md")
+		orig, _ := commandsFS.ReadFile("commands/claude/active/starter-add.md")
 		if !strings.EqualFold(string(data), string(orig)) {
 			t.Error("file content changed on second install (should be no-op)")
 		}
@@ -202,7 +202,7 @@ func TestInstaller_Backup_ChangedContent(t *testing.T) {
 	ins := command.NewInstaller(commandsFS)
 
 	// Pre-plant a different file at the destination.
-	destFile := filepath.Join(commandsDir, "jr", "starter-add.md")
+	destFile := filepath.Join(commandsDir, "active", "starter-add.md")
 	if err := os.MkdirAll(filepath.Dir(destFile), 0o755); err != nil {
 		t.Fatalf("mkdir: %v", err)
 	}
@@ -228,8 +228,8 @@ func TestInstaller_Backup_ChangedContent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read after overwrite: %v", err)
 	}
-	if !strings.Contains(string(data), "jr-stack starter add") {
-		t.Errorf("overwritten file should contain 'jr-stack starter add'; got:\n%s", data)
+	if !strings.Contains(string(data), "active-stack starter add") {
+		t.Errorf("overwritten file should contain 'active-stack starter add'; got:\n%s", data)
 	}
 
 	// backupDir must contain at least one file (the backup of the old content).
@@ -254,7 +254,7 @@ func TestInstaller_Backup_ChangedContent(t *testing.T) {
 // RED: fails until RelPathForVariant is exported from installer.go.
 func TestRelPathForVariant_Claude(t *testing.T) {
 	got := command.RelPathForVariant("claude")
-	want := filepath.Join("jr", "starter-add.md")
+	want := filepath.Join("active", "starter-add.md")
 	if got != want {
 		t.Errorf("RelPathForVariant(%q) = %q, want %q", "claude", got, want)
 	}
@@ -264,7 +264,7 @@ func TestRelPathForVariant_Claude(t *testing.T) {
 // returns the correct relative path for the "opencode" variant.
 func TestRelPathForVariant_OpenCode(t *testing.T) {
 	got := command.RelPathForVariant("opencode")
-	want := "jr-starter-add.md"
+	want := "active-starter-add.md"
 	if got != want {
 		t.Errorf("RelPathForVariant(%q) = %q, want %q", "opencode", got, want)
 	}
@@ -322,14 +322,14 @@ func TestInstaller_BothFocusedAgents_HappyPath(t *testing.T) {
 		t.Fatalf("expected 2 results (one per focused agent), got %d", len(results))
 	}
 
-	// Claude: jr/starter-add.md
-	claudeFile := filepath.Join(claudeDir, "jr", "starter-add.md")
+	// Claude: active/starter-add.md
+	claudeFile := filepath.Join(claudeDir, "active", "starter-add.md")
 	if _, err := os.Stat(claudeFile); err != nil {
 		t.Errorf("Claude command file not found at %q: %v", claudeFile, err)
 	}
 
-	// OpenCode: jr-starter-add.md (flat)
-	openCodeFile := filepath.Join(openCodeDir, "jr-starter-add.md")
+	// OpenCode: active-starter-add.md (flat)
+	openCodeFile := filepath.Join(openCodeDir, "active-starter-add.md")
 	if _, err := os.Stat(openCodeFile); err != nil {
 		t.Errorf("OpenCode command file not found at %q: %v", openCodeFile, err)
 	}

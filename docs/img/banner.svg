@@ -29,7 +29,7 @@
     </g>
 
     <!-- wordmark -->
-    <text x="72" y="44" font-size="58" font-weight="800" fill="#0f172a" letter-spacing="-1.5">JR<tspan fill="#6366f1"> Stack</tspan></text>
+    <text x="72" y="44" font-size="58" font-weight="800" fill="#0f172a" letter-spacing="-1.5">Active<tspan fill="#6366f1"> Stack</tspan></text>
 
     <!-- tagline -->
     <text x="2" y="104" font-size="22" font-weight="500" fill="#475569">Instalador del harness metodológico para agentes de IA</text>
@@ -41,7 +41,7 @@
       <circle cx="22" cy="24" r="5" fill="#f87171"/>
       <circle cx="40" cy="24" r="5" fill="#fbbf24"/>
       <circle cx="58" cy="24" r="5" fill="#34d399"/>
-      <text x="82" y="30" font-family="'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="17" fill="#e2e8f0">$ jr-stack <tspan fill="#67e8f9">install</tspan></text>
+      <text x="82" y="30" font-family="'SF Mono', 'Cascadia Code', Consolas, monospace" font-size="17" fill="#e2e8f0">$ active-stack <tspan fill="#67e8f9">install</tspan></text>
     </g>
   </g>
 
@@ -49,7 +49,7 @@
   <g transform="translate(820, 60)">
     <!-- outer frame (the stack) -->
     <rect x="0" y="0" width="360" height="240" rx="24" fill="url(#gradSoft)" stroke="#c7d2fe" stroke-width="1.5" stroke-dasharray="2 0"/>
-    <text x="20" y="32" font-size="13" font-weight="700" fill="#6366f1" letter-spacing="1.5">JR STACK</text>
+    <text x="20" y="32" font-size="13" font-weight="700" fill="#6366f1" letter-spacing="1.5">ACTIVE STACK</text>
 
     <!-- agent node -->
     <g transform="translate(150, 14)">

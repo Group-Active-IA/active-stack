@@ -3,7 +3,7 @@
 // before installation begins.
 package planner
 
-import "github.com/JuanCruzRobledo/jr-stack/internal/model"
+import "github.com/Group-Active-IA/active-stack/internal/model"
 
 // Resolver resolves a harness selection into an ordered install plan.
 type Resolver interface {

@@ -4,9 +4,9 @@
 package uninstall
 
 import (
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
 
 // Strategy controls how the uninstall reverses an installation.

@@ -7,10 +7,10 @@ import (
 	"io/fs"
 	"os/exec"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
-	"github.com/JuanCruzRobledo/jr-stack/internal/system"
+	"github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
 
 // CmdRunner is the interface used by skill steps to execute external commands

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/install"
 )
 
 // TestSelfInstallSeams_ExecPathFnOverride verifies that SetExecPathFn is used
@@ -29,7 +29,7 @@ func TestSelfInstallSeams_ExecPathFnOverride(t *testing.T) {
 		t.Fatalf("Run() error: %v", err)
 	}
 
-	target := filepath.Join(binDir, "jr-stack")
+	target := filepath.Join(binDir, "active-stack")
 	got, err := os.ReadFile(target)
 	if err != nil {
 		t.Fatalf("read target: %v", err)

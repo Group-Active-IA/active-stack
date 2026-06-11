@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
 )
 
 // -update flag regenerates golden files.

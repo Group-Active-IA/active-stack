@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
 
 // TestProgressBridgeDrainsWithoutBlocking verifies that the progress bridge

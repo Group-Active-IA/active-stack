@@ -8,9 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/filemerge"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/filemerge"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // snapshotterCreate is replaceable in tests to avoid real filesystem backups.
@@ -41,7 +41,7 @@ func installMCP(
 
 		// Backup existing file before touching it.
 		if _, err := os.Stat(configPath); err == nil {
-			snapshotDir := filepath.Join(homeDir, ".jr-stack", "backups",
+			snapshotDir := filepath.Join(homeDir, ".active-stack", "backups",
 				fmt.Sprintf("%s-%s", h.ID, adapter.Agent()))
 			if err := snapshotterCreate(snapshotDir, []string{configPath}); err != nil {
 				return Result{}, fmt.Errorf("backup %q before mcp injection: %w", configPath, err)
@@ -270,7 +270,7 @@ func registerStdioMCP(
 
 		// Backup existing file before touching it (governance ALTO).
 		if _, err := os.Stat(configPath); err == nil {
-			snapshotDir := filepath.Join(homeDir, ".jr-stack", "backups",
+			snapshotDir := filepath.Join(homeDir, ".active-stack", "backups",
 				fmt.Sprintf("%s-%s-mcp", harnessID, adapter.Agent()))
 			if err := snapshotterCreate(snapshotDir, []string{configPath}); err != nil {
 				return Result{}, fmt.Errorf("backup %q before stdio mcp injection: %w", configPath, err)

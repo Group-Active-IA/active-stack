@@ -1,4 +1,4 @@
-# JR Stack — Arquitectura (blueprint v0)
+# Active Stack — Arquitectura (blueprint v0)
 
 > Instalador **methodology-first** del harness de desarrollo asistido por IA.
 > Materializa el `MANUAL-METODOLOGICO.md`: un comando instala y configura el
@@ -7,7 +7,7 @@
 
 Estado: **planificación**. Este documento es la fuente de verdad del diseño
 mientras arrancamos. Se construye desde cero, portando la infraestructura
-probada del jr-stack actual (no reescribiéndola a ciegas).
+probada del active-stack actual (no reescribiéndola a ciegas).
 
 ---
 
@@ -52,7 +52,7 @@ Un **harness** es cualquier módulo que prepara o guía el entorno de la IA.
 
 | Forma | Qué es | Origen | Ejemplos |
 |-------|--------|--------|----------|
-| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, jr-orchestrator, skill-registry (propias); find-skill, skill-creator (terceros) |
+| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, active-orchestrator, skill-registry (propias); find-skill, skill-creator (terceros) |
 | **Configuración** | Texto/archivos que configuran el agente | bundleado en el instalador | `sdd-orchestrator` (orquestador con toggles: TDD, Engram, …), config de `AGENTS.md`/`CLAUDE.md`, permisos, MCP |
 | **Herramienta externa** | Binario/servicio de terceros | instalado/configurado, no es nuestro repo | Engram, OpenSpec CLI, Context7 (MCP) |
 
@@ -85,7 +85,7 @@ que es la fuente de verdad de qué harnesses existen. Cada entrada declara:
 - id: kb-creator
   type: skill            # skill | config | external
   source:
-    repo: JuanCruzRobledo/kb-creator
+    repo: Group-Active-IA/kb-creator
     ref: latest          # tag/branch/commit
   install_modes: [full]  # lite | full | ...
   depends_on: [openspec] # otros harness id
@@ -111,7 +111,7 @@ instalador (tradeoff aceptado: simple y versionado con el instalador).
 ### 4.1 Instalación (una vez por máquina)
 
 ```
-jr-stack install  →  TUI (Bubbletea)
+active-stack install  →  TUI (Bubbletea)
   1. Detectar OS/arch/agentes/deps
   2. Elegir agente(s)
   3. Elegir modo (Lite / Full / Custom)
@@ -125,7 +125,7 @@ jr-stack install  →  TUI (Bubbletea)
 ### 4.2 Fundación del proyecto (una vez por proyecto)
 
 Un **único comando** que orquesta la fase de fundación con lazy-loading de
-skills, en este orden (evolución de la skill `jr-orchestrator`):
+skills, en este orden (evolución de la skill `active-orchestrator`):
 
 ```
 1. openspec init        (solo la carpeta openspec/)
@@ -144,10 +144,10 @@ delega a sub-agentes; OpenSpec CLI es la fuente de verdad del estado.
 
 ## 5. Arquitectura del instalador (Go + Bubbletea)
 
-Se **porta** la infraestructura probada del jr-stack actual (260+ tests):
+Se **porta** la infraestructura probada del active-stack actual (260+ tests):
 
 ```
-cmd/jr-stack/            entrypoint CLI
+cmd/active-stack/            entrypoint CLI
 internal/
   system/                detección OS/arch/WSL/Termux, deps, guards   [PORT]
   catalog/               parseo del harnesses.yaml embebido           [NEW]
@@ -174,11 +174,11 @@ Se descarta: `components/gga`, `components/theme`, `components/persona`
 
 1. **Esqueleto + fundación** ← (en curso) repo, go.mod, .gitignore, este doc, openspec init.
 2. **Modelo + catálogo**: tipos `Harness`, parser de `harnesses.yaml`, catálogo inicial.
-3. **Port de infra**: system, filemerge, backup, planner desde el jr-stack actual (limpios).
+3. **Port de infra**: system, filemerge, backup, planner desde el active-stack actual (limpios).
 4. **Adapters slim**: claude + opencode primero (P0), resto después.
 5. **Harness installers**: `skill` (clone+copy), `external` (engram/openspec), `config` (sdd-orchestrator componible).
 6. **TUI**: flujo Lite/Full/Custom leyendo catálogo.
-7. **jr-orchestrator como orquestador de fundación**: lazy-load del flujo §4.2.
+7. **active-orchestrator como orquestador de fundación**: lazy-load del flujo §4.2.
 8. **Verify + E2E**: health checks + Docker E2E portados.
 
 Cada incremento será un **change OPSX** (dogfooding) en `openspec/` (ignorado por git).
@@ -188,12 +188,12 @@ Cada incremento será un **change OPSX** (dogfooding) en `openspec/` (ignorado p
 ## 7. Decisiones tomadas y abiertas
 
 ### Resueltas
-- **Fetch de skills (C-08) — mixto por tipo**: skills propias (jr-orchestrator, etc.)
+- **Fetch de skills (C-08) — mixto por tipo**: skills propias (active-orchestrator, etc.)
   → `git clone` del repo; terceros (find-skill, skill-creator) → `npx skills add`;
   core openspec (atadas a la versión del orquestador) → embebidas. El modelo de
   skill necesita un campo de método de fetch (clone/npx/embed), análogo a
   `External.Method`.
-- **jr-orchestrator — activador modular**: orquesta la fase de fundación y activa/llama
+- **active-orchestrator — activador modular**: orquesta la fase de fundación y activa/llama
   los módulos (kb-creator, roadmap-generator, etc.) según cuáles estén instalados/
   activos (lazy-loading, §4.2). No es una skill monolítica.
 - **Toggles del `sdd-orchestrator`**: el texto sale de los assets del stack viejo.
@@ -204,9 +204,9 @@ Cada incremento será un **change OPSX** (dogfooding) en `openspec/` (ignorado p
 - ~~**Fix engram download**~~ → **RESUELTO**: `model.External` ya separa `Repo`
   (`Gentleman-Programming/engram`) del `Pkg` (ver `internal/model/harness.go` y el catálogo).
 - ~~**Nombre del repo remoto en GitHub**~~ → **RESUELTO** (2026-05-30): el viejo
-  `JuanCruzRobledo/jr-stack` queda **archivado como legacy**; este conserva `jr-stack`.
+  `JuanCruzRobledo/jr-stack` (repo fuente original) queda **archivado como legacy**; este conserva `active-stack`.
 - ~~**Mapeo harness↔modo**~~ → **RESUELTO** (CHANGES.md C-20): Lite = sustrato,
-  Full = sustrato + fundación guiada, Custom = todos. `jr-orchestrator` movido a Full-only.
+  Full = sustrato + fundación guiada, Custom = todos. `active-orchestrator` movido a Full-only.
 - **Empaquetado de skills de terceros** → comando confirmado (`npx skills add <owner/repo> --skill <name>`);
   falta corregir el installer (CHANGES.md **C-22**, 3 bugs en `npx.go`). Skill de Vercel = `find-skills` (plural).
 - **Custom + `permissions`** → decisión: NO desactivable (security-first); falta implementar (CHANGES.md **C-21**).

@@ -5,9 +5,9 @@ import (
 	"os"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
 
 // TestUninstall_PrimaryAgent_RemovesKeyFromSettings verifies that uninstalling a

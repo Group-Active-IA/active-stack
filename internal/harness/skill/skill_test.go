@@ -18,8 +18,8 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/skill"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/harness/skill"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

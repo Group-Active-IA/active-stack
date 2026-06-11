@@ -28,20 +28,20 @@ func TestAdversarial_InjectMarkdownSection_NReinjectionIdempotent(t *testing.T) 
 		base = next
 	}
 	// Exactly one open marker must be present.
-	if count := strings.Count(base, "<!-- jr-stack:sdd-orchestrator -->"); count != 1 {
+	if count := strings.Count(base, "<!-- active-stack:sdd-orchestrator -->"); count != 1 {
 		t.Fatalf("expected 1 open marker, got %d", count)
 	}
 }
 
 func TestAdversarial_InjectMarkdownSection_MarkerWithSpecialCharsInContent(t *testing.T) {
 	// Content that contains marker-like strings should not confuse the parser.
-	content := "Use <!-- jr-stack:other --> as example.\n"
+	content := "Use <!-- active-stack:other --> as example.\n"
 	result := InjectMarkdownSection("", "myid", content)
 
-	if !strings.Contains(result, "<!-- jr-stack:myid -->") {
+	if !strings.Contains(result, "<!-- active-stack:myid -->") {
 		t.Fatalf("open marker missing; got: %q", result)
 	}
-	if !strings.Contains(result, "<!-- /jr-stack:myid -->") {
+	if !strings.Contains(result, "<!-- /active-stack:myid -->") {
 		t.Fatalf("close marker missing; got: %q", result)
 	}
 }

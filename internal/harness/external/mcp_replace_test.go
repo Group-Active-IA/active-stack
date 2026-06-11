@@ -16,7 +16,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // TestInstallMCP_Context7_Claude_OverwritesBrokenRemote is the RED test.

@@ -6,9 +6,9 @@ import (
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/JuanCruzRobledo/jr-stack/cmd/jr-stack/headless"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
 
 // uninstallRunMsg carries the exit code of a RunUninstall invocation.

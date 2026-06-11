@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
-	"github.com/JuanCruzRobledo/jr-stack/internal/planner"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/planner"
 )
 
 // BuildPlan converts an Intent into a Plan ready for execution.
@@ -106,7 +106,7 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 
 	// 6. Collect all paths that Apply steps will write; build the snapshot step.
 	// Snapshot dir follows the same effective base (project root for Project target).
-	snapshotDir := filepath.Join(effectiveBase, ".jr-stack", "backups", "install")
+	snapshotDir := filepath.Join(effectiveBase, ".active-stack", "backups", "install")
 	writePaths := collectWritePaths(adapters, effectiveBase, opts.Target, resolved.OrderedIDs, cat)
 	// Also include MCP write paths from the starter (C-28 D5).
 	collectStarterMCPPaths(opts.Starter, adapters, effectiveBase, opts.Target, &writePaths)
@@ -478,7 +478,7 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 			h:          h,
 			adapters:   adapters,
 			homeDir:    effectiveBase,
-			backupDir:  filepath.Join(effectiveBase, ".jr-stack", "backups", "skills", h.ID),
+			backupDir:  filepath.Join(effectiveBase, ".active-stack", "backups", "skills", h.ID),
 			embeddedFS: opts.embeddedSkillsFS,
 			runner:     runner,
 			bestEffort: h.BestEffort,
@@ -505,7 +505,7 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 			h:         h,
 			adapters:  adapters,
 			homeDir:   effectiveBase,
-			backupDir: filepath.Join(effectiveBase, ".jr-stack", "backups", "commands", h.ID),
+			backupDir: filepath.Join(effectiveBase, ".active-stack", "backups", "commands", h.ID),
 		}, nil
 
 	default:

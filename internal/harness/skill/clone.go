@@ -31,7 +31,7 @@ func cloneInstaller(
 	}
 
 	// Clone into a fresh temp directory.
-	tempDir, err := os.MkdirTemp("", "jr-stack-clone-*")
+	tempDir, err := os.MkdirTemp("", "active-stack-clone-*")
 	if err != nil {
 		return Result{}, fmt.Errorf("skill %q: create temp dir: %w", skillID, err)
 	}

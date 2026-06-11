@@ -1,4 +1,4 @@
-# AGENTS.md — JR Stack (instalador del harness metodológico)
+# AGENTS.md — Active Stack (instalador del harness metodológico)
 
 > Constitución operativa del proyecto. Versión **model-agnostic**.
 > Espejo de `CLAUDE.md`: **si modificás uno, actualizás el otro.**
@@ -11,11 +11,11 @@
 - **Lenguaje**: Go 1.26.
 - **TUI**: Bubbletea + Lipgloss (sin el theme cosmético del repo viejo).
 - **Distribución**: binario único, cross-platform — Windows, macOS, Linux, WSL y Termux.
-- **Entrypoint**: `cmd/jr-stack/`.
+- **Entrypoint**: `cmd/active-stack/`.
 - **Catálogo**: embebido en el binario vía `//go:embed` (`internal/catalog/harnesses.yaml`).
 
 Qué es esto: un **instalador methodology-first**. Materializa el `MANUAL-METODOLOGICO.md`.
-Un comando (`jr-stack install`) instala/configura el sustrato (harnesses); un único
+Un comando (`active-stack install`) instala/configura el sustrato (harnesses); un único
 orquestador de fundación deja el proyecto listo para el ciclo OPSX
 (`explore → propose → apply → verify → archive`).
 
@@ -26,7 +26,7 @@ de marketing, framing "supercharge any agent" / relación con Gentleman.Dots.
 ### Estructura de paquetes (ARCHITECTURE.md §5)
 
 ```
-cmd/jr-stack/            entrypoint CLI
+cmd/active-stack/            entrypoint CLI
 internal/
   system/                detección OS/arch/WSL/Termux, deps, guards   [PORT]
   catalog/               parseo del harnesses.yaml embebido           [NEW]  ← existe

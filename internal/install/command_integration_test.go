@@ -15,22 +15,22 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
 
 // makeIntegrationCommandsFS returns an fstest.MapFS that contains both agent
 // command variants, using the same asset paths as assets.CommandsFS.
 func makeIntegrationCommandsFS() fs.FS {
 	return fstest.MapFS{
-		"commands/claude/jr/starter-add.md": {
-			Data: []byte("---\nname: \"JR: Starter Add\"\ndescription: Apply a starter.\ncategory: Workflow\ntags:\n  - jr-stack\n  - starter\n---\njr-stack starter add $ARGUMENTS"),
+		"commands/claude/active/starter-add.md": {
+			Data: []byte("---\nname: \"Active: Starter Add\"\ndescription: Apply a starter.\ncategory: Workflow\ntags:\n  - active-stack\n  - starter\n---\nactive-stack starter add $ARGUMENTS"),
 		},
-		"commands/opencode/jr-starter-add.md": {
-			Data: []byte("---\ndescription: Apply a starter.\n---\njr-stack starter add $ARGUMENTS"),
+		"commands/opencode/active-starter-add.md": {
+			Data: []byte("---\ndescription: Apply a starter.\n---\nactive-stack starter add $ARGUMENTS"),
 		},
 	}
 }
@@ -70,9 +70,9 @@ func (a integrationCommandAdapter) PathsFor(base string, t model.InstallTarget) 
 // reset to nil = no fake) to write actual files.
 //
 // Verifies:
-//   - Claude: /.claude/commands/jr/starter-add.md is written with correct content
-//   - OpenCode: /.opencode/commands/jr-starter-add.md is written with correct content
-//   - Both bodies contain "jr-stack starter add $ARGUMENTS"
+//   - Claude: /.claude/commands/active/starter-add.md is written with correct content
+//   - OpenCode: /.opencode/commands/active-starter-add.md is written with correct content
+//   - Both bodies contain "active-stack starter add $ARGUMENTS"
 //   - Re-run (second BuildPlan + Execute) is a no-op (AlreadyInstalled path)
 func TestCommandInstall_Integration_WritesFilesForBothAgents(t *testing.T) {
 	projectRoot := t.TempDir()
@@ -95,11 +95,11 @@ func TestCommandInstall_Integration_WritesFilesForBothAgents(t *testing.T) {
 			var assetPath, relPath string
 			switch adapter.VariantKey() {
 			case "claude":
-				assetPath = "commands/claude/jr/starter-add.md"
-				relPath = filepath.Join("jr", "starter-add.md")
+				assetPath = "commands/claude/active/starter-add.md"
+				relPath = filepath.Join("active", "starter-add.md")
 			case "opencode":
-				assetPath = "commands/opencode/jr-starter-add.md"
-				relPath = "jr-starter-add.md"
+				assetPath = "commands/opencode/active-starter-add.md"
+				relPath = "active-starter-add.md"
 			default:
 				continue
 			}
@@ -170,23 +170,23 @@ func TestCommandInstall_Integration_WritesFilesForBothAgents(t *testing.T) {
 		t.Fatalf("Execute() error: %v", result.Err)
 	}
 
-	// Claude: /.claude/commands/jr/starter-add.md
-	claudeFile := filepath.Join(claudeCommandsDir, "jr", "starter-add.md")
+	// Claude: /.claude/commands/active/starter-add.md
+	claudeFile := filepath.Join(claudeCommandsDir, "active", "starter-add.md")
 	claudeData, err := os.ReadFile(claudeFile)
 	if err != nil {
 		t.Fatalf("Claude command file not written at %q: %v", claudeFile, err)
 	}
-	if !strings.Contains(string(claudeData), "jr-stack starter add $ARGUMENTS") {
+	if !strings.Contains(string(claudeData), "active-stack starter add $ARGUMENTS") {
 		t.Errorf("Claude command file content unexpected:\n%s", claudeData)
 	}
 
-	// OpenCode: /.opencode/commands/jr-starter-add.md
-	openCodeFile := filepath.Join(openCodeCommandsDir, "jr-starter-add.md")
+	// OpenCode: /.opencode/commands/active-starter-add.md
+	openCodeFile := filepath.Join(openCodeCommandsDir, "active-starter-add.md")
 	openCodeData, err := os.ReadFile(openCodeFile)
 	if err != nil {
 		t.Fatalf("OpenCode command file not written at %q: %v", openCodeFile, err)
 	}
-	if !strings.Contains(string(openCodeData), "jr-stack starter add $ARGUMENTS") {
+	if !strings.Contains(string(openCodeData), "active-stack starter add $ARGUMENTS") {
 		t.Errorf("OpenCode command file content unexpected:\n%s", openCodeData)
 	}
 

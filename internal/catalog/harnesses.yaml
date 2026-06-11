@@ -1,4 +1,4 @@
-# JR Stack — Catálogo maestro de harnesses (embebido en el instalador).
+# Active Stack — Catálogo maestro de harnesses (embebido en el instalador).
 # Fuente de verdad de qué harnesses existen, de qué tipo son, de dónde se
 # obtienen, en qué modo entran y de qué dependen.
 #
@@ -55,11 +55,11 @@ harnesses:
     agents: [claude, opencode, gemini, vscode]
 
   # ── Skills propias ─────────────────────────────────────────────────────────
-  - id: jr-orchestrator
-    name: jr-orchestrator
+  - id: active-orchestrator
+    name: active-orchestrator
     description: Orquestador delgado de la fase de fundación (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction).
     type: skill
-    source: { repo: JuanCruzRobledo/jr-orchestrator, ref: latest, method: clone }
+    source: { repo: Group-Active-IA/active-orchestrator, ref: latest, method: clone }
     # Full-only: orquesta kb-creator/roadmap-generator/agent-instruction/find-skill,
     # todas Full. En Lite quedaría huérfano. Lite = sustrato; Full = fundación guiada.
     install_modes: [full]
@@ -69,14 +69,14 @@ harnesses:
     name: kb-creator
     description: Genera la knowledge-base canónica del dominio.
     type: skill
-    source: { repo: JuanCruzRobledo/kb-creator, ref: latest, method: clone }
+    source: { repo: Group-Active-IA/kb-creator, ref: latest, method: clone }
     install_modes: [full]
 
   - id: roadmap-generator
     name: roadmap-generator
     description: Genera CHANGES.md (backlog técnico) desde la KB.
     type: skill
-    source: { repo: JuanCruzRobledo/roadmap-generator, ref: latest, method: clone }
+    source: { repo: Group-Active-IA/roadmap-generator, ref: latest, method: clone }
     install_modes: [full]
     depends_on: [openspec, kb-creator]
 
@@ -97,7 +97,7 @@ harnesses:
   # ── Slash-commands (embebidos en el binario) ─────────────────────────────
   - id: starter-add-command
     name: Starter Add Command
-    description: Slash-command /jr:starter-add (Claude) / /jr-starter-add (OpenCode) — wrapper thin sobre jr-stack starter add.
+    description: Slash-command /active:starter-add (Claude) / /active-starter-add (OpenCode) — wrapper thin sobre active-stack starter add.
     type: command
     # Scoped to the two focused P0 agents only (Claude + OpenCode).
     # Other agent variants are out of scope for C-31 (D3: focused-only).
@@ -127,9 +127,9 @@ harnesses:
 
   # ── C-30: Skills curadas del starter pack ─────────────────────────────────
   # Clasificación (C-30 design.md):
-  #   PROPIAS/FORK (14): apuntan al monorepo JuanCruzRobledo/jr-skills, SIN third_party.
+  #   PROPIAS/FORK (14): apuntan al monorepo Group-Active-IA/active-skills, SIN third_party.
   #   TERCEROS   (16): third_party: true, best_effort: true, apuntan al upstream confirmado.
-  # install_modes: [full] — materializadas vía `jr-stack starter add`, no por modo base.
+  # install_modes: [full] — materializadas vía `active-stack starter add`, no por modo base.
 
   # ── Propias puras (8) — contenido 100% del usuario ────────────────────────
   - id: fastapi-domain-service
@@ -137,7 +137,7 @@ harnesses:
     description: Patrón de servicio de dominio con FastAPI (arquitectura por capas).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/fastapi-domain-service }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/fastapi-domain-service }
     install_modes: [full]
 
   - id: alembic-migrations
@@ -145,7 +145,7 @@ harnesses:
     description: Gestión de migraciones de base de datos con Alembic + SQLAlchemy.
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/alembic-migrations }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/alembic-migrations }
     install_modes: [full]
 
   - id: zustand-store-pattern
@@ -153,7 +153,7 @@ harnesses:
     description: Patrón de store global con Zustand para React.
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/zustand-store-pattern }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/zustand-store-pattern }
     install_modes: [full]
 
   - id: react19-form-pattern
@@ -161,7 +161,7 @@ harnesses:
     description: Patrón de formularios con React 19 (Server Actions + useFormState).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/react19-form-pattern }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/react19-form-pattern }
     install_modes: [full]
 
   - id: dashboard-crud-page
@@ -169,7 +169,7 @@ harnesses:
     description: Página de dashboard con operaciones CRUD completas.
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/dashboard-crud-page }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/dashboard-crud-page }
     install_modes: [full]
 
   - id: ws-frontend-subscription
@@ -177,7 +177,7 @@ harnesses:
     description: Patrón de suscripción WebSocket en el frontend (React + reconnect).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/ws-frontend-subscription }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/ws-frontend-subscription }
     install_modes: [full]
 
   - id: help-system-content
@@ -185,7 +185,7 @@ harnesses:
     description: Patrón de contenido para sistemas de ayuda in-app.
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/help-system-content }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/help-system-content }
     install_modes: [full]
 
   - id: monorepo-scaffold
@@ -193,7 +193,7 @@ harnesses:
     description: Scaffold de monorepo (Turborepo / pnpm workspaces).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/monorepo-scaffold }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/monorepo-scaffold }
     install_modes: [full]
 
   # ── Forks expandidos (6) — upstream existe pero contenido es el del usuario ─
@@ -202,7 +202,7 @@ harnesses:
     description: Diseño de tablas PostgreSQL (fork expandido de wshobson/agents).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/postgresql-table-design }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/postgresql-table-design }
     install_modes: [full]
 
   - id: tailwind-design-system
@@ -210,7 +210,7 @@ harnesses:
     description: Sistema de diseño basado en Tailwind CSS (fork expandido).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/tailwind-design-system }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/tailwind-design-system }
     install_modes: [full]
 
   - id: typescript-advanced-types
@@ -218,7 +218,7 @@ harnesses:
     description: Tipos avanzados de TypeScript — generics, utility types, branded types (fork expandido).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/typescript-advanced-types }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/typescript-advanced-types }
     install_modes: [full]
 
   - id: interface-design
@@ -226,7 +226,7 @@ harnesses:
     description: Patrón de diseño de interfaces UI (fork expandido).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/interface-design }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/interface-design }
     install_modes: [full]
 
   - id: clean-architecture
@@ -234,7 +234,7 @@ harnesses:
     description: Arquitectura limpia por capas (fork expandido — capa de dominio + aplicación + infra).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/clean-architecture }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/clean-architecture }
     install_modes: [full]
 
   - id: fastapi-code-review
@@ -242,7 +242,7 @@ harnesses:
     description: Checklist de code review para APIs FastAPI (fork expandido de wshobson/agents).
     type: skill
     scope: starter-only
-    source: { repo: JuanCruzRobledo/jr-skills, ref: latest, method: clone, path: skills/fastapi-code-review }
+    source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/fastapi-code-review }
     install_modes: [full]
 
   # ── Terceros — capa base/transversal (6) ──────────────────────────────────

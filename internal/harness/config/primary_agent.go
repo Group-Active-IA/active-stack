@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/filemerge"
+	"github.com/Group-Active-IA/active-stack/internal/filemerge"
 )
 
 // primaryAgentDescription is the human-facing label shown for the orchestrator
@@ -89,10 +89,10 @@ func InjectPrimaryAgent(agentID, composed, instrPath, settingsPath, snapshotDir 
 }
 
 // purgeInstructionsSection removes the named orchestrator section (and any
-// stale jr-stack sections from older layouts) from the instructions file, so a
+// stale active-stack sections from older layouts) from the instructions file, so a
 // primary-agent install leaves no orchestrator content leaking through the
 // shared instructions. It backs up the file first and is a no-op when the file
-// does not exist or already has no jr-stack sections.
+// does not exist or already has no active-stack sections.
 func purgeInstructionsSection(instrPath, sectionID, snapshotDir string) error {
 	if instrPath == "" {
 		return nil

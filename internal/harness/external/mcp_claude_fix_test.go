@@ -15,7 +15,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // ── Step 2: type discriminators in generic StrategyMergeIntoSettings ─────────

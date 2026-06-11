@@ -3,8 +3,8 @@ package verify_test
 import (
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/verify"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/verify"
 )
 
 // fakeAdapter is a test double that satisfies verify.Adapter.

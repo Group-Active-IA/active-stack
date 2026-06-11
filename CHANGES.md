@@ -1,6 +1,6 @@
-# CHANGES.md — JR Stack v2: Post-Starters
+# CHANGES.md — Active Stack v2: Post-Starters
 
-> Roadmap operativo del epic **"JR Stack v2 — post-starters"** (2026-06-04).
+> Roadmap operativo del epic **"Active Stack v2 — post-starters"** (2026-06-04).
 > El epic anterior (installer base + starters) está archivado en
 > `docs/archive/CHANGES-2026-06-04-installer-y-starters.md` — leerlo para
 > historial de decisiones de C-01..C-32 y los changes descriptivos intermedios.
@@ -119,7 +119,7 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ---
 
-### `uninstall-subcommand` — Exponer `jr-stack uninstall` en la CLI
+### `uninstall-subcommand` — Exponer `active-stack uninstall` en la CLI
 
 - **Estado**: IMPLEMENTADO (2026-06-06, rama `feat/uninstall-subcommand`). Wiring completo
   (flags + executor exportado + dispatch + `case "uninstall"`). **Bonus fix de engine**:
@@ -128,18 +128,18 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
   `commandRemovalStep` + `CommandsDir`/`VariantKey` en la interfaz + `RelPathForVariant`
   exportado de `internal/harness/command`. TDD estricto, suite completa verde. Pendiente: archive OPSX.
 - **Scope**:
-  - Nuevo `cmd/jr-stack/headless/uninstall_flags.go`: tipo `ParsedUninstallFlags` +
+  - Nuevo `cmd/active-stack/headless/uninstall_flags.go`: tipo `ParsedUninstallFlags` +
     función `ParseUninstallFlags(args []string)`. Flags: `--mode`, `--agent`,
     `--custom` (lista de IDs), `--strategy targeted|restore`, `--restore-manifest`,
     `--dry-run`, `--yes`, `--home`. Uninstall es MACHINE-scope (sin `--project`).
-  - Nuevo `cmd/jr-stack/headless/uninstall_executor.go`: función `RunHeadlessUninstall`
+  - Nuevo `cmd/active-stack/headless/uninstall_executor.go`: función `RunHeadlessUninstall`
     que llama `uninstall.BuildPlan` (engine C-12, intacto) y lo ejecuta. Construida
     como executor COMPARTIDO — también podrá ser invocado desde la TUI (change
     `tui-menu-hub`).
-  - Nuevo `cmd/jr-stack/uninstall_dispatch.go`: función `runUninstallDispatch` con
+  - Nuevo `cmd/active-stack/uninstall_dispatch.go`: función `runUninstallDispatch` con
     lógica flat (espeja `runStarterAdd`). Adapter `uninstallRegistryAdapter` que
     satisface la interfaz que `uninstall.BuildPlan` espera.
-  - Nuevo `case "uninstall":` en el `switch os.Args[1]` de `cmd/jr-stack/main.go`.
+  - Nuevo `case "uninstall":` en el `switch os.Args[1]` de `cmd/active-stack/main.go`.
   - Tests: `uninstall_flags_test.go`, `uninstall_executor_test.go`,
     `uninstall_dispatch_test.go`. Usar fakes/stubs para el engine (nunca el entorno real).
   - **SIN tocar `internal/uninstall`** — el engine está completo y testeado (C-12).
@@ -157,9 +157,9 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
   es destructiva). Proponer y esperar review antes del apply.
 - **Leer antes**:
   - `internal/uninstall/` — engine completo (C-12, archivado `2026-05-27-c12-uninstall`).
-  - `cmd/jr-stack/headless/executor.go` + `flags.go` — modelo para el executor/flags del install (espejarlo).
-  - `cmd/jr-stack/starter_add.go` + `cmd/jr-stack/starter_dispatch.go` — modelo del dispatch flat para starters (espejarlo).
-  - `cmd/jr-stack/main.go` — punto de entrada del switch de dispatch.
+  - `cmd/active-stack/headless/executor.go` + `flags.go` — modelo para el executor/flags del install (espejarlo).
+  - `cmd/active-stack/starter_add.go` + `cmd/active-stack/starter_dispatch.go` — modelo del dispatch flat para starters (espejarlo).
+  - `cmd/active-stack/main.go` — punto de entrada del switch de dispatch.
   - `CLAUDE.md` §3 regla "NUNCA pisar config del usuario sin backup".
 
 ---
@@ -199,7 +199,7 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
   - `internal/tui/model.go`, `internal/tui/screen.go` — estructura actual de la TUI.
   - `internal/tui/gate.go` — lógica de preflight y selección actual.
   - `internal/backup/` — API de backups para la pantalla ScreenBackups.
-  - `cmd/jr-stack/headless/uninstall_executor.go` — executor a invocar desde ScreenUninstall (creado en `uninstall-subcommand`).
+  - `cmd/active-stack/headless/uninstall_executor.go` — executor a invocar desde ScreenUninstall (creado en `uninstall-subcommand`).
   - `CLAUDE.md` §1 (prohibición del theme cosmético) y skill `go-testing` (patrones teatest).
 
 ---
@@ -250,9 +250,9 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
   - Agregar la opción "Update stack" al menú hub (`tui-menu-hub`): al seleccionarla,
     la pantalla ScreenUpdate corre el flujo de actualización.
   - Flujo de actualización:
-    - Check de versiones de `jr-stack` + `engram` contra GitHub Releases API.
+    - Check de versiones de `active-stack` + `engram` contra GitHub Releases API.
     - Mostrar qué binarios están desactualizados (diff de versión).
-    - Upgrade de binarios: self-replace de `jr-stack` (rename-trick para Windows
+    - Upgrade de binarios: self-replace de `active-stack` (rename-trick para Windows
       exe-in-use, ya resuelto en el legacy `update/upgrade/executor.go`) + upgrade
       de `engram` vía el método de instalación correcto por OS.
     - Re-sync de configs: re-inyectar los config-harness (`sdd-orchestrator`,

@@ -10,11 +10,11 @@ import (
 	"io/fs"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	skillinstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/skill"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	skillinstaller "github.com/Group-Active-IA/active-stack/internal/harness/skill"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
 
 // Task 2.1 — best-effort skillStep whose install fn fails → Run() returns nil
@@ -320,10 +320,10 @@ func TestSkillStep_NonBestEffort_FailReturnsError(t *testing.T) {
 	defer restoreRestore()
 
 	h := model.Harness{
-		ID:           "jr-orchestrator",
+		ID:           "active-orchestrator",
 		Type:         model.HarnessSkill,
 		BestEffort:   false, // explicit: not best-effort
-		Source:       &model.Source{Repo: "JuanCruzRobledo/jr-orchestrator", Method: "clone"},
+		Source:       &model.Source{Repo: "Group-Active-IA/active-orchestrator", Method: "clone"},
 		InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull},
 	}
 	cat := &fakeCatalog{harnesses: []model.Harness{h}}

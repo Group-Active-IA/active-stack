@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
 )
 
 // TestInject_FirstInjection verifies that Inject appends the sdd-orchestrator
@@ -36,10 +36,10 @@ func TestInject_FirstInjection(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(content), "<!-- jr-stack:sdd-orchestrator -->") {
+	if !strings.Contains(string(content), "<!-- active-stack:sdd-orchestrator -->") {
 		t.Error("injected file should contain opening marker")
 	}
-	if !strings.Contains(string(content), "<!-- /jr-stack:sdd-orchestrator -->") {
+	if !strings.Contains(string(content), "<!-- /active-stack:sdd-orchestrator -->") {
 		t.Error("injected file should contain closing marker")
 	}
 	if !strings.Contains(string(content), "Orchestrator block.") {
@@ -123,7 +123,7 @@ func TestInject_ReplacesExistingSection(t *testing.T) {
 	cs := string(content)
 
 	// Only one opening marker — no duplication.
-	count := strings.Count(cs, "<!-- jr-stack:sdd-orchestrator -->")
+	count := strings.Count(cs, "<!-- active-stack:sdd-orchestrator -->")
 	if count != 1 {
 		t.Errorf("marker count = %d, want 1 (no duplication)", count)
 	}

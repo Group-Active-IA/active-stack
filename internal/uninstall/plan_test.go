@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -535,7 +535,7 @@ func TestBuildPlanCommandHarnessSnapshotsCaptureCommandPaths(t *testing.T) {
 	}
 
 	// The adapter's CommandsDir + RelPathForVariant("claude") = expected path.
-	expectedPath := filepath.Join(adapter.CommandsDir(homeDir), "jr", "starter-add.md")
+	expectedPath := filepath.Join(adapter.CommandsDir(homeDir), "active", "starter-add.md")
 	found := false
 	for _, p := range gotPaths {
 		if p == expectedPath {

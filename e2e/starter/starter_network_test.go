@@ -22,11 +22,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/agents/claude"
-	"github.com/JuanCruzRobledo/jr-stack/internal/catalog"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/cmd/jr-stack/headless"
+	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
+	"github.com/Group-Active-IA/active-stack/internal/catalog"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@ import (
 // ─────────────────────────────────────────────────────────────────
 
 // TestNetwork_StarterBase_RealUpstream clones the real upstream skill repo
-// (JuanCruzRobledo/jr-skills) and runs `starter add base`, asserting FS
+// (Group-Active-IA/active-skills) and runs `starter add base`, asserting FS
 // post-conditions against real content.
 //
 // Degraded real third-party skills (the 6 stale skills) are reported but not

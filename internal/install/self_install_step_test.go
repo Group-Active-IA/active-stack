@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/install"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ import (
 func TestSelfInstallStep_HappyPath(t *testing.T) {
 	// Prepare a fake source binary.
 	srcDir := t.TempDir()
-	src := filepath.Join(srcDir, "jr-stack-src")
+	src := filepath.Join(srcDir, "active-stack-src")
 	if err := os.WriteFile(src, []byte("binary-v1"), 0o755); err != nil {
 		t.Fatalf("write src: %v", err)
 	}
@@ -44,7 +44,7 @@ func TestSelfInstallStep_HappyPath(t *testing.T) {
 	}
 
 	// Binary must be present in binDir.
-	target := filepath.Join(binDir, "jr-stack")
+	target := filepath.Join(binDir, "active-stack")
 	got, err := os.ReadFile(target)
 	if err != nil {
 		t.Fatalf("read target: %v", err)
@@ -59,7 +59,7 @@ func TestSelfInstallStep_HappyPath(t *testing.T) {
 	}
 }
 
-// TestSelfInstallStep_WindowsExeName verifies the target filename is jr-stack.exe on Windows.
+// TestSelfInstallStep_WindowsExeName verifies the target filename is active-stack.exe on Windows.
 func TestSelfInstallStep_WindowsExeName(t *testing.T) {
 	src := filepath.Join(t.TempDir(), "binary")
 	if err := os.WriteFile(src, []byte("bin"), 0o755); err != nil {
@@ -79,9 +79,9 @@ func TestSelfInstallStep_WindowsExeName(t *testing.T) {
 		t.Fatalf("Run() error: %v", err)
 	}
 
-	target := filepath.Join(binDir, "jr-stack.exe")
+	target := filepath.Join(binDir, "active-stack.exe")
 	if _, err := os.Stat(target); err != nil {
-		t.Errorf("expected jr-stack.exe in bin dir, got err: %v", err)
+		t.Errorf("expected active-stack.exe in bin dir, got err: %v", err)
 	}
 }
 
@@ -155,7 +155,7 @@ func TestSelfInstallStep_Idempotent(t *testing.T) {
 
 	binDir := t.TempDir()
 	// Pre-populate the target to simulate a prior install.
-	target := filepath.Join(binDir, "jr-stack")
+	target := filepath.Join(binDir, "active-stack")
 	if err := os.WriteFile(target, []byte("v1"), 0o755); err != nil {
 		t.Fatalf("write prior target: %v", err)
 	}

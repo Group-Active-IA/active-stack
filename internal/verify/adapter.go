@@ -1,6 +1,6 @@
 package verify
 
-import "github.com/JuanCruzRobledo/jr-stack/internal/model"
+import "github.com/Group-Active-IA/active-stack/internal/model"
 
 // Adapter is a minimal, local interface for resolving agent-specific paths.
 // It is a structural subset of agents.Adapter (from internal/agents), covering

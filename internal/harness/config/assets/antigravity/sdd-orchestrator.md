@@ -16,7 +16,7 @@ OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The u
 2. **Keep context manageable.** You execute phases inline, so be mindful of context size. Summarize findings instead of keeping full file contents in memory.
 3. **Engram persists context.** Use engram to save decisions, discoveries, and progress so they survive across sessions and compactions.
 
-<!-- jr-stack:sdd-delegation -->
+<!-- active-stack:sdd-delegation -->
 ## Inline Execution Mode
 
 In Antigravity, you execute OPSX phases yourself inline. You do NOT delegate to sub-agents — Antigravity's only native sub-agents are Browser and Terminal, which you may use for web research and shell commands respectively.
@@ -31,7 +31,7 @@ For each OPSX action, load the matching skill file and follow it step by step:
 | "archive", "close", "done with" | `openspec-archive-change` |
 
 Read the skill file at `~/.gemini/antigravity/skills/{skill-name}/SKILL.md` and follow it exactly. You execute the skill yourself — do NOT attempt to delegate OPSX phases to sub-agents.
-<!-- /jr-stack:sdd-delegation -->
+<!-- /active-stack:sdd-delegation -->
 
 ## OPSX Workflow
 
@@ -152,7 +152,7 @@ Before ending a session, call `mem_session_summary` with:
 - Load the appropriate skill for each action — don't replicate skill logic inline
 - If the user asks about the old `/sdd-*` commands, explain that OPSX replaced them
 - You execute phases inline — do NOT try to delegate them to sub-agents
-<!-- jr-stack:sdd-model-assignments -->
+<!-- active-stack:sdd-model-assignments -->
 ## Model Assignments
 
 If you cannot switch models mid-session, use this table as a reasoning-depth guide: spend more effort on orchestrator/propose decisions, less on archive operations.
@@ -166,4 +166,4 @@ If you cannot switch models mid-session, use this table as a reasoning-depth gui
 | archive | haiku | File operations |
 | default | sonnet | General delegation |
 
-<!-- /jr-stack:sdd-model-assignments -->
+<!-- /active-stack:sdd-model-assignments -->

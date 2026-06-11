@@ -4,8 +4,8 @@ import (
 	"io"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/cmd/jr-stack/headless"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // TestModelDeps_NewFields verifies that the new fields added to ModelDeps

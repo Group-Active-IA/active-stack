@@ -8,11 +8,11 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/JuanCruzRobledo/jr-stack/cmd/jr-stack/headless"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
-	"github.com/JuanCruzRobledo/jr-stack/internal/system"
+	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
 
 // ModelDeps holds the injected dependencies for the TUI model.
@@ -548,7 +548,7 @@ func (m Model) handleWelcomeKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 func (m Model) viewWelcome() string {
 	var sb strings.Builder
-	sb.WriteString(titleStyle.Render("jr-stack") + "\n\n")
+	sb.WriteString(titleStyle.Render("active-stack") + "\n\n")
 	for i, item := range hubItems {
 		cursor := "  "
 		if m.Cursor == i {

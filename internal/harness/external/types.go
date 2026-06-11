@@ -1,6 +1,6 @@
 package external
 
-import "github.com/JuanCruzRobledo/jr-stack/internal/model"
+import "github.com/Group-Active-IA/active-stack/internal/model"
 
 // Result is the output of a successful external harness installation.
 type Result struct {

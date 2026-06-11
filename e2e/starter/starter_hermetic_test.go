@@ -16,10 +16,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/cmd/jr-stack/headless"
-	"github.com/JuanCruzRobledo/jr-stack/internal/agents/claude"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
+	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -177,7 +177,7 @@ func TestHermetic_CuratedStarters_FSPostConditions(t *testing.T) {
 		{
 			name: "base",
 			harnesses: []FixtureHarness{
-				{ID: "jr-orchestrator", FileURL: ""},     // will be set to fixture repo
+				{ID: "active-orchestrator", FileURL: ""},     // will be set to fixture repo
 				{ID: "engram", FileURL: ""},              // external — skip in fixture
 				{ID: "openspec", FileURL: ""},            // external — skip in fixture
 				{ID: "context7", FileURL: ""},            // external — skip in fixture

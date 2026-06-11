@@ -13,9 +13,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/agents/claude"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
+	"github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // TestClaudeAdapter_MCPConfigPath_ReturnsClaudeJSON asserts that MCPConfigPath

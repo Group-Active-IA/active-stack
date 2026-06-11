@@ -6,10 +6,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
-	"github.com/JuanCruzRobledo/jr-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
 
 // TestHeadlessUninstallIntegrationRollback is the end-to-end rollback test:
@@ -28,7 +28,7 @@ func TestHeadlessUninstallIntegrationRollback(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(instrPath), 0o755); err != nil {
 		t.Fatalf("setup: %v", err)
 	}
-	content := "# Config\n\n<!-- jr-stack:h-first -->\nfirst block\n<!-- /jr-stack:h-first -->\n"
+	content := "# Config\n\n<!-- active-stack:h-first -->\nfirst block\n<!-- /active-stack:h-first -->\n"
 	if err := os.WriteFile(instrPath, []byte(content), 0o644); err != nil {
 		t.Fatalf("setup: %v", err)
 	}
@@ -149,7 +149,7 @@ func TestHeadlessUninstallIdempotency(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(instrPath), 0o755); err != nil {
 		t.Fatalf("setup: %v", err)
 	}
-	content := "# Config\n\n<!-- jr-stack:sdd-orchestrator -->\norchestrator block\n<!-- /jr-stack:sdd-orchestrator -->\n"
+	content := "# Config\n\n<!-- active-stack:sdd-orchestrator -->\norchestrator block\n<!-- /active-stack:sdd-orchestrator -->\n"
 	if err := os.WriteFile(instrPath, []byte(content), 0o644); err != nil {
 		t.Fatalf("setup: %v", err)
 	}
@@ -214,7 +214,7 @@ func TestNoHardcodedAgentPathsInPackage(t *testing.T) {
 	if err := os.MkdirAll(filepath.Dir(customInstrPath), 0o755); err != nil {
 		t.Fatalf("setup instr: %v", err)
 	}
-	instrContent := "# Custom\n\n<!-- jr-stack:test-harness -->\nblock\n<!-- /jr-stack:test-harness -->\n"
+	instrContent := "# Custom\n\n<!-- active-stack:test-harness -->\nblock\n<!-- /active-stack:test-harness -->\n"
 	if err := os.WriteFile(customInstrPath, []byte(instrContent), 0o644); err != nil {
 		t.Fatalf("setup instr: %v", err)
 	}
@@ -268,7 +268,7 @@ func TestNoHardcodedAgentPathsInPackage(t *testing.T) {
 	if err != nil {
 		t.Fatalf("read custom instr path: %v", err)
 	}
-	if contains(string(got), "<!-- jr-stack:test-harness -->") {
+	if contains(string(got), "<!-- active-stack:test-harness -->") {
 		t.Errorf("marker still present at custom path; adapter path was not used:\n%s", got)
 	}
 

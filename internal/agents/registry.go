@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"slices"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // Registry maps model.Agent identifiers to their concrete Adapter.

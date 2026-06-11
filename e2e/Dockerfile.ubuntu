@@ -1,5 +1,5 @@
-# Dockerfile.ubuntu — E2E test image for jr-stack on Ubuntu 22.04
-# Builds the jr-stack binary from source and runs the E2E test suite
+# Dockerfile.ubuntu — E2E test image for active-stack on Ubuntu 22.04
+# Builds the active-stack binary from source and runs the E2E test suite
 # as a non-root user.
 FROM ubuntu:22.04
 
@@ -39,14 +39,14 @@ RUN useradd -m -s /bin/bash testuser && \
     echo "testuser ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # ---------------------------------------------------------------------------
-# Copy project source and build the jr-stack binary
+# Copy project source and build the active-stack binary
 # ---------------------------------------------------------------------------
 WORKDIR /build
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
-    go build -o /usr/local/bin/jr-stack ./cmd/jr-stack
+    go build -o /usr/local/bin/active-stack ./cmd/active-stack
 
 # ---------------------------------------------------------------------------
 # Prepare test environment

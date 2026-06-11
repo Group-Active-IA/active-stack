@@ -1,4 +1,4 @@
-// Package starter provides a hybrid E2E test suite for `jr-stack starter add`.
+// Package starter provides a hybrid E2E test suite for `active-stack starter add`.
 //
 // # Architecture
 //
@@ -8,7 +8,7 @@
 //     Uses local mock git repos served via file:// URL — no network, fully deterministic.
 //
 //   - Network (starter_network_test.go): `//go:build e2e_network` tag, opt-in only.
-//     Clones real upstream repos (e.g. JuanCruzRobledo/jr-skills). Never runs in default CI.
+//     Clones real upstream repos (e.g. Group-Active-IA/active-skills). Never runs in default CI.
 //
 // This file holds shared assertion helpers and fixture builders used by both arms.
 // It has NO build tag so it is always compiled.
@@ -23,7 +23,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/catalog"
+	"github.com/Group-Active-IA/active-stack/internal/catalog"
 )
 
 // ─────────────────────────────────────────────────────────────────

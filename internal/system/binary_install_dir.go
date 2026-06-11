@@ -9,8 +9,8 @@ import (
 // It is a package-level variable so tests can inject a fake.
 var binaryInstallDirWritableFn = isWritableDirSystem
 
-// BinaryInstallDir returns the directory where jr-stack binaries should be installed.
-// Windows: %LOCALAPPDATA%\jr-stack\bin
+// BinaryInstallDir returns the directory where active-stack binaries should be installed.
+// Windows: %LOCALAPPDATA%\active-stack\bin
 // Unix: /usr/local/bin when writable, otherwise ~/.local/bin
 func BinaryInstallDir(goos string) string {
 	return binaryInstallDirWithCandidate(goos, "/usr/local/bin")
@@ -25,7 +25,7 @@ func binaryInstallDirWithCandidate(goos, candidate string) string {
 			home, _ := os.UserHomeDir()
 			localAppData = filepath.Join(home, "AppData", "Local")
 		}
-		return filepath.Join(localAppData, "jr-stack", "bin")
+		return filepath.Join(localAppData, "active-stack", "bin")
 	}
 
 	if binaryInstallDirWritableFn(candidate) {
@@ -45,7 +45,7 @@ func isWritableDirSystem(dir string) bool {
 	if err != nil || !info.IsDir() {
 		return false
 	}
-	tmp, err := os.CreateTemp(dir, ".jr-stack-write-test-*")
+	tmp, err := os.CreateTemp(dir, ".active-stack-write-test-*")
 	if err != nil {
 		return false
 	}

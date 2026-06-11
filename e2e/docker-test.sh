@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# docker-test.sh — Build & run jr-stack E2E tests across supported Linux platforms.
+# docker-test.sh — Build & run active-stack E2E tests across supported Linux platforms.
 #
 # Usage:
 #   ./e2e/docker-test.sh                      # Tier 1 only (default)
@@ -51,7 +51,7 @@ PASS=0
 FAIL=0
 FAILED_PLATFORMS=""
 
-printf "${BLUE}[ORCH]${NC} jr-stack E2E — %d platform(s)\n" "${#PLATFORMS[@]}"
+printf "${BLUE}[ORCH]${NC} active-stack E2E — %d platform(s)\n" "${#PLATFORMS[@]}"
 printf "${BLUE}[ORCH]${NC} Project root: %s\n" "$PROJECT_ROOT"
 printf "${BLUE}[ORCH]${NC} Tiers: Tier1=always"
 [ "${RUN_FULL_E2E:-0}" = "1" ]    && printf " Tier2=yes"    || printf " Tier2=no"
@@ -60,7 +60,7 @@ echo ""
 
 for entry in "${PLATFORMS[@]}"; do
     IFS=':' read -r name dockerfile <<< "$entry"
-    image_tag="jr-stack-e2e-${name}"
+    image_tag="active-stack-e2e-${name}"
 
     TOTAL=$((TOTAL + 1))
     printf "${YELLOW}[BUILD]${NC} %s — %s\n" "$name" "$dockerfile"
@@ -96,7 +96,7 @@ done
 # Summary
 # ---------------------------------------------------------------------------
 echo "========================================"
-echo "  jr-stack E2E Docker Summary"
+echo "  active-stack E2E Docker Summary"
 echo "========================================"
 printf "  ${GREEN}PASSED${NC}: %d / %d\n" "$PASS" "$TOTAL"
 printf "  ${RED}FAILED${NC}: %d / %d\n" "$FAIL" "$TOTAL"

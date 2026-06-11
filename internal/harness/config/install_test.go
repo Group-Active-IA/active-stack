@@ -6,8 +6,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // claudeAdapter is a fake adapter for the Claude agent pointing to a temp file.
@@ -59,16 +59,16 @@ func TestInstall_EndToEnd(t *testing.T) {
 	cs := string(content)
 
 	// Section must be present and not duplicated.
-	if !strings.Contains(cs, "<!-- jr-stack:sdd-orchestrator -->") {
+	if !strings.Contains(cs, "<!-- active-stack:sdd-orchestrator -->") {
 		t.Error("installed file must contain sdd-orchestrator section")
 	}
-	count := strings.Count(cs, "<!-- jr-stack:sdd-orchestrator -->")
+	count := strings.Count(cs, "<!-- active-stack:sdd-orchestrator -->")
 	if count != 1 {
 		t.Errorf("section marker count = %d, want 1", count)
 	}
 
 	// Backup must exist.
-	entries, err := os.ReadDir(filepath.Join(dir, ".jr-stack", "backups"))
+	entries, err := os.ReadDir(filepath.Join(dir, ".active-stack", "backups"))
 	if err != nil {
 		t.Fatalf("backup dir missing: %v", err)
 	}

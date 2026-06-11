@@ -1,4 +1,4 @@
-// Package assets holds files that are embedded in the JR Stack binary.
+// Package assets holds files that are embedded in the Active Stack binary.
 // Skills in the assets/skills/ directory are installed via the "embed" method.
 package assets
 
@@ -25,14 +25,14 @@ var SkillsFS embed.FS
 //
 // Structure: commands/<agentVariantKey>/<path>.md
 //
-//   Claude  : commands/claude/jr/starter-add.md
-//               → invoked as /jr:starter-add inside Claude Code
+//   Claude  : commands/claude/active/starter-add.md
+//               → invoked as /active:starter-add inside Claude Code
 //               → full frontmatter (name/description/category/tags)
-//   OpenCode: commands/opencode/jr-starter-add.md
-//               → invoked as /jr-starter-add inside OpenCode
+//   OpenCode: commands/opencode/active-starter-add.md
+//               → invoked as /active-starter-add inside OpenCode
 //               → flat frontmatter (description only)
 //
-// The command body is a thin wrapper that runs `jr-stack starter add $ARGUMENTS`
+// The command body is a thin wrapper that runs `active-stack starter add $ARGUMENTS`
 // via the agent's bash execution. It does not reimplement any starter logic.
 //
 // To add a new command variant: create the .md file under

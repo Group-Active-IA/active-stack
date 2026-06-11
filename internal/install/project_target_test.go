@@ -5,10 +5,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // projectAdapter is a test double that implements install.AgentAdapter with
@@ -52,7 +52,7 @@ func (a projectAdapter) PathsFor(base string, t model.InstallTarget) model.Agent
 }
 
 // TestBuildPlanProjectTarget_SnapshotDirUnderProjectRoot verifies that when
-// Target=Project, the snapshot dir is <projectRoot>/.jr-stack/backups/install (D4).
+// Target=Project, the snapshot dir is <projectRoot>/.active-stack/backups/install (D4).
 func TestBuildPlanProjectTarget_SnapshotDirUnderProjectRoot(t *testing.T) {
 	projectRoot := t.TempDir()
 	homeDir := t.TempDir()
@@ -103,7 +103,7 @@ func TestBuildPlanProjectTarget_SnapshotDirUnderProjectRoot(t *testing.T) {
 		_ = step.Run()
 	}
 
-	wantSnapDir := filepath.Join(projectRoot, ".jr-stack", "backups", "install")
+	wantSnapDir := filepath.Join(projectRoot, ".active-stack", "backups", "install")
 	if capturedSnapDir != wantSnapDir {
 		t.Errorf("snapshot dir = %q, want %q", capturedSnapDir, wantSnapDir)
 	}

@@ -15,7 +15,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/system"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
 
 // ── resolveOwnerRepo ───────────────────────────────────────────────────────
@@ -384,7 +384,7 @@ func TestDownloadBinary_UsesRepoOverPkg(t *testing.T) {
 
 // TestDownloadBinary_AddsInstallDirToPath verifies that after a successful
 // download the install dir is added to the user PATH — otherwise the binary
-// (e.g. engram on Windows, landing in %LOCALAPPDATA%\jr-stack\bin) is on disk
+// (e.g. engram on Windows, landing in %LOCALAPPDATA%\active-stack\bin) is on disk
 // but not invocable as a command.
 func TestDownloadBinary_AddsInstallDirToPath(t *testing.T) {
 	tarGzData := buildTarGz(t, "engram", []byte("fake-engram-binary"))

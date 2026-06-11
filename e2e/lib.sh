@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# lib.sh — shared test helpers for jr-stack E2E tests
+# lib.sh — shared test helpers for active-stack E2E tests
 # Sourced by e2e_test.sh; never executed directly.
 # Note: we intentionally do NOT set -e here. The test runner (e2e_test.sh)
 # sets -uo pipefail. Tests that expect failures must capture exit codes
@@ -35,22 +35,22 @@ log_info()  { printf "${BLUE}[INFO]${NC}  %s\n" "$1"; }
 # Binary resolution
 # ---------------------------------------------------------------------------
 # Resolution priority (highest → lowest):
-#   1. ./jr-stack in the repo root (freshly built local binary)
-#   2. ~/jr-stack (explicit copy in home)
-#   3. jr-stack on PATH (system-installed)
-# This ensures `go build ./cmd/jr-stack && bash e2e/e2e_test.sh` always
+#   1. ./active-stack in the repo root (freshly built local binary)
+#   2. ~/active-stack (explicit copy in home)
+#   3. active-stack on PATH (system-installed)
+# This ensures `go build ./cmd/active-stack && bash e2e/e2e_test.sh` always
 # tests the locally built binary rather than the installed release version.
 resolve_binary() {
     local repo_root
     repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-    if [ -x "$repo_root/jr-stack" ]; then
-        echo "$repo_root/jr-stack"
-    elif [ -x "./jr-stack" ]; then
-        echo "./jr-stack"
-    elif [ -x "$HOME/jr-stack" ]; then
-        echo "$HOME/jr-stack"
-    elif command -v jr-stack >/dev/null 2>&1; then
-        echo "jr-stack"
+    if [ -x "$repo_root/active-stack" ]; then
+        echo "$repo_root/active-stack"
+    elif [ -x "./active-stack" ]; then
+        echo "./active-stack"
+    elif [ -x "$HOME/active-stack" ]; then
+        echo "$HOME/active-stack"
+    elif command -v active-stack >/dev/null 2>&1; then
+        echo "active-stack"
     else
         echo ""
     fi
@@ -67,7 +67,7 @@ cleanup_test_env() {
     rm -rf "$HOME/.claude" 2>/dev/null || true
     rm -rf "$HOME/.codex" 2>/dev/null || true
     rm -rf "$HOME/.gemini" 2>/dev/null || true
-    rm -rf "$HOME/.jr-stack" 2>/dev/null || true
+    rm -rf "$HOME/.active-stack" 2>/dev/null || true
     rm -rf "$HOME/.codeium" 2>/dev/null || true
     rm -rf "$HOME/.cursor" 2>/dev/null || true
     mkdir -p "$HOME/.config"
@@ -293,8 +293,8 @@ assert_md5_match() {
 }
 
 # assert_no_duplicate_section FILE SECTION_ID LABEL
-# Checks that the jr-stack section marker appears exactly once (idempotent).
-# Marker format: <!-- jr-stack:<section_id> -->
+# Checks that the active-stack section marker appears exactly once (idempotent).
+# Marker format: <!-- active-stack:<section_id> -->
 assert_no_duplicate_section() {
     local file="$1"
     local section_id="$2"
@@ -303,7 +303,7 @@ assert_no_duplicate_section() {
         log_fail "Cannot check sections — file not found: $file"
         return 1
     fi
-    local marker="<!-- jr-stack:${section_id} -->"
+    local marker="<!-- active-stack:${section_id} -->"
     local count
     count=$(grep -c "$marker" "$file" 2>/dev/null || echo "0")
     if [ "$count" -eq 1 ]; then

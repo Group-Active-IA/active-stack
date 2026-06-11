@@ -6,14 +6,14 @@ import (
 	"io/fs"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	extinstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/external"
-	perminstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/config/permissions"
-	skillinstaller "github.com/JuanCruzRobledo/jr-stack/internal/harness/skill"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
-	"github.com/JuanCruzRobledo/jr-stack/internal/system"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	extinstaller "github.com/Group-Active-IA/active-stack/internal/harness/external"
+	perminstaller "github.com/Group-Active-IA/active-stack/internal/harness/config/permissions"
+	skillinstaller "github.com/Group-Active-IA/active-stack/internal/harness/skill"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
 
 // TestHeadlessInstallIntegration is the end-to-end integration test:

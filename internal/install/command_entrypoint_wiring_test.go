@@ -25,16 +25,16 @@ package install_test
 // NOTE: This test calls install.WithEmbeddedCommandsFS directly (same call as
 // wireEmbeddedFS) to prove the mechanism works, and separately calls
 // ResetEmbeddedCommandsFS to prove the nil baseline. The companion test in
-// cmd/jr-stack/main_wiring_test.go is the entry-point-level RED test.
+// cmd/active-stack/main_wiring_test.go is the entry-point-level RED test.
 
 import (
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/assets"
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/install"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
-	"github.com/JuanCruzRobledo/jr-stack/internal/pipeline"
+	"github.com/Group-Active-IA/active-stack/assets"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
 
 // TestEmbeddedCommandsFS_NilBeforeWiring proves that embeddedCommandsFS is nil
@@ -66,7 +66,7 @@ func TestEmbeddedCommandsFS_NilBeforeWiring(t *testing.T) {
 //
 // This is GREEN immediately because WithEmbeddedCommandsFS already sets the global
 // correctly — the bug is that it is never CALLED from the binary entry point.
-// The entry-point wiring test is in cmd/jr-stack/main_wiring_test.go.
+// The entry-point wiring test is in cmd/active-stack/main_wiring_test.go.
 func TestWithEmbeddedCommandsFS_SetsNonNilGlobal_WhenCalledWithRealAssets(t *testing.T) {
 	install.ResetEmbeddedCommandsFS()
 	t.Cleanup(install.ResetEmbeddedCommandsFS)
@@ -94,7 +94,7 @@ func TestWithEmbeddedCommandsFS_SetsNonNilGlobal_WhenCalledWithRealAssets(t *tes
 // cmdinstaller.NewInstaller — this replacement mirrors that read.
 //
 // Note: this test still calls WithEmbeddedCommandsFS in the test body (not via
-// wireEmbeddedFS). The companion test in cmd/jr-stack/main_wiring_test.go
+// wireEmbeddedFS). The companion test in cmd/active-stack/main_wiring_test.go
 // asserts that wireEmbeddedFS() does the same call.
 func TestEntrypointWiring_InstallPath_CommandsFSReachesInstaller(t *testing.T) {
 	install.ResetEmbeddedCommandsFS()

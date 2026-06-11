@@ -1,6 +1,6 @@
 package planner
 
-import "github.com/JuanCruzRobledo/jr-stack/internal/model"
+import "github.com/Group-Active-IA/active-stack/internal/model"
 
 // Graph is an adjacency-list representation of harness dependencies.
 // Keys are harness IDs; values are the IDs of their direct dependencies.

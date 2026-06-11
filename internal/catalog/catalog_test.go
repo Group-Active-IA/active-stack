@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -42,7 +42,7 @@ func TestBestEffortFlag_NonBestEffortHarnessesDefaultToFalse(t *testing.T) {
 		t.Fatalf("Load() error = %v", err)
 	}
 
-	nonBestEffortIDs := []string{"openspec", "engram", "sdd-orchestrator", "jr-orchestrator", "permissions"}
+	nonBestEffortIDs := []string{"openspec", "engram", "sdd-orchestrator", "active-orchestrator", "permissions"}
 	for _, id := range nonBestEffortIDs {
 		h, ok := c.ByID(id)
 		if !ok {
@@ -158,7 +158,7 @@ func TestEngram_BrewTapFormula(t *testing.T) {
 
 // TestEngram_HasMCPEntry asserts that the embedded catalog engram harness
 // declares an MCP stdio entry with name="engram", command="engram", args=["mcp"].
-// This is required so jr-stack can register the Engram MCP server into each
+// This is required so active-stack can register the Engram MCP server into each
 // agent's config after installing the binary — without this, the binary is
 // on disk but the agent cannot communicate with it.
 func TestEngram_HasMCPEntry(t *testing.T) {
@@ -254,7 +254,7 @@ func TestLoad_KnownHarnessesPresent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
-	for _, id := range []string{"openspec", "engram", "sdd-orchestrator", "jr-orchestrator", "kb-creator"} {
+	for _, id := range []string{"openspec", "engram", "sdd-orchestrator", "active-orchestrator", "kb-creator"} {
 		if _, ok := c.ByID(id); !ok {
 			t.Errorf("expected harness %q in catalog, not found", id)
 		}
@@ -299,26 +299,26 @@ func TestForMode_LiteIsSubsetOfFull(t *testing.T) {
 	}
 }
 
-func TestForMode_JROrchestratorIsFullOnly(t *testing.T) {
+func TestForMode_ActiveOrchestratorIsFullOnly(t *testing.T) {
 	c, err := Load()
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
 
 	for _, h := range c.ForMode(model.ModeLite) {
-		if h.ID == "jr-orchestrator" {
-			t.Fatal("jr-orchestrator must not be in lite: it orchestrates full-only skills (kb-creator, roadmap-generator, agent-instruction, find-skill)")
+		if h.ID == "active-orchestrator" {
+			t.Fatal("active-orchestrator must not be in lite: it orchestrates full-only skills (kb-creator, roadmap-generator, agent-instruction, find-skill)")
 		}
 	}
 
 	var inFull bool
 	for _, h := range c.ForMode(model.ModeFull) {
-		if h.ID == "jr-orchestrator" {
+		if h.ID == "active-orchestrator" {
 			inFull = true
 		}
 	}
 	if !inFull {
-		t.Fatal("jr-orchestrator must be in full")
+		t.Fatal("active-orchestrator must be in full")
 	}
 }
 

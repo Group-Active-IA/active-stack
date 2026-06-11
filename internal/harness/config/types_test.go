@@ -3,8 +3,8 @@ package config_test
 import (
 	"testing"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // fakeAdapter is a test double implementing AgentAdapter.

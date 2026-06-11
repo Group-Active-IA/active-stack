@@ -14,7 +14,7 @@ OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The u
 2. **Delegate, don't inflate.** If work inflates your context without need → delegate it to a sub-agent.
 3. **Engram persists context.** Use engram to save decisions, discoveries, and progress so they survive across sessions and compactions.
 
-<!-- jr-stack:sdd-delegation -->
+<!-- active-stack:sdd-delegation -->
 ## Delegation Rules
 
 | Action | Inline | Delegate |
@@ -31,7 +31,7 @@ Anti-patterns — these ALWAYS inflate context:
 - Writing a feature across multiple files inline → delegate
 - Running tests or builds inline → delegate
 - Reading files as preparation for edits, then editing → delegate the whole thing together
-<!-- /jr-stack:sdd-delegation -->
+<!-- /active-stack:sdd-delegation -->
 
 ## OPSX Workflow
 
@@ -171,7 +171,7 @@ Before ending a session, call `mem_session_summary` with:
 - If a change name is ambiguous, run `openspec list --json` and ask the user
 - Load the appropriate skill for each action — don't replicate skill logic inline
 - If the user asks about the old `/sdd-*` commands, explain that OPSX replaced them
-<!-- jr-stack:sdd-model-assignments -->
+<!-- active-stack:sdd-model-assignments -->
 ## Model Assignments
 
 | Phase | Default Model | Reason |
@@ -183,4 +183,4 @@ Before ending a session, call `mem_session_summary` with:
 | archive | haiku | File operations |
 | default | sonnet | General delegation |
 
-<!-- /jr-stack:sdd-model-assignments -->
+<!-- /active-stack:sdd-model-assignments -->

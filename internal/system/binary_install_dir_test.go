@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-// TestBinaryInstallDir_Windows verifies Windows returns %LOCALAPPDATA%\jr-stack\bin.
+// TestBinaryInstallDir_Windows verifies Windows returns %LOCALAPPDATA%\active-stack\bin.
 func TestBinaryInstallDir_Windows(t *testing.T) {
 	localAppData := t.TempDir()
 	orig := os.Getenv("LOCALAPPDATA")
@@ -14,7 +14,7 @@ func TestBinaryInstallDir_Windows(t *testing.T) {
 	os.Setenv("LOCALAPPDATA", localAppData)
 
 	got := BinaryInstallDir("windows")
-	want := filepath.Join(localAppData, "jr-stack", "bin")
+	want := filepath.Join(localAppData, "active-stack", "bin")
 	if got != want {
 		t.Errorf("BinaryInstallDir(windows) = %q, want %q", got, want)
 	}

@@ -6,11 +6,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/JuanCruzRobledo/jr-stack/internal/backup"
-	"github.com/JuanCruzRobledo/jr-stack/internal/filemerge"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/command"
-	"github.com/JuanCruzRobledo/jr-stack/internal/harness/config"
-	"github.com/JuanCruzRobledo/jr-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/filemerge"
+	"github.com/Group-Active-IA/active-stack/internal/harness/command"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -63,7 +63,7 @@ var markerRemovalFn = func(path, sectionID string) error {
 	return err
 }
 
-// stalePurgeFn removes every jr-stack-marked section the current installer no
+// stalePurgeFn removes every active-stack-marked section the current installer no
 // longer owns (legacy/renamed sections from older layouts: persona,
 // engram-protocol, strict-tdd-mode, …). It mirrors the install-time cleanup so
 // uninstall leaves no orphaned blocks behind, and reuses config.PurgeStaleSections
@@ -153,7 +153,7 @@ func (s *markerRemovalStep) Run() error {
 		if err := markerRemovalFn(path, s.h.ID); err != nil {
 			return fmt.Errorf("marker removal for harness %q on agent %q: %w", s.h.ID, a.Agent(), err)
 		}
-		// …then purge any legacy jr-stack sections from older layouts so the
+		// …then purge any legacy active-stack sections from older layouts so the
 		// uninstall leaves no orphaned blocks behind.
 		if err := stalePurgeFn(path); err != nil {
 			return fmt.Errorf("stale section purge for harness %q on agent %q: %w", s.h.ID, a.Agent(), err)
