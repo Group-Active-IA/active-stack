@@ -167,8 +167,8 @@ func TestDownloadBinary_EmptyProfileOS(t *testing.T) {
 
 	var gotAssetPath string
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/releases/latest") {
-			json.NewEncoder(w).Encode(map[string]string{"tag_name": "v" + version})
+		if strings.HasSuffix(r.URL.Path, "/releases") {
+			json.NewEncoder(w).Encode([]map[string]string{{"tag_name": "v" + version}})
 			return
 		}
 		gotAssetPath = r.URL.Path
@@ -229,8 +229,8 @@ func TestDownloadBinary_TarGz(t *testing.T) {
 	tarGzData := buildTarGz(t, "engram", []byte(binaryContent))
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/releases/latest") {
-			json.NewEncoder(w).Encode(map[string]string{"tag_name": "v" + version})
+		if strings.HasSuffix(r.URL.Path, "/releases") {
+			json.NewEncoder(w).Encode([]map[string]string{{"tag_name": "v" + version}})
 			return
 		}
 		w.Header().Set("Content-Type", "application/octet-stream")
@@ -275,8 +275,8 @@ func TestDownloadBinary_Zip(t *testing.T) {
 	zipData := buildZip(t, "engram.exe", []byte(binaryContent))
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/releases/latest") {
-			json.NewEncoder(w).Encode(map[string]string{"tag_name": "v" + version})
+		if strings.HasSuffix(r.URL.Path, "/releases") {
+			json.NewEncoder(w).Encode([]map[string]string{{"tag_name": "v" + version}})
 			return
 		}
 		w.Header().Set("Content-Type", "application/octet-stream")
@@ -314,6 +314,89 @@ func TestDownloadBinary_Zip(t *testing.T) {
 	}
 }
 
+// TestDownloadBinary_SkipsNonSemverLatestRelease is a regression test for the
+// real-world install failure: the engram repo interleaves proper CLI binary
+// releases (tag "v1.17.0", with assets) with unrelated npm-only releases
+// (tag "pi-v0.1.9", no assets). GitHub's "latest release" is whichever was
+// published most recently — if a "pi-v0.1.9" release lands after "v1.17.0",
+// /releases/latest returns it, and naively stripping a leading "v" produces
+// the bogus version "pi-v0.1.9", building a 404 asset URL. fetchLatestVersion
+// must skip non-semver tags and pick the newest real "vX.Y.Z" release.
+func TestDownloadBinary_SkipsNonSemverLatestRelease(t *testing.T) {
+	const binaryContent = "fake-engram-binary"
+
+	tarGzData := buildTarGz(t, "engram", []byte(binaryContent))
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/releases") {
+			json.NewEncoder(w).Encode([]map[string]string{
+				{"tag_name": "pi-v0.1.9"},
+				{"tag_name": "v1.17.0"},
+				{"tag_name": "pi-v0.1.8"},
+				{"tag_name": "v1.16.1"},
+			})
+			return
+		}
+		w.Header().Set("Content-Type", "application/octet-stream")
+		w.Write(tarGzData)
+	}))
+	defer srv.Close()
+
+	origBase := githubBaseURL
+	githubBaseURL = srv.URL
+	defer func() { githubBaseURL = origBase }()
+
+	origClient := httpClient
+	httpClient = srv.Client()
+	defer func() { httpClient = origClient }()
+
+	installDir := t.TempDir()
+	origFn := binaryInstallDirFn
+	binaryInstallDirFn = func(string) string { return installDir }
+	defer func() { binaryInstallDirFn = origFn }()
+
+	h := harnessWithMethod("homebrew", "engram", "")
+	h.External.Repo = "Gentleman-Programming/engram"
+	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
+
+	outPath, err := downloadBinary(nil, h, profile)
+	if err != nil {
+		t.Fatalf("downloadBinary failed: %v", err)
+	}
+
+	data, err := os.ReadFile(outPath)
+	if err != nil {
+		t.Fatalf("read binary: %v", err)
+	}
+	if string(data) != binaryContent {
+		t.Errorf("binary content = %q, want %q", data, binaryContent)
+	}
+}
+
+func TestFetchLatestVersion_SkipsNonSemverTags(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode([]map[string]string{
+			{"tag_name": "pi-v0.1.9"},
+			{"tag_name": "v1.17.0"},
+			{"tag_name": "pi-v0.1.8"},
+			{"tag_name": "v1.16.1"},
+		})
+	}))
+	defer srv.Close()
+
+	origClient := httpClient
+	httpClient = srv.Client()
+	defer func() { httpClient = origClient }()
+
+	got, err := fetchLatestVersion("Gentleman-Programming", "engram", srv.URL)
+	if err != nil {
+		t.Fatalf("fetchLatestVersion failed: %v", err)
+	}
+	if got != "1.17.0" {
+		t.Errorf("fetchLatestVersion = %q, want %q", got, "1.17.0")
+	}
+}
+
 func TestDownloadBinary_APIError(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
@@ -346,9 +429,9 @@ func TestDownloadBinary_UsesRepoOverPkg(t *testing.T) {
 	tarGzData := buildTarGz(t, "engram", []byte(binaryContent))
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/releases/latest") {
+		if strings.HasSuffix(r.URL.Path, "/releases") {
 			gotAPIPath = r.URL.Path
-			json.NewEncoder(w).Encode(map[string]string{"tag_name": "v1.0.0"})
+			json.NewEncoder(w).Encode([]map[string]string{{"tag_name": "v1.0.0"}})
 			return
 		}
 		w.Write(tarGzData)
@@ -390,8 +473,8 @@ func TestDownloadBinary_AddsInstallDirToPath(t *testing.T) {
 	tarGzData := buildTarGz(t, "engram", []byte("fake-engram-binary"))
 
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, "/releases/latest") {
-			json.NewEncoder(w).Encode(map[string]string{"tag_name": "v1.0.0"})
+		if strings.HasSuffix(r.URL.Path, "/releases") {
+			json.NewEncoder(w).Encode([]map[string]string{{"tag_name": "v1.0.0"}})
 			return
 		}
 		w.Write(tarGzData)

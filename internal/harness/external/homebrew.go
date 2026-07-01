@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 	"time"
@@ -176,9 +177,18 @@ func apiBaseURL(baseURL string) string {
 	return "https://api.github.com"
 }
 
-// fetchLatestVersion queries the GitHub Releases API for the latest tag.
+// semverTagRe matches proper "vX.Y.Z" release tags, e.g. "v1.17.0". Some repos
+// (e.g. Gentleman-Programming/engram) interleave unrelated release trains —
+// npm-only packages tagged "pi-v0.1.9" with no binary assets — in the same
+// GitHub Releases list. /releases/latest returns whichever tag was published
+// most recently regardless of train, so we must list releases and pick the
+// newest one matching this pattern instead of trusting "latest" blindly.
+var semverTagRe = regexp.MustCompile(`^v\d+\.\d+\.\d+$`)
+
+// fetchLatestVersion queries the GitHub Releases API for the newest release
+// tagged with a proper "vX.Y.Z" version, skipping unrelated release trains.
 func fetchLatestVersion(owner, repo, baseURL string) (string, error) {
-	apiURL := fmt.Sprintf("%s/repos/%s/%s/releases/latest", apiBaseURL(baseURL), owner, repo)
+	apiURL := fmt.Sprintf("%s/repos/%s/%s/releases", apiBaseURL(baseURL), owner, repo)
 
 	req, err := http.NewRequest(http.MethodGet, apiURL, nil)
 	if err != nil {
@@ -199,18 +209,20 @@ func fetchLatestVersion(owner, repo, baseURL string) (string, error) {
 		return "", fmt.Errorf("GitHub API returned HTTP %d", resp.StatusCode)
 	}
 
-	var release struct {
+	var releases []struct {
 		TagName string `json:"tag_name"`
 	}
-	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
+	if err := json.NewDecoder(resp.Body).Decode(&releases); err != nil {
 		return "", fmt.Errorf("decode release JSON: %w", err)
 	}
 
-	version := strings.TrimPrefix(release.TagName, "v")
-	if version == "" {
-		return "", fmt.Errorf("empty tag_name in GitHub release response")
+	// GitHub returns releases sorted newest-first by creation date.
+	for _, release := range releases {
+		if semverTagRe.MatchString(release.TagName) {
+			return strings.TrimPrefix(release.TagName, "v"), nil
+		}
 	}
-	return version, nil
+	return "", fmt.Errorf("no semver release tag (vX.Y.Z) found for %s/%s", owner, repo)
 }
 
 // githubToken returns a GitHub token from the environment if available.
