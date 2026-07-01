@@ -166,9 +166,13 @@ func runInstall(args []string) error {
 
 		// Wire the verify hook (same logic as the TUI BuildPlanFn below).
 		if parsed.VerifyHookFn == nil {
-			verifyAdapters := resolveVerifyAdapters(parsed.Intent.Agents, reg)
+			verifyBase := parsed.HomeDir
+			if parsed.Target == model.Project {
+				verifyBase = parsed.ProjectRoot
+			}
+			verifyAdapters := resolveVerifyAdaptersForTarget(parsed.Intent.Agents, reg, verifyBase, parsed.Target)
 			selectedHarnesses := collectSelectedHarnesses(cat, parsed.Intent)
-			parsed.VerifyHookFn = verify.BuildHook(selectedHarnesses, verifyAdapters, parsed.HomeDir)
+			parsed.VerifyHookFn = verify.BuildHook(selectedHarnesses, verifyAdapters, verifyBase)
 		}
 
 		// Wire the embedded skills FS into BuildPlan via BuildPlanFn.
@@ -211,9 +215,13 @@ func runInstall(args []string) error {
 			// Wire the post-install verify hook.
 			// Resolve adapters for the intent's agents; collect selected harnesses.
 			// verify.Adapter is a structural subset of install.AgentAdapter — no cast needed.
-			verifyAdapters := resolveVerifyAdapters(intent.Agents, reg)
+			verifyBase := opts.HomeDir
+			if opts.Target == model.Project {
+				verifyBase = opts.ProjectRoot
+			}
+			verifyAdapters := resolveVerifyAdaptersForTarget(intent.Agents, reg, verifyBase, opts.Target)
 			selectedHarnesses := collectSelectedHarnesses(c, intent)
-			opts.VerifyHook = verify.BuildHook(selectedHarnesses, verifyAdapters, opts.HomeDir)
+			opts.VerifyHook = verify.BuildHook(selectedHarnesses, verifyAdapters, verifyBase)
 
 			return install.BuildPlan(c, intent, opts)
 		},
@@ -256,6 +264,34 @@ func resolveVerifyAdapters(agentList []model.Agent, reg *agents.Registry) []veri
 		out = append(out, adapter)
 	}
 	return out
+}
+
+func resolveVerifyAdaptersForTarget(agentList []model.Agent, reg *agents.Registry, base string, target model.InstallTarget) []verify.Adapter {
+	if target != model.Project {
+		return resolveVerifyAdapters(agentList, reg)
+	}
+	out := make([]verify.Adapter, 0, len(agentList))
+	for _, agent := range agentList {
+		if adapter, ok := reg.Get(agent); ok {
+			out = append(out, projectVerifyAdapter{Adapter: adapter, base: base})
+		}
+	}
+	return out
+}
+
+type projectVerifyAdapter struct {
+	agents.Adapter
+	base string
+}
+
+func (a projectVerifyAdapter) paths() model.AgentPaths {
+	return a.Adapter.PathsFor(a.base, model.Project)
+}
+func (a projectVerifyAdapter) SkillsDir(string) string        { return a.paths().SkillsDir }
+func (a projectVerifyAdapter) InstructionsPath(string) string { return a.paths().InstructionsPath }
+func (a projectVerifyAdapter) SettingsPath(string) string     { return a.paths().SettingsPath }
+func (a projectVerifyAdapter) MCPConfigPath(_ string, server string) string {
+	return a.paths().MCPConfigPath(server)
 }
 
 // collectSelectedHarnesses returns the harnesses selected for the given intent,

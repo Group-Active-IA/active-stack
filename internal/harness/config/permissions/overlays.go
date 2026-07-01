@@ -285,7 +285,7 @@ func agentOverlay(agent model.Agent, tier model.PermissionTier) []byte {
 		// Cursor manages permissions via cli-config.json, not settings.json.
 		return nil
 	case model.AgentCodex:
-		// Codex has no known settings.json path for permission injection.
+		// Codex uses config.toml and is handled by mergeCodexTOMLFile.
 		return nil
 	case model.AgentAntigravity:
 		// Antigravity manages permissions via IDE UI. No injectable settings.json.

@@ -64,14 +64,14 @@ func TestRegistry_DuplicateRegistration(t *testing.T) {
 	}
 }
 
-func TestRegistry_SupportedAgents_ExactlyP0(t *testing.T) {
+func TestRegistry_SupportedAgents(t *testing.T) {
 	r, err := agents.NewDefaultRegistry()
 	if err != nil {
 		t.Fatalf("NewDefaultRegistry() error: %v", err)
 	}
 
 	got := r.SupportedAgents()
-	want := []model.Agent{model.AgentClaude, model.AgentOpenCode}
+	want := []model.Agent{model.AgentClaude, model.AgentCodex, model.AgentOpenCode}
 
 	if len(got) != len(want) {
 		t.Fatalf("SupportedAgents() len = %d, want %d; got %v", len(got), len(want), got)
@@ -109,7 +109,6 @@ func TestDefaultRegistry_DoesNotContainRemainingAgents(t *testing.T) {
 
 	remaining := []model.Agent{
 		model.AgentGemini,
-		model.AgentCodex,
 		model.AgentCursor,
 		model.AgentVSCode,
 		model.AgentWindsurf,

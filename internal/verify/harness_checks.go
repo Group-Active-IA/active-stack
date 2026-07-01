@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Group-Active-IA/active-stack/internal/model"
+	toml "github.com/pelletier/go-toml/v2"
 )
 
 // sddOrchestratorSectionID is the marker section written by the config harness
@@ -22,7 +23,7 @@ const sddOrchestratorSectionID = "sdd-orchestrator"
 //
 //   - skill    → SKILL.md exists and is non-empty in adapter.SkillsDir
 //   - config   → idempotent marker present exactly once in InstructionsPath
-//                (special case "permissions" → checks SettingsPath for key)
+//     (special case "permissions" → checks SettingsPath for key)
 //   - external → MCP config parseable (hard) + binary in PATH (Soft)
 //
 // Paths are ALWAYS resolved via adapters — never hardcoded.
@@ -160,7 +161,7 @@ func checkPermissions(h model.Harness, adapter Adapter, homeDir string) []Check 
 	agentID := string(adapter.Agent())
 	key := permissionsKeyFor(adapter.Agent())
 
-	return []Check{
+	checks := []Check{
 		{
 			ID:          fmt.Sprintf("permissions:%s:%s", h.ID, agentID),
 			Description: fmt.Sprintf("permissions key present in %s settings", agentID),
@@ -172,6 +173,18 @@ func checkPermissions(h model.Harness, adapter Adapter, homeDir string) []Check 
 					}
 					return fmt.Errorf("read settings file: %w", err)
 				}
+				if adapter.Agent() == model.AgentCodex {
+					var root map[string]any
+					if err := toml.Unmarshal(data, &root); err != nil {
+						return fmt.Errorf("parse settings file %q: %w", settingsPath, err)
+					}
+					for _, expected := range []string{"approval_policy", "sandbox_mode"} {
+						if _, ok := root[expected]; !ok {
+							return fmt.Errorf("expected key %q not found in %q", expected, settingsPath)
+						}
+					}
+					return nil
+				}
 				var raw map[string]json.RawMessage
 				if err := json.Unmarshal(data, &raw); err != nil {
 					return fmt.Errorf("parse settings file %q: %w", settingsPath, err)
@@ -181,6 +194,44 @@ func checkPermissions(h model.Harness, adapter Adapter, homeDir string) []Check 
 				}
 				return nil
 			},
+		},
+	}
+	if adapter.Agent() == model.AgentCodex {
+		if home, err := os.UserHomeDir(); err == nil {
+			machineConfig := filepath.Join(home, ".codex", "config.toml")
+			if filepath.Clean(settingsPath) != filepath.Clean(machineConfig) {
+				checks = append(checks, checkCodexProjectTrust(settingsPath, machineConfig))
+			}
+		}
+	}
+	return checks
+}
+
+func checkCodexProjectTrust(projectConfig, machineConfig string) Check {
+	projectRoot := filepath.Dir(filepath.Dir(projectConfig))
+	return Check{
+		ID:          "codex:project-trust:" + projectRoot,
+		Description: "Codex project configuration is trusted",
+		Soft:        true,
+		Run: func(context.Context) error {
+			raw, err := os.ReadFile(machineConfig)
+			if err != nil {
+				return fmt.Errorf("cannot confirm Codex trust for %q", projectRoot)
+			}
+			var root struct {
+				Projects map[string]struct {
+					TrustLevel string `toml:"trust_level"`
+				} `toml:"projects"`
+			}
+			if err := toml.Unmarshal(raw, &root); err != nil {
+				return fmt.Errorf("cannot parse Codex machine config to confirm trust: %w", err)
+			}
+			for path, project := range root.Projects {
+				if filepath.Clean(path) == filepath.Clean(projectRoot) && project.TrustLevel == "trusted" {
+					return nil
+				}
+			}
+			return fmt.Errorf("Codex will ignore %q until the project is trusted", projectConfig)
 		},
 	}
 }
@@ -247,6 +298,9 @@ func checkExternal(h model.Harness, adapter Adapter, homeDir string) []Check {
 		}
 
 	case "homebrew", "npm", "go-install", "download":
+		if adapter.Agent() == model.AgentCodex && h.External.MCP != nil {
+			checks = append(checks, checkMCPConfig(h, adapter, homeDir))
+		}
 		// Soft check: binary in PATH after install.
 		// Network/exec failures → warning, not hard failure.
 		checks = append(checks, checkBinaryInPATH(h))
@@ -258,6 +312,10 @@ func checkExternal(h model.Harness, adapter Adapter, homeDir string) []Check {
 func checkMCPConfig(h model.Harness, adapter Adapter, homeDir string) Check {
 	mcpPath := adapter.MCPConfigPath(homeDir, h.ID)
 	agentID := string(adapter.Agent())
+	serverName := h.ID
+	if h.External != nil && h.External.MCP != nil && h.External.MCP.Name != "" {
+		serverName = h.External.MCP.Name
+	}
 
 	return Check{
 		ID:          fmt.Sprintf("external:mcp-config:%s:%s", h.ID, agentID),
@@ -270,6 +328,18 @@ func checkMCPConfig(h model.Harness, adapter Adapter, homeDir string) Check {
 					return fmt.Errorf("MCP config not found at %q", mcpPath)
 				}
 				return fmt.Errorf("read MCP config: %w", err)
+			}
+			if adapter.Agent() == model.AgentCodex {
+				var root struct {
+					MCPServers map[string]any `toml:"mcp_servers"`
+				}
+				if err := toml.Unmarshal(data, &root); err != nil {
+					return fmt.Errorf("MCP config at %q is not valid TOML: %w", mcpPath, err)
+				}
+				if _, ok := root.MCPServers[serverName]; !ok {
+					return fmt.Errorf("MCP server %q not found in %q", serverName, mcpPath)
+				}
+				return nil
 			}
 			var raw json.RawMessage
 			if err := json.Unmarshal(data, &raw); err != nil {

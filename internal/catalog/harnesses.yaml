@@ -45,14 +45,14 @@ harnesses:
     type: config
     toggles: [tdd, engram, model-routing, delegation, governance]
     install_modes: [lite, full]
-    agents: [claude, opencode]
+    agents: [claude, codex, opencode]
 
   - id: permissions
     name: Permissions (security-first)
     description: Permisos seguros por defecto (bloquea .env, confirma git destructivo). No es opcional.
     type: config
     install_modes: [lite, full]
-    agents: [claude, opencode, gemini, vscode]
+    agents: [claude, codex, opencode, gemini, vscode]
 
   # ── Skills propias ─────────────────────────────────────────────────────────
   - id: active-orchestrator

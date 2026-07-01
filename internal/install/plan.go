@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/harness/external"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 	"github.com/Group-Active-IA/active-stack/internal/planner"
@@ -460,11 +461,18 @@ func buildMCPSteps(starter *model.Starter, adapters []AgentAdapter, effectiveBas
 // Machine target, projectRoot for Project target). Steps store it as homeDir
 // for backward compatibility with existing step implementations.
 func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, effectiveBase string, tier model.PermissionTier) (pipeline.Step, error) {
+	stepAdapters := adapters
+	if opts.Target == model.Project {
+		stepAdapters = make([]AgentAdapter, 0, len(adapters))
+		for _, adapter := range adapters {
+			stepAdapters = append(stepAdapters, projectTargetAdapter{AgentAdapter: adapter, base: effectiveBase})
+		}
+	}
 	switch h.Type {
 	case model.HarnessExternal:
 		return &externalStep{
 			h:        h,
-			adapters: adapters,
+			adapters: stepAdapters,
 			homeDir:  effectiveBase,
 			profile:  opts.Profile,
 		}, nil
@@ -476,7 +484,7 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 		}
 		return &skillStep{
 			h:          h,
-			adapters:   adapters,
+			adapters:   stepAdapters,
 			homeDir:    effectiveBase,
 			backupDir:  filepath.Join(effectiveBase, ".active-stack", "backups", "skills", h.ID),
 			embeddedFS: opts.embeddedSkillsFS,
@@ -489,27 +497,53 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 		if h.ID == "permissions" {
 			return &permissionsStep{
 				h:        h,
-				adapters: adapters,
+				adapters: stepAdapters,
 				homeDir:  effectiveBase,
 				tier:     tier,
 			}, nil
 		}
 		return &configStep{
 			h:        h,
-			adapters: adapters,
+			adapters: stepAdapters,
 			homeDir:  effectiveBase,
 		}, nil
 
 	case model.HarnessCommand:
 		return &commandStep{
 			h:         h,
-			adapters:  adapters,
+			adapters:  stepAdapters,
 			homeDir:   effectiveBase,
 			backupDir: filepath.Join(effectiveBase, ".active-stack", "backups", "commands", h.ID),
 		}, nil
 
 	default:
 		return nil, fmt.Errorf("unknown harness type %q for harness %q", h.Type, h.ID)
+	}
+}
+
+type projectTargetAdapter struct {
+	AgentAdapter
+	base string
+}
+
+func (a projectTargetAdapter) paths() model.AgentPaths {
+	return a.AgentAdapter.PathsFor(a.base, model.Project)
+}
+func (a projectTargetAdapter) InstructionsPath(string) string { return a.paths().InstructionsPath }
+func (a projectTargetAdapter) SkillsDir(string) string        { return a.paths().SkillsDir }
+func (a projectTargetAdapter) CommandsDir(string) string      { return a.paths().CommandsDir }
+func (a projectTargetAdapter) SettingsPath(string) string     { return a.paths().SettingsPath }
+func (a projectTargetAdapter) MCPConfigPath(_ string, server string) string {
+	return a.paths().MCPConfigPath(server)
+}
+func (a projectTargetAdapter) MCPStrategy() external.MCPStrategy {
+	switch a.paths().MCPStrategy {
+	case model.MCPStrategyMergeIntoSettings:
+		return external.StrategyMergeIntoSettings
+	case model.MCPStrategyMergeIntoTOML:
+		return external.StrategyMergeIntoTOML
+	default:
+		return external.StrategySeparateFile
 	}
 }
 

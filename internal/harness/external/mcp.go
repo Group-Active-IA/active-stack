@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
+	"strconv"
 	"strings"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
@@ -48,6 +50,18 @@ func installMCP(
 			}
 		}
 
+		if adapter.MCPStrategy() == StrategyMergeIntoTOML {
+			changed, err := writeCodexHarnessMCP(h, configPath)
+			if err != nil {
+				return Result{}, fmt.Errorf("merge mcp config for %s: %w", adapter.Agent(), err)
+			}
+			if changed {
+				allAlready = false
+				configFiles = append(configFiles, configPath)
+			}
+			continue
+		}
+
 		var overlay map[string]any
 		if h.External.MCP != nil && adapter.Agent() != model.AgentOpenCode {
 			// Claude (and any agent that is not OpenCode): the remote endpoint of
@@ -84,6 +98,59 @@ func installMCP(
 		ConfigFiles:      configFiles,
 		AlreadyInstalled: allAlready && len(configFiles) == 0,
 	}, nil
+}
+
+func writeCodexHarnessMCP(h model.Harness, configPath string) (bool, error) {
+	if h.External.MCP != nil {
+		return writeCodexMCP(*h.External.MCP, configPath)
+	}
+	mcp := model.MCP{Name: h.ID}
+	body := "url = " + strconv.Quote(strings.TrimRight(h.External.URL, "/")+"/mcp")
+	return writeCodexMCPBody(mcp.Name, body, configPath)
+}
+
+func writeCodexMCP(mcp model.MCP, configPath string) (bool, error) {
+	body := "command = " + strconv.Quote(mcp.Command) + "\nargs = ["
+	for i, arg := range mcp.Args {
+		if i > 0 {
+			body += ", "
+		}
+		body += strconv.Quote(arg)
+	}
+	body += "]"
+	if len(mcp.Env) > 0 {
+		keys := make([]string, 0, len(mcp.Env))
+		for key := range mcp.Env {
+			keys = append(keys, key)
+		}
+		sort.Strings(keys)
+		body += "\n\n[mcp_servers." + mcp.Name + ".env]"
+		for _, key := range keys {
+			body += "\n" + key + " = " + strconv.Quote(mcp.Env[key])
+		}
+	}
+	return writeCodexMCPBody(mcp.Name, body, configPath)
+}
+
+func writeCodexMCPBody(name, body, configPath string) (bool, error) {
+	raw := readExistingJSON(configPath)
+	merged, err := filemerge.UpsertTOMLSection(string(raw), "mcp_servers."+name, body)
+	if err != nil {
+		return false, err
+	}
+	wr, err := filemerge.WriteFileAtomic(configPath, []byte(merged), 0o644)
+	return wr.Changed, err
+}
+
+// WriteCodexMCPProjectEntry writes one project-scoped Codex MCP table with
+// mandatory backup before mutation.
+func WriteCodexMCPProjectEntry(mcp model.MCP, configPath, snapshotDir string) (bool, error) {
+	if _, err := os.Stat(configPath); err == nil {
+		if err := snapshotterCreate(snapshotDir, []string{configPath}); err != nil {
+			return false, fmt.Errorf("backup %q before mcp write: %w", configPath, err)
+		}
+	}
+	return writeCodexMCP(mcp, configPath)
 }
 
 // buildOverlay constructs the JSON overlay map from catalog fields without
@@ -275,6 +342,18 @@ func registerStdioMCP(
 			if err := snapshotterCreate(snapshotDir, []string{configPath}); err != nil {
 				return Result{}, fmt.Errorf("backup %q before stdio mcp injection: %w", configPath, err)
 			}
+		}
+
+		if adapter.MCPStrategy() == StrategyMergeIntoTOML {
+			changed, err := writeCodexMCP(mcp, configPath)
+			if err != nil {
+				return Result{}, fmt.Errorf("merge stdio mcp config for %s: %w", adapter.Agent(), err)
+			}
+			if changed {
+				allAlready = false
+				configFiles = append(configFiles, configPath)
+			}
+			continue
 		}
 
 		overlay := buildStdioOverlay(mcp, adapter)

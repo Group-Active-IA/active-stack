@@ -81,6 +81,17 @@ func installOne(homeDir string, adapter PermissionsAdapter, tier model.Permissio
 		return false, "", nil
 	}
 
+	if adapter.Agent() == model.AgentCodex {
+		if err := backupIfExists(homeDir, adapter.Agent(), settingsPath); err != nil {
+			return false, "", err
+		}
+		writeResult, err := mergeCodexTOMLFile(settingsPath, tier)
+		if err != nil {
+			return false, "", fmt.Errorf("permissions: merge settings for agent %q: %w", adapter.Agent(), err)
+		}
+		return writeResult.Changed, settingsPath, nil
+	}
+
 	overlay := agentOverlay(adapter.Agent(), tier)
 	if overlay == nil {
 		// Explicit no-op: agent does not support settings.json permission injection.
@@ -98,6 +109,36 @@ func installOne(homeDir string, adapter PermissionsAdapter, tier model.Permissio
 	}
 
 	return writeResult.Changed, settingsPath, nil
+}
+
+func mergeCodexTOMLFile(path string, tier model.PermissionTier) (filemerge.WriteResult, error) {
+	raw, err := osReadFile(path)
+	if err != nil {
+		return filemerge.WriteResult{}, err
+	}
+	approval, sandbox := "on-request", "workspace-write"
+	switch tier.Normalize() {
+	case model.TierEstricto:
+		approval, sandbox = "untrusted", "read-only"
+	case model.TierBypass:
+		approval, sandbox = "never", "danger-full-access"
+	}
+	merged, err := filemerge.UpsertTOMLTopLevel(string(raw), map[string]string{
+		"approval_policy": fmt.Sprintf("%q", approval),
+		"sandbox_mode":    fmt.Sprintf("%q", sandbox),
+	})
+	if err != nil {
+		return filemerge.WriteResult{}, err
+	}
+	if tier.Normalize() == model.TierBalanceado {
+		merged, err = filemerge.UpsertTOMLTableValues(merged, "sandbox_workspace_write", map[string]string{
+			"network_access": "false",
+		})
+		if err != nil {
+			return filemerge.WriteResult{}, err
+		}
+	}
+	return filemerge.WriteFileAtomic(path, []byte(merged), 0o644)
 }
 
 // backupIfExists creates a snapshot of settingsPath if the file exists.

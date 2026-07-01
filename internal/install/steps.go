@@ -246,6 +246,10 @@ func writeMCPEntry(mcp model.MCP, configPath string, strategy model.MCPStrategy)
 		snapshotDir := filepath.Join(filepath.Dir(configPath), ".active-stack", "backups", "mcp", mcp.Name)
 		_, err := extinstaller.WriteMCPProjectEntry(mcp, configPath, snapshotDir)
 		return err
+	case model.MCPStrategyMergeIntoTOML:
+		snapshotDir := filepath.Join(filepath.Dir(configPath), ".active-stack", "backups", "mcp", mcp.Name)
+		_, err := extinstaller.WriteCodexMCPProjectEntry(mcp, configPath, snapshotDir)
+		return err
 	default:
 		// MCPStrategySeparateFile (machine target) is handled by the existing
 		// harness-based installMCP flow, not by starter MCP wiring.

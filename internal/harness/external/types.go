@@ -24,6 +24,8 @@ const (
 	// StrategyMergeIntoSettings merges MCP entries into an existing settings
 	// file (OpenCode opencode.json, Gemini settings.json).
 	StrategyMergeIntoSettings
+	// StrategyMergeIntoTOML merges server tables into Codex config.toml.
+	StrategyMergeIntoTOML
 )
 
 // AgentAdapter is the minimal interface the mcp installer needs per agent.

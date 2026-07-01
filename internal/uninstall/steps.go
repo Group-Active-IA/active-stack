@@ -328,6 +328,51 @@ type externalSkipStep struct {
 func (s *externalSkipStep) ID() string  { return "external-skip:" + s.h.ID }
 func (s *externalSkipStep) Run() error  { return nil }
 
+type codexMCPRemovalStep struct {
+	h        model.Harness
+	adapters []AgentAdapter
+	homeDir  string
+	manifest *backup.Manifest
+}
+
+func (s *codexMCPRemovalStep) ID() string                     { return "external-codex-mcp:" + s.h.ID }
+func (s *codexMCPRemovalStep) setManifest(m *backup.Manifest) { s.manifest = m }
+
+func (s *codexMCPRemovalStep) Run() error {
+	name := s.h.ID
+	if s.h.External != nil && s.h.External.MCP != nil && s.h.External.MCP.Name != "" {
+		name = s.h.External.MCP.Name
+	}
+	for _, adapter := range s.adapters {
+		if adapter.Agent() != model.AgentCodex {
+			continue
+		}
+		path := adapter.SettingsPath(s.homeDir)
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			if os.IsNotExist(err) {
+				continue
+			}
+			return fmt.Errorf("read Codex MCP config %q: %w", path, err)
+		}
+		merged, err := filemerge.RemoveTOMLSection(string(raw), "mcp_servers."+name)
+		if err != nil {
+			return fmt.Errorf("remove Codex MCP %q: %w", name, err)
+		}
+		if _, err := filemerge.WriteFileAtomic(path, []byte(merged), 0o644); err != nil {
+			return fmt.Errorf("write Codex MCP config %q: %w", path, err)
+		}
+	}
+	return nil
+}
+
+func (s *codexMCPRemovalStep) Rollback() error {
+	if s.manifest == nil {
+		return nil
+	}
+	return restoreFn(*s.manifest)
+}
+
 // ─────────────────────────────────────────────────────────────────
 // Package-level function vars (testseams; real implementations below)
 // ─────────────────────────────────────────────────────────────────

@@ -2,7 +2,7 @@
   <img src="https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white" alt="Go 1.26">
   <img src="https://img.shields.io/badge/TUI-Bubbletea-8b5cf6" alt="Bubbletea">
   <img src="https://img.shields.io/badge/binario-único%20cross--platform-6366f1" alt="Binario único cross-platform">
-  <img src="https://img.shields.io/badge/agentes-Claude%20%C2%B7%20OpenCode-06b6d4" alt="Agentes soportados">
+  <img src="https://img.shields.io/badge/agentes-Claude%20%C2%B7%20Codex%20%C2%B7%20OpenCode-06b6d4" alt="Agentes soportados">
   <img src="https://img.shields.io/badge/ciclo-OPSX-14b8a6" alt="OPSX">
   <img src="https://img.shields.io/badge/licencia-MIT-22c55e" alt="Licencia MIT">
 </p>
@@ -15,7 +15,7 @@
 
 ## ¿Qué es esto?
 
-**Active Stack** es un **instalador _methodology-first_**: un único binario en Go que toma tu agente de IA (Claude Code, OpenCode…) y le **inyecta, de forma modular y actualizable, todo el sustrato que exige una metodología de desarrollo asistido por IA.**
+**Active Stack** es un **instalador _methodology-first_**: un único binario en Go que toma tu agente de IA (Claude Code, Codex, OpenCode…) y le **inyecta, de forma modular y actualizable, todo el sustrato que exige una metodología de desarrollo asistido por IA.**
 
 No es un framework que corre en tu app. Es un **configurador del entorno del agente**. Corrés un comando, elegís un modo, y el stack deja tu proyecto listo para el ciclo **OPSX** (`explore → propose → apply → verify → archive`).
 
@@ -53,7 +53,7 @@ flowchart TD
         T3["<b>external</b><br/>binario/servicio de terceros<br/>CLI · MCP"]
     end
 
-    T1 --> AG["🤖 Tu agente de IA<br/>(Claude · OpenCode)"]
+    T1 --> AG["🤖 Tu agente de IA<br/>(Claude · Codex · OpenCode)"]
     T2 --> AG
     T3 --> AG
 
@@ -203,8 +203,9 @@ El `active-orchestrator` coordina la fundación con lazy-loading de skills; dura
 | Agente | Estado |
 |--------|--------|
 | **Claude Code** | ✅ Soportado |
+| **Codex** | ✅ Soportado |
 | **OpenCode** | ✅ Soportado |
-| Gemini · Codex · Cursor · VS Code · Windsurf · Antigravity | 🔜 En el modelo de dominio, adapter en roadmap |
+| Gemini · Cursor · VS Code · Windsurf · Antigravity | 🔜 En el modelo de dominio, adapter en roadmap |
 
 > Agregar un agente es deliberadamente barato: un sub-paquete con el adapter + una entrada en el registry. Ningún installer ni interfaz existente cambia.
 

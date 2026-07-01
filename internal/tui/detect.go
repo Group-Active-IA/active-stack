@@ -8,7 +8,7 @@ import (
 )
 
 // DetectInstalledAgents returns the model.Agent values whose known config
-// directory exists under homeDir. It checks only P0 agents (claude, opencode).
+// directory exists under homeDir.
 //
 // The mapping from filesystem paths to model.Agent is local to the TUI so
 // the system package stays import-cycle-free. When new agents are added to
@@ -20,6 +20,7 @@ func DetectInstalledAgents(homeDir string) []model.Agent {
 	}
 	candidates := []entry{
 		{model.AgentClaude, filepath.Join(homeDir, ".claude")},
+		{model.AgentCodex, filepath.Join(homeDir, ".codex")},
 		{model.AgentOpenCode, filepath.Join(homeDir, ".config", "opencode")},
 	}
 

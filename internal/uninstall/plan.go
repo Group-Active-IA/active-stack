@@ -179,7 +179,13 @@ func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []
 				add(filepath.Join(a.SkillsDir(homeDir), h.ID))
 			}
 		case model.HarnessExternal:
-			// External harnesses are skipped — no paths to snapshot.
+			if h.External != nil && (h.External.MCP != nil || h.External.Method == "mcp") {
+				for _, a := range adapters {
+					if a.Agent() == model.AgentCodex {
+						add(a.SettingsPath(homeDir))
+					}
+				}
+			}
 		case model.HarnessCommand:
 			// Command harnesses write a single file per adapter under CommandsDir.
 			// Skip adapters with empty CommandsDir or unknown VariantKey.
@@ -204,6 +210,13 @@ func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []
 func buildUninstallStep(h model.Harness, adapters []AgentAdapter, opts Options) (pipeline.Step, error) {
 	switch h.Type {
 	case model.HarnessExternal:
+		if h.External != nil && (h.External.MCP != nil || h.External.Method == "mcp") {
+			for _, adapter := range adapters {
+				if adapter.Agent() == model.AgentCodex {
+					return &codexMCPRemovalStep{h: h, adapters: adapters, homeDir: opts.HomeDir}, nil
+				}
+			}
+		}
 		return &externalSkipStep{h: h}, nil
 
 	case model.HarnessSkill:

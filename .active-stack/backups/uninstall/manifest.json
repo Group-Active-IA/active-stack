@@ -1,0 +1,108 @@
+{
+  "id": "uninstall",
+  "created_at": "2026-07-01T14:48:15.9009174Z",
+  "root_dir": ".active-stack\\backups\\uninstall",
+  "entries": [
+    {
+      "original_path": ".claude\\CLAUDE.md",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\AGENTS.md",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\opencode.json",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".claude\\settings.json",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".claude\\skills\\active-orchestrator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\skills\\active-orchestrator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".claude\\skills\\kb-creator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\skills\\kb-creator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".claude\\skills\\roadmap-generator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\skills\\roadmap-generator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".claude\\skills\\agent-instruction",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\skills\\agent-instruction",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".claude\\skills\\skill-registry",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\skills\\skill-registry",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".claude\\commands\\active\\starter-add.md",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\commands\\active-starter-add.md",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".claude\\skills\\find-skill",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\skills\\find-skill",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".claude\\skills\\skill-creator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".config\\opencode\\skills\\skill-creator",
+      "snapshot_path": "",
+      "existed": false
+    }
+  ],
+  "checksum": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

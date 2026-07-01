@@ -18,6 +18,7 @@ import (
 var tierCapableAgents = map[model.Agent]bool{
 	model.AgentClaude:    true,
 	model.AgentOpenCode:  true,
+	model.AgentCodex:     true,
 }
 
 // anyTierCapable returns true when at least one agent in the set is tier-capable.

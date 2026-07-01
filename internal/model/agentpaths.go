@@ -22,6 +22,9 @@ const (
 	// file under the "mcpServers" key.
 	// (Claude project target: <root>/.mcp.json — D2)
 	MCPStrategySingleFileMerge
+	// MCPStrategyMergeIntoTOML merges MCP server tables into a Codex
+	// config.toml while preserving unrelated user configuration.
+	MCPStrategyMergeIntoTOML
 )
 
 // AgentPaths holds the resolved filesystem paths for a given agent and install

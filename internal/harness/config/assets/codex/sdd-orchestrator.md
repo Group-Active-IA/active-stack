@@ -91,7 +91,7 @@ Parse `applyRequires` and `artifacts` to understand what exists and what's neede
 | "implement", "apply", "write code", "do the tasks" | `openspec-apply-change` |
 | "archive", "close", "done with" | `openspec-archive-change` |
 
-When delegating, pass the skill name and change context. The sub-agent reads its skill file at `~/.codex/skills/{skill-name}/SKILL.md` and follows it exactly.
+When delegating, pass the skill name and change context. The sub-agent reads its skill file from the active Codex skill locations (for example `$HOME/.agents/skills/{skill-name}/SKILL.md`) and follows it exactly.
 
 You load the skill and let IT handle the full workflow. You don't replicate skill logic inline.
 
