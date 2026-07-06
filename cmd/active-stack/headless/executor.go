@@ -40,6 +40,9 @@ func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, 
 	// Accumulate degraded events for the honest end-of-run summary (C-32).
 	var degradedEvents []pipeline.ProgressEvent
 	progressFn := func(e pipeline.ProgressEvent) {
+		if params.ProgressEventFn != nil {
+			params.ProgressEventFn(e)
+		}
 		switch e.Status {
 		case pipeline.StepStatusRunning:
 			fmt.Fprintf(w, "  → %s running...\n", e.StepID)
@@ -70,6 +73,7 @@ func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, 
 		NoSelfInstall:         params.NoSelfInstall,
 		SelfInstallBinaryPath: params.BinaryPath,
 		OnProgress:            progressFn,
+		OnDownload:            params.DownloadEventFn,
 	}
 
 	// Wire verify hook.

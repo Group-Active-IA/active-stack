@@ -1,0 +1,23 @@
+<Project Sdk="WixToolset.Sdk/6.0.2">
+  <PropertyGroup>
+    <OutputType>Bundle</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Platform>x64</Platform>
+    <Nullable>enable</Nullable>
+    <InstallerVersion Condition="'$(InstallerVersion)' == ''">0.1.0.0</InstallerVersion>
+    <DefineConstants>
+      $(DefineConstants);
+      InstallerVersion=$(InstallerVersion);
+      PayloadDir=$(MSBuildProjectDirectory)\payload;
+      BootstrapperApplicationPath=$(MSBuildProjectDirectory)\payload\ba\ActiveStack.Bootstrapper.Host.exe
+    </DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="WixToolset.BootstrapperApplications.wixext" Version="6.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="theme\ActiveStackTheme.xml" />
+  </ItemGroup>
+</Project>

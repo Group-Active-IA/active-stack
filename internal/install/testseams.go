@@ -5,9 +5,9 @@ import (
 	"io/fs"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
-	extinstaller "github.com/Group-Active-IA/active-stack/internal/harness/external"
 	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
 	perminstaller "github.com/Group-Active-IA/active-stack/internal/harness/config/permissions"
+	extinstaller "github.com/Group-Active-IA/active-stack/internal/harness/external"
 	skillinstaller "github.com/Group-Active-IA/active-stack/internal/harness/skill"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/system"
@@ -55,6 +55,30 @@ func SetExternalInstallFn(fn func(
 	profile system.PlatformProfile,
 	adapters []extinstaller.AgentAdapter,
 	homeDir string,
+) (extinstaller.Result, error)) (restore func()) {
+	old := externalInstallFn
+	externalInstallFn = func(
+		ctx context.Context,
+		h model.Harness,
+		profile system.PlatformProfile,
+		adapters []extinstaller.AgentAdapter,
+		homeDir string,
+		_ extinstaller.DownloadEventFunc,
+	) (extinstaller.Result, error) {
+		return fn(ctx, h, profile, adapters, homeDir)
+	}
+	return func() { externalInstallFn = old }
+}
+
+// SetExternalInstallFnWithDownload replaces externalInstallFn for tests that
+// need to observe or simulate download lifecycle events.
+func SetExternalInstallFnWithDownload(fn func(
+	ctx context.Context,
+	h model.Harness,
+	profile system.PlatformProfile,
+	adapters []extinstaller.AgentAdapter,
+	homeDir string,
+	downloadFn extinstaller.DownloadEventFunc,
 ) (extinstaller.Result, error)) (restore func()) {
 	old := externalInstallFn
 	externalInstallFn = fn

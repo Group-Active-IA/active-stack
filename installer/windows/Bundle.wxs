@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Bundle
+    Name="Active Stack"
+    Manufacturer="Group Active IA"
+    Version="$(var.InstallerVersion)"
+    UpgradeCode="11111111-1111-1111-1111-111111111111">
+
+    <Variable Name="ActiveStackAssistantId" Type="formatted" Value="" />
+    <Variable Name="ActiveStackInstallModeId" Type="formatted" Value="" />
+    <Variable Name="ActiveStackEventsFile" Type="formatted" Value="" />
+
+    <BootstrapperApplication SourceFile="$(var.BootstrapperApplicationPath)">
+      <Payload SourceFile="$(var.PayloadDir)\ba\active-stack.exe" />
+      <Payload SourceFile="$(var.PayloadDir)\ba\mbanative.dll" />
+    </BootstrapperApplication>
+
+    <Chain>
+      <!-- The final bundle will call the packaged active-stack bootstrap executable
+           and delegate detect/options/install work to:
+           active-stack windows detect
+           active-stack windows options
+           active-stack windows install -->
+      <ExePackage
+        Id="ActiveStackBootstrap"
+        DisplayName="Active Stack Installer Engine"
+        SourceFile="$(var.PayloadDir)\active-stack.exe"
+        Compressed="yes"
+        PerMachine="yes"
+        Permanent="no"
+        Vital="yes"
+        InstallArguments="windows install --agent [ActiveStackAssistantId] --mode [ActiveStackInstallModeId] --windows-events-file &quot;[ActiveStackEventsFile]&quot;"
+        UninstallArguments="windows uninstall --json-stream"
+        DetectCondition="0" />
+    </Chain>
+  </Bundle>
+</Wix>

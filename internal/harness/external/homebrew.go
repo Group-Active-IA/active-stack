@@ -33,7 +33,7 @@ var binaryInstallDirFn = system.BinaryInstallDir
 // addToUserPath persists the install dir onto the user PATH; replaceable in tests.
 var addToUserPath = system.AddToUserPath
 
-func installHomebrew(ctx context.Context, h model.Harness, profile system.PlatformProfile) (Result, error) {
+func installHomebrew(ctx context.Context, h model.Harness, profile system.PlatformProfile, downloadFn DownloadEventFunc) (Result, error) {
 	pkg := h.External.Pkg
 	if pkg == "" {
 		return Result{}, fmt.Errorf("harness %q: homebrew method requires External.Pkg", h.ID)
@@ -45,7 +45,7 @@ func installHomebrew(ctx context.Context, h model.Harness, profile system.Platfo
 	}
 
 	// Fallback: download binary from GitHub Releases.
-	binaryPath, err := downloadBinary(ctx, h, profile)
+	binaryPath, err := downloadBinary(ctx, h, profile, downloadFn)
 	if err != nil {
 		return Result{}, err
 	}
@@ -67,7 +67,7 @@ func runBrew(ctx context.Context, pkg string) (Result, error) {
 // falls back to h.External.Pkg — this keeps the brew formula (Pkg) separate
 // from the GitHub repo (Repo), e.g. brew "engram" vs repo
 // "Gentleman-Programming/engram". h.External.URL may override the GitHub base.
-func downloadBinary(ctx context.Context, h model.Harness, profile system.PlatformProfile) (string, error) {
+func downloadBinary(ctx context.Context, h model.Harness, profile system.PlatformProfile, downloadFn DownloadEventFunc) (string, error) {
 	source := h.External.Repo
 	if source == "" {
 		source = h.External.Pkg
@@ -109,6 +109,14 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 
 	outPath := filepath.Join(installDir, binaryName)
 
+	if downloadFn != nil {
+		downloadFn(DownloadEvent{
+			Type:    DownloadStarted,
+			URL:     assetURL,
+			Message: fmt.Sprintf("Downloading %s.", repo),
+		})
+	}
+
 	if strings.HasSuffix(assetURL, ".zip") {
 		if err := downloadAndExtractZip(assetURL, binaryName, outPath); err != nil {
 			return "", fmt.Errorf("download %s zip: %w", repo, err)
@@ -117,6 +125,14 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 		if err := downloadAndExtractTarGz(assetURL, repo, outPath); err != nil {
 			return "", fmt.Errorf("download %s tar.gz: %w", repo, err)
 		}
+	}
+
+	if downloadFn != nil {
+		downloadFn(DownloadEvent{
+			Type:    DownloadFinished,
+			URL:     assetURL,
+			Message: fmt.Sprintf("Finished downloading %s.", repo),
+		})
 	}
 
 	// El binario quedó en installDir — en Windows eso es %LOCALAPPDATA%\active-stack\bin,
@@ -232,7 +248,6 @@ func githubToken() string {
 	}
 	return os.Getenv("GH_TOKEN")
 }
-
 
 func downloadAndExtractTarGz(url, binaryName, outPath string) error {
 	req, err := http.NewRequest(http.MethodGet, url, nil)

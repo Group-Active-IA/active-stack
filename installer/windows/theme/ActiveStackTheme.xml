@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Theme xmlns="http://wixtoolset.org/schemas/v4/thmutil">
+  <Font Id="0" Height="-12" Weight="500" Foreground="windowtext" Background="window">Segoe UI</Font>
+  <Font Id="1" Height="-24" Weight="600" Foreground="windowtext">Segoe UI</Font>
+  <Font Id="2" Height="-18" Weight="500" Foreground="windowtext">Segoe UI</Font>
+  <Font Id="3" Height="-12" Weight="400" Foreground="graytext" Background="window">Segoe UI</Font>
+
+  <Window Width="620" Height="360" HexStyle="100a0000" FontId="0" Caption="Active Stack Setup">
+    <Label X="24" Y="20" Width="-24" Height="36" FontId="1" Visible="yes" DisablePrefix="yes">Install Active Stack</Label>
+    <Label X="24" Y="58" Width="-24" Height="40" FontId="3" Visible="yes" DisablePrefix="yes">Set up your AI coding workspace in a few steps.</Label>
+
+    <Page Name="Help">
+      <Label X="24" Y="110" Width="-24" Height="28" FontId="2" DisablePrefix="yes">Need help?</Label>
+      <Label X="24" Y="145" Width="-24" Height="-60" FontId="3" DisablePrefix="yes">This installer prepares your machine, downloads the latest compatible tools online, and applies the recommended setup for Active Stack.</Label>
+      <Button Name="HelpCloseButton" X="-24" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">
+        <Text>Close</Text>
+        <CloseWindowAction />
+      </Button>
+    </Page>
+
+    <Page Name="Loading">
+      <Label X="24" Y="118" Width="-24" Height="28" FontId="2" DisablePrefix="yes">Preparing your setup</Label>
+      <Label Name="CheckingForUpdatesLabel" X="24" Y="150" Width="-24" Height="20" FontId="3" DisablePrefix="yes">Checking installer status.</Label>
+    </Page>
+
+    <Page Name="Install">
+      <Label X="24" Y="110" Width="-24" Height="28" FontId="2" DisablePrefix="yes">Ready to install</Label>
+      <Label X="24" Y="145" Width="-24" Height="54" FontId="3" DisablePrefix="yes">Active Stack installs the tools and configuration needed to get started. Some components may be downloaded during setup so you get the latest compatible versions.</Label>
+      <Label X="24" Y="212" Width="-24" Height="18" FontId="3" DisablePrefix="yes">The installer may download components during setup to keep them current.</Label>
+      <Button Name="InstallButton" X="-114" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">Install</Button>
+      <Button Name="InstallCancelButton" X="-24" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">
+        <Text>Cancel</Text>
+        <CloseWindowAction />
+      </Button>
+    </Page>
+
+    <Page Name="Options">
+      <Label X="24" Y="110" Width="-24" Height="28" FontId="2" DisablePrefix="yes">Setup location</Label>
+      <Label X="24" Y="145" Width="-24" Height="18" FontId="3" DisablePrefix="yes">Choose where the local installer files are stored.</Label>
+      <Editbox Name="InstallFolder" X="24" Y="175" Width="-124" Height="22" TabStop="yes" FontId="0" FileSystemAutoComplete="yes" />
+      <Button Name="BrowseButton" X="-24" Y="174" Width="90" Height="26" TabStop="yes" FontId="0">
+        <Text>Browse</Text>
+        <BrowseDirectoryAction VariableName="InstallFolder" />
+      </Button>
+      <Button Name="OptionsOkButton" X="-114" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">
+        <Text>Save</Text>
+        <ChangePageAction Page="Install" />
+      </Button>
+      <Button Name="OptionsCancelButton" X="-24" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">
+        <Text>Back</Text>
+        <ChangePageAction Page="Install" Cancel="yes" />
+      </Button>
+    </Page>
+
+    <Page Name="Progress">
+      <Label X="24" Y="110" Width="-24" Height="28" FontId="2" DisablePrefix="yes">Installing Active Stack</Label>
+      <Label X="24" Y="145" Width="-24" Height="20" FontId="3" DisablePrefix="yes">We are preparing your tools and applying the recommended setup.</Label>
+      <Label Name="OverallProgressPackageText" X="24" Y="178" Width="-24" Height="20" FontId="3" DisablePrefix="yes">Preparing your setup</Label>
+      <Progressbar Name="OverallCalculatedProgressbar" X="24" Y="208" Width="-24" Height="16" />
+      <Button Name="ProgressCancelButton" X="-24" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">Cancel</Button>
+    </Page>
+
+    <Page Name="Modify">
+      <Label X="24" Y="110" Width="-24" Height="28" FontId="2" DisablePrefix="yes">Active Stack is already installed</Label>
+      <Label X="24" Y="145" Width="-24" Height="36" FontId="3" DisablePrefix="yes">You can repair the current setup or remove it from this PC.</Label>
+      <Button Name="RepairButton" X="-214" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">Repair</Button>
+      <Button Name="UninstallButton" X="-114" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">Remove</Button>
+      <Button Name="ModifyCancelButton" X="-24" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">
+        <Text>Close</Text>
+        <CloseWindowAction />
+      </Button>
+    </Page>
+
+    <Page Name="Success">
+      <Label X="24" Y="110" Width="-24" Height="28" FontId="2" DisablePrefix="yes">Active Stack is ready</Label>
+      <Label X="24" Y="145" Width="-24" Height="40" FontId="3" DisablePrefix="yes">Your AI coding workspace has been prepared. You can close this installer and start using Active Stack.</Label>
+      <Button Name="LaunchButton" X="-114" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0" HideWhenDisabled="yes">Open</Button>
+      <Button Name="SuccessCloseButton" X="-24" Y="-20" Width="90" Height="26" TabStop="yes" FontId="0">
+        <Text>Close</Text>
+        <CloseWindowAction />
+      </Button>
+    </Page>
+  </Window>
+</Theme>

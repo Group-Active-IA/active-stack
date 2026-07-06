@@ -73,7 +73,7 @@ func withFakeLookPath(fn func(string) (string, error)) func() {
 
 func TestInstall_UnknownMethod(t *testing.T) {
 	h := harnessWithMethod("ftp", "something", "")
-	_, err := Install(context.Background(), h, linuxProfile(true), nil, t.TempDir())
+	_, err := Install(context.Background(), h, linuxProfile(true), nil, t.TempDir(), nil)
 	if err == nil {
 		t.Fatal("expected error for unknown method, got nil")
 	}
@@ -84,7 +84,7 @@ func TestInstall_UnknownMethod(t *testing.T) {
 
 func TestInstall_NilExternal(t *testing.T) {
 	h := model.Harness{ID: "bad", Type: model.HarnessExternal}
-	_, err := Install(context.Background(), h, linuxProfile(true), nil, t.TempDir())
+	_, err := Install(context.Background(), h, linuxProfile(true), nil, t.TempDir(), nil)
 	if err == nil {
 		t.Fatal("expected error for nil External, got nil")
 	}

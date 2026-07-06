@@ -115,6 +115,9 @@ type Options struct {
 	// OnProgress receives progress events during installation.
 	// When nil no progress events are emitted.
 	OnProgress pipeline.ProgressFunc
+	// OnDownload receives download lifecycle events from external installers.
+	// Used by the Windows GUI contract to surface richer progress.
+	OnDownload DownloadEventFunc
 	// NoSelfInstall, when true, skips the self-install step so the running
 	// binary is NOT copied into the PATH bin dir. Default (false) = self-install ON.
 	// Use --no-self-install for CI / reproducible builds (D3).
@@ -164,3 +167,12 @@ type Plan struct {
 	// pipeline.NewOrchestrator via pipeline.WithProgressFunc.
 	OnProgress pipeline.ProgressFunc
 }
+
+type DownloadEvent struct {
+	StepID  string
+	Type    string
+	URL     string
+	Message string
+}
+
+type DownloadEventFunc func(DownloadEvent)

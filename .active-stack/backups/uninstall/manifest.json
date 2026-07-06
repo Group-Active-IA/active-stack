@@ -1,10 +1,20 @@
 {
   "id": "uninstall",
-  "created_at": "2026-07-01T14:48:15.9009174Z",
+  "created_at": "2026-07-02T16:48:34.8266595Z",
   "root_dir": ".active-stack\\backups\\uninstall",
   "entries": [
     {
+      "original_path": ".codex\\config.toml",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
       "original_path": ".claude\\CLAUDE.md",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".codex\\AGENTS.md",
       "snapshot_path": "",
       "existed": false
     },
@@ -29,12 +39,22 @@
       "existed": false
     },
     {
+      "original_path": ".agents\\skills\\active-orchestrator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
       "original_path": ".config\\opencode\\skills\\active-orchestrator",
       "snapshot_path": "",
       "existed": false
     },
     {
       "original_path": ".claude\\skills\\kb-creator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".agents\\skills\\kb-creator",
       "snapshot_path": "",
       "existed": false
     },
@@ -49,6 +69,11 @@
       "existed": false
     },
     {
+      "original_path": ".agents\\skills\\roadmap-generator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
       "original_path": ".config\\opencode\\skills\\roadmap-generator",
       "snapshot_path": "",
       "existed": false
@@ -59,12 +84,22 @@
       "existed": false
     },
     {
+      "original_path": ".agents\\skills\\agent-instruction",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
       "original_path": ".config\\opencode\\skills\\agent-instruction",
       "snapshot_path": "",
       "existed": false
     },
     {
       "original_path": ".claude\\skills\\skill-registry",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".agents\\skills\\skill-registry",
       "snapshot_path": "",
       "existed": false
     },
@@ -89,12 +124,22 @@
       "existed": false
     },
     {
+      "original_path": ".agents\\skills\\find-skill",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
       "original_path": ".config\\opencode\\skills\\find-skill",
       "snapshot_path": "",
       "existed": false
     },
     {
       "original_path": ".claude\\skills\\skill-creator",
+      "snapshot_path": "",
+      "existed": false
+    },
+    {
+      "original_path": ".agents\\skills\\skill-creator",
       "snapshot_path": "",
       "existed": false
     },

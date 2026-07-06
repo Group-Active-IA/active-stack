@@ -14,6 +14,22 @@ type Result struct {
 	AlreadyInstalled bool
 }
 
+type DownloadEventType string
+
+const (
+	DownloadStarted  DownloadEventType = "download_started"
+	DownloadProgress DownloadEventType = "download_progress"
+	DownloadFinished DownloadEventType = "download_finished"
+)
+
+type DownloadEvent struct {
+	Type    DownloadEventType
+	URL     string
+	Message string
+}
+
+type DownloadEventFunc func(DownloadEvent)
+
 // MCPStrategy controls how MCP server entries are injected into an agent config.
 type MCPStrategy int
 

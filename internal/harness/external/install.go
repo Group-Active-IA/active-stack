@@ -23,6 +23,7 @@ func Install(
 	profile system.PlatformProfile,
 	adapters []AgentAdapter,
 	homeDir string,
+	downloadFn DownloadEventFunc,
 ) (Result, error) {
 	if h.External == nil {
 		return Result{}, fmt.Errorf("harness %q has no External config", h.ID)
@@ -36,7 +37,7 @@ func Install(
 		}
 		return maybeRegisterStdioMCP(result, h, adapters, homeDir)
 	case "homebrew":
-		result, err := installHomebrew(ctx, h, profile)
+		result, err := installHomebrew(ctx, h, profile, downloadFn)
 		if err != nil {
 			return Result{}, err
 		}

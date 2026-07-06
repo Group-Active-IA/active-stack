@@ -11,6 +11,7 @@ import (
 
 	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
 
 // ParsedFlags is the result of parsing the install sub-command flags.
@@ -45,6 +46,20 @@ type ParsedFlags struct {
 	// install.WithEmbeddedSkillsFS into opts before calling install.BuildPlan.
 	// Tests leave it nil to use the default install.BuildPlan directly.
 	BuildPlanFn func(cat install.Catalog, intent install.Intent, opts install.Options) (install.Plan, error)
+
+	// ProgressEventFn, when non-nil, receives raw pipeline progress events from
+	// RunHeadless. This is used by the Windows GUI contract to expose structured
+	// step lifecycle events without parsing plaintext output.
+	ProgressEventFn func(pipeline.ProgressEvent)
+	// DownloadEventFn, when non-nil, receives structured download lifecycle
+	// events emitted by external installers.
+	DownloadEventFn func(install.DownloadEvent)
+
+	// WindowsEventsFile, when non-empty, receives the same line-delimited JSON
+	// stream as stdout for `active-stack windows install`. This lets a native
+	// Windows bundle UI consume detailed progress while Burn owns the package
+	// execution lifecycle.
+	WindowsEventsFile string
 
 	// ── C-29 starter add fields ───────────────────────────────────────────────
 
@@ -100,6 +115,7 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 		yShort        bool
 		home          string
 		noSelfInstall bool
+		windowsEventsFile string
 	)
 
 	fs.BoolVar(&headless, "headless", false, "non-interactive install; implied by --mode or --agent")
@@ -111,6 +127,7 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 	fs.BoolVar(&yShort, "y", false, "alias for --yes")
 	fs.StringVar(&home, "home", "", "override home directory (default: os.UserHomeDir())")
 	fs.BoolVar(&noSelfInstall, "no-self-install", false, "skip copying the running binary into the PATH bin dir (CI / reproducible builds)")
+	fs.StringVar(&windowsEventsFile, "windows-events-file", "", "internal: write windows install JSON events to this file")
 
 	if err := fs.Parse(args); err != nil {
 		return ParsedFlags{}, err
@@ -190,6 +207,7 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 		Yes:           yes,
 		HomeDir:       homeDir,
 		NoSelfInstall: noSelfInstall,
+		WindowsEventsFile: windowsEventsFile,
 		Intent: install.Intent{
 			Mode:   installMode,
 			Agents: agents,

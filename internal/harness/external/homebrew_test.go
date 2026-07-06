@@ -67,16 +67,16 @@ func TestNormalizeArch(t *testing.T) {
 
 func TestBuildAssetURL(t *testing.T) {
 	tests := []struct {
-		name        string
-		baseURL     string
-		owner       string
-		repo        string
-		version     string
-		goos        string
-		goarch      string
-		wantURL     string
-		wantSuffix  string // checked when wantURL is empty
-		wantNoDouble bool  // true: assert no double-underscore in filename
+		name         string
+		baseURL      string
+		owner        string
+		repo         string
+		version      string
+		goos         string
+		goarch       string
+		wantURL      string
+		wantSuffix   string // checked when wantURL is empty
+		wantNoDouble bool   // true: assert no double-underscore in filename
 	}{
 		{
 			name:    "linux amd64 tar.gz",
@@ -197,7 +197,7 @@ func TestDownloadBinary_EmptyProfileOS(t *testing.T) {
 	// pipeline was doing in externalStep.Run() before the fix.
 	profile := system.PlatformProfile{} // OS intentionally empty
 
-	_, err := downloadBinary(nil, h, profile)
+	_, err := downloadBinary(nil, h, profile, nil)
 	if err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
@@ -254,7 +254,7 @@ func TestDownloadBinary_TarGz(t *testing.T) {
 	h := harnessWithMethod("homebrew", "engram", "")
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	outPath, err := downloadBinary(nil, h, profile)
+	outPath, err := downloadBinary(nil, h, profile, nil)
 	if err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
@@ -300,7 +300,7 @@ func TestDownloadBinary_Zip(t *testing.T) {
 	h := harnessWithMethod("homebrew", "engram", "")
 	profile := system.PlatformProfile{OS: "windows", PackageManager: "winget"}
 
-	outPath, err := downloadBinary(nil, h, profile)
+	outPath, err := downloadBinary(nil, h, profile, nil)
 	if err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
@@ -359,7 +359,7 @@ func TestDownloadBinary_SkipsNonSemverLatestRelease(t *testing.T) {
 	h.External.Repo = "Gentleman-Programming/engram"
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	outPath, err := downloadBinary(nil, h, profile)
+	outPath, err := downloadBinary(nil, h, profile, nil)
 	if err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
@@ -414,7 +414,7 @@ func TestDownloadBinary_APIError(t *testing.T) {
 	h := harnessWithMethod("homebrew", "engram", "")
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	_, err := downloadBinary(nil, h, profile)
+	_, err := downloadBinary(nil, h, profile, nil)
 	if err == nil {
 		t.Fatal("expected error for API 404, got nil")
 	}
@@ -456,7 +456,7 @@ func TestDownloadBinary_UsesRepoOverPkg(t *testing.T) {
 	h.External.Repo = "Gentleman-Programming/engram"
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	if _, err := downloadBinary(nil, h, profile); err != nil {
+	if _, err := downloadBinary(nil, h, profile, nil); err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
 	if !strings.Contains(gotAPIPath, "Gentleman-Programming/engram") {
@@ -503,7 +503,7 @@ func TestDownloadBinary_AddsInstallDirToPath(t *testing.T) {
 	h := harnessWithMethod("homebrew", "engram", "")
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	if _, err := downloadBinary(nil, h, profile); err != nil {
+	if _, err := downloadBinary(nil, h, profile, nil); err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
 	if gotDir != installDir {
@@ -523,7 +523,7 @@ func TestInstallHomebrew_UsesBrewWhenAvailable(t *testing.T) {
 	h := harnessWithMethod("homebrew", "engram", "")
 	profile := system.PlatformProfile{OS: "darwin", PackageManager: "brew"}
 
-	result, err := installHomebrew(nil, h, profile)
+	result, err := installHomebrew(nil, h, profile, nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

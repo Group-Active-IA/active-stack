@@ -1,0 +1,107 @@
+using ActiveStack.Bootstrapper.Core;
+using Xunit;
+
+namespace ActiveStack.Bootstrapper.Core.Tests;
+
+public sealed class InstallerSessionStateBuilderTests
+{
+    [Fact]
+    public void BuildFromJson_MapsDetectedAgentsIntoAssistantChoices()
+    {
+        const string detectJson = """
+        {
+          "detected_agents": ["claude", "codex"]
+        }
+        """;
+
+        const string optionsJson = """
+        {
+          "modes": [
+            { "id": "lite", "label": "Quick", "description": "Fast setup to start working right away." },
+            { "id": "full", "label": "Complete", "description": "Full recommended setup with all key tools." },
+            { "id": "custom", "label": "Custom", "description": "Choose exactly what to install." }
+          ],
+          "forced_components": [],
+          "custom_components": []
+        }
+        """;
+
+        var state = InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
+
+        Assert.Collection(
+            state.AssistantChoices,
+            first => Assert.Equal("claude", first.Id),
+            second => Assert.Equal("codex", second.Id));
+        Assert.Equal("claude", state.DefaultAssistantId);
+    }
+
+    [Fact]
+    public void BuildFromJson_MapsModesAndForcedComponentsIntoUiSummary()
+    {
+        const string detectJson = """
+        {
+          "detected_agents": ["claude"]
+        }
+        """;
+
+        const string optionsJson = """
+        {
+          "modes": [
+            { "id": "lite", "label": "Quick", "description": "Fast setup to start working right away." },
+            { "id": "full", "label": "Complete", "description": "Full recommended setup with all key tools." },
+            { "id": "custom", "label": "Custom", "description": "Choose exactly what to install." }
+          ],
+          "forced_components": [
+            { "id": "permissions", "label": "Basic protection", "description": "Helps avoid unsafe changes." }
+          ],
+          "custom_components": [
+            { "id": "openspec", "label": "OpenSpec", "description": "Plan and organize changes.", "recommended": true }
+          ]
+        }
+        """;
+
+        var state = InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
+
+        Assert.Equal("full", state.RecommendedModeId);
+        Assert.Collection(
+            state.InstallTypeChoices,
+            first => Assert.Equal("Quick", first.Label),
+            second => Assert.Equal("Complete", second.Label),
+            third => Assert.Equal("Custom", third.Label));
+        Assert.Single(state.ForcedComponents);
+        Assert.Equal("Basic protection", state.ForcedComponents[0].Label);
+        Assert.Single(state.CustomComponents);
+        Assert.True(state.CustomComponents[0].Recommended);
+    }
+
+    [Fact]
+    public void BuildFromJson_RemovesForcedComponentsFromOptionalSummary()
+    {
+        const string detectJson = """
+        {
+          "detected_agents": ["claude"]
+        }
+        """;
+
+        const string optionsJson = """
+        {
+          "modes": [
+            { "id": "full", "label": "Complete", "description": "Full recommended setup with all key tools." }
+          ],
+          "forced_components": [
+            { "id": "permissions", "label": "Basic protection", "description": "Helps avoid unsafe changes." }
+          ],
+          "custom_components": [
+            { "id": "permissions", "label": "Basic protection", "description": "Helps avoid unsafe changes." },
+            { "id": "openspec", "label": "OpenSpec", "description": "Plan and organize changes.", "recommended": true }
+          ]
+        }
+        """;
+
+        var state = InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
+
+        Assert.Single(state.ForcedComponents);
+        Assert.Single(state.CustomComponents);
+        Assert.Equal("openspec", state.CustomComponents[0].Id);
+    }
+}

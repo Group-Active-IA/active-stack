@@ -471,10 +471,11 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 	switch h.Type {
 	case model.HarnessExternal:
 		return &externalStep{
-			h:        h,
-			adapters: stepAdapters,
-			homeDir:  effectiveBase,
-			profile:  opts.Profile,
+			h:          h,
+			adapters:   stepAdapters,
+			homeDir:    effectiveBase,
+			profile:    opts.Profile,
+			onDownload: opts.OnDownload,
 		}, nil
 
 	case model.HarnessSkill:

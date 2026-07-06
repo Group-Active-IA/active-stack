@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
-	extinstaller "github.com/Group-Active-IA/active-stack/internal/harness/external"
+	cmdinstaller "github.com/Group-Active-IA/active-stack/internal/harness/command"
 	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
 	perminstaller "github.com/Group-Active-IA/active-stack/internal/harness/config/permissions"
+	extinstaller "github.com/Group-Active-IA/active-stack/internal/harness/external"
 	skillinstaller "github.com/Group-Active-IA/active-stack/internal/harness/skill"
-	cmdinstaller "github.com/Group-Active-IA/active-stack/internal/harness/command"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 	"github.com/Group-Active-IA/active-stack/internal/system"
@@ -55,24 +55,38 @@ var externalInstallFn = func(
 	profile system.PlatformProfile,
 	adapters []extinstaller.AgentAdapter,
 	homeDir string,
+	downloadFn extinstaller.DownloadEventFunc,
 ) (extinstaller.Result, error) {
-	return extinstaller.Install(ctx, h, profile, adapters, homeDir)
+	return extinstaller.Install(ctx, h, profile, adapters, homeDir, downloadFn)
 }
 
 type externalStep struct {
-	h        model.Harness
-	adapters []AgentAdapter
-	homeDir  string
-	profile  system.PlatformProfile
-	manifest *backup.Manifest
+	h          model.Harness
+	adapters   []AgentAdapter
+	homeDir    string
+	profile    system.PlatformProfile
+	manifest   *backup.Manifest
+	onDownload DownloadEventFunc
 }
 
-func (s *externalStep) ID() string { return "external:" + s.h.ID }
+func (s *externalStep) ID() string                     { return "external:" + s.h.ID }
 func (s *externalStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *externalStep) Run() error {
 	ext := toExternalAdapters(s.adapters)
-	_, err := externalInstallFn(context.Background(), s.h, s.profile, ext, s.homeDir)
+	var downloadFn extinstaller.DownloadEventFunc
+	if s.onDownload != nil {
+		stepID := s.ID()
+		downloadFn = func(ev extinstaller.DownloadEvent) {
+			s.onDownload(DownloadEvent{
+				StepID:  stepID,
+				Type:    string(ev.Type),
+				URL:     ev.URL,
+				Message: ev.Message,
+			})
+		}
+	}
+	_, err := externalInstallFn(context.Background(), s.h, s.profile, ext, s.homeDir, downloadFn)
 	return err
 }
 
@@ -102,22 +116,22 @@ var skillInstallFn = func(
 }
 
 type skillStep struct {
-	h           model.Harness
-	adapters    []AgentAdapter
-	homeDir     string
-	backupDir   string
-	embeddedFS  fs.FS
-	runner      skillRunner
-	manifest    *backup.Manifest
+	h          model.Harness
+	adapters   []AgentAdapter
+	homeDir    string
+	backupDir  string
+	embeddedFS fs.FS
+	runner     skillRunner
+	manifest   *backup.Manifest
 	// bestEffort mirrors h.BestEffort: when true a Run() failure is soft
 	// (warning emitted, nil returned) so the pipeline does not abort/rollback.
-	bestEffort  bool
+	bestEffort bool
 	// onProgress is the optional progress callback forwarded from Options.
 	// When non-nil it receives a warning ProgressEvent on best-effort failure.
-	onProgress  pipeline.ProgressFunc
+	onProgress pipeline.ProgressFunc
 }
 
-func (s *skillStep) ID() string { return "skill:" + s.h.ID }
+func (s *skillStep) ID() string                     { return "skill:" + s.h.ID }
 func (s *skillStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *skillStep) Run() error {
@@ -174,7 +188,7 @@ type configStep struct {
 	manifest *backup.Manifest
 }
 
-func (s *configStep) ID() string { return "config:" + s.h.ID }
+func (s *configStep) ID() string                     { return "config:" + s.h.ID }
 func (s *configStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *configStep) Run() error {
@@ -212,7 +226,7 @@ type permissionsStep struct {
 	manifest *backup.Manifest
 }
 
-func (s *permissionsStep) ID() string { return "permissions:" + s.h.ID }
+func (s *permissionsStep) ID() string                     { return "permissions:" + s.h.ID }
 func (s *permissionsStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *permissionsStep) Run() error {
@@ -275,7 +289,7 @@ type mcpWriteStep struct {
 	manifest   *backup.Manifest
 }
 
-func (s *mcpWriteStep) ID() string                    { return s.id }
+func (s *mcpWriteStep) ID() string                     { return s.id }
 func (s *mcpWriteStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *mcpWriteStep) Run() error {
@@ -362,14 +376,14 @@ var commandInstallFn = func(
 var embeddedCommandsFS fs.FS
 
 type commandStep struct {
-	h        model.Harness
-	adapters []AgentAdapter
-	homeDir  string
+	h         model.Harness
+	adapters  []AgentAdapter
+	homeDir   string
 	backupDir string
-	manifest *backup.Manifest
+	manifest  *backup.Manifest
 }
 
-func (s *commandStep) ID() string                    { return "command:" + s.h.ID }
+func (s *commandStep) ID() string                     { return "command:" + s.h.ID }
 func (s *commandStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *commandStep) Run() error {

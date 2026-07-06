@@ -202,8 +202,8 @@ func TestInstallMCP_NoBackupWhenFileAbsent(t *testing.T) {
 	defer func() { snapshotterCreate = origSnap }()
 
 	h := model.Harness{
-		ID:   "context7",
-		Type: model.HarnessExternal,
+		ID:       "context7",
+		Type:     model.HarnessExternal,
 		External: &model.External{Method: "mcp", URL: "https://mcp.context7.com"},
 	}
 	adapter := &fakeAdapter{
@@ -713,7 +713,7 @@ func TestInstall_Homebrew_WithMCP_BinaryAndMCPWritten(t *testing.T) {
 	// Override to a brew profile.
 	profile.PackageManager = "brew"
 
-	result, err := Install(context.Background(), h, profile, adapters, homeDir)
+	result, err := Install(context.Background(), h, profile, adapters, homeDir, nil)
 	if err != nil {
 		t.Fatalf("Install failed: %v", err)
 	}
@@ -762,7 +762,7 @@ func TestInstall_Homebrew_NoMCP_UnchangedBehavior(t *testing.T) {
 	profile := linuxProfile(true)
 	profile.PackageManager = "brew"
 
-	result, err := Install(context.Background(), h, profile, nil, homeDir)
+	result, err := Install(context.Background(), h, profile, nil, homeDir, nil)
 	if err != nil {
 		t.Fatalf("Install failed: %v", err)
 	}
@@ -796,7 +796,7 @@ func TestInstall_MCP_Remote_Unchanged(t *testing.T) {
 		&fakeAdapter{agent: model.AgentOpenCode, configPath: configPath, strategy: StrategyMergeIntoSettings},
 	}
 
-	_, err := Install(context.Background(), h, linuxProfile(true), adapters, homeDir)
+	_, err := Install(context.Background(), h, linuxProfile(true), adapters, homeDir, nil)
 	if err != nil {
 		t.Fatalf("Install (remote MCP) failed: %v", err)
 	}
