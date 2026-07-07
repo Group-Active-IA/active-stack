@@ -46,10 +46,18 @@ finally {
     Pop-Location
 }
 
-$nugetRoot = Join-Path $env:USERPROFILE ".nuget\packages"
-$mbaNativeSource = Join-Path $nugetRoot "wixtoolset.bootstrapperapplicationapi\6.0.2\runtimes\win-x64\native\mbanative.dll"
+# The BA API package version comes from the Host csproj so the two never drift.
+[xml]$hostProjXml = Get-Content $bootstrapperProject
+$baApiVersion = ($hostProjXml.Project.ItemGroup.PackageReference |
+    Where-Object { $_.Include -eq "WixToolset.BootstrapperApplicationApi" }).Version
+if (-not $baApiVersion) {
+    throw "PackageReference WixToolset.BootstrapperApplicationApi not found in $bootstrapperProject"
+}
+
+$nugetRoot = if ($env:NUGET_PACKAGES) { $env:NUGET_PACKAGES } else { Join-Path $env:USERPROFILE ".nuget\packages" }
+$mbaNativeSource = Join-Path $nugetRoot "wixtoolset.bootstrapperapplicationapi\$baApiVersion\runtimes\win-x64\native\mbanative.dll"
 if (-not (Test-Path $mbaNativeSource)) {
-    throw "Required WiX native BA support file not found at $mbaNativeSource"
+    throw "Required WiX native BA support file not found at $mbaNativeSource (package version $baApiVersion from the Host csproj)"
 }
 
 Copy-Item -LiteralPath $mbaNativeSource -Destination $mbaNativeDll -Force
