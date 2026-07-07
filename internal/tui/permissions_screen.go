@@ -8,28 +8,14 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
-// tierCapableAgents is the single source of truth for agents that can
-// meaningfully differentiate the three permission tiers (claude and opencode).
-// When a future agent gains a deny-list or equivalent, add it here and the
-// ScreenPermissions will appear automatically.
-//
-// D8 (design.md): agents NOT in this set get ScreenPermissions skipped for them;
-// the intent still carries the zero-value tier (normalized to TierBalanceado).
-var tierCapableAgents = map[model.Agent]bool{
-	model.AgentClaude:    true,
-	model.AgentOpenCode:  true,
-	model.AgentCodex:     true,
-}
-
 // anyTierCapable returns true when at least one agent in the set is tier-capable.
-// It is a pure function of the agent set — deterministic and testable in both directions.
+// It delegates to model.TierCapable, the single source of truth shared with
+// the windows options command (D4, design.md), so the two paths cannot diverge.
+//
+// D8 (design.md): agents NOT tier-capable get ScreenPermissions skipped for them;
+// the intent still carries the zero-value tier (normalized to TierBalanceado).
 func anyTierCapable(agents []model.Agent) bool {
-	for _, a := range agents {
-		if tierCapableAgents[a] {
-			return true
-		}
-	}
-	return false
+	return model.TierCapable(agents)
 }
 
 // tierOrder defines the display order of permission tiers in ScreenPermissions.

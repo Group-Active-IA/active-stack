@@ -47,59 +47,7 @@ func runStarterAdd(
 	buildPlanFn func(install.Catalog, install.Intent, install.Options) (install.Plan, error),
 	w io.Writer,
 ) int {
-	// 1. Look up the starter by id; error with available list if unknown.
-	starter, ok := cat.StarterByID(flags.StarterID)
-	if !ok {
-		allStarters := cat.AllStarters()
-		available := make([]string, 0, len(allStarters))
-		for _, s := range allStarters {
-			available = append(available, s.ID)
-		}
-		fmt.Fprintf(w, "error: unknown starter %q. Available starters: %s\n",
-			flags.StarterID, strings.Join(available, ", "))
-		return 1
-	}
-
-	// 2. Resolve harnesses via ResolveStarter (expands includes, dedup, stable order).
-	harnesses, err := cat.ResolveStarter(flags.StarterID)
-	if err != nil {
-		fmt.Fprintf(w, "error: resolve starter %q: %v\n", flags.StarterID, err)
-		return 1
-	}
-
-	// 3. Aggregate MCPs across includes (D3a).
-	mcps, err := cat.ResolveStarterMCPs(flags.StarterID)
-	if err != nil {
-		fmt.Fprintf(w, "error: resolve starter MCPs for %q: %v\n", flags.StarterID, err)
-		return 1
-	}
-
-	// 4. Build an effective starter that carries the fully aggregated MCP list
-	// (root + includes, deduped by name). This is the value stored in
-	// Options.Starter and consumed by BuildPlan to emit MCP write steps.
-	effectiveStarter := &model.Starter{
-		ID:          starter.ID,
-		Name:        starter.Name,
-		Description: starter.Description,
-		Harnesses:   starter.Harnesses,
-		Includes:    starter.Includes,
-		MCPs:        mcps,
-	}
-
-	// 5. Derive harness ids from the resolved harness set.
-	harnessIDs := make([]string, 0, len(harnesses))
-	for _, h := range harnesses {
-		harnessIDs = append(harnessIDs, h.ID)
-	}
-
-	// 6. Build install.Intent (Custom mode, resolved harness ids, focal agents).
-	intent := install.Intent{
-		Mode:   model.ModeCustom,
-		Custom: harnessIDs,
-		Agents: flags.Agents,
-	}
-
-	// 7. Wire BuildPlanFn: inject SkillsFS and a no-op verify hook when no override
+	// Wire BuildPlanFn: inject SkillsFS and a no-op verify hook when no override
 	// is provided. The real verify hook (with agent adapters) is wired by the
 	// production call site in main.go; tests that pass nil get a safe no-op.
 	if buildPlanFn == nil {
@@ -114,23 +62,15 @@ func runStarterAdd(
 		}
 	}
 
-	// 8. Build ParsedFlags for RunHeadless (reuses existing headless path — D5-A).
-	// HomeDir is intentionally empty for project-target installs: RunHeadless
-	// falls back to os.UserHomeDir() for any machine-level dependency check, but
-	// the install paths resolve from ProjectRoot (via Target=Project in Options).
-	params := headless.ParsedFlags{
-		TUI:         false,
-		DryRun:      flags.DryRun,
-		Yes:         flags.Yes,
-		HomeDir:     "",
-		Target:      model.Project,
-		ProjectRoot: flags.ProjectPath,
-		Starter:     effectiveStarter,
-		Intent:      intent,
-		BuildPlanFn: buildPlanFn,
+	// Build ParsedFlags via the shared helper (resolve starter, harnesses,
+	// MCPs, effective starter, intent) — reused by "windows starters install".
+	params, err := headless.BuildStarterInstallParams(flags, cat, buildPlanFn)
+	if err != nil {
+		fmt.Fprintf(w, "error: %v\n", err)
+		return 1
 	}
 
-	// 9. Execute via RunHeadless (gate + snapshot + orchestrator + rollback + dry-run).
+	// Execute via RunHeadless (gate + snapshot + orchestrator + rollback + dry-run).
 	exitCode := headless.RunHeadless(params, cat, reg, w)
 	if exitCode == 0 && !flags.DryRun {
 		fmt.Fprintf(w, "\nStarter %q applied to %s (agents: %s)\n",

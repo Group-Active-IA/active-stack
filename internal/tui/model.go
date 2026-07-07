@@ -262,8 +262,10 @@ func (m Model) handleKey(key tea.KeyMsg) (tea.Model, tea.Cmd) {
 			if m.Selection.Mode == model.ModeCustom {
 				// Populate harness list from catalog.
 				if m.deps.Catalog != nil {
-					all := m.deps.Catalog.ForMode(model.ModeCustom)
-					m.AvailableHarnesses = filterHarnessesByAgents(all, m.Selection.Agents)
+					// D5 (windows-contract-tier-multiagent): route through the
+					// shared install.CustomPickerHarnesses so the TUI Custom
+					// picker and the Windows options contract can never diverge.
+					m.AvailableHarnesses = install.CustomPickerHarnesses(m.deps.Catalog, m.Selection.Agents)
 					// C-21: permissions es security-first — no desactivable en
 					// Custom. Lo pre-seleccionamos para que arranque marcado y el
 					// usuario vea que se instala siempre.

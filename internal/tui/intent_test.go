@@ -94,47 +94,7 @@ func TestAvailableAgentsEmptyDetected(t *testing.T) {
 	}
 }
 
-// TestFilterHarnessesByAgents verifies catalog harness filtering by selected agents.
-func TestFilterHarnessesByAgents(t *testing.T) {
-	harnesses := []model.Harness{
-		{ID: "all-agents", Agents: nil}, // empty = all agents
-		{ID: "claude-only", Agents: []model.Agent{model.AgentClaude}},
-		{ID: "opencode-only", Agents: []model.Agent{model.AgentOpenCode}},
-	}
-
-	tests := []struct {
-		name     string
-		agents   []model.Agent
-		wantIDs  []string
-	}{
-		{
-			name:    "claude selected",
-			agents:  []model.Agent{model.AgentClaude},
-			wantIDs: []string{"all-agents", "claude-only"},
-		},
-		{
-			name:    "opencode selected",
-			agents:  []model.Agent{model.AgentOpenCode},
-			wantIDs: []string{"all-agents", "opencode-only"},
-		},
-		{
-			name:    "both selected",
-			agents:  []model.Agent{model.AgentClaude, model.AgentOpenCode},
-			wantIDs: []string{"all-agents", "claude-only", "opencode-only"},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got := filterHarnessesByAgents(harnesses, tt.agents)
-			if len(got) != len(tt.wantIDs) {
-				t.Fatalf("len = %d, want %d", len(got), len(tt.wantIDs))
-			}
-			for i, h := range got {
-				if h.ID != tt.wantIDs[i] {
-					t.Errorf("[%d] ID = %q, want %q", i, h.ID, tt.wantIDs[i])
-				}
-			}
-		})
-	}
-}
+// Harness filtering by selected agents for the Custom picker is now covered by
+// TestCustomPickerHarnesses in internal/install/custom_picker_test.go — the
+// TUI delegates to install.CustomPickerHarnesses (design D5,
+// windows-contract-tier-multiagent) instead of a local duplicate.

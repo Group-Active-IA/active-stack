@@ -59,7 +59,7 @@ func TestRunWindowsOptions_JSON(t *testing.T) {
 	}}
 
 	var out bytes.Buffer
-	if err := headless.RunWindowsOptions(cat, model.AgentClaude, &out); err != nil {
+	if err := headless.RunWindowsOptions(cat, []model.Agent{model.AgentClaude}, &out); err != nil {
 		t.Fatalf("RunWindowsOptions() error = %v", err)
 	}
 
@@ -91,6 +91,226 @@ func TestRunWindowsOptions_JSON(t *testing.T) {
 	if containsComponent(resp.CustomComponents, "permissions") {
 		t.Fatalf("custom_components = %+v, did not expect permissions duplicate", resp.CustomComponents)
 	}
+}
+
+// TestRunWindowsOptions_MultiAgentUnionDeduped verifies that RunWindowsOptions
+// accepts multiple agents and that a harness available to more than one of the
+// requested agents appears exactly once in the response (no duplicate entries).
+func TestRunWindowsOptions_MultiAgentUnionDeduped(t *testing.T) {
+	cat := &fakeExecCatalog{harnesses: []model.Harness{
+		{ID: "permissions", Name: "Permissions", Description: "Safe defaults", InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull}, Agents: []model.Agent{model.AgentClaude, model.AgentOpenCode}},
+	}}
+
+	var out bytes.Buffer
+	if err := headless.RunWindowsOptions(cat, []model.Agent{model.AgentClaude, model.AgentOpenCode}, &out); err != nil {
+		t.Fatalf("RunWindowsOptions() error = %v", err)
+	}
+
+	var resp struct {
+		ForcedComponents []struct {
+			ID string `json:"id"`
+		} `json:"forced_components"`
+		CustomComponents []struct {
+			ID string `json:"id"`
+		} `json:"custom_components"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal options json: %v\nbody=%s", err, out.String())
+	}
+
+	count := 0
+	for _, c := range resp.ForcedComponents {
+		if c.ID == "permissions" {
+			count++
+		}
+	}
+	for _, c := range resp.CustomComponents {
+		if c.ID == "permissions" {
+			count++
+		}
+	}
+	if count != 1 {
+		t.Fatalf("permissions harness appears %d times across forced+custom components, want exactly 1: %+v / %+v", count, resp.ForcedComponents, resp.CustomComponents)
+	}
+}
+
+// TestRunWindowsOptions_CustomComponentsNonEmpty verifies that custom_components
+// is populated with real selectable harnesses (design D5): RunWindowsOptions must
+// source the picker universe from install.CustomPickerHarnesses (catalog ForMode
+// filtered by agents), not from install.SelectHarnesses with an empty Custom
+// intent (which structurally only ever returns the forced permissions harness).
+func TestRunWindowsOptions_CustomComponentsNonEmpty(t *testing.T) {
+	cat := &fakeExecCatalog{harnesses: []model.Harness{
+		{ID: "openspec", Name: "OpenSpec", Description: "Specs CLI", InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull}, Agents: []model.Agent{model.AgentClaude}},
+		{ID: "permissions", Name: "Permissions", Description: "Safe defaults", InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull}, Agents: []model.Agent{model.AgentClaude}},
+	}}
+
+	var out bytes.Buffer
+	if err := headless.RunWindowsOptions(cat, []model.Agent{model.AgentClaude}, &out); err != nil {
+		t.Fatalf("RunWindowsOptions() error = %v", err)
+	}
+
+	var resp struct {
+		ForcedComponents []struct {
+			ID string `json:"id"`
+		} `json:"forced_components"`
+		CustomComponents []struct {
+			ID string `json:"id"`
+		} `json:"custom_components"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal options json: %v\nbody=%s", err, out.String())
+	}
+
+	if len(resp.CustomComponents) == 0 {
+		t.Fatal("custom_components is empty, want at least the non-permissions harness")
+	}
+	if !containsComponent(resp.CustomComponents, "openspec") {
+		t.Fatalf("custom_components = %+v, want to contain openspec", resp.CustomComponents)
+	}
+	if containsComponent(resp.CustomComponents, "permissions") {
+		t.Fatalf("custom_components = %+v, did not expect permissions", resp.CustomComponents)
+	}
+	if !containsComponent(resp.ForcedComponents, "permissions") {
+		t.Fatalf("forced_components = %+v, want permissions", resp.ForcedComponents)
+	}
+}
+
+// TestRunWindowsOptions_CustomComponentsUnionDeduped triangulates
+// CustomComponentsNonEmpty: a harness shared by two requested agents must
+// appear exactly once in custom_components (union-dedup, same rule as
+// forced/custom D2), and the recommended flag must reflect InMode(lite/full)
+// vs. a Custom-only harness.
+func TestRunWindowsOptions_CustomComponentsUnionDeduped(t *testing.T) {
+	cat := &fakeExecCatalog{harnesses: []model.Harness{
+		{ID: "shared-h", Name: "Shared", InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull}, Agents: []model.Agent{model.AgentClaude, model.AgentOpenCode}},
+		{ID: "custom-only-h", Name: "Custom Only", InstallModes: []model.InstallMode{}, Agents: []model.Agent{model.AgentClaude}},
+		{ID: "permissions", Name: "Permissions", InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull}, Agents: []model.Agent{model.AgentClaude, model.AgentOpenCode}},
+	}}
+
+	var out bytes.Buffer
+	if err := headless.RunWindowsOptions(cat, []model.Agent{model.AgentClaude, model.AgentOpenCode}, &out); err != nil {
+		t.Fatalf("RunWindowsOptions() error = %v", err)
+	}
+
+	var resp struct {
+		CustomComponents []struct {
+			ID          string `json:"id"`
+			Recommended bool   `json:"recommended"`
+		} `json:"custom_components"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal options json: %v\nbody=%s", err, out.String())
+	}
+
+	count := 0
+	var sharedRecommended, customOnlyRecommended bool
+	var foundCustomOnly bool
+	for _, c := range resp.CustomComponents {
+		if c.ID == "shared-h" {
+			count++
+			sharedRecommended = c.Recommended
+		}
+		if c.ID == "custom-only-h" {
+			foundCustomOnly = true
+			customOnlyRecommended = c.Recommended
+		}
+	}
+	if count != 1 {
+		t.Fatalf("shared-h appears %d times in custom_components, want exactly 1: %+v", count, resp.CustomComponents)
+	}
+	if !sharedRecommended {
+		t.Error("shared-h (lite+full) recommended = false, want true")
+	}
+	if !foundCustomOnly {
+		t.Fatalf("custom_components = %+v, want to contain custom-only-h", resp.CustomComponents)
+	}
+	if customOnlyRecommended {
+		t.Error("custom-only-h (Custom-only) recommended = true, want false")
+	}
+}
+
+// TestRunWindowsOptions_TierMetadata verifies the additive tier metadata
+// fields: tier_capable, tier_capable_agents, and permission_tiers.
+func TestRunWindowsOptions_TierMetadata(t *testing.T) {
+	cat := &fakeExecCatalog{harnesses: []model.Harness{
+		{ID: "permissions", Name: "Permissions", Description: "Safe defaults", InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull}, Agents: []model.Agent{model.AgentClaude, model.AgentGemini}},
+	}}
+
+	type tierMetadataResp struct {
+		TierCapable       bool     `json:"tier_capable"`
+		TierCapableAgents []string `json:"tier_capable_agents"`
+		PermissionTiers   []struct {
+			ID      string `json:"id"`
+			Label   string `json:"label"`
+			Default bool   `json:"default"`
+		} `json:"permission_tiers"`
+	}
+
+	t.Run("claude is tier-capable", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := headless.RunWindowsOptions(cat, []model.Agent{model.AgentClaude}, &out); err != nil {
+			t.Fatalf("RunWindowsOptions() error = %v", err)
+		}
+		var resp tierMetadataResp
+		if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+			t.Fatalf("unmarshal options json: %v\nbody=%s", err, out.String())
+		}
+		if !resp.TierCapable {
+			t.Error("tier_capable = false, want true for claude")
+		}
+		if len(resp.PermissionTiers) != 3 {
+			t.Fatalf("permission_tiers len = %d, want 3", len(resp.PermissionTiers))
+		}
+		foundDefault := false
+		for _, pt := range resp.PermissionTiers {
+			if pt.ID == "balanceado" {
+				if !pt.Default {
+					t.Error("balanceado tier must be marked default: true")
+				}
+				foundDefault = true
+			} else if pt.Default {
+				t.Errorf("tier %q must not be marked default", pt.ID)
+			}
+		}
+		if !foundDefault {
+			t.Error("balanceado tier not found in permission_tiers")
+		}
+		if !contains(resp.TierCapableAgents, "claude") {
+			t.Errorf("tier_capable_agents = %v, want to contain claude", resp.TierCapableAgents)
+		}
+	})
+
+	t.Run("gemini is not tier-capable", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := headless.RunWindowsOptions(cat, []model.Agent{model.AgentGemini}, &out); err != nil {
+			t.Fatalf("RunWindowsOptions() error = %v", err)
+		}
+		var resp tierMetadataResp
+		if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+			t.Fatalf("unmarshal options json: %v\nbody=%s", err, out.String())
+		}
+		if resp.TierCapable {
+			t.Error("tier_capable = true, want false for gemini-only")
+		}
+	})
+
+	t.Run("claude+gemini is tier-capable with only claude in tier_capable_agents", func(t *testing.T) {
+		var out bytes.Buffer
+		if err := headless.RunWindowsOptions(cat, []model.Agent{model.AgentClaude, model.AgentGemini}, &out); err != nil {
+			t.Fatalf("RunWindowsOptions() error = %v", err)
+		}
+		var resp tierMetadataResp
+		if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+			t.Fatalf("unmarshal options json: %v\nbody=%s", err, out.String())
+		}
+		if !resp.TierCapable {
+			t.Error("tier_capable = false, want true for claude+gemini")
+		}
+		if len(resp.TierCapableAgents) != 1 || resp.TierCapableAgents[0] != "claude" {
+			t.Errorf("tier_capable_agents = %v, want [claude]", resp.TierCapableAgents)
+		}
+	})
 }
 
 func TestRunWindowsInstall_JSONStream(t *testing.T) {

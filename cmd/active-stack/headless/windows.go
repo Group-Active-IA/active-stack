@@ -22,15 +22,30 @@ type windowsDetectResponse struct {
 }
 
 type windowsOptionsResponse struct {
-	Modes            []windowsModeOption      `json:"modes"`
-	ForcedComponents []windowsComponentOption `json:"forced_components"`
-	CustomComponents []windowsComponentOption `json:"custom_components"`
+	Modes             []windowsModeOption      `json:"modes"`
+	ForcedComponents  []windowsComponentOption `json:"forced_components"`
+	CustomComponents  []windowsComponentOption `json:"custom_components"`
+	TierCapable       bool                     `json:"tier_capable"`
+	TierCapableAgents []string                 `json:"tier_capable_agents"`
+	PermissionTiers   []windowsPermissionTier  `json:"permission_tiers"`
 }
 
 type windowsModeOption struct {
 	ID          string `json:"id"`
 	Label       string `json:"label"`
 	Description string `json:"description"`
+}
+
+// windowsPermissionTier describes one permission tier for the GUI's tier
+// selection screen (D3, design.md). PermissionTiers is always the same three
+// entries in display order; only TierCapable / TierCapableAgents vary with
+// the requested agent set.
+type windowsPermissionTier struct {
+	ID          string `json:"id"`
+	Label       string `json:"label"`
+	Description string `json:"description"`
+	Default     bool   `json:"default"`
+	Warning     string `json:"warning,omitempty"`
 }
 
 type windowsComponentOption struct {
@@ -51,6 +66,15 @@ type windowsInstallEvent struct {
 }
 
 func RunWindowsDetect(homeDir string, _ install.Registry, w io.Writer) error {
+	return json.NewEncoder(w).Encode(windowsDetectResponse{DetectedAgents: detectAgents(homeDir)})
+}
+
+// detectAgents scans homeDir for agent configs and returns the detected agent
+// ids as strings. Extracted from RunWindowsDetect (design D6,
+// windows-contract-hub-operations) so RunWindowsUninstallOptions can report
+// the same detected_agents without duplicating the ScanConfigs +
+// configStateAgent loop.
+func detectAgents(homeDir string) []string {
 	states := system.ScanConfigs(homeDir)
 	detected := make([]string, 0, len(states))
 	for _, state := range states {
@@ -61,26 +85,25 @@ func RunWindowsDetect(homeDir string, _ install.Registry, w io.Writer) error {
 			detected = append(detected, string(agent))
 		}
 	}
-	return json.NewEncoder(w).Encode(windowsDetectResponse{DetectedAgents: detected})
+	return detected
 }
 
-func RunWindowsOptions(cat install.Catalog, agent model.Agent, w io.Writer) error {
-	customHarnesses, err := install.SelectHarnesses(cat, install.Intent{
-		Agents: []model.Agent{agent},
-		Mode:   model.ModeCustom,
-	})
-	if err != nil {
-		return err
-	}
+func RunWindowsOptions(cat install.Catalog, agents []model.Agent, w io.Writer) error {
+	// D5 (windows-contract-tier-multiagent): the picker universe is "what can
+	// be picked", not "what will be installed" — install.SelectHarnesses with
+	// an empty Custom intent only ever force-adds the permissions harness, so
+	// custom_components was structurally always empty. CustomPickerHarnesses
+	// answers the right question and is the single source of truth shared
+	// with the TUI Custom picker (internal/tui/model.go).
+	customHarnesses := install.CustomPickerHarnesses(cat, agents)
 
 	resp := windowsOptionsResponse{
-		Modes: []windowsModeOption{
-			{ID: string(model.ModeLite), Label: "Quick", Description: "Fast setup to start working right away."},
-			{ID: string(model.ModeFull), Label: "Complete", Description: "Full recommended setup with all key tools."},
-			{ID: string(model.ModeCustom), Label: "Custom", Description: "Choose exactly what to install."},
-		},
-		ForcedComponents: make([]windowsComponentOption, 0, 1),
-		CustomComponents: make([]windowsComponentOption, 0, len(customHarnesses)),
+		Modes:             windowsModeOptions(),
+		ForcedComponents:  make([]windowsComponentOption, 0, 1),
+		CustomComponents:  make([]windowsComponentOption, 0, len(customHarnesses)),
+		TierCapable:       model.TierCapable(agents),
+		TierCapableAgents: tierCapableAgentIDs(agents),
+		PermissionTiers:   windowsPermissionTiers(),
 	}
 
 	seen := make(map[string]bool, len(customHarnesses))
@@ -107,6 +130,17 @@ func RunWindowsOptions(cat install.Catalog, agent model.Agent, w io.Writer) erro
 }
 
 func RunWindowsInstall(params ParsedFlags, cat install.Catalog, reg install.Registry, w io.Writer) int {
+	return runWindowsPipeline(params, cat, reg, w, "install_finished")
+}
+
+// runWindowsPipeline owns the JSON event-stream plumbing shared by
+// "windows install" and "windows starters install" (design D3,
+// windows-contract-hub-operations): the event-file tailer, `emit`,
+// progress/download wiring, and the plain-output replay. It is parameterized
+// by the terminal event's `type` so RunWindowsInstall passes
+// "install_finished" while RunWindowsStartersInstall passes
+// "starter_finished" — every other event in the stream is identical.
+func runWindowsPipeline(params ParsedFlags, cat install.Catalog, reg install.Registry, w io.Writer, finishedEventType string) int {
 	eventWriter := w
 	var file *os.File
 	if params.WindowsEventsFile != "" {
@@ -172,7 +206,7 @@ func RunWindowsInstall(params ParsedFlags, cat install.Catalog, reg install.Regi
 	}
 
 	emit(windowsInstallEvent{
-		Type:    "install_finished",
+		Type:    finishedEventType,
 		Phase:   "install",
 		Success: exitCode == 0,
 		Message: installFinishedMessage(exitCode),
@@ -408,6 +442,46 @@ func windowsComponentDescription(h model.Harness) string {
 		return "Adds guided workflow helpers."
 	default:
 		return fmt.Sprintf("Installs %s.", h.Name)
+	}
+}
+
+// tierCapableAgentIDs returns the subset of the requested agents that are
+// tier-capable, as agent id strings, in the order they were requested. This
+// lets the GUI recompute capability locally when the user toggles agents,
+// avoiding a re-query (D3, design.md).
+func tierCapableAgentIDs(agents []model.Agent) []string {
+	out := make([]string, 0, len(agents))
+	for _, a := range agents {
+		if model.TierCapable([]model.Agent{a}) {
+			out = append(out, string(a))
+		}
+	}
+	return out
+}
+
+// windowsPermissionTiers lists the three permission tiers in display order
+// (estricto, balanceado, bypass), with balanceado marked as the default and
+// bypass carrying its autonomy warning (D3, design.md; mirrors the TUI's
+// tierOrder / bypassWarning in internal/tui/permissions_screen.go).
+func windowsPermissionTiers() []windowsPermissionTier {
+	return []windowsPermissionTier{
+		{
+			ID:          string(model.TierEstricto),
+			Label:       "Estricto",
+			Description: "Agent must ask for every operation. Highest friction, highest security.",
+		},
+		{
+			ID:          string(model.TierBalanceado),
+			Label:       "Balanceado",
+			Description: "Curated allow-list for safe, repetitive operations. Recommended starting point.",
+			Default:     true,
+		},
+		{
+			ID:          string(model.TierBypass),
+			Label:       "Bypass",
+			Description: "Full autonomy opt-in. The security floor deny-list still applies.",
+			Warning:     "Bypass: autonomous mode — the security floor still applies (C-21)",
+		},
 	}
 }
 

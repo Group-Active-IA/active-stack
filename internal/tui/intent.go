@@ -60,17 +60,9 @@ func AvailableAgentsList(detected []model.Agent, registered []model.Agent) []mod
 	return out
 }
 
-// filterHarnessesByAgents returns the subset of harnesses that support at
-// least one of the given agents. Delegates to model.Harness.SupportsAgent.
-func filterHarnessesByAgents(harnesses []model.Harness, agents []model.Agent) []model.Harness {
-	var out []model.Harness
-	for _, h := range harnesses {
-		for _, a := range agents {
-			if h.SupportsAgent(a) {
-				out = append(out, h)
-				break
-			}
-		}
-	}
-	return out
-}
+// Custom-picker harness filtering by agent now routes through the shared
+// install.CustomPickerHarnesses (design D5, windows-contract-tier-multiagent)
+// so the TUI and the Windows options contract cannot diverge. The former
+// local filterHarnessesByAgents duplicate was removed; see model.go's
+// ScreenMode ModeCustom handling and cmd/active-stack/headless/windows.go's
+// RunWindowsOptions for the two call sites.

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/Group-Active-IA/active-stack/assets"
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
@@ -16,7 +17,7 @@ import (
 
 func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry, w io.Writer) int {
 	if len(args) == 0 {
-		fmt.Fprintln(w, "usage: active-stack windows <detect|options|install|uninstall>")
+		fmt.Fprintln(w, "usage: active-stack windows <detect|options|install|uninstall|starters|backups|uninstall-options>")
 		return 1
 	}
 
@@ -47,15 +48,23 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 		fs := flag.NewFlagSet("windows options", flag.ContinueOnError)
 		fs.SetOutput(w)
 		var agent string
-		fs.StringVar(&agent, "agent", "", "target agent")
+		fs.StringVar(&agent, "agent", "", "comma-separated list of target agents (e.g. claude,opencode)")
 		if err := fs.Parse(args[1:]); err != nil {
 			return 1
 		}
-		if agent == "" {
+		var agents []model.Agent
+		for _, raw := range strings.Split(agent, ",") {
+			raw = strings.TrimSpace(raw)
+			if raw == "" {
+				continue
+			}
+			agents = append(agents, model.Agent(raw))
+		}
+		if len(agents) == 0 {
 			fmt.Fprintln(w, "error: windows options requires --agent")
 			return 1
 		}
-		if err := headless.RunWindowsOptions(cat, model.Agent(agent), w); err != nil {
+		if err := headless.RunWindowsOptions(cat, agents, w); err != nil {
 			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
@@ -115,8 +124,183 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 
 		return headless.RunWindowsUninstall(parsed, cat, uninstallReg, w)
 
+	case "starters":
+		return runWindowsStartersDispatch(args[1:], cat, reg, w)
+
+	case "backups":
+		return runWindowsBackupsDispatch(args[1:], w)
+
+	case "uninstall-options":
+		fs := flag.NewFlagSet("windows uninstall-options", flag.ContinueOnError)
+		fs.SetOutput(w)
+		homeDir := ""
+		fs.StringVar(&homeDir, "home", "", "override home directory")
+		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		if homeDir == "" {
+			var err error
+			homeDir, err = os.UserHomeDir()
+			if err != nil {
+				fmt.Fprintf(w, "error: resolve home dir: %v\n", err)
+				return 1
+			}
+		}
+		if err := headless.RunWindowsUninstallOptions(homeDir, w); err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
+			return 1
+		}
+		return 0
+
 	default:
 		fmt.Fprintf(w, "unknown windows subcommand: %q\n", args[0])
+		return 1
+	}
+}
+
+// runWindowsStartersDispatch routes "windows starters <list|install>"
+// (windows-contract-hub-operations, design D7). args is the subcommand
+// argument list with "starters" already stripped.
+func runWindowsStartersDispatch(args []string, cat install.Catalog, reg install.Registry, w io.Writer) int {
+	if len(args) == 0 {
+		fmt.Fprintln(w, "usage: active-stack windows starters <list|install>")
+		return 1
+	}
+
+	sc, ok := cat.(headless.StarterCatalog)
+	if !ok {
+		fmt.Fprintln(w, "error: windows starters requires a starter-capable catalog")
+		return 1
+	}
+
+	switch args[0] {
+	case "list":
+		fs := flag.NewFlagSet("windows starters list", flag.ContinueOnError)
+		fs.SetOutput(w)
+		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		if err := headless.RunWindowsStartersList(sc, w); err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
+			return 1
+		}
+		return 0
+
+	case "install":
+		fs := flag.NewFlagSet("windows starters install", flag.ContinueOnError)
+		fs.SetOutput(w)
+		var starterID, project, agent string
+		var dryRun, yes bool
+		fs.StringVar(&starterID, "starter", "", "starter id to install")
+		fs.StringVar(&project, "project", "", "target project root")
+		fs.StringVar(&agent, "agent", "", "comma-separated list of agents (e.g. claude,opencode)")
+		fs.BoolVar(&dryRun, "dry-run", false, "print plan steps; do not execute")
+		fs.BoolVar(&yes, "yes", false, "confirm without prompt")
+		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		if starterID == "" {
+			fmt.Fprintln(w, "error: windows starters install requires --starter")
+			return 1
+		}
+		if project == "" {
+			fmt.Fprintln(w, "error: windows starters install requires --project")
+			return 1
+		}
+
+		var agents []model.Agent
+		for _, raw := range strings.Split(agent, ",") {
+			raw = strings.TrimSpace(raw)
+			if raw == "" {
+				continue
+			}
+			agents = append(agents, model.Agent(raw))
+		}
+		if len(agents) == 0 {
+			fmt.Fprintln(w, "error: windows starters install requires --agent")
+			return 1
+		}
+
+		flags := headless.ParsedStarterAddFlags{
+			StarterID:   starterID,
+			ProjectPath: project,
+			DryRun:      dryRun,
+			Yes:         yes,
+			Agents:      agents,
+		}
+		buildPlanFn := func(c install.Catalog, intent install.Intent, opts install.Options) (install.Plan, error) {
+			opts = install.WithEmbeddedSkillsFS(opts, assets.SkillsFS)
+			return install.BuildPlan(c, intent, opts)
+		}
+		return headless.RunWindowsStartersInstall(flags, sc, reg, buildPlanFn, w)
+
+	default:
+		fmt.Fprintf(w, "unknown windows starters subcommand: %q\n", args[0])
+		return 1
+	}
+}
+
+// runWindowsBackupsDispatch routes "windows backups <list|restore|delete|rename>"
+// (windows-contract-hub-operations, design D7). args is the subcommand
+// argument list with "backups" already stripped.
+func runWindowsBackupsDispatch(args []string, w io.Writer) int {
+	if len(args) == 0 {
+		fmt.Fprintln(w, "usage: active-stack windows backups <list|restore|delete|rename>")
+		return 1
+	}
+
+	switch args[0] {
+	case "list":
+		fs := flag.NewFlagSet("windows backups list", flag.ContinueOnError)
+		fs.SetOutput(w)
+		homeDir := ""
+		fs.StringVar(&homeDir, "home", "", "override home directory")
+		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		if homeDir == "" {
+			var err error
+			homeDir, err = os.UserHomeDir()
+			if err != nil {
+				fmt.Fprintf(w, "error: resolve home dir: %v\n", err)
+				return 1
+			}
+		}
+		if err := headless.RunWindowsBackupsList(homeDir, w); err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
+			return 1
+		}
+		return 0
+
+	case "restore", "delete", "rename":
+		action := args[0]
+		fs := flag.NewFlagSet("windows backups "+action, flag.ContinueOnError)
+		fs.SetOutput(w)
+		homeDir := ""
+		id := ""
+		description := ""
+		fs.StringVar(&homeDir, "home", "", "override home directory")
+		fs.StringVar(&id, "id", "", "backup id")
+		fs.StringVar(&description, "description", "", "new description (rename only)")
+		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		if id == "" {
+			fmt.Fprintf(w, "error: windows backups %s requires --id\n", action)
+			return 1
+		}
+		if homeDir == "" {
+			var err error
+			homeDir, err = os.UserHomeDir()
+			if err != nil {
+				fmt.Fprintf(w, "error: resolve home dir: %v\n", err)
+				return 1
+			}
+		}
+		return headless.RunWindowsBackupsAction(homeDir, action, id, description, w)
+
+	default:
+		fmt.Fprintf(w, "unknown windows backups subcommand: %q\n", args[0])
 		return 1
 	}
 }

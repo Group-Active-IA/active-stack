@@ -110,6 +110,7 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 		mode          string
 		agent         string
 		custom        string
+		tier          string
 		dryRun        bool
 		yes           bool
 		yShort        bool
@@ -122,6 +123,7 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 	fs.StringVar(&mode, "mode", "", "install mode: lite|full|custom")
 	fs.StringVar(&agent, "agent", "", "comma-separated list of agents (e.g. claude,opencode)")
 	fs.StringVar(&custom, "custom", "", "comma-separated harness IDs (only with --mode custom)")
+	fs.StringVar(&tier, "tier", "", "permission tier: estricto|balanceado|bypass")
 	fs.BoolVar(&dryRun, "dry-run", false, "print plan steps; do not execute")
 	fs.BoolVar(&yes, "yes", false, "confirm without prompt")
 	fs.BoolVar(&yShort, "y", false, "alias for --yes")
@@ -141,7 +143,8 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 	// Determine if headless mode is active.
 	// --custom alone (without --mode) should also trigger headless so we can
 	// validate and reject it rather than silently falling back to TUI.
-	isHeadless := headless || mode != "" || agent != "" || custom != ""
+	// --tier alone triggers headless the same way --custom does (D1, design.md).
+	isHeadless := headless || mode != "" || agent != "" || custom != "" || tier != ""
 
 	// No intent expressed → TUI.
 	if !isHeadless {
@@ -166,6 +169,23 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 	// ── Validate --custom ──────────────────────────────────────────────────
 	if custom != "" && installMode != model.ModeCustom {
 		return ParsedFlags{}, fmt.Errorf("--custom requires --mode custom (got --mode %q)", mode)
+	}
+
+	// ── Validate --tier ─────────────────────────────────────────────────────
+	// Empty stays at the zero value; the engine's PermissionTier.Normalize()
+	// turns that into TierBalanceado downstream (D1, design.md).
+	var permTier model.PermissionTier
+	if tier != "" {
+		switch tier {
+		case "estricto":
+			permTier = model.TierEstricto
+		case "balanceado":
+			permTier = model.TierBalanceado
+		case "bypass":
+			permTier = model.TierBypass
+		default:
+			return ParsedFlags{}, fmt.Errorf("invalid --tier %q: must be estricto, balanceado, or bypass", tier)
+		}
 	}
 
 	// ── Parse agents ───────────────────────────────────────────────────────
@@ -212,6 +232,7 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 			Mode:   installMode,
 			Agents: agents,
 			Custom: customIDs,
+			Tier:   permTier,
 		},
 	}, nil
 }

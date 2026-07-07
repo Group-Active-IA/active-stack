@@ -24,6 +24,8 @@ func TestParseInstallFlags(t *testing.T) {
 		wantDryRun  bool
 		wantYes     bool
 		wantHomeDir string // empty = uses os.UserHomeDir() (we can't test that value)
+		wantTier    model.PermissionTier
+		checkTier   bool // when true, assert Intent.Tier == wantTier even if wantTier == ""
 	}{
 		// ── No flags → TUI mode ────────────────────────────────────────────
 		{
@@ -133,6 +135,41 @@ func TestParseInstallFlags(t *testing.T) {
 			args:    []string{"--custom", "engram"},
 			wantErr: true,
 		},
+		// ── --tier flag (task 3) ────────────────────────────────────────────
+		{
+			name:      "--tier estricto",
+			args:      []string{"--tier", "estricto"},
+			wantTUI:   false,
+			wantTier:  model.TierEstricto,
+			checkTier: true,
+		},
+		{
+			name:      "--tier balanceado alone implies headless",
+			args:      []string{"--tier", "balanceado"},
+			wantTUI:   false,
+			wantTier:  model.TierBalanceado,
+			checkTier: true,
+		},
+		{
+			name:    "--tier loose is invalid",
+			args:    []string{"--tier", "loose"},
+			wantErr: true,
+		},
+		{
+			name:      "no --tier leaves Intent.Tier at zero value",
+			args:      []string{"--mode", "lite"},
+			wantTUI:   false,
+			wantMode:  model.ModeLite,
+			wantTier:  "",
+			checkTier: true,
+		},
+		{
+			name:      "--tier bypass",
+			args:      []string{"--tier", "bypass"},
+			wantTUI:   false,
+			wantTier:  model.TierBypass,
+			checkTier: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -203,6 +240,11 @@ func TestParseInstallFlags(t *testing.T) {
 			// HomeDir (only test when explicitly expected)
 			if tt.wantHomeDir != "" && result.HomeDir != tt.wantHomeDir {
 				t.Errorf("HomeDir = %q, want %q", result.HomeDir, tt.wantHomeDir)
+			}
+
+			// Intent.Tier
+			if tt.checkTier && result.Intent.Tier != tt.wantTier {
+				t.Errorf("Intent.Tier = %q, want %q", result.Intent.Tier, tt.wantTier)
 			}
 		})
 	}
