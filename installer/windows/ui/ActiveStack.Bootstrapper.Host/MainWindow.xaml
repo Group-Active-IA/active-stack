@@ -5,417 +5,91 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="Active Stack Setup"
-        Height="820"
-        Width="1320"
-        MinWidth="1200"
-        MinHeight="780"
-        WindowState="Maximized"
-        ResizeMode="NoResize"
+        Height="560"
+        Width="760"
+        MinWidth="640"
+        MinHeight="480"
+        ResizeMode="CanResize"
         WindowStartupLocation="CenterScreen"
         Background="#FFF3F4F6">
   <Window.Resources>
-    <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
-
-    <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
-      <Setter Property="FontSize" Value="24" />
-      <Setter Property="FontWeight" Value="SemiBold" />
+    <Style x:Key="FooterButtonStyle" TargetType="Button">
+      <Setter Property="Height" Value="36" />
+      <Setter Property="MinWidth" Value="96" />
+      <Setter Property="Padding" Value="16,0" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="#D1D5DB" />
+      <Setter Property="Background" Value="White" />
       <Setter Property="Foreground" Value="#111827" />
     </Style>
 
-    <Style x:Key="CardBorderStyle" TargetType="Border">
-      <Setter Property="Background" Value="White" />
-      <Setter Property="CornerRadius" Value="18" />
-      <Setter Property="Padding" Value="24" />
-      <Setter Property="BorderBrush" Value="#FFE5E7EB" />
-      <Setter Property="BorderThickness" Value="1" />
-    </Style>
-
-    <Style x:Key="InstallModeItemStyle" TargetType="ListBoxItem">
-      <Setter Property="Margin" Value="0,0,16,16" />
-      <Setter Property="Padding" Value="0" />
-      <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-      <Setter Property="VerticalContentAlignment" Value="Stretch" />
-      <Setter Property="Template">
-        <Setter.Value>
-          <ControlTemplate TargetType="ListBoxItem">
-            <Border x:Name="Card"
-                    Width="220"
-                    MinHeight="124"
-                    Background="White"
-                    BorderBrush="#FFD1D5DB"
-                    BorderThickness="1"
-                    CornerRadius="16"
-                    Padding="18">
-              <ContentPresenter />
-            </Border>
-            <ControlTemplate.Triggers>
-              <Trigger Property="IsMouseOver" Value="True">
-                <Setter TargetName="Card" Property="BorderBrush" Value="#FF9CA3AF" />
-              </Trigger>
-              <Trigger Property="IsSelected" Value="True">
-                <Setter TargetName="Card" Property="Background" Value="#FFEEF2FF" />
-                <Setter TargetName="Card" Property="BorderBrush" Value="#FF4F46E5" />
-                <Setter TargetName="Card" Property="BorderThickness" Value="2" />
-              </Trigger>
-            </ControlTemplate.Triggers>
-          </ControlTemplate>
-        </Setter.Value>
-      </Setter>
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button" BasedOn="{StaticResource FooterButtonStyle}">
+      <Setter Property="Background" Value="#111827" />
+      <Setter Property="Foreground" Value="White" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="FontWeight" Value="SemiBold" />
     </Style>
   </Window.Resources>
 
-  <ScrollViewer VerticalScrollBarVisibility="Auto">
-    <Grid Margin="40,28">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="Auto" />
-        <RowDefinition Height="24" />
-        <RowDefinition Height="*" />
-      </Grid.RowDefinitions>
+  <Grid Margin="24">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="16" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="16" />
+      <RowDefinition Height="Auto" />
+    </Grid.RowDefinitions>
 
-      <Border Grid.Row="0"
-              Style="{StaticResource CardBorderStyle}"
-              Background="#FF111827"
-              BorderThickness="0"
-              Padding="28">
-        <Grid>
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="360" />
-          </Grid.ColumnDefinitions>
+    <!-- Header: the current page's title/subtitle. -->
+    <StackPanel Grid.Row="0">
+      <TextBlock Text="{Binding CurrentPage.Title}"
+                 FontSize="22"
+                 FontWeight="SemiBold"
+                 Foreground="#111827" />
+      <TextBlock Margin="0,6,0,0"
+                 Text="{Binding CurrentPage.Subtitle}"
+                 FontSize="13"
+                 Foreground="#4B5563"
+                 TextWrapping="Wrap" />
+    </StackPanel>
 
-          <StackPanel>
-            <TextBlock Text="{Binding Title}"
-                       FontSize="34"
-                       FontWeight="SemiBold"
-                       Foreground="White" />
-            <TextBlock Margin="0,10,0,0"
-                       MaxWidth="760"
-                       Text="{Binding Subtitle}"
-                       FontSize="15"
-                       Foreground="#FFD1D5DB"
-                       TextWrapping="Wrap" />
+    <!-- Body: the current page's view, selected by DataTemplate on the page-VM's type (D1, design.md). -->
+    <Border Grid.Row="2"
+            Background="White"
+            CornerRadius="12"
+            BorderBrush="#E5E7EB"
+            BorderThickness="1"
+            Padding="20">
+      <ContentControl Content="{Binding CurrentPage}" />
+    </Border>
 
-            <StackPanel Margin="0,18,0,0"
-                        Orientation="Horizontal">
-              <Border Background="#1F2937"
-                      CornerRadius="999"
-                      Padding="12,8"
-                      Margin="0,0,12,0">
-                <TextBlock Text="Single-file Windows setup"
-                           Foreground="White"
-                           FontWeight="SemiBold" />
-              </Border>
-              <Border Background="#1F2937"
-                      CornerRadius="999"
-                      Padding="12,8">
-                <TextBlock Text="Downloads the latest tools during install"
-                           Foreground="White"
-                           FontWeight="SemiBold" />
-              </Border>
-            </StackPanel>
-          </StackPanel>
+    <!-- Footer: Back / primary (Next or Install) / Cancel. Hidden footer buttons stay laid out but disabled while Installing/Complete have no nav. -->
+    <Grid Grid.Row="4">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="12" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
 
-          <Border Grid.Column="1"
-                  Background="#FF0F172A"
-                  CornerRadius="16"
-                  Padding="20"
-                  Margin="24,0,0,0">
-            <StackPanel>
-              <TextBlock Text="Current status"
-                         FontSize="16"
-                         FontWeight="SemiBold"
-                         Foreground="White" />
-              <TextBlock Margin="0,12,0,0"
-                         Text="{Binding ProgressMessage, TargetNullValue=Ready to install.}"
-                         Foreground="#FFE5E7EB"
-                         TextWrapping="Wrap" />
-              <TextBlock Margin="0,10,0,0"
-                         Text="{Binding CurrentStepLabel, StringFormat=Current item: {0}, TargetNullValue=Current item: waiting to start}"
-                         FontSize="13"
-                         Foreground="White" />
-              <TextBlock Margin="0,4,0,0"
-                         Text="{Binding CurrentStepId, StringFormat=Engine step: {0}, TargetNullValue=Engine step: waiting to start}"
-                         FontSize="13"
-                         Foreground="#FF9CA3AF" />
-              <ProgressBar Margin="0,16,0,0"
-                           Height="8"
-                           Maximum="100"
-                           Value="{Binding ProgressValue, Mode=OneWay}" />
-              <TextBlock Margin="0,8,0,0"
-                         Text="{Binding ProgressValue, StringFormat={}{0:0}% completed}"
-                         FontSize="12"
-                         Foreground="#FF9CA3AF" />
+      <Button Grid.Column="0"
+              Content="Back"
+              Style="{StaticResource FooterButtonStyle}"
+              IsEnabled="{Binding CanGoBack}"
+              Click="BackButton_Click" />
 
-              <TextBlock Margin="0,18,0,0"
-                         Text="Recent activity"
-                         FontSize="13"
-                         FontWeight="SemiBold"
-                         Foreground="White" />
-              <Border Margin="0,10,0,0"
-                      Background="#111827"
-                      BorderBrush="#1F2937"
-                      BorderThickness="1"
-                      CornerRadius="12"
-                      Padding="12">
-                <ScrollViewer MaxHeight="210"
-                              VerticalScrollBarVisibility="Auto">
-                  <ItemsControl ItemsSource="{Binding RecentActivity}">
-                    <ItemsControl.ItemTemplate>
-                      <DataTemplate>
-                        <TextBlock Margin="0,0,0,8"
-                                   Text="{Binding}"
-                                   FontSize="12"
-                                   Foreground="#FFD1D5DB"
-                                   TextWrapping="Wrap" />
-                      </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                  </ItemsControl>
-                </ScrollViewer>
-              </Border>
-            </StackPanel>
-          </Border>
-        </Grid>
-      </Border>
+      <Button Grid.Column="2"
+              Content="Cancel"
+              Style="{StaticResource FooterButtonStyle}"
+              Click="CancelButton_Click" />
 
-      <Grid Grid.Row="2"
-            MaxWidth="1240"
-            HorizontalAlignment="Center">
-        <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="1.35*" />
-          <ColumnDefinition Width="24" />
-          <ColumnDefinition Width="0.95*" />
-        </Grid.ColumnDefinitions>
-
-        <StackPanel Grid.Column="0">
-          <Border Style="{StaticResource CardBorderStyle}">
-            <StackPanel>
-              <TextBlock Style="{StaticResource SectionTitleStyle}"
-                         Text="Choose your assistant" />
-              <TextBlock Margin="0,10,0,0"
-                         Text="Pick the coding assistant you want Active Stack to prepare."
-                         Foreground="#4B5563"
-                         TextWrapping="Wrap" />
-
-              <ComboBox Margin="0,18,0,0"
-                        Width="320"
-                        Height="42"
-                        HorizontalAlignment="Left"
-                        ItemsSource="{Binding AssistantChoices}"
-                        SelectedValuePath="Id"
-                        DisplayMemberPath="Label"
-                        SelectedValue="{Binding SelectedAssistantId}" />
-            </StackPanel>
-          </Border>
-
-          <Border Margin="0,20,0,0"
-                  Style="{StaticResource CardBorderStyle}">
-            <StackPanel>
-              <TextBlock Style="{StaticResource SectionTitleStyle}"
-                         Text="Choose installation type" />
-              <TextBlock Margin="0,10,0,0"
-                         Text="Select the setup depth. You can start fast or install the full recommended workspace."
-                         Foreground="#4B5563"
-                         TextWrapping="Wrap" />
-
-              <ListBox Margin="0,18,0,0"
-                       BorderThickness="0"
-                       Background="Transparent"
-                       ItemsSource="{Binding InstallTypeChoices}"
-                       SelectedValuePath="Id"
-                       SelectedValue="{Binding SelectedInstallTypeId}"
-                       ItemContainerStyle="{StaticResource InstallModeItemStyle}"
-                       ScrollViewer.HorizontalScrollBarVisibility="Disabled">
-                <ListBox.ItemsPanel>
-                  <ItemsPanelTemplate>
-                    <WrapPanel />
-                  </ItemsPanelTemplate>
-                </ListBox.ItemsPanel>
-                <ListBox.ItemTemplate>
-                  <DataTemplate>
-                    <StackPanel>
-                      <TextBlock Text="{Binding Label}"
-                                 FontSize="20"
-                                 FontWeight="SemiBold"
-                                 Foreground="#111827" />
-                      <TextBlock Margin="0,10,0,0"
-                                 Text="{Binding Description}"
-                                 Foreground="#4B5563"
-                                 TextWrapping="Wrap" />
-                    </StackPanel>
-                  </DataTemplate>
-                </ListBox.ItemTemplate>
-              </ListBox>
-            </StackPanel>
-          </Border>
-
-          <Border Margin="0,20,0,0"
-                  Style="{StaticResource CardBorderStyle}">
-            <Grid>
-              <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="220" />
-              </Grid.ColumnDefinitions>
-
-              <StackPanel>
-                <TextBlock Text="What happens next"
-                           FontSize="20"
-                           FontWeight="SemiBold"
-                           Foreground="#111827" />
-                <TextBlock Margin="0,10,0,0"
-                           Text="The installer downloads the latest tools required for your selected assistant, applies the recommended configuration, and verifies the setup before finishing."
-                           Foreground="#4B5563"
-                           TextWrapping="Wrap" />
-              </StackPanel>
-
-              <Button Grid.Column="1"
-                      Width="180"
-                      Height="48"
-                      HorizontalAlignment="Right"
-                      VerticalAlignment="Center"
-                      Click="InstallButton_Click"
-                      IsDefault="True"
-                      IsEnabled="{Binding IsInstallActionEnabled}"
-                      Background="#111827"
-                      Foreground="White"
-                      BorderThickness="0"
-                      FontWeight="SemiBold"
-                      FontSize="15"
-                      Content="{Binding InstallButtonText}" />
-            </Grid>
-          </Border>
-        </StackPanel>
-
-        <StackPanel Grid.Column="2">
-          <Border Style="{StaticResource CardBorderStyle}">
-            <StackPanel>
-              <TextBlock Text="Included highlights"
-                         FontSize="22"
-                         FontWeight="SemiBold"
-                         Foreground="#111827" />
-              <TextBlock Margin="0,10,0,0"
-                         Text="Core items that are installed or configured for the selected setup."
-                         Foreground="#4B5563"
-                         TextWrapping="Wrap" />
-
-              <ItemsControl Margin="0,18,0,0"
-                            ItemsSource="{Binding ForcedComponents}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <Border Margin="0,0,0,12"
-                            Padding="16"
-                            Background="#FFF9FAFB"
-                            CornerRadius="14"
-                            BorderBrush="#FFE5E7EB"
-                            BorderThickness="1">
-                      <StackPanel>
-                        <TextBlock Text="{Binding Label}"
-                                   FontWeight="SemiBold"
-                                   FontSize="15"
-                                   Foreground="#111827" />
-                        <TextBlock Margin="0,6,0,0"
-                                   Text="{Binding Description}"
-                                   Foreground="#4B5563"
-                                   TextWrapping="Wrap" />
-                      </StackPanel>
-                    </Border>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-            </StackPanel>
-          </Border>
-
-          <Border Margin="0,20,0,0"
-                  Style="{StaticResource CardBorderStyle}">
-            <StackPanel>
-              <TextBlock Text="Optional components"
-                         FontSize="22"
-                         FontWeight="SemiBold"
-                         Foreground="#111827" />
-              <TextBlock Margin="0,10,0,0"
-                         Text="Extra capabilities that may be included depending on your chosen mode."
-                         Foreground="#4B5563"
-                         TextWrapping="Wrap" />
-
-              <ScrollViewer Margin="0,18,0,0"
-                            VerticalScrollBarVisibility="Auto"
-                            MaxHeight="300">
-                <ItemsControl ItemsSource="{Binding CustomComponents}">
-                  <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                      <Border Margin="0,0,0,12"
-                              Padding="16"
-                              Background="#FFF9FAFB"
-                              CornerRadius="14"
-                              BorderBrush="#FFE5E7EB"
-                              BorderThickness="1">
-                        <StackPanel>
-                          <TextBlock Text="{Binding Label}"
-                                     FontWeight="SemiBold"
-                                     FontSize="15"
-                                     Foreground="#111827" />
-                          <TextBlock Margin="0,6,0,0"
-                                     Text="{Binding Description}"
-                                     Foreground="#4B5563"
-                                     TextWrapping="Wrap" />
-                        </StackPanel>
-                      </Border>
-                    </DataTemplate>
-                  </ItemsControl.ItemTemplate>
-                </ItemsControl>
-              </ScrollViewer>
-            </StackPanel>
-          </Border>
-
-          <Border Margin="0,20,0,0"
-                  Padding="16"
-                  Background="#FFFEF2F2"
-                  BorderBrush="#FFFECACA"
-                  BorderThickness="1"
-                  CornerRadius="14"
-                  Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <StackPanel>
-              <TextBlock Text="{Binding ErrorTitle}"
-                         FontWeight="SemiBold"
-                         Foreground="#991B1B" />
-              <TextBlock Margin="0,8,0,0"
-                         Text="{Binding ErrorDetails}"
-                         Foreground="#7F1D1D"
-                         TextWrapping="Wrap" />
-            </StackPanel>
-          </Border>
-
-          <Border Margin="0,20,0,0"
-                  Padding="16"
-                  Background="#FFF0FDF4"
-                  BorderBrush="#FFBBF7D0"
-                  BorderThickness="1"
-                  CornerRadius="14"
-                  Visibility="{Binding InstallSucceeded, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <TextBlock Text="Installation complete. Your workspace is ready to use."
-                       FontWeight="SemiBold"
-                       Foreground="#166534"
-                       TextWrapping="Wrap" />
-          </Border>
-        </StackPanel>
-      </Grid>
-
-      <Border Background="#CCFFFFFF"
-              CornerRadius="14"
-              Padding="18"
-              HorizontalAlignment="Center"
-              VerticalAlignment="Center"
-              Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}">
-        <StackPanel>
-          <TextBlock Text="Preparing your setup"
-                     FontSize="18"
-                     FontWeight="SemiBold"
-                     HorizontalAlignment="Center" />
-          <TextBlock Margin="0,8,0,0"
-                     Text="Loading assistants and available install options."
-                     Foreground="#4B5563"
-                     HorizontalAlignment="Center" />
-        </StackPanel>
-      </Border>
+      <Button Grid.Column="4"
+              Content="{Binding PrimaryLabel}"
+              Style="{StaticResource PrimaryButtonStyle}"
+              IsDefault="True"
+              IsEnabled="{Binding PrimaryEnabled}"
+              Click="PrimaryButton_Click" />
     </Grid>
-  </ScrollViewer>
+  </Grid>
 </Window>

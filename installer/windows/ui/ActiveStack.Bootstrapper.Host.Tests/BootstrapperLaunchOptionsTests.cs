@@ -39,13 +39,19 @@ public sealed class BootstrapperLaunchOptionsTests
     }
 
     [Fact]
-    public void MainWindowXaml_UsesOneWayBindingForProgressValue()
+    public void PageTemplatesXaml_UsesOneWayBindingForProgressValue()
     {
+        // The Installing page's ProgressBar moved from MainWindow.xaml into
+        // Themes/PageTemplates.xaml's ProgressPageViewModel DataTemplate
+        // (windows-gui-wizard-install, D1). This regression guard moves
+        // with it: OneWay keeps the bar a pure readout of ProgressValue,
+        // never fighting the ViewModel over its own value.
         var xamlPath = Path.GetFullPath(Path.Combine(
             AppContext.BaseDirectory,
             "..", "..", "..", "..",
             "ActiveStack.Bootstrapper.Host",
-            "MainWindow.xaml"));
+            "Themes",
+            "PageTemplates.xaml"));
 
         var xaml = File.ReadAllText(xamlPath);
 

@@ -48,33 +48,17 @@ internal sealed class ActiveStackBootstrapperApplication : BootstrapperApplicati
         DispatchFailure("We couldn't finish the installation.", args.ErrorMessage, args.PackageId);
     }
 
-    private void DispatchStatus(string message, string? stepId)
-    {
-        if (_window is null)
-        {
-            return;
-        }
+    /// <summary>
+    /// Traces Burn detection status. The old dashboard (<c>MainWindowViewModel</c>)
+    /// surfaced this as free-form status text on its single screen; the
+    /// wizard has no such single text slot (each page owns its own state),
+    /// so this is now trace-only — Burn's detect/apply lifecycle never
+    /// drives the actual install (that stays on the Process/ArgumentList
+    /// path via <see cref="ProcessInstallerEngineClient"/>, unchanged).
+    /// </summary>
+    private static void DispatchStatus(string message, string? stepId) =>
+        BootstrapperTrace.Write($"BA status message={message} stepId={stepId ?? "<null>"}");
 
-        _window.Dispatcher.Invoke(() => _window.ViewModel.ReportExternalProgress(message, stepId));
-    }
-
-    private void DispatchCompletion(bool success, string message, string? stepId)
-    {
-        if (_window is null)
-        {
-            return;
-        }
-
-        _window.Dispatcher.Invoke(() => _window.ViewModel.CompleteExternalInstall(success, message, stepId));
-    }
-
-    private void DispatchFailure(string title, string details, string? stepId)
-    {
-        if (_window is null)
-        {
-            return;
-        }
-
-        _window.Dispatcher.Invoke(() => _window.ViewModel.FailExternalInstall(title, details, stepId));
-    }
+    private static void DispatchFailure(string title, string details, string? stepId) =>
+        BootstrapperTrace.Write($"BA failure title={title} stepId={stepId ?? "<null>"} details={details}");
 }

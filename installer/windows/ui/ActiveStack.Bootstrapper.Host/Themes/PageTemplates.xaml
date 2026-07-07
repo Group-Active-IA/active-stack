@@ -1,0 +1,437 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:pages="clr-namespace:ActiveStack.Bootstrapper.Host.Pages"
+                    xmlns:install="clr-namespace:ActiveStack.Bootstrapper.Host.Pages.Install"
+                    xmlns:uninstall="clr-namespace:ActiveStack.Bootstrapper.Host.Pages.Uninstall"
+                    xmlns:starters="clr-namespace:ActiveStack.Bootstrapper.Host.Pages.Starters"
+                    xmlns:backups="clr-namespace:ActiveStack.Bootstrapper.Host.Pages.Backups">
+
+  <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+
+  <Style x:Key="PageHeadingStyle" TargetType="TextBlock">
+    <Setter Property="FontSize" Value="16" />
+    <Setter Property="FontWeight" Value="SemiBold" />
+    <Setter Property="Foreground" Value="#111827" />
+  </Style>
+
+  <Style x:Key="PageBodyTextStyle" TargetType="TextBlock">
+    <Setter Property="Foreground" Value="#4B5563" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+
+  <!-- Hub: entries as a single-select list; disabled entries carry a tooltip and cannot be selected. -->
+  <DataTemplate DataType="{x:Type pages:HubPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ListBox ItemsSource="{Binding Entries}"
+               BorderThickness="0"
+               Background="Transparent"
+               SelectedValuePath="Id"
+               SelectedValue="{Binding SelectedEntryId, Mode=TwoWay}">
+        <ListBox.ItemContainerStyle>
+          <Style TargetType="ListBoxItem">
+            <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
+            <Setter Property="ToolTip" Value="{Binding Tooltip}" />
+            <Setter Property="Padding" Value="12,10" />
+          </Style>
+        </ListBox.ItemContainerStyle>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Label}" FontSize="14" />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- Assistants: multi-select checkboxes, min 1 (CanAdvance gates the footer). -->
+  <DataTemplate DataType="{x:Type install:AssistantsPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ItemsControl ItemsSource="{Binding Choices}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <CheckBox Margin="0,0,0,10"
+                      IsChecked="{Binding IsSelected, Mode=TwoWay}">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Label}" />
+                <TextBlock Margin="8,0,0,0"
+                           Text="Recommended"
+                           FontSize="11"
+                           Foreground="#4F46E5"
+                           Visibility="{Binding IsRecommended, Converter={StaticResource BooleanToVisibilityConverter}}" />
+              </StackPanel>
+            </CheckBox>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- InstallType: lite/full/custom cards, one always selected. -->
+  <DataTemplate DataType="{x:Type install:InstallTypePageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ListBox ItemsSource="{Binding Choices}"
+               BorderThickness="0"
+               Background="Transparent"
+               SelectedValuePath="Id"
+               SelectedValue="{Binding SelectedId, Mode=TwoWay}">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Margin="0,0,0,4">
+              <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+              <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- Components (custom mode only): checkboxes; the security-first "permissions" harness is checked+disabled. -->
+  <DataTemplate DataType="{x:Type install:ComponentsPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ItemsControl ItemsSource="{Binding Choices}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <CheckBox Margin="0,0,0,10"
+                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                      IsEnabled="{Binding IsToggleable}">
+              <StackPanel>
+                <TextBlock Text="{Binding Label}" />
+                <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" FontSize="12" />
+              </StackPanel>
+            </CheckBox>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- Permissions (tier-capable agents only): single-select tier radio group with a bypass warning. -->
+  <DataTemplate DataType="{x:Type install:PermissionsPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <ListBox ItemsSource="{Binding Tiers}"
+                 BorderThickness="0"
+                 Background="Transparent"
+                 SelectedValuePath="Id"
+                 SelectedValue="{Binding SelectedTierId, Mode=TwoWay}">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Margin="0,0,0,4">
+                <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <Border Margin="0,12,0,0"
+                Padding="12"
+                Background="#FFFBEB"
+                BorderBrush="#FDE68A"
+                BorderThickness="1"
+                CornerRadius="8">
+          <Border.Style>
+            <Style TargetType="Border">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding WarningText}" Value="{x:Null}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding WarningText}" Value="">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Border.Style>
+          <TextBlock Text="{Binding WarningText}" Foreground="#92400E" TextWrapping="Wrap" />
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- Review: read-only summary; the shell's footer primary action reads "Install" here. -->
+  <DataTemplate DataType="{x:Type install:ReviewPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <TextBlock Text="Assistants" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding AgentsSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
+
+        <TextBlock Text="Install type" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding ModeSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
+
+        <TextBlock Text="Components" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding ComponentsSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
+
+        <TextBlock Text="Permission tier" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding TierSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,0" />
+      </StackPanel>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- Installing: renders any IAsyncEnumerable<InstallProgressSnapshot> stream; no footer nav. -->
+  <DataTemplate DataType="{x:Type pages:ProgressPageViewModel}">
+    <StackPanel>
+      <ProgressBar Height="10" Maximum="100" Value="{Binding ProgressValue, Mode=OneWay}" />
+      <TextBlock Margin="0,10,0,0" Text="{Binding ProgressMessage}" Style="{StaticResource PageBodyTextStyle}" />
+      <TextBlock Margin="0,6,0,0"
+                 Text="{Binding CurrentStepLabel, StringFormat=Current item: {0}}"
+                 FontSize="12"
+                 Foreground="#6B7280" />
+      <Border Margin="0,16,0,0"
+              Background="#F9FAFB"
+              BorderBrush="#E5E7EB"
+              BorderThickness="1"
+              CornerRadius="8"
+              Padding="12">
+        <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+          <ItemsControl ItemsSource="{Binding RecentActivity}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Margin="0,0,0,6" Text="{Binding}" FontSize="12" Foreground="#4B5563" TextWrapping="Wrap" />
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </Border>
+    </StackPanel>
+  </DataTemplate>
+
+  <!-- Complete: terminal success/degraded/rolled-back/error state. -->
+  <DataTemplate DataType="{x:Type pages:CompletePageViewModel}">
+    <StackPanel>
+      <TextBlock Text="{Binding State}" Style="{StaticResource PageHeadingStyle}" />
+      <TextBlock Margin="0,8,0,0" Text="{Binding Message}" Style="{StaticResource PageBodyTextStyle}" />
+    </StackPanel>
+  </DataTemplate>
+
+  <!-- UninstallAgents: multi-select checkboxes, min 1 (D8, windows-gui-hub-flows design.md). -->
+  <DataTemplate DataType="{x:Type uninstall:UninstallAgentsPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ItemsControl ItemsSource="{Binding Choices}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <CheckBox Margin="0,0,0,10" IsChecked="{Binding IsSelected, Mode=TwoWay}" Content="{Binding Label}" />
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- UninstallMode: lite/full/custom radio group. -->
+  <DataTemplate DataType="{x:Type uninstall:UninstallModePageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ListBox ItemsSource="{Binding Choices}"
+               BorderThickness="0"
+               Background="Transparent"
+               SelectedValuePath="Id"
+               SelectedValue="{Binding SelectedId, Mode=TwoWay}">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Margin="0,0,0,4">
+              <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+              <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- UninstallStrategy: targeted/restore radio group; restore reveals a backup selector by display_label. -->
+  <DataTemplate DataType="{x:Type uninstall:UninstallStrategyPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <ListBox ItemsSource="{Binding Strategies}"
+                 BorderThickness="0"
+                 Background="Transparent"
+                 SelectedValuePath="Id"
+                 SelectedValue="{Binding SelectedStrategyId, Mode=TwoWay}">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Margin="0,0,0,4">
+                <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+        <StackPanel Margin="0,12,0,0" Visibility="{Binding ShowBackupSelector, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <TextBlock Text="Choose a backup to restore" Style="{StaticResource PageHeadingStyle}" />
+          <ListBox Margin="0,8,0,0"
+                   ItemsSource="{Binding Backups}"
+                   BorderThickness="0"
+                   Background="Transparent"
+                   SelectedItem="{Binding SelectedBackup, Mode=TwoWay}"
+                   DisplayMemberPath="DisplayLabel" />
+        </StackPanel>
+      </StackPanel>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- UninstallConfirm: read-only summary + destructive warning; triggers the uninstall stream. -->
+  <DataTemplate DataType="{x:Type uninstall:UninstallConfirmPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <TextBlock Text="Agents" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding AgentsSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
+
+        <TextBlock Text="Mode" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding ModeSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
+
+        <TextBlock Text="Strategy" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding StrategySummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
+
+        <StackPanel>
+          <StackPanel.Style>
+            <Style TargetType="StackPanel">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding BackupSummary}" Value="{x:Null}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </StackPanel.Style>
+          <TextBlock Text="Restoring backup" Style="{StaticResource PageHeadingStyle}" />
+          <TextBlock Text="{Binding BackupSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
+        </StackPanel>
+
+        <Border Padding="12" Background="#FEF2F2" BorderBrush="#FCA5A5" BorderThickness="1" CornerRadius="8">
+          <TextBlock Text="{Binding WarningText}" Foreground="#991B1B" TextWrapping="Wrap" FontWeight="SemiBold" />
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- StarterCatalog: single-select list with name/description/harness count. -->
+  <DataTemplate DataType="{x:Type starters:StarterCatalogPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ListBox ItemsSource="{Binding Choices}"
+               BorderThickness="0"
+               Background="Transparent"
+               SelectedValuePath="Id"
+               SelectedValue="{Binding SelectedStarterId, Mode=TwoWay}">
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Margin="0,0,0,4">
+              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+              <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
+              <TextBlock Text="{Binding Harnesses.Count, StringFormat={}{0} harnesses}" FontSize="11" Foreground="#6B7280" />
+            </StackPanel>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- StarterTarget: folder picker (behind IFolderPicker) + agent checkboxes defaulting to claude+opencode. -->
+  <DataTemplate DataType="{x:Type starters:StarterTargetPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <TextBlock Text="Target project" Style="{StaticResource PageHeadingStyle}" />
+        <Grid Margin="0,8,0,20">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBox Grid.Column="0" Text="{Binding ProjectPath, Mode=OneWay}" IsReadOnly="True" />
+          <Button Grid.Column="1" Margin="8,0,0,0" Content="Browse…" Command="{Binding PickFolderCommand}" />
+        </Grid>
+
+        <TextBlock Text="Agents" Style="{StaticResource PageHeadingStyle}" />
+        <ItemsControl ItemsSource="{Binding Agents}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <CheckBox Margin="0,8,0,0" IsChecked="{Binding IsSelected, Mode=TwoWay}" Content="{Binding Label}" />
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- StarterReview: read-only summary; the shell's footer primary action reads "Install" here. -->
+  <DataTemplate DataType="{x:Type starters:StarterReviewPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <TextBlock Text="Starter" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding StarterSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
+
+        <TextBlock Text="Target folder" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding TargetSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
+
+        <TextBlock Text="Agents" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding AgentsSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,0" />
+      </StackPanel>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- Backups: standalone page (not a wizard step, D7). Lists by display_label with per-item Restore/Delete/Rename and an inline confirmation matching the TUI text. -->
+  <DataTemplate DataType="{x:Type backups:BackupsPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <TextBlock Text="No backups yet."
+                   Style="{StaticResource PageBodyTextStyle}"
+                   Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
+
+        <TextBlock Margin="0,0,0,12" Text="{Binding LastMessage}">
+          <TextBlock.Style>
+            <Style TargetType="TextBlock" BasedOn="{StaticResource PageBodyTextStyle}">
+              <Style.Triggers>
+                <DataTrigger Binding="{Binding LastMessage}" Value="{x:Null}">
+                  <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </TextBlock.Style>
+        </TextBlock>
+
+        <ItemsControl ItemsSource="{Binding Items}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Border Margin="0,0,0,10" Padding="12" Background="#F9FAFB" BorderBrush="#E5E7EB" BorderThickness="1" CornerRadius="8">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                  </Grid.ColumnDefinitions>
+                  <TextBlock Grid.Column="0" Text="{Binding DisplayLabel}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button Margin="4,0,0,0"
+                            Content="Restore"
+                            Command="{Binding DataContext.BeginRestoreCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}" />
+                    <Button Margin="4,0,0,0"
+                            Content="Rename"
+                            Command="{Binding DataContext.BeginRenameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}" />
+                    <Button Margin="4,0,0,0"
+                            Content="Delete"
+                            Command="{Binding DataContext.BeginDeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                            CommandParameter="{Binding}" />
+                  </StackPanel>
+                </Grid>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <Border Margin="0,12,0,0"
+                Padding="12"
+                Background="#FEF2F2"
+                BorderBrush="#FCA5A5"
+                BorderThickness="1"
+                CornerRadius="8"
+                Visibility="{Binding IsConfirming, Converter={StaticResource BooleanToVisibilityConverter}}">
+          <StackPanel>
+            <TextBlock Text="{Binding ConfirmationText}" Foreground="#991B1B" TextWrapping="Wrap" FontWeight="SemiBold" />
+            <TextBox Margin="0,8,0,0" Text="{Binding RenameInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
+              <Button Content="Confirm" Command="{Binding ConfirmActionCommand}" />
+              <Button Margin="8,0,0,0" Content="Cancel" Command="{Binding CancelActionCommand}" />
+            </StackPanel>
+          </StackPanel>
+        </Border>
+      </StackPanel>
+    </ScrollViewer>
+  </DataTemplate>
+
+</ResourceDictionary>
