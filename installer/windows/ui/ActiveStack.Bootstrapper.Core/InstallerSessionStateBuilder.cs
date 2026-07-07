@@ -44,13 +44,29 @@ public static class InstallerSessionStateBuilder
             ? "full"
             : installTypes.FirstOrDefault()?.Id;
 
+        var tierCapableAgents = (options.TierCapableAgents ?? [])
+            .Where(static id => !string.IsNullOrWhiteSpace(id))
+            .ToList();
+
+        var permissionTierChoices = (options.PermissionTiers ?? [])
+            .Select(static tier => new PermissionTierChoice(
+                tier.Id ?? string.Empty,
+                tier.Label ?? string.Empty,
+                tier.Description ?? string.Empty,
+                tier.Default,
+                tier.Warning))
+            .ToList();
+
         return new InstallerSessionState(
             assistants,
             assistants.FirstOrDefault()?.Id,
             installTypes,
             recommendedModeId,
             forced,
-            custom);
+            custom,
+            options.TierCapable,
+            tierCapableAgents,
+            permissionTierChoices);
     }
 
     private static string ToAssistantLabel(string id) => id switch
@@ -70,13 +86,23 @@ public sealed record InstallerSessionState(
     IReadOnlyList<InstallTypeChoice> InstallTypeChoices,
     string? RecommendedModeId,
     IReadOnlyList<ComponentChoice> ForcedComponents,
-    IReadOnlyList<ComponentChoice> CustomComponents);
+    IReadOnlyList<ComponentChoice> CustomComponents,
+    bool TierCapable = false,
+    IReadOnlyList<string>? TierCapableAgents = null,
+    IReadOnlyList<PermissionTierChoice>? PermissionTierChoices = null)
+{
+    public IReadOnlyList<string> TierCapableAgents { get; init; } = TierCapableAgents ?? [];
+
+    public IReadOnlyList<PermissionTierChoice> PermissionTierChoices { get; init; } = PermissionTierChoices ?? [];
+}
 
 public sealed record AssistantChoice(string Id, string Label);
 
 public sealed record InstallTypeChoice(string Id, string Label, string Description);
 
 public sealed record ComponentChoice(string Id, string Label, string Description, bool Recommended);
+
+public sealed record PermissionTierChoice(string Id, string Label, string Description, bool IsDefault, string? Warning);
 
 internal sealed class WindowsDetectResponse
 {
@@ -94,6 +120,33 @@ internal sealed class WindowsOptionsResponse
 
     [JsonPropertyName("custom_components")]
     public List<WindowsComponentOption>? CustomComponents { get; init; }
+
+    [JsonPropertyName("tier_capable")]
+    public bool TierCapable { get; init; }
+
+    [JsonPropertyName("tier_capable_agents")]
+    public List<string>? TierCapableAgents { get; init; }
+
+    [JsonPropertyName("permission_tiers")]
+    public List<WindowsPermissionTierOption>? PermissionTiers { get; init; }
+}
+
+internal sealed class WindowsPermissionTierOption
+{
+    [JsonPropertyName("id")]
+    public string? Id { get; init; }
+
+    [JsonPropertyName("label")]
+    public string? Label { get; init; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; init; }
+
+    [JsonPropertyName("default")]
+    public bool Default { get; init; }
+
+    [JsonPropertyName("warning")]
+    public string? Warning { get; init; }
 }
 
 internal sealed class WindowsModeOption
