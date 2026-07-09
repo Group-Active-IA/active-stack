@@ -75,9 +75,28 @@ Hay **tres tipos** de harness, y el instalador no instala "repos": instala harne
 
 ---
 
-## Quick start
+## 📥 Descargas
 
-> **Estado:** el binario se construye desde fuente (releases pre-compilados: _próximamente_).
+<p align="center">
+  <a href="https://github.com/Group-Active-IA/active-stack/releases/latest/download/ActiveStack-Setup.exe">
+    <img src="https://img.shields.io/badge/⬇%20Descargar%20para%20Windows-ActiveStack--Setup.exe-6366f1?style=for-the-badge" alt="Descargar para Windows">
+  </a>
+</p>
+
+| Plataforma | Descarga |
+|------------|----------|
+| **Windows** (instalador gráfico) | [`ActiveStack-Setup.exe`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/ActiveStack-Setup.exe) — última versión |
+| **Windows** (solo CLI) | [`active-stack_windows_amd64.exe`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/active-stack_windows_amd64.exe) |
+| **Linux / WSL** (solo CLI) | [`active-stack_linux_amd64`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/active-stack_linux_amd64) |
+| Todas las versiones | [Releases](https://github.com/Group-Active-IA/active-stack/releases) |
+
+Cada release publica su [`SHA256SUMS.txt`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/SHA256SUMS.txt) para verificar la integridad de lo descargado.
+
+> ⚠️ **SmartScreen**: el instalador no está firmado digitalmente (todavía). Si Windows muestra la advertencia, hacé click en **"Más información" → "Ejecutar de todas formas"**. Podés verificar el hash SHA256 antes de ejecutar.
+
+---
+
+## Quick start
 
 ```bash
 # 1. Cloná y compilá

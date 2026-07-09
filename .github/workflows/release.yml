@@ -1,0 +1,99 @@
+name: release
+
+# Publica el instalador Windows (WiX Burn bundle) + binarios CLI crudos en GitHub Releases.
+#
+# - Push de un tag `v*` (ej. v0.1.0)  → buildea y PUBLICA el release.
+# - workflow_dispatch                  → buildea y sube artifact de validación (NO publica).
+#
+# El asset `ActiveStack-Setup.exe` (nombre fijo, sin versión) existe para que la URL
+# estable  releases/latest/download/ActiveStack-Setup.exe  nunca cambie entre versiones:
+# es la que usan el README y la landing.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Versión a buildear (ej. 0.1.0). Solo valida el pipeline: no publica release."
+        required: true
+        default: "0.1.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Derivar versión (tag v0.1.0 → WiX 0.1.0.0)
+        id: ver
+        shell: pwsh
+        run: |
+          $raw = if ('${{ github.event_name }}' -eq 'workflow_dispatch') { '${{ inputs.version }}' } else { '${{ github.ref_name }}' }
+          $raw = $raw.TrimStart('v')
+          $parts = $raw.Split('.')
+          if ($parts.Count -lt 3 -or $parts.Count -gt 4) { throw "Versión inválida: '$raw' (se espera MAJOR.MINOR.PATCH[.BUILD])" }
+          while ($parts.Count -lt 4) { $parts += '0' }
+          $wix = $parts -join '.'
+          "wix=$wix" >> $env:GITHUB_OUTPUT
+          Write-Host "Versión WiX: $wix"
+
+      - name: Build instalador Windows
+        shell: pwsh
+        run: pwsh -File installer/windows/build.ps1 -InstallerVersion "${{ steps.ver.outputs.wix }}"
+
+      - name: Preparar assets del release
+        shell: pwsh
+        run: |
+          $ver = "${{ steps.ver.outputs.wix }}"
+          $setup = "installer/windows/dist/ActiveStack-Setup-$ver.exe"
+          if (-not (Test-Path $setup)) { throw "No se encontró $setup" }
+
+          New-Item -ItemType Directory -Force -Path release-assets | Out-Null
+          Copy-Item $setup "release-assets/ActiveStack-Setup-$ver.exe"
+          # Copia con nombre fijo: mantiene estable la URL releases/latest/download/ActiveStack-Setup.exe
+          Copy-Item $setup "release-assets/ActiveStack-Setup.exe"
+
+          # Binarios CLI crudos (paridad con build.sh / build.bat)
+          $env:CGO_ENABLED = "0"
+          $env:GOOS = "windows"; $env:GOARCH = "amd64"
+          go build -trimpath -o release-assets/active-stack_windows_amd64.exe ./cmd/active-stack
+          if ($LASTEXITCODE -ne 0) { throw "go build windows/amd64 falló" }
+          $env:GOOS = "linux"
+          go build -trimpath -o release-assets/active-stack_linux_amd64 ./cmd/active-stack
+          if ($LASTEXITCODE -ne 0) { throw "go build linux/amd64 falló" }
+
+          Get-ChildItem release-assets | ForEach-Object {
+            "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name
+          } | Set-Content release-assets/SHA256SUMS.txt -Encoding ascii
+          Get-Content release-assets/SHA256SUMS.txt
+
+      - name: Subir artifact de validación
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: activestack-release-${{ steps.ver.outputs.wix }}
+          path: release-assets/
+
+      - name: Publicar GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = Get-ChildItem release-assets | ForEach-Object { $_.FullName }
+          gh release create "${{ github.ref_name }}" `
+            --title "Active Stack ${{ github.ref_name }}" `
+            --generate-notes `
+            @assets
