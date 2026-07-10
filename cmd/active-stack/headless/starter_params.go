@@ -103,5 +103,6 @@ func BuildStarterInstallParams(
 		Starter:     effectiveStarter,
 		Intent:      intent,
 		BuildPlanFn: buildPlanFn,
+		Lang:        flags.Lang,
 	}, nil
 }

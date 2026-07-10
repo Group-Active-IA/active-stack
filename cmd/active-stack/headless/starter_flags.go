@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
@@ -30,6 +31,11 @@ type ParsedStarterAddFlags struct {
 	// defaults to the P0 focal agents [claude, opencode] (D1 TBD resolved:
 	// default to "all focal registered" = claude+opencode).
 	Agents []model.Agent
+
+	// Lang selects the language for every user-facing string emitted by the
+	// "windows starters install" event stream (i18n-engine-locales D3). Zero
+	// value is treated as i18n.Default (EN).
+	Lang i18n.Lang
 }
 
 // defaultFocalAgents are the P0 agents targeted by "starter add" when --agent

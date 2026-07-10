@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
@@ -87,6 +88,14 @@ type ParsedFlags struct {
 	// forwarded to install.Options.SelfInstallBinaryPath. Set by main.go at entry,
 	// empty means the self-install step resolves it via os.Executable internally.
 	BinaryPath string
+
+	// ── i18n-engine-locales D3 ─────────────────────────────────────────────────
+
+	// Lang selects the language for every user-facing string this engine
+	// emits. Zero value is treated as i18n.Default (EN) by every localized
+	// helper, so existing callers that never set Lang keep producing EN
+	// output byte-compatible with the pre-i18n behavior.
+	Lang i18n.Lang
 }
 
 // ParseInstallFlags parses the raw argument list for the "install" sub-command.
@@ -117,6 +126,7 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 		home          string
 		noSelfInstall bool
 		windowsEventsFile string
+		lang          string
 	)
 
 	fs.BoolVar(&headless, "headless", false, "non-interactive install; implied by --mode or --agent")
@@ -130,9 +140,22 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 	fs.StringVar(&home, "home", "", "override home directory (default: os.UserHomeDir())")
 	fs.BoolVar(&noSelfInstall, "no-self-install", false, "skip copying the running binary into the PATH bin dir (CI / reproducible builds)")
 	fs.StringVar(&windowsEventsFile, "windows-events-file", "", "internal: write windows install JSON events to this file")
+	fs.StringVar(&lang, "lang", "", "output language: en|es (default: en)")
 
 	if err := fs.Parse(args); err != nil {
 		return ParsedFlags{}, err
+	}
+
+	// ── Validate --lang ─────────────────────────────────────────────────────
+	// An omitted --lang leaves Lang at its zero value; every localized helper
+	// treats that as i18n.Default (D3, design.md).
+	var resolvedLang i18n.Lang
+	if lang != "" {
+		var err error
+		resolvedLang, err = i18n.Parse(lang)
+		if err != nil {
+			return ParsedFlags{}, err
+		}
 	}
 
 	// Merge -y into yes.
@@ -228,6 +251,7 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 		HomeDir:       homeDir,
 		NoSelfInstall: noSelfInstall,
 		WindowsEventsFile: windowsEventsFile,
+		Lang:          resolvedLang,
 		Intent: install.Intent{
 			Mode:   installMode,
 			Agents: agents,

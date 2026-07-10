@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 )
 
 // windowsBackupStoreSubdirs are the two backup roots under
@@ -38,7 +39,7 @@ type windowsBackupsListResponse struct {
 // <home>/.active-stack/backups/{install,uninstall} and emits
 // {"backups":[...]} (design D4). Read-only; internal/backup is untouched.
 // A missing or empty store yields {"backups":[]}.
-func RunWindowsBackupsList(homeDir string, w io.Writer) error {
+func RunWindowsBackupsList(homeDir string, lang i18n.Lang, w io.Writer) error {
 	root := filepath.Join(homeDir, ".active-stack", "backups")
 
 	var manifests []backup.Manifest
@@ -55,7 +56,7 @@ func RunWindowsBackupsList(homeDir string, w io.Writer) error {
 		resp.Backups = append(resp.Backups, windowsBackupEntry{
 			ID:           m.ID,
 			CreatedAt:    m.CreatedAt.UTC().Format(time.RFC3339),
-			Source:       m.Source.Label(),
+			Source:       localizedBackupSource(lang, m.Source.Label()),
 			Description:  m.Description,
 			FileCount:    m.FileCount,
 			Pinned:       m.Pinned,
@@ -66,4 +67,20 @@ func RunWindowsBackupsList(homeDir string, w io.Writer) error {
 	}
 
 	return json.NewEncoder(w).Encode(resp)
+}
+
+// localizedBackupSource maps a backup.Source.Label() value (e.g. "install",
+// "sync", "upgrade", "unknown source") through the i18n "backup.source.*"
+// tables (design D4, i18n-engine-locales). i18n.T's own missing-key fallback
+// returns the composed key itself, which is not a usable label; when no
+// "backup.source.<label>" key is registered (e.g. "unknown source",
+// deliberately unregistered), this falls back to the raw label string
+// exactly as internal/backup returns it.
+func localizedBackupSource(lang i18n.Lang, rawLabel string) string {
+	key := "backup.source." + rawLabel
+	localized := i18n.T(lang, key)
+	if localized == key {
+		return rawLabel
+	}
+	return localized
 }

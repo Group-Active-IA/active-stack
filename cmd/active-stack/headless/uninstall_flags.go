@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
@@ -30,6 +31,11 @@ type ParsedUninstallFlags struct {
 	// RestoreManifestPath is the path supplied via --restore-manifest.
 	// Only meaningful when Intent.Strategy == StrategyRestore.
 	RestoreManifestPath string
+
+	// Lang selects the language for every user-facing string this engine
+	// emits (i18n-engine-locales D3). Zero value is treated as i18n.Default
+	// (EN) by every localized helper.
+	Lang i18n.Lang
 }
 
 // ParseUninstallFlags parses the raw argument list for the "uninstall" sub-command.
@@ -59,6 +65,7 @@ func ParseUninstallFlags(args []string) (ParsedUninstallFlags, error) {
 		yes              bool
 		yShort           bool
 		home             string
+		lang             string
 	)
 
 	fs.StringVar(&mode, "mode", "", "uninstall mode: lite|full|custom")
@@ -70,9 +77,22 @@ func ParseUninstallFlags(args []string) (ParsedUninstallFlags, error) {
 	fs.BoolVar(&yes, "yes", false, "confirm without prompt")
 	fs.BoolVar(&yShort, "y", false, "alias for --yes")
 	fs.StringVar(&home, "home", "", "override home directory (default: os.UserHomeDir())")
+	fs.StringVar(&lang, "lang", "", "output language: en|es (default: en)")
 
 	if err := fs.Parse(args); err != nil {
 		return ParsedUninstallFlags{}, err
+	}
+
+	// ── Validate --lang ─────────────────────────────────────────────────────
+	// An omitted --lang leaves Lang at its zero value; every localized helper
+	// treats that as i18n.Default (D3, design.md).
+	var resolvedLang i18n.Lang
+	if lang != "" {
+		var err error
+		resolvedLang, err = i18n.Parse(lang)
+		if err != nil {
+			return ParsedUninstallFlags{}, err
+		}
 	}
 
 	// Merge -y into yes.
@@ -149,6 +169,7 @@ func ParseUninstallFlags(args []string) (ParsedUninstallFlags, error) {
 		Yes:                 yes,
 		HomeDir:             homeDir,
 		RestoreManifestPath: restoreManifest,
+		Lang:                resolvedLang,
 		Intent: uninstall.Intent{
 			Mode:     installMode,
 			Agents:   agents,

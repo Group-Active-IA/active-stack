@@ -15,6 +15,7 @@ import (
 
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
 	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 )
 
 // fabricateManifest writes a manifest.json under
@@ -52,7 +53,7 @@ func TestRunWindowsBackupsList_ListsFabricatedManifests(t *testing.T) {
 	})
 
 	var out bytes.Buffer
-	if err := headless.RunWindowsBackupsList(home, &out); err != nil {
+	if err := headless.RunWindowsBackupsList(home, i18n.LangEN, &out); err != nil {
 		t.Fatalf("RunWindowsBackupsList() error = %v", err)
 	}
 
@@ -128,7 +129,7 @@ func TestRunWindowsBackupsList_EmptyStore(t *testing.T) {
 	home := t.TempDir()
 
 	var out bytes.Buffer
-	if err := headless.RunWindowsBackupsList(home, &out); err != nil {
+	if err := headless.RunWindowsBackupsList(home, i18n.LangEN, &out); err != nil {
 		t.Fatalf("RunWindowsBackupsList() error = %v", err)
 	}
 
@@ -138,5 +139,47 @@ func TestRunWindowsBackupsList_EmptyStore(t *testing.T) {
 	}
 	if string(raw["backups"]) != "[]" {
 		t.Fatalf("backups = %s, want []", raw["backups"])
+	}
+}
+
+// TestRunWindowsBackupsList_LocalizedSourceWithRawFallback covers task 6.1:
+// a backup with a known source label ("install") localizes under --lang es,
+// while a source with no registered i18n key falls back to the raw label
+// string returned by Source.Label() exactly.
+func TestRunWindowsBackupsList_LocalizedSourceWithRawFallback(t *testing.T) {
+	home := t.TempDir()
+
+	fabricateManifest(t, home, "install", "backup-known", backup.Manifest{
+		Source: backup.BackupSourceInstall,
+	})
+	fabricateManifest(t, home, "install", "backup-unknown", backup.Manifest{
+		Source: backup.BackupSource("other"),
+	})
+
+	var out bytes.Buffer
+	if err := headless.RunWindowsBackupsList(home, i18n.LangES, &out); err != nil {
+		t.Fatalf("RunWindowsBackupsList() error = %v", err)
+	}
+
+	var resp struct {
+		Backups []struct {
+			ID     string `json:"id"`
+			Source string `json:"source"`
+		} `json:"backups"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal backups list json: %v\nbody=%s", err, out.String())
+	}
+
+	byID := make(map[string]string, len(resp.Backups))
+	for _, b := range resp.Backups {
+		byID[b.ID] = b.Source
+	}
+
+	if got := byID["backup-known"]; got != "instalación" {
+		t.Errorf("backup-known source = %q, want localized %q", got, "instalación")
+	}
+	if got := byID["backup-unknown"]; got != backup.BackupSource("other").Label() {
+		t.Errorf("backup-unknown source = %q, want raw fallback %q", got, backup.BackupSource("other").Label())
 	}
 }

@@ -9,11 +9,31 @@ import (
 
 	"github.com/Group-Active-IA/active-stack/assets"
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 	"github.com/Group-Active-IA/active-stack/internal/verify"
 )
+
+// registerLangFlag registers --lang on fs (default "en", shown in --help)
+// and returns a pointer to the raw parsed string. Callers register every
+// other flag first, call fs.Parse once, then resolve the pointer's value via
+// resolveLangFlag. Shared by every windows subcommand so the --lang wiring
+// cannot drift (task 7.3 REFACTOR).
+func registerLangFlag(fs *flag.FlagSet) *string {
+	lang := "en"
+	fs.StringVar(&lang, "lang", "en", "output language: en|es")
+	return &lang
+}
+
+// resolveLangFlag parses the raw string captured by registerLangFlag into an
+// i18n.Lang. Returns a non-nil error naming the invalid value; callers must
+// print it to w and return a non-zero exit code before any subcommand work
+// runs (D3, windows-install-contract / windows-hub-contract specs).
+func resolveLangFlag(raw *string) (i18n.Lang, error) {
+	return i18n.Parse(*raw)
+}
 
 func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry, w io.Writer) int {
 	if len(args) == 0 {
@@ -49,7 +69,13 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 		fs.SetOutput(w)
 		var agent string
 		fs.StringVar(&agent, "agent", "", "comma-separated list of target agents (e.g. claude,opencode)")
+		langRaw := registerLangFlag(fs)
 		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		lang, err := resolveLangFlag(langRaw)
+		if err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
 		var agents []model.Agent
@@ -64,7 +90,7 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 			fmt.Fprintln(w, "error: windows options requires --agent")
 			return 1
 		}
-		if err := headless.RunWindowsOptions(cat, agents, w); err != nil {
+		if err := headless.RunWindowsOptions(cat, agents, lang, w); err != nil {
 			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
@@ -135,7 +161,13 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 		fs.SetOutput(w)
 		homeDir := ""
 		fs.StringVar(&homeDir, "home", "", "override home directory")
+		langRaw := registerLangFlag(fs)
 		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		lang, err := resolveLangFlag(langRaw)
+		if err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
 		if homeDir == "" {
@@ -146,7 +178,7 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 				return 1
 			}
 		}
-		if err := headless.RunWindowsUninstallOptions(homeDir, w); err != nil {
+		if err := headless.RunWindowsUninstallOptions(homeDir, lang, w); err != nil {
 			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
@@ -177,10 +209,16 @@ func runWindowsStartersDispatch(args []string, cat install.Catalog, reg install.
 	case "list":
 		fs := flag.NewFlagSet("windows starters list", flag.ContinueOnError)
 		fs.SetOutput(w)
+		langRaw := registerLangFlag(fs)
 		if err := fs.Parse(args[1:]); err != nil {
 			return 1
 		}
-		if err := headless.RunWindowsStartersList(sc, w); err != nil {
+		lang, err := resolveLangFlag(langRaw)
+		if err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
+			return 1
+		}
+		if err := headless.RunWindowsStartersList(sc, lang, w); err != nil {
 			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
@@ -196,7 +234,13 @@ func runWindowsStartersDispatch(args []string, cat install.Catalog, reg install.
 		fs.StringVar(&agent, "agent", "", "comma-separated list of agents (e.g. claude,opencode)")
 		fs.BoolVar(&dryRun, "dry-run", false, "print plan steps; do not execute")
 		fs.BoolVar(&yes, "yes", false, "confirm without prompt")
+		langRaw := registerLangFlag(fs)
 		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		lang, err := resolveLangFlag(langRaw)
+		if err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
 		if starterID == "" {
@@ -227,6 +271,7 @@ func runWindowsStartersDispatch(args []string, cat install.Catalog, reg install.
 			DryRun:      dryRun,
 			Yes:         yes,
 			Agents:      agents,
+			Lang:        lang,
 		}
 		buildPlanFn := func(c install.Catalog, intent install.Intent, opts install.Options) (install.Plan, error) {
 			opts = install.WithEmbeddedSkillsFS(opts, assets.SkillsFS)
@@ -255,7 +300,13 @@ func runWindowsBackupsDispatch(args []string, w io.Writer) int {
 		fs.SetOutput(w)
 		homeDir := ""
 		fs.StringVar(&homeDir, "home", "", "override home directory")
+		langRaw := registerLangFlag(fs)
 		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		lang, err := resolveLangFlag(langRaw)
+		if err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
 		if homeDir == "" {
@@ -266,7 +317,7 @@ func runWindowsBackupsDispatch(args []string, w io.Writer) int {
 				return 1
 			}
 		}
-		if err := headless.RunWindowsBackupsList(homeDir, w); err != nil {
+		if err := headless.RunWindowsBackupsList(homeDir, lang, w); err != nil {
 			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
@@ -282,7 +333,15 @@ func runWindowsBackupsDispatch(args []string, w io.Writer) int {
 		fs.StringVar(&homeDir, "home", "", "override home directory")
 		fs.StringVar(&id, "id", "", "backup id")
 		fs.StringVar(&description, "description", "", "new description (rename only)")
+		langRaw := registerLangFlag(fs)
 		if err := fs.Parse(args[1:]); err != nil {
+			return 1
+		}
+		// The backup-action response is machine-oriented (success/message/id);
+		// the language is validated at the flag boundary per the hub contract
+		// even though RunWindowsBackupsAction emits no localized strings yet.
+		if _, err := resolveLangFlag(langRaw); err != nil {
+			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
 		if id == "" {

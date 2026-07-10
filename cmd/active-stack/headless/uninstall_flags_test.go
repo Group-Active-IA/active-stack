@@ -3,9 +3,11 @@
 package headless_test
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
@@ -300,4 +302,41 @@ func TestParseUninstallFlagsIntentShape(t *testing.T) {
 	if result.HomeDir != "/test/home" {
 		t.Errorf("HomeDir = %q, want /test/home", result.HomeDir)
 	}
+}
+
+// TestParseUninstallFlags_Lang covers task 3.3: --lang es sets
+// ParsedUninstallFlags.Lang, omitting --lang leaves Lang at the zero value
+// (treated as i18n.Default by callers), and --lang xx is rejected with an
+// error naming the value.
+func TestParseUninstallFlags_Lang(t *testing.T) {
+	t.Run("--lang es sets Lang", func(t *testing.T) {
+		result, err := headless.ParseUninstallFlags([]string{"--mode", "lite", "--lang", "es"})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if result.Lang != i18n.LangES {
+			t.Errorf("Lang = %q, want %q", result.Lang, i18n.LangES)
+		}
+	})
+
+	t.Run("no --lang leaves Lang at zero value", func(t *testing.T) {
+		result, err := headless.ParseUninstallFlags([]string{"--mode", "lite"})
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		var zero i18n.Lang
+		if result.Lang != zero {
+			t.Errorf("Lang = %q, want zero value", result.Lang)
+		}
+	})
+
+	t.Run("--lang xx is rejected", func(t *testing.T) {
+		_, err := headless.ParseUninstallFlags([]string{"--mode", "lite", "--lang", "xx"})
+		if err == nil {
+			t.Fatal("ParseUninstallFlags() expected error for --lang xx, got nil")
+		}
+		if !strings.Contains(err.Error(), "xx") {
+			t.Errorf("error = %q, want it to name the invalid value %q", err.Error(), "xx")
+		}
+	})
 }
