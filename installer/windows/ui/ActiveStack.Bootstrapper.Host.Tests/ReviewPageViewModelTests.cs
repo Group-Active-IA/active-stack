@@ -25,9 +25,74 @@ public sealed class ReviewPageViewModelTests
         Assert.Equal("Custom", page.ModeSummary);
         Assert.Contains("Basic protection", page.ComponentsSummary);
         Assert.Contains("OpenSpec", page.ComponentsSummary);
-        Assert.Equal("Balanceado", page.TierSummary);
+        // "Balanced" (not "Balanceado") anticipates L1's tier-label fix
+        // (i18n-engine-locales): the engine will send the English label for
+        // en sessions; this is a test-only fixture edit, independent of L1.
+        Assert.Equal("Balanced", page.TierSummary);
         Assert.Equal("Install", page.PrimaryLabel);
         Assert.True(page.CanAdvance);
+    }
+
+    [Fact]
+    public void Constructor_FullModeWithEmptyCustomIds_SummaryListsForcedAndRecommendedComponents()
+    {
+        var session = BuildSession();
+        var selection = new InstallSelection
+        {
+            Agents = ["claude"],
+            Mode = "full",
+            CustomIds = [],
+            Tier = "balanceado"
+        };
+
+        var page = new ReviewPageViewModel(session, selection, new RecordingInstallerEngineClient());
+
+        Assert.NotEmpty(page.ComponentsSummary);
+        Assert.Contains("Basic protection", page.ComponentsSummary);
+        Assert.Contains("OpenSpec", page.ComponentsSummary);
+        Assert.DoesNotContain("Extra", page.ComponentsSummary);
+    }
+
+    [Fact]
+    public void Constructor_LiteModeWithEmptyCustomIds_SummaryListsForcedAndRecommendedComponents()
+    {
+        var session = BuildSession();
+        var selection = new InstallSelection
+        {
+            Agents = ["claude"],
+            Mode = "lite",
+            CustomIds = [],
+            Tier = "balanceado"
+        };
+
+        var page = new ReviewPageViewModel(session, selection, new RecordingInstallerEngineClient());
+
+        Assert.NotEmpty(page.ComponentsSummary);
+        Assert.Contains("Basic protection", page.ComponentsSummary);
+        Assert.Contains("OpenSpec", page.ComponentsSummary);
+        Assert.DoesNotContain("Extra", page.ComponentsSummary);
+    }
+
+    [Fact]
+    public void Constructor_CustomModeExcludesRecommendedComponentNotInCustomIds()
+    {
+        var session = BuildSession();
+        var selection = new InstallSelection
+        {
+            Agents = ["claude"],
+            Mode = "custom",
+            // "openspec" is recommended by default but the user deselected it;
+            // Custom must stay authoritative from CustomIds, not unioned with
+            // the recommended set.
+            CustomIds = ["permissions"],
+            Tier = "balanceado"
+        };
+
+        var page = new ReviewPageViewModel(session, selection, new RecordingInstallerEngineClient());
+
+        Assert.Contains("Basic protection", page.ComponentsSummary);
+        Assert.DoesNotContain("OpenSpec", page.ComponentsSummary);
+        Assert.DoesNotContain("Extra", page.ComponentsSummary);
     }
 
     [Fact]
@@ -77,18 +142,20 @@ public sealed class ReviewPageViewModelTests
             ],
             CustomComponents:
             [
-                new ComponentChoice("openspec", "OpenSpec", "Plan and organize changes.", true)
+                new ComponentChoice("openspec", "OpenSpec", "Plan and organize changes.", true),
+                new ComponentChoice("extra", "Extra", "Not recommended by default.", false)
             ],
             TierCapable: true,
             TierCapableAgents: ["claude"],
             PermissionTierChoices:
             [
-                new PermissionTierChoice("balanceado", "Balanceado", "Ask for risky changes only.", true, null),
+                new PermissionTierChoice("balanceado", "Balanced", "Ask for risky changes only.", true, null),
                 new PermissionTierChoice("bypass", "Bypass", "Never ask.", false, "Bypass warning")
             ]);
 
     private sealed class RecordingInstallerEngineClient : IInstallerEngineClient
     {
+        public string Language { get; set; } = "en";
         public IReadOnlyList<string>? CapturedAgents { get; private set; }
         public string? CapturedMode { get; private set; }
         public IReadOnlyList<string>? CapturedCustomIds { get; private set; }
