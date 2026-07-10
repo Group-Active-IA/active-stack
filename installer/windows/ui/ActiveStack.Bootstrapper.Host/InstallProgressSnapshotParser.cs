@@ -7,8 +7,26 @@ internal static class InstallProgressSnapshotParser
 {
     public static InstallProgressSnapshot Parse(string jsonLine)
     {
-        var payload = JsonSerializer.Deserialize<InstallProgressPayload>(jsonLine)
-            ?? throw new InvalidOperationException("Installer engine returned an empty progress event.");
+        InstallProgressPayload? payload;
+        try
+        {
+            payload = JsonSerializer.Deserialize<InstallProgressPayload>(jsonLine);
+        }
+        catch (JsonException)
+        {
+            // D2, design.md (Bug B): the engine may interleave a non-JSON
+            // diagnostic line on stdout (e.g. a stray warning). One
+            // unparseable line must not abort the whole stream with an
+            // uncaught exception — treat it as an ignorable/log-type
+            // snapshot carrying the raw line instead. A genuine engine
+            // failure is still surfaced via the process exit code, not here.
+            return ToLogSnapshot(jsonLine);
+        }
+
+        if (payload is null)
+        {
+            throw new InvalidOperationException("Installer engine returned an empty progress event.");
+        }
 
         return new InstallProgressSnapshot(
             payload.Type ?? "step_output",
@@ -19,6 +37,9 @@ internal static class InstallProgressSnapshotParser
             payload.Details,
             payload.Timestamp);
     }
+
+    private static InstallProgressSnapshot ToLogSnapshot(string rawLine) =>
+        new("log", null, null, rawLine, false);
 
     private sealed class InstallProgressPayload
     {
