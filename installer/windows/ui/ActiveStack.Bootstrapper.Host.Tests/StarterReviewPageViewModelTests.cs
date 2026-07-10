@@ -45,6 +45,7 @@ public sealed class StarterReviewPageViewModelTests
 
     private sealed class RecordingClient : IInstallerEngineClient
     {
+        public string Language { get; set; } = "en";
         public string? CapturedStarterId { get; private set; }
         public string? CapturedProjectPath { get; private set; }
         public IReadOnlyList<string>? CapturedAgents { get; private set; }

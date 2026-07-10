@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using ActiveStack.Bootstrapper.Core.Localization;
 
 namespace ActiveStack.Bootstrapper.Host.Pages;
 
@@ -15,16 +16,16 @@ public sealed class HubPageViewModel : WizardPageViewModelBase
 {
     private string? _selectedEntryId;
 
-    public HubPageViewModel()
-        : base("Active Stack", "Choose what you'd like to do.")
+    public HubPageViewModel(string lang = "en")
+        : base(UiStrings.Get(lang, "page.hub.title"), UiStrings.Get(lang, "page.hub.subtitle"), lang)
     {
         Entries =
         [
-            new HubEntry("install", "Install", IsEnabled: true, Tooltip: null),
-            new HubEntry("starters", "Starters", IsEnabled: true, Tooltip: null),
-            new HubEntry("backups", "Manage Backups", IsEnabled: true, Tooltip: null),
-            new HubEntry("uninstall", "Uninstall", IsEnabled: true, Tooltip: null),
-            new HubEntry("update", "Update Stack — Coming soon", IsEnabled: false, Tooltip: "Coming soon")
+            new HubEntry("install", UiStrings.Get(lang, "hub.entry.install"), IsEnabled: true, Tooltip: null),
+            new HubEntry("starters", UiStrings.Get(lang, "hub.entry.starters"), IsEnabled: true, Tooltip: null),
+            new HubEntry("backups", UiStrings.Get(lang, "hub.entry.backups"), IsEnabled: true, Tooltip: null),
+            new HubEntry("uninstall", UiStrings.Get(lang, "hub.entry.uninstall"), IsEnabled: true, Tooltip: null),
+            new HubEntry("update", UiStrings.Get(lang, "hub.entry.update"), IsEnabled: false, Tooltip: UiStrings.Get(lang, "hub.entry.update.tooltip"))
         ];
     }
 

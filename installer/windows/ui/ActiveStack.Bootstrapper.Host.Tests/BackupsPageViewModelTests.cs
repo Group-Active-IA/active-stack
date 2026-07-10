@@ -139,6 +139,7 @@ public sealed class BackupsPageViewModelTests
             _backups = backups;
         }
 
+        public string Language { get; set; } = "en";
         public int RunBackupActionCallCount { get; private set; }
         public string? CapturedAction { get; private set; }
         public string? CapturedId { get; private set; }

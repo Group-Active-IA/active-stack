@@ -114,4 +114,24 @@ public sealed class WizardFlowTests
 
         Assert.Equal(WizardPageId.Hub, previous);
     }
+
+    [Fact]
+    public void NextPage_FromLanguage_GoesToHub()
+    {
+        var selection = new InstallSelection();
+
+        var next = WizardFlow.NextPage(WizardPageId.Language, selection, []);
+
+        Assert.Equal(WizardPageId.Hub, next);
+    }
+
+    [Fact]
+    public void PreviousPage_FromHub_GoesToLanguage()
+    {
+        var selection = new InstallSelection();
+
+        var previous = WizardFlow.PreviousPage(WizardPageId.Hub, selection, []);
+
+        Assert.Equal(WizardPageId.Language, previous);
+    }
 }

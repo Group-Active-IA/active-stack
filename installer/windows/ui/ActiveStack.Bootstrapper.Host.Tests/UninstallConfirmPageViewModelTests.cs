@@ -65,6 +65,7 @@ public sealed class UninstallConfirmPageViewModelTests
 
     private sealed class RecordingClient : IInstallerEngineClient
     {
+        public string Language { get; set; } = "en";
         public IReadOnlyList<string>? CapturedAgents { get; private set; }
         public string? CapturedMode { get; private set; }
         public string? CapturedStrategy { get; private set; }

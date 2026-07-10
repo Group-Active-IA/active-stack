@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using ActiveStack.Bootstrapper.Core;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 
 namespace ActiveStack.Bootstrapper.Host.Pages.Uninstall;
@@ -14,8 +15,8 @@ public sealed class UninstallAgentsPageViewModel : WizardPageViewModelBase
 {
     private readonly UninstallSelection _selection;
 
-    public UninstallAgentsPageViewModel(UninstallOptions options, UninstallSelection selection)
-        : base("Choose agents to uninstall", "Select every coding assistant Active Stack should remove.")
+    public UninstallAgentsPageViewModel(UninstallOptions options, UninstallSelection selection, string lang = "en")
+        : base(UiStrings.Get(lang, "page.uninstallagents.title"), UiStrings.Get(lang, "page.uninstallagents.subtitle"), lang)
     {
         _selection = selection;
 

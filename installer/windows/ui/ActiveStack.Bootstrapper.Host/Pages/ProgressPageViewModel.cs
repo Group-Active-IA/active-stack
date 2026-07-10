@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using ActiveStack.Bootstrapper.Core.Localization;
 
 namespace ActiveStack.Bootstrapper.Host.Pages;
 
@@ -15,6 +16,7 @@ namespace ActiveStack.Bootstrapper.Host.Pages;
 /// </summary>
 public sealed class ProgressPageViewModel : WizardPageViewModelBase
 {
+    private readonly string _lang;
     private string? _progressMessage;
     private string? _currentStepId;
     private string? _currentStepLabel;
@@ -22,9 +24,10 @@ public sealed class ProgressPageViewModel : WizardPageViewModelBase
     private bool _installSucceeded;
     private bool _isFinished;
 
-    public ProgressPageViewModel()
-        : base("Installing Active Stack", "Sit tight while Active Stack sets up your workspace.")
+    public ProgressPageViewModel(string lang = "en")
+        : base(UiStrings.Get(lang, "page.installing.title"), UiStrings.Get(lang, "page.installing.subtitle"), lang)
     {
+        _lang = lang;
     }
 
     public string? ProgressMessage
@@ -163,20 +166,27 @@ public sealed class ProgressPageViewModel : WizardPageViewModelBase
         return current;
     }
 
-    private static string ToFriendlyMessage(InstallProgressSnapshot snapshot)
+    /// <summary>
+    /// Maps a snapshot to the user-facing status line. The messages this
+    /// page OWNS (step/download progress, defaults) come from
+    /// <see cref="UiStrings"/> in the active language; engine-supplied
+    /// <c>phase_started</c>/<c>install_finished</c> messages arrive already
+    /// localized (L1) and are shown verbatim (gui-language-page, L4).
+    /// </summary>
+    private string ToFriendlyMessage(InstallProgressSnapshot snapshot)
     {
         var label = ToDisplayLabel(snapshot.StepId);
 
         return snapshot.Type.ToLowerInvariant() switch
         {
-            "phase_started" => snapshot.Message ?? "Running installation.",
-            "step_started" when !string.IsNullOrWhiteSpace(label) => $"Installing {label}.",
-            "step_succeeded" when !string.IsNullOrWhiteSpace(label) => $"Installed {label}.",
-            "step_failed" when !string.IsNullOrWhiteSpace(label) => $"Failed to install {label}.",
-            "download_started" when !string.IsNullOrWhiteSpace(label) => $"Downloading {label}.",
-            "download_finished" when !string.IsNullOrWhiteSpace(label) => $"Downloaded {label}.",
-            "install_finished" => snapshot.Message ?? (snapshot.Success ? "Installation finished successfully." : "Installation failed."),
-            _ => snapshot.Message ?? snapshot.Details ?? "Running installation."
+            "phase_started" => snapshot.Message ?? UiStrings.Get(_lang, "progress.running_default"),
+            "step_started" when !string.IsNullOrWhiteSpace(label) => string.Format(UiStrings.Get(_lang, "progress.installing_fmt"), label),
+            "step_succeeded" when !string.IsNullOrWhiteSpace(label) => string.Format(UiStrings.Get(_lang, "progress.installed_fmt"), label),
+            "step_failed" when !string.IsNullOrWhiteSpace(label) => string.Format(UiStrings.Get(_lang, "progress.failed_fmt"), label),
+            "download_started" when !string.IsNullOrWhiteSpace(label) => string.Format(UiStrings.Get(_lang, "progress.downloading_fmt"), label),
+            "download_finished" when !string.IsNullOrWhiteSpace(label) => string.Format(UiStrings.Get(_lang, "progress.downloaded_fmt"), label),
+            "install_finished" => snapshot.Message ?? UiStrings.Get(_lang, snapshot.Success ? "progress.finished_success_default" : "progress.finished_failed_default"),
+            _ => snapshot.Message ?? snapshot.Details ?? UiStrings.Get(_lang, "progress.running_default")
         };
     }
 

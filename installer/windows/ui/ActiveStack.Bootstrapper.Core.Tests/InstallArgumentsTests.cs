@@ -6,16 +6,17 @@ namespace ActiveStack.Bootstrapper.Core.Tests;
 public sealed class InstallArgumentsTests
 {
     [Fact]
-    public void BuildInstallArgs_WithCustomComponentsAndTier_ReturnsExactTokenList()
+    public void BuildInstallArgs_WithCustomComponentsAndTier_ReturnsExactTokenListIncludingLang()
     {
         var args = InstallArguments.BuildInstallArgs(
             agents: ["claude", "codex"],
             mode: "custom",
             customIds: ["a", "b"],
-            tier: "balanceado");
+            tier: "balanceado",
+            lang: "en");
 
         Assert.Equal(
-            ["windows", "install", "--agent", "claude,codex", "--mode", "custom", "--custom", "a,b", "--tier", "balanceado"],
+            ["windows", "install", "--agent", "claude,codex", "--mode", "custom", "--custom", "a,b", "--tier", "balanceado", "--lang", "en"],
             args);
     }
 
@@ -26,7 +27,8 @@ public sealed class InstallArgumentsTests
             agents: ["claude"],
             mode: "full",
             customIds: [],
-            tier: null);
+            tier: null,
+            lang: "es");
 
         Assert.Contains("--agent", args);
         Assert.Contains("claude", args);
@@ -34,6 +36,8 @@ public sealed class InstallArgumentsTests
         Assert.Contains("full", args);
         Assert.DoesNotContain("--custom", args);
         Assert.DoesNotContain("--tier", args);
+        Assert.Contains("--lang", args);
+        Assert.Contains("es", args);
     }
 
     [Fact]
@@ -43,7 +47,8 @@ public sealed class InstallArgumentsTests
             agents: ["claude"],
             mode: "lite",
             customIds: ["a", "b"],
-            tier: null);
+            tier: null,
+            lang: "en");
 
         Assert.DoesNotContain("--custom", args);
     }
@@ -56,7 +61,8 @@ public sealed class InstallArgumentsTests
             projectPath: "C:/My Projects/app",
             agents: ["claude", "opencode"],
             dryRun: true,
-            yes: true);
+            yes: true,
+            lang: "es");
 
         var projectIndex = args.ToList().IndexOf("--project");
         Assert.True(projectIndex >= 0);
@@ -67,6 +73,10 @@ public sealed class InstallArgumentsTests
 
         Assert.Contains("--dry-run", args);
         Assert.Contains("--yes", args);
+
+        var langIndex = args.ToList().IndexOf("--lang");
+        Assert.True(langIndex >= 0);
+        Assert.Equal("es", args[langIndex + 1]);
     }
 
     [Fact]
@@ -77,10 +87,13 @@ public sealed class InstallArgumentsTests
             projectPath: "C:/app",
             agents: ["claude"],
             dryRun: false,
-            yes: false);
+            yes: false,
+            lang: "en");
 
         Assert.DoesNotContain("--dry-run", args);
         Assert.DoesNotContain("--yes", args);
+        Assert.Contains("--lang", args);
+        Assert.Contains("en", args);
     }
 
     [Fact]
@@ -107,25 +120,27 @@ public sealed class InstallArgumentsTests
     }
 
     [Fact]
-    public void BuildUninstallArgs_TargetedStrategy_IncludesStrategyOnly()
+    public void BuildUninstallArgs_TargetedStrategy_IncludesStrategyAndLang()
     {
         var args = InstallArguments.BuildUninstallArgs(
             agents: ["claude"],
             mode: "full",
             strategy: "targeted",
-            restoreManifestPath: null);
+            restoreManifestPath: null,
+            lang: "en");
 
-        Assert.Equal(["windows", "uninstall", "--agent", "claude", "--mode", "full", "--strategy", "targeted"], args);
+        Assert.Equal(["windows", "uninstall", "--agent", "claude", "--mode", "full", "--strategy", "targeted", "--lang", "en"], args);
     }
 
     [Fact]
-    public void BuildUninstallArgs_RestoreStrategy_IncludesRestoreManifestFlag()
+    public void BuildUninstallArgs_RestoreStrategy_IncludesRestoreManifestFlagAndLang()
     {
         var args = InstallArguments.BuildUninstallArgs(
             agents: ["claude"],
             mode: "full",
             strategy: "restore",
-            restoreManifestPath: "C:/backups/backup-1/manifest.json");
+            restoreManifestPath: "C:/backups/backup-1/manifest.json",
+            lang: "es");
 
         Assert.Contains("--strategy", args);
         Assert.Contains("restore", args);
@@ -133,5 +148,9 @@ public sealed class InstallArgumentsTests
         var manifestIndex = args.ToList().IndexOf("--restore-manifest");
         Assert.True(manifestIndex >= 0);
         Assert.Equal("C:/backups/backup-1/manifest.json", args[manifestIndex + 1]);
+
+        var langIndex = args.ToList().IndexOf("--lang");
+        Assert.True(langIndex >= 0);
+        Assert.Equal("es", args[langIndex + 1]);
     }
 }

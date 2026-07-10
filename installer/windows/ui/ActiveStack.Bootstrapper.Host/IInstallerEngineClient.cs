@@ -4,6 +4,16 @@ namespace ActiveStack.Bootstrapper.Host;
 
 public interface IInstallerEngineClient
 {
+    /// <summary>
+    /// The UI language threaded as <c>--lang &lt;Language&gt;</c> into every
+    /// text-emitting subcommand invocation (options, starters list/install,
+    /// backups list, uninstall-options, install, uninstall); <c>detect</c>
+    /// never carries it. Defaults to <c>"en"</c>; the shell sets it once per
+    /// language change and every subsequent flow inherits it
+    /// (gui-language-page, L4).
+    /// </summary>
+    string Language { get; set; }
+
     Task<InstallerSessionState> LoadSessionAsync(CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<InstallProgressSnapshot> RunInstallAsync(

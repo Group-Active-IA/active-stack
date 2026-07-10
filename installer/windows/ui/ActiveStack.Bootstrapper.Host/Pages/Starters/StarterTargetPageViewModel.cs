@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 
 namespace ActiveStack.Bootstrapper.Host.Pages.Starters;
@@ -18,12 +19,16 @@ public sealed class StarterTargetPageViewModel : WizardPageViewModelBase
     private readonly IFolderPicker _folderPicker;
     private string _projectPath;
 
-    public StarterTargetPageViewModel(StarterSelection selection, IFolderPicker folderPicker)
-        : base("Choose a target folder", "Pick the project Active Stack should scaffold the starter into.")
+    public StarterTargetPageViewModel(StarterSelection selection, IFolderPicker folderPicker, string lang = "en")
+        : base(UiStrings.Get(lang, "page.startertarget.title"), UiStrings.Get(lang, "page.startertarget.subtitle"), lang)
     {
         _selection = selection;
         _folderPicker = folderPicker;
         _projectPath = selection.ProjectPath;
+
+        TargetProjectHeading = UiStrings.Get(lang, "startertarget.heading.target");
+        AgentsHeading = UiStrings.Get(lang, "startertarget.heading.agents");
+        BrowseLabel = UiStrings.Get(lang, "template.browse");
 
         var hasExistingSelection = selection.Agents.Count > 0;
         var preselected = hasExistingSelection ? selection.Agents : ["claude", "opencode"];
@@ -40,6 +45,13 @@ public sealed class StarterTargetPageViewModel : WizardPageViewModelBase
     }
 
     public IReadOnlyList<AgentChoiceOption> Agents { get; }
+
+    /// <summary>Localized section headings and the Browse label (bound by the template).</summary>
+    public string TargetProjectHeading { get; }
+
+    public string AgentsHeading { get; }
+
+    public string BrowseLabel { get; }
 
     /// <summary>Bound by the view's "Browse…" button — no code-behind click handler needed.</summary>
     public ICommand PickFolderCommand { get; }

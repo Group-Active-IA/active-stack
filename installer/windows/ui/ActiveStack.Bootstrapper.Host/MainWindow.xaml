@@ -74,13 +74,13 @@
       </Grid.ColumnDefinitions>
 
       <Button Grid.Column="0"
-              Content="Back"
+              Content="{Binding BackLabel}"
               Style="{StaticResource FooterButtonStyle}"
               IsEnabled="{Binding CanGoBack}"
               Click="BackButton_Click" />
 
       <Button Grid.Column="2"
-              Content="Cancel"
+              Content="{Binding CancelLabel}"
               Style="{StaticResource FooterButtonStyle}"
               Click="CancelButton_Click" />
 

@@ -36,6 +36,33 @@ public sealed class BootstrapperLaunchOptionsTests
         Assert.False(options.TraceEnabled);
         Assert.Null(options.AssistantId);
         Assert.Null(options.InstallModeId);
+        Assert.Null(options.LanguageOverride);
+    }
+
+    [Fact]
+    public void ReadFromEnvironment_SupportedUiLangOverride_IsSurfaced()
+    {
+        var variables = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ACTIVE_STACK_UI_LANG"] = "es"
+        };
+
+        var options = BootstrapperLaunchOptions.ReadFromEnvironment(name => variables.TryGetValue(name, out var value) ? value : null);
+
+        Assert.Equal("es", options.LanguageOverride);
+    }
+
+    [Fact]
+    public void ReadFromEnvironment_UnsupportedUiLangOverride_IsIgnored()
+    {
+        var variables = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["ACTIVE_STACK_UI_LANG"] = "fr"
+        };
+
+        var options = BootstrapperLaunchOptions.ReadFromEnvironment(name => variables.TryGetValue(name, out var value) ? value : null);
+
+        Assert.Null(options.LanguageOverride);
     }
 
     [Fact]

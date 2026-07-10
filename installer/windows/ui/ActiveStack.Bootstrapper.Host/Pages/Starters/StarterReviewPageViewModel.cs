@@ -1,4 +1,5 @@
 using ActiveStack.Bootstrapper.Core;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 
 namespace ActiveStack.Bootstrapper.Host.Pages.Starters;
@@ -15,11 +16,16 @@ public sealed class StarterReviewPageViewModel : WizardPageViewModelBase, IStrea
     private readonly StarterSelection _selection;
     private readonly IInstallerEngineClient _engineClient;
 
-    public StarterReviewPageViewModel(IReadOnlyList<StarterChoice> starters, StarterSelection selection, IInstallerEngineClient engineClient)
-        : base("Review your starter", "Confirm the selection before Active Stack scaffolds it.")
+    public StarterReviewPageViewModel(IReadOnlyList<StarterChoice> starters, StarterSelection selection, IInstallerEngineClient engineClient, string lang = "en")
+        : base(UiStrings.Get(lang, "page.starterreview.title"), UiStrings.Get(lang, "page.starterreview.subtitle"), lang)
     {
         _selection = selection;
         _engineClient = engineClient;
+
+        StarterHeading = UiStrings.Get(lang, "starterreview.heading.starter");
+        TargetFolderHeading = UiStrings.Get(lang, "starterreview.heading.targetfolder");
+        AgentsHeading = UiStrings.Get(lang, "starterreview.heading.agents");
+        PrimaryLabel = UiStrings.Get(lang, "shell.install");
 
         StarterSummary = starters
             .FirstOrDefault(s => string.Equals(s.Id, selection.StarterId, StringComparison.OrdinalIgnoreCase))?.Name
@@ -35,8 +41,15 @@ public sealed class StarterReviewPageViewModel : WizardPageViewModelBase, IStrea
 
     public string AgentsSummary { get; }
 
-    /// <summary>The shell's primary footer action label while Review is current.</summary>
-    public string PrimaryLabel => "Install";
+    /// <summary>Localized section headings bound by the Starter Review template.</summary>
+    public string StarterHeading { get; }
+
+    public string TargetFolderHeading { get; }
+
+    public string AgentsHeading { get; }
+
+    /// <summary>The shell's primary footer action label while Review is current (localized "Install").</summary>
+    public string PrimaryLabel { get; }
 
     public override bool CanAdvance => true;
 

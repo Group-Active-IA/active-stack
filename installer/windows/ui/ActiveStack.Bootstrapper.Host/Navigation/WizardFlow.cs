@@ -17,6 +17,7 @@ public static class WizardFlow
     {
         return current switch
         {
+            WizardPageId.Language => WizardPageId.Hub,
             WizardPageId.Hub => WizardPageId.Assistants,
             WizardPageId.Assistants => WizardPageId.InstallType,
             WizardPageId.InstallType => IsCustom(selection)
@@ -38,7 +39,8 @@ public static class WizardFlow
     {
         return current switch
         {
-            WizardPageId.Hub => WizardPageId.Hub,
+            WizardPageId.Language => WizardPageId.Language,
+            WizardPageId.Hub => WizardPageId.Language,
             WizardPageId.Assistants => WizardPageId.Hub,
             WizardPageId.InstallType => WizardPageId.Assistants,
             WizardPageId.Components => WizardPageId.InstallType,

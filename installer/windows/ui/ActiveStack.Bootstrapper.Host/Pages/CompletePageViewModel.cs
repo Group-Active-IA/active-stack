@@ -1,21 +1,30 @@
+using ActiveStack.Bootstrapper.Core.Localization;
+
 namespace ActiveStack.Bootstrapper.Host.Pages;
 
 /// <summary>
 /// Terminal Install-flow page: maps the Progress page's outcome (terminal
 /// snapshot + whether any step degraded + whether the pipeline rolled back)
 /// to one of four states (D4, design.md). No footer nav — offers
-/// close/next-steps instead.
+/// close/next-steps instead. Title and the short <see cref="StateLabel"/>
+/// come from <see cref="UiStrings"/> in the active language; the template
+/// binds <see cref="StateLabel"/> rather than the raw enum
+/// (gui-language-page, L4).
 /// </summary>
 public sealed class CompletePageViewModel : WizardPageViewModelBase
 {
-    public CompletePageViewModel(InstallProgressSnapshot terminalSnapshot, bool hadDegradedSteps, bool hadRollback)
-        : base(TitleFor(terminalSnapshot, hadDegradedSteps, hadRollback), "Here's how your Active Stack setup went.")
+    public CompletePageViewModel(InstallProgressSnapshot terminalSnapshot, bool hadDegradedSteps, bool hadRollback, string lang = "en")
+        : base(TitleFor(terminalSnapshot, hadDegradedSteps, hadRollback, lang), UiStrings.Get(lang, "page.complete.subtitle"), lang)
     {
         State = DetermineState(terminalSnapshot, hadDegradedSteps, hadRollback);
+        StateLabel = UiStrings.Get(lang, $"complete.state.{StateKey(State)}.label");
         Message = terminalSnapshot.Message ?? string.Empty;
     }
 
     public CompleteState State { get; }
+
+    /// <summary>Localized short label for <see cref="State"/> — what the template renders instead of the enum.</summary>
+    public string StateLabel { get; }
 
     public string Message { get; }
 
@@ -32,13 +41,15 @@ public sealed class CompletePageViewModel : WizardPageViewModelBase
         return hadDegradedSteps ? CompleteState.Degraded : CompleteState.Success;
     }
 
-    private static string TitleFor(InstallProgressSnapshot snapshot, bool hadDegradedSteps, bool hadRollback) =>
-        DetermineState(snapshot, hadDegradedSteps, hadRollback) switch
-        {
-            CompleteState.Success => "Installation complete",
-            CompleteState.Degraded => "Installation complete (with some best-effort steps skipped)",
-            CompleteState.RolledBack => "Installation rolled back",
-            CompleteState.Error => "Installation failed",
-            _ => "Installation complete"
-        };
+    private static string TitleFor(InstallProgressSnapshot snapshot, bool hadDegradedSteps, bool hadRollback, string lang) =>
+        UiStrings.Get(lang, $"complete.state.{StateKey(DetermineState(snapshot, hadDegradedSteps, hadRollback))}.title");
+
+    private static string StateKey(CompleteState state) => state switch
+    {
+        CompleteState.Success => "success",
+        CompleteState.Degraded => "degraded",
+        CompleteState.RolledBack => "rolledback",
+        CompleteState.Error => "error",
+        _ => "success"
+    };
 }

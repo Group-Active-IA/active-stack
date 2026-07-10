@@ -1,4 +1,5 @@
 using ActiveStack.Bootstrapper.Core;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 
 namespace ActiveStack.Bootstrapper.Host.Pages.Uninstall;
@@ -14,16 +15,21 @@ namespace ActiveStack.Bootstrapper.Host.Pages.Uninstall;
 /// </summary>
 public sealed class UninstallConfirmPageViewModel : WizardPageViewModelBase, IStreamTriggerPage
 {
-    private const string ModificationWarning = "This will modify your agent configuration.";
-
     private readonly UninstallSelection _selection;
     private readonly IInstallerEngineClient _engineClient;
 
-    public UninstallConfirmPageViewModel(UninstallOptions options, UninstallSelection selection, IInstallerEngineClient engineClient)
-        : base("Review the uninstall", "Confirm the selection before Active Stack removes it.")
+    public UninstallConfirmPageViewModel(UninstallOptions options, UninstallSelection selection, IInstallerEngineClient engineClient, string lang = "en")
+        : base(UiStrings.Get(lang, "page.uninstallconfirm.title"), UiStrings.Get(lang, "page.uninstallconfirm.subtitle"), lang)
     {
         _selection = selection;
         _engineClient = engineClient;
+
+        AgentsHeading = UiStrings.Get(lang, "uninstallreview.heading.agents");
+        ModeHeading = UiStrings.Get(lang, "uninstallreview.heading.mode");
+        StrategyHeading = UiStrings.Get(lang, "uninstallreview.heading.strategy");
+        RestoringBackupHeading = UiStrings.Get(lang, "uninstallreview.heading.restoringbackup");
+        WarningText = UiStrings.Get(lang, "uninstall.warning");
+        PrimaryLabel = UiStrings.Get(lang, "shell.uninstall");
 
         AgentsSummary = string.Join(", ", selection.Agents);
 
@@ -48,10 +54,20 @@ public sealed class UninstallConfirmPageViewModel : WizardPageViewModelBase, ISt
 
     public string? BackupSummary { get; }
 
-    public string WarningText => ModificationWarning;
+    /// <summary>Localized section headings bound by the Confirm page's template.</summary>
+    public string AgentsHeading { get; }
 
-    /// <summary>The shell's primary footer action label while Confirm is current.</summary>
-    public string PrimaryLabel => "Uninstall";
+    public string ModeHeading { get; }
+
+    public string StrategyHeading { get; }
+
+    public string RestoringBackupHeading { get; }
+
+    /// <summary>Localized destructive warning ("This will modify your agent configuration.") from UiStrings.</summary>
+    public string WarningText { get; }
+
+    /// <summary>The shell's primary footer action label while Confirm is current (localized "Uninstall").</summary>
+    public string PrimaryLabel { get; }
 
     public override bool CanAdvance => true;
 

@@ -5,8 +5,11 @@ internal sealed record BootstrapperLaunchOptions(
     bool AutoCloseWhenFinished,
     bool TraceEnabled,
     string? AssistantId,
-    string? InstallModeId)
+    string? InstallModeId,
+    string? LanguageOverride)
 {
+    private static readonly string[] SupportedLanguages = ["en", "es"];
+
     public static BootstrapperLaunchOptions ReadFromEnvironment(Func<string, string?> environmentReader)
     {
         return new BootstrapperLaunchOptions(
@@ -14,7 +17,8 @@ internal sealed record BootstrapperLaunchOptions(
             AutoCloseWhenFinished: ParseBoolean(environmentReader("ACTIVE_STACK_AUTO_CLOSE")),
             TraceEnabled: ParseBoolean(environmentReader("ACTIVE_STACK_BOOTSTRAPPER_TRACE")),
             AssistantId: Normalize(environmentReader("ACTIVE_STACK_INSTALL_ASSISTANT")),
-            InstallModeId: Normalize(environmentReader("ACTIVE_STACK_INSTALL_MODE")));
+            InstallModeId: Normalize(environmentReader("ACTIVE_STACK_INSTALL_MODE")),
+            LanguageOverride: NormalizeLanguage(environmentReader("ACTIVE_STACK_UI_LANG")));
     }
 
     public static BootstrapperLaunchOptions ReadFromEnvironment()
@@ -32,4 +36,16 @@ internal sealed record BootstrapperLaunchOptions(
 
     private static string? Normalize(string? value)
         => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    /// <summary>
+    /// Surfaces <c>ACTIVE_STACK_UI_LANG</c> as the automation override for
+    /// the Language page's preselection, when set to a supported value
+    /// (<c>es|en</c>) — unsupported values are ignored so automation typos
+    /// fall back to the normal persisted/OS-culture resolution.
+    /// </summary>
+    private static string? NormalizeLanguage(string? value)
+    {
+        var normalized = Normalize(value)?.ToLowerInvariant();
+        return normalized is not null && SupportedLanguages.Contains(normalized) ? normalized : null;
+    }
 }

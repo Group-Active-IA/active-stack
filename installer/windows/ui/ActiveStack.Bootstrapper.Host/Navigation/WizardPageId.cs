@@ -8,6 +8,7 @@ namespace ActiveStack.Bootstrapper.Host.Navigation;
 /// </summary>
 public enum WizardPageId
 {
+    Language,
     Hub,
     Assistants,
     InstallType,

@@ -90,6 +90,35 @@ public sealed class ProgressPageViewModelTests
         Assert.False(viewModel.TerminalSnapshot.Success);
     }
 
+    [Fact]
+    public async Task ConsumeAsync_SpanishLanguage_OwnMessagesLocalize_EngineMessagesShownVerbatim()
+    {
+        var viewModel = new ProgressPageViewModel("es");
+
+        await viewModel.ConsumeAsync(ToStream(
+            // phase_started's message is engine-supplied (already localized by L1) and MUST be shown verbatim.
+            new InstallProgressSnapshot("phase_started", "install", null, "Iniciando instalación.", false),
+            // step_started's friendly message is OWNED by this page and must come from the es UiStrings table.
+            new InstallProgressSnapshot("step_started", "apply", "openspec", "Installing OpenSpec.", false)));
+
+        Assert.Equal("Instalando OpenSpec.", viewModel.ProgressMessage);
+        Assert.Contains("Iniciando instalación.", viewModel.RecentActivity);
+        Assert.Contains("Instalando OpenSpec.", viewModel.RecentActivity);
+    }
+
+    [Fact]
+    public async Task ConsumeAsync_SpanishLanguage_DefaultInstallFinishedMessageLocalizes()
+    {
+        var viewModel = new ProgressPageViewModel("es");
+
+        // install_finished with no engine-supplied Message falls back to this page's own default,
+        // which must come from the es UiStrings table.
+        await viewModel.ConsumeAsync(ToStream(
+            new InstallProgressSnapshot("install_finished", "install", null, null, true)));
+
+        Assert.Equal("Instalación finalizada con éxito.", viewModel.ProgressMessage);
+    }
+
     private static async IAsyncEnumerable<InstallProgressSnapshot> ToStream(params InstallProgressSnapshot[] snapshots)
     {
         foreach (var snapshot in snapshots)

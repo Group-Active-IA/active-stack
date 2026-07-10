@@ -20,7 +20,8 @@ public static class InstallArguments
         IEnumerable<string> agents,
         string mode,
         IEnumerable<string> customIds,
-        string? tier)
+        string? tier,
+        string lang)
     {
         var args = new List<string>
         {
@@ -42,6 +43,9 @@ public static class InstallArguments
             args.Add(tier);
         }
 
+        args.Add("--lang");
+        args.Add(lang);
+
         return args;
     }
 
@@ -54,7 +58,8 @@ public static class InstallArguments
         string projectPath,
         IEnumerable<string> agents,
         bool dryRun,
-        bool yes)
+        bool yes,
+        string lang)
     {
         var args = new List<string>
         {
@@ -73,6 +78,9 @@ public static class InstallArguments
         {
             args.Add("--yes");
         }
+
+        args.Add("--lang");
+        args.Add(lang);
 
         return args;
     }
@@ -110,7 +118,8 @@ public static class InstallArguments
         IEnumerable<string> agents,
         string mode,
         string strategy,
-        string? restoreManifestPath)
+        string? restoreManifestPath,
+        string lang)
     {
         var args = new List<string>
         {
@@ -125,6 +134,9 @@ public static class InstallArguments
             args.Add("--restore-manifest");
             args.Add(restoreManifestPath);
         }
+
+        args.Add("--lang");
+        args.Add(lang);
 
         return args;
     }

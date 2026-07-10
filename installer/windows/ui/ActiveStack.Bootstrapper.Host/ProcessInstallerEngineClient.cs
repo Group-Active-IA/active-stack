@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using ActiveStack.Bootstrapper.Core;
 
 namespace ActiveStack.Bootstrapper.Host;
@@ -20,6 +21,9 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
     /// </summary>
     internal Func<IReadOnlyList<string>, CancellationToken, Task<string>>? JsonCommandRunnerOverride { get; set; }
 
+    /// <inheritdoc />
+    public string Language { get; set; } = "en";
+
     public ProcessInstallerEngineClient(string enginePath)
     {
         _enginePath = enginePath;
@@ -27,9 +31,11 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
 
     public async Task<InstallerSessionState> LoadSessionAsync(CancellationToken cancellationToken = default)
     {
+        // "windows detect" is the one subcommand that emits no user-facing
+        // text and therefore never carries --lang (frozen L1 contract).
         var detectJson = await RunJsonCommandAsync(["windows", "detect"], cancellationToken);
         var agentsCsv = ResolveDetectedAgentsCsv(detectJson);
-        var optionsJson = await RunJsonCommandAsync(["windows", "options", "--agent", agentsCsv], cancellationToken);
+        var optionsJson = await RunJsonCommandAsync(["windows", "options", "--agent", agentsCsv, "--lang", Language], cancellationToken);
         return InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
     }
 
@@ -40,13 +46,12 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
         string? tier,
         CancellationToken cancellationToken = default)
     {
-        var args = InstallArguments.BuildInstallArgs(agents, mode, customIds, tier);
-        return RunStreamingCommandAsync(args, cancellationToken);
+        return RunStreamingCommandAsync(BuildRunInstallArgs(agents, mode, customIds, tier), cancellationToken);
     }
 
     public async Task<IReadOnlyList<StarterChoice>> ListStartersAsync(CancellationToken cancellationToken = default)
     {
-        var json = await RunJsonCommandAsync(["windows", "starters", "list"], cancellationToken);
+        var json = await RunJsonCommandAsync(["windows", "starters", "list", "--lang", Language], cancellationToken);
         return StarterCatalogParser.BuildFromJson(json);
     }
 
@@ -57,13 +62,12 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
         bool dryRun,
         CancellationToken cancellationToken = default)
     {
-        var args = InstallArguments.BuildStarterInstallArgs(starterId, projectPath, agents, dryRun, yes: true);
-        return RunStreamingCommandAsync(args, cancellationToken);
+        return RunStreamingCommandAsync(BuildRunStarterInstallArgs(starterId, projectPath, agents, dryRun), cancellationToken);
     }
 
     public async Task<IReadOnlyList<BackupEntry>> ListBackupsAsync(CancellationToken cancellationToken = default)
     {
-        var json = await RunJsonCommandAsync(["windows", "backups", "list"], cancellationToken);
+        var json = await RunJsonCommandAsync(["windows", "backups", "list", "--lang", Language], cancellationToken);
         return BackupListParser.BuildFromJson(json);
     }
 
@@ -80,7 +84,7 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
 
     public async Task<UninstallOptions> LoadUninstallOptionsAsync(CancellationToken cancellationToken = default)
     {
-        var json = await RunJsonCommandAsync(["windows", "uninstall-options"], cancellationToken);
+        var json = await RunJsonCommandAsync(["windows", "uninstall-options", "--lang", Language], cancellationToken);
         return UninstallOptionsParser.BuildFromJson(json);
     }
 
@@ -91,9 +95,26 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
         string? backupId,
         CancellationToken cancellationToken = default)
     {
-        var args = InstallArguments.BuildUninstallArgs(agents, mode, strategy, backupId);
-        return RunStreamingCommandAsync(args, cancellationToken);
+        return RunStreamingCommandAsync(BuildRunUninstallArgs(agents, mode, strategy, backupId), cancellationToken);
     }
+
+    /// <summary>
+    /// Internal argv seams for the three streaming subcommands: the
+    /// production Run*Async methods route through these so the client's
+    /// <see cref="Language"/> threading is assertable in Host.Tests without
+    /// spawning a live process (task 6.5; InternalsVisibleTo grants access).
+    /// </summary>
+    internal IReadOnlyList<string> BuildRunInstallArgs(
+        IReadOnlyList<string> agents, string mode, IReadOnlyList<string> customIds, string? tier) =>
+        InstallArguments.BuildInstallArgs(agents, mode, customIds, tier, Language);
+
+    internal IReadOnlyList<string> BuildRunStarterInstallArgs(
+        string starterId, string projectPath, IReadOnlyList<string> agents, bool dryRun) =>
+        InstallArguments.BuildStarterInstallArgs(starterId, projectPath, agents, dryRun, yes: true, Language);
+
+    internal IReadOnlyList<string> BuildRunUninstallArgs(
+        IReadOnlyList<string> agents, string mode, string strategy, string? backupId) =>
+        InstallArguments.BuildUninstallArgs(agents, mode, strategy, backupId, Language);
 
     /// <summary>
     /// Shared streaming helper for every JSONL event-stream subcommand
@@ -168,13 +189,21 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
         return output;
     }
 
-    private Process CreateProcess(IReadOnlyList<string> args)
+    /// <summary>
+    /// Internal seam (mirrors the <c>Build*Args</c> seams above; InternalsVisibleTo
+    /// grants Host.Tests access): lets tests assert the <see cref="ProcessStartInfo"/>
+    /// the client configures — in particular the UTF-8 stdout/stderr encoding
+    /// (D2, design.md) — without spawning a live process.
+    /// </summary>
+    internal Process CreateProcess(IReadOnlyList<string> args)
     {
         var startInfo = new ProcessStartInfo
         {
             FileName = _enginePath,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
             UseShellExecute = false,
             CreateNoWindow = true
         };

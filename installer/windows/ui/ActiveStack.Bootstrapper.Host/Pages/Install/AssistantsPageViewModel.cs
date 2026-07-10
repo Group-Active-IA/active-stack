@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using ActiveStack.Bootstrapper.Core;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 
 namespace ActiveStack.Bootstrapper.Host.Pages.Install;
@@ -14,10 +15,11 @@ public sealed class AssistantsPageViewModel : WizardPageViewModelBase
 {
     private readonly InstallSelection _selection;
 
-    public AssistantsPageViewModel(InstallerSessionState session, InstallSelection selection)
-        : base("Choose your assistants", "Select every coding assistant Active Stack should set up.")
+    public AssistantsPageViewModel(InstallerSessionState session, InstallSelection selection, string lang = "en")
+        : base(UiStrings.Get(lang, "page.assistants.title"), UiStrings.Get(lang, "page.assistants.subtitle"), lang)
     {
         _selection = selection;
+        RecommendedLabel = UiStrings.Get(lang, "template.recommended");
 
         // Honor an already-populated selection (e.g. the user navigated Back
         // to this page) instead of resetting to "every agent checked" —
@@ -41,6 +43,9 @@ public sealed class AssistantsPageViewModel : WizardPageViewModelBase
     }
 
     public ObservableCollection<AssistantChoiceOption> Choices { get; }
+
+    /// <summary>Localized "Recommended" tag rendered next to the default assistant (bound from the item template).</summary>
+    public string RecommendedLabel { get; }
 
     public override bool CanAdvance => Choices.Any(static c => c.IsSelected);
 

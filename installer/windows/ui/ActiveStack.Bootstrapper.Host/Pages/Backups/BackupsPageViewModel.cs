@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using ActiveStack.Bootstrapper.Core;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 
 namespace ActiveStack.Bootstrapper.Host.Pages.Backups;
@@ -16,8 +17,8 @@ namespace ActiveStack.Bootstrapper.Host.Pages.Backups;
 /// </summary>
 public sealed class BackupsPageViewModel : WizardPageViewModelBase
 {
-    private const string RestoreWarning = "This will OVERWRITE your current configuration.";
-    private const string DeleteWarning = "This will PERMANENTLY DELETE this backup.";
+    private readonly string _restoreWarning;
+    private readonly string _deleteWarning;
 
     private readonly IInstallerEngineClient _engineClient;
     private BackupPageAction _action = BackupPageAction.None;
@@ -25,10 +26,19 @@ public sealed class BackupsPageViewModel : WizardPageViewModelBase
     private string _renameInput = string.Empty;
     private string? _lastMessage;
 
-    public BackupsPageViewModel(IInstallerEngineClient engineClient)
-        : base("Manage backups", "Restore, rename, or delete a previous Active Stack backup.")
+    public BackupsPageViewModel(IInstallerEngineClient engineClient, string lang = "en")
+        : base(UiStrings.Get(lang, "page.backups.title"), UiStrings.Get(lang, "page.backups.subtitle"), lang)
     {
         _engineClient = engineClient;
+
+        _restoreWarning = UiStrings.Get(lang, "backups.warning.overwrite");
+        _deleteWarning = UiStrings.Get(lang, "backups.warning.delete");
+        EmptyLabel = UiStrings.Get(lang, "template.nobackupsyet");
+        RestoreLabel = UiStrings.Get(lang, "template.restore");
+        RenameLabel = UiStrings.Get(lang, "template.rename");
+        DeleteLabel = UiStrings.Get(lang, "template.delete");
+        ConfirmLabel = UiStrings.Get(lang, "template.confirm");
+        CancelLabel = UiStrings.Get(lang, "template.cancel");
 
         BeginRestoreCommand = new RelayCommand<BackupEntry>(backup => { if (backup is not null) BeginRestore(backup); });
         BeginDeleteCommand = new RelayCommand<BackupEntry>(backup => { if (backup is not null) BeginDelete(backup); });
@@ -38,6 +48,19 @@ public sealed class BackupsPageViewModel : WizardPageViewModelBase
     }
 
     public ObservableCollection<BackupEntry> Items { get; } = [];
+
+    /// <summary>Localized chrome labels bound by the Backups template.</summary>
+    public string EmptyLabel { get; }
+
+    public string RestoreLabel { get; }
+
+    public string RenameLabel { get; }
+
+    public string DeleteLabel { get; }
+
+    public string ConfirmLabel { get; }
+
+    public string CancelLabel { get; }
 
     /// <summary>Bound by each item's Restore button — no code-behind click handler needed.</summary>
     public ICommand BeginRestoreCommand { get; }
@@ -96,8 +119,8 @@ public sealed class BackupsPageViewModel : WizardPageViewModelBase
 
     public string ConfirmationText => Action switch
     {
-        BackupPageAction.Restore => RestoreWarning,
-        BackupPageAction.Delete => DeleteWarning,
+        BackupPageAction.Restore => _restoreWarning,
+        BackupPageAction.Delete => _deleteWarning,
         _ => string.Empty
     };
 
