@@ -112,6 +112,26 @@ func (c *Catalog) validate() error {
 				return fmt.Errorf("catalog: harness %q depends on unknown harness %q", h.ID, dep)
 			}
 		}
+
+		// Bilingual completeness (D3, catalog-localized-descriptions). Placed
+		// after every other structural check so a harness invalid for another
+		// reason still reports that error first.
+		owner := fmt.Sprintf("harness %q", h.ID)
+		if err := h.Description.Validate("description", owner); err != nil {
+			return err
+		}
+		if !h.IsStarterOnly() {
+			// Global-picker harnesses feed the GUI detail panel: mandatory.
+			if err := h.LongDescription.Validate("long_description", owner); err != nil {
+				return err
+			}
+		} else if h.LongDescription != nil {
+			// Starter-only harnesses may omit long_description entirely, but a
+			// half-translated one is still rejected.
+			if err := h.LongDescription.Validate("long_description", owner); err != nil {
+				return err
+			}
+		}
 	}
 	if err := c.validateStarters(); err != nil {
 		return err
@@ -179,6 +199,17 @@ func (c *Catalog) validateStarters() error {
 			if _, ok := c.starterIndex[inc]; !ok {
 				return fmt.Errorf("catalog: starter %q includes unknown starter %q", s.ID, inc)
 			}
+		}
+
+		// Bilingual completeness (D3, catalog-localized-descriptions). Placed
+		// after every other structural check so a starter invalid for another
+		// reason still reports that error first. Mandatory for ALL starters.
+		starterOwner := fmt.Sprintf("starter %q", s.ID)
+		if err := s.Description.Validate("description", starterOwner); err != nil {
+			return err
+		}
+		if err := s.LongDescription.Validate("long_description", starterOwner); err != nil {
+			return err
 		}
 	}
 	// Cycle detection — DFS with tri-state marking over the includes graph.

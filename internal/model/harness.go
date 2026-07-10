@@ -127,10 +127,15 @@ const (
 
 // Harness is a single installable/configurable module of the stack.
 type Harness struct {
-	ID           string        `yaml:"id"`
-	Name         string        `yaml:"name"`
-	Description  string        `yaml:"description,omitempty"`
-	Type         HarnessType   `yaml:"type"`
+	ID          string        `yaml:"id"`
+	Name        string        `yaml:"name"`
+	Description LocalizedText `yaml:"description,omitempty"`
+	// LongDescription is optional long-form catalog text (D2, design.md
+	// catalog-localized-descriptions). Mandatory (both languages) for
+	// global-picker harnesses (!IsStarterOnly()); optional-but-both-if-present
+	// for starter-only harnesses.
+	LongDescription LocalizedText `yaml:"long_description,omitempty"`
+	Type            HarnessType   `yaml:"type"`
 	// Scope controls where this harness materializes. Omitting the field (the
 	// zero value "") is equivalent to ScopeGlobal — backward-compatible.
 	Scope        ScopeKind     `yaml:"scope,omitempty"`

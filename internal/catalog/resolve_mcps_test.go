@@ -18,12 +18,16 @@ const mcpFixtureYAML = `
 harnesses:
   - id: h-one
     name: H One
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: config
     install_modes: [lite]
 
 starters:
   - id: base-with-mcps
     name: Base With MCPs
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [h-one]
     mcps:
       - name: context7
@@ -31,6 +35,8 @@ starters:
         args: ["-y", "@upstash/context7-mcp@latest"]
   - id: extra-with-mcps
     name: Extra With MCPs
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [h-one]
     mcps:
       - name: engram-mcp
@@ -38,11 +44,15 @@ starters:
         args: ["-y", "engram-mcp@latest"]
   - id: composite-no-collision
     name: Composite No Collision
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     includes: [base-with-mcps, extra-with-mcps]
     harnesses: []
     mcps: []
   - id: root-only-mcps
     name: Root Only MCPs
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [h-one]
     mcps:
       - name: my-tool
@@ -50,6 +60,8 @@ starters:
         args: ["serve"]
   - id: collision-root
     name: Collision Root
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     includes: [base-with-mcps]
     harnesses: [h-one]
     mcps:
@@ -58,6 +70,8 @@ starters:
         args: ["--root-version"]
   - id: no-mcps-anywhere
     name: No MCPs Anywhere
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [h-one]
 `
 

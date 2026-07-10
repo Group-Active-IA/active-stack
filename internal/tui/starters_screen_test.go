@@ -13,7 +13,7 @@ import (
 func TestStarters_ListReflectsDepStarters(t *testing.T) {
 	deps := ModelDeps{
 		Starters: []model.Starter{
-			{ID: "starter-a", Name: "Starter A", Description: "The A starter"},
+			{ID: "starter-a", Name: "Starter A", Description: model.LocalizedText{"es": "The A starter", "en": "The A starter"}},
 			{ID: "starter-b", Name: "Starter B"},
 		},
 	}

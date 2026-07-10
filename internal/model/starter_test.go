@@ -104,6 +104,43 @@ func TestMCPValidate_EmptyCommand(t *testing.T) {
 	}
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// L2 (catalog-localized-descriptions): Starter.Description / LongDescription
+// become LocalizedText.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// TestStarter_LocalizedDescriptionAndLongDescription_ParseAndResolve asserts
+// that a starter entry with description/long_description as {es, en} maps
+// parses into LocalizedText fields that resolve per language via Localized.
+func TestStarter_LocalizedDescriptionAndLongDescription_ParseAndResolve(t *testing.T) {
+	raw := `
+id: backend
+name: Backend
+description:
+  es: Stack de backend Python/FastAPI.
+  en: Python/FastAPI backend stack.
+long_description:
+  es: Arquitectura limpia, base de datos, seguridad y contenedores.
+  en: Clean architecture, database, security, and containers.
+`
+	var s Starter
+	if err := yaml.Unmarshal([]byte(raw), &s); err != nil {
+		t.Fatalf("yaml.Unmarshal failed: %v", err)
+	}
+	if got := s.Description.Localized("en"); got != "Python/FastAPI backend stack." {
+		t.Errorf("Description.Localized(en) = %q, want %q", got, "Python/FastAPI backend stack.")
+	}
+	if got := s.Description.Localized("es"); got != "Stack de backend Python/FastAPI." {
+		t.Errorf("Description.Localized(es) = %q, want %q", got, "Stack de backend Python/FastAPI.")
+	}
+	if got := s.LongDescription.Localized("en"); got != "Clean architecture, database, security, and containers." {
+		t.Errorf("LongDescription.Localized(en) = %q, want %q", got, "Clean architecture, database, security, and containers.")
+	}
+	if got := s.LongDescription.Localized("es"); got != "Arquitectura limpia, base de datos, seguridad y contenedores." {
+		t.Errorf("LongDescription.Localized(es) = %q, want %q", got, "Arquitectura limpia, base de datos, seguridad y contenedores.")
+	}
+}
+
 // TestStarterValidate_WellFormed asserts that a Starter with a non-empty ID
 // and Name passes field-level validation without error.
 func TestStarterValidate_WellFormed(t *testing.T) {

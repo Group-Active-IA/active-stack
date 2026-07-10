@@ -35,7 +35,9 @@ func (m Model) viewStarters() string {
 		if m.Cursor == i {
 			cursor = "> "
 		}
-		desc := s.Description
+		// TODO(i18n): localize TUI — pinned to "es" so TUI output stays
+		// byte-identical (L2, catalog-localized-descriptions).
+		desc := s.Description.Localized("es")
 		if desc != "" {
 			sb.WriteString(fmt.Sprintf("%s%s — %s\n", cursor, s.Name, desc))
 		} else {

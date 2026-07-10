@@ -77,6 +77,45 @@ func contains(s, sub string) bool {
 	return strings.Contains(s, sub)
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// L2 (catalog-localized-descriptions): Harness.Description / LongDescription
+// become LocalizedText.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// TestHarness_LocalizedDescriptionAndLongDescription_ParseAndResolve asserts
+// that a harness entry with description/long_description as {es, en} maps
+// parses into LocalizedText fields that resolve per language via Localized.
+func TestHarness_LocalizedDescriptionAndLongDescription_ParseAndResolve(t *testing.T) {
+	raw := `
+id: openspec
+name: OpenSpec CLI
+description:
+  es: CLI de Spec-Driven Development.
+  en: Spec-Driven Development CLI.
+long_description:
+  es: Fuente de verdad del estado del proyecto.
+  en: Single source of truth for project state.
+type: external
+install_modes: [lite, full]
+`
+	var h Harness
+	if err := yaml.Unmarshal([]byte(raw), &h); err != nil {
+		t.Fatalf("yaml.Unmarshal failed: %v", err)
+	}
+	if got := h.Description.Localized("en"); got != "Spec-Driven Development CLI." {
+		t.Errorf("Description.Localized(en) = %q, want %q", got, "Spec-Driven Development CLI.")
+	}
+	if got := h.Description.Localized("es"); got != "CLI de Spec-Driven Development." {
+		t.Errorf("Description.Localized(es) = %q, want %q", got, "CLI de Spec-Driven Development.")
+	}
+	if got := h.LongDescription.Localized("en"); got != "Single source of truth for project state." {
+		t.Errorf("LongDescription.Localized(en) = %q, want %q", got, "Single source of truth for project state.")
+	}
+	if got := h.LongDescription.Localized("es"); got != "Fuente de verdad del estado del proyecto." {
+		t.Errorf("LongDescription.Localized(es) = %q, want %q", got, "Fuente de verdad del estado del proyecto.")
+	}
+}
+
 // TestModel_ScopeKind_ZeroValueIsGlobal asserts that:
 //  1. A Harness with no Scope set (zero value) returns IsStarterOnly()==false.
 //  2. A Harness with Scope==ScopeStarterOnly returns IsStarterOnly()==true.

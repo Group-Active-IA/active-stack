@@ -15,6 +15,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	extinstaller "github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/system"
@@ -99,8 +100,19 @@ func twoStarterFakeCatalog() *fakeStarterCatalog {
 	harnessB := model.Harness{ID: "harness-b", Name: "Harness B", Type: model.HarnessExternal, External: &model.External{Method: "npm"}, InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull}}
 	return &fakeStarterCatalog{
 		starters: []model.Starter{
-			{ID: "alpha", Name: "Alpha", Description: "First starter", Includes: []string{"beta"}},
-			{ID: "beta", Name: "Beta", Description: "Second starter"},
+			{
+				ID:              "alpha",
+				Name:            "Alpha",
+				Description:     model.LocalizedText{"es": "Primer starter", "en": "First starter"},
+				LongDescription: model.LocalizedText{"es": "Descripción larga del primer starter.", "en": "Long description of the first starter."},
+				Includes:        []string{"beta"},
+			},
+			{
+				ID:              "beta",
+				Name:            "Beta",
+				Description:     model.LocalizedText{"es": "Segundo starter", "en": "Second starter"},
+				LongDescription: model.LocalizedText{"es": "Descripción larga del segundo starter.", "en": "Long description of the second starter."},
+			},
 		},
 		harnessesByID: map[string][]model.Harness{
 			"alpha": {harnessA, harnessB},
@@ -121,22 +133,31 @@ func TestRunWindowsStartersList_CatalogOrder(t *testing.T) {
 	cat := twoStarterFakeCatalog()
 
 	var out bytes.Buffer
-	if err := headless.RunWindowsStartersList(cat, &out); err != nil {
+	if err := headless.RunWindowsStartersList(cat, i18n.LangEN, &out); err != nil {
 		t.Fatalf("RunWindowsStartersList() error = %v", err)
 	}
 
 	var resp struct {
 		Starters []struct {
-			ID          string   `json:"id"`
-			Name        string   `json:"name"`
-			Description string   `json:"description"`
-			Includes    []string `json:"includes"`
-			Harnesses   []string `json:"harnesses"`
-			MCPCount    int      `json:"mcp_count"`
+			ID              string   `json:"id"`
+			Name            string   `json:"name"`
+			Description     string   `json:"description"`
+			Includes        []string `json:"includes"`
+			Harnesses       []string `json:"harnesses"`
+			MCPCount        int      `json:"mcp_count"`
+			LongDescription string   `json:"long_description"`
 		} `json:"starters"`
 	}
 	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
 		t.Fatalf("unmarshal starters list json: %v\nbody=%s", err, out.String())
+	}
+
+	// L2 (catalog-localized-descriptions): long_description is now populated
+	// from the starter's localized LongDescription (was empty pre-L2).
+	for _, s := range resp.Starters {
+		if s.LongDescription == "" {
+			t.Errorf("starter %q long_description is empty, want populated from the catalog", s.ID)
+		}
 	}
 
 	if len(resp.Starters) != 2 {
@@ -162,13 +183,63 @@ func TestRunWindowsStartersList_CatalogOrder(t *testing.T) {
 	}
 }
 
+// TestRunWindowsStartersList_LocalizedDescriptionAndLongDescription covers
+// L2 (catalog-localized-descriptions) D4: "windows starters list" under
+// --lang es vs en emits the localized description and long_description for
+// each starter, while name stays unchanged across languages.
+func TestRunWindowsStartersList_LocalizedDescriptionAndLongDescription(t *testing.T) {
+	cat := twoStarterFakeCatalog()
+
+	type starterResp struct {
+		ID              string `json:"id"`
+		Name            string `json:"name"`
+		Description     string `json:"description"`
+		LongDescription string `json:"long_description"`
+	}
+
+	for _, tc := range []struct {
+		lang         i18n.Lang
+		wantAlphaDes string
+		wantAlphaLng string
+	}{
+		{lang: i18n.LangEN, wantAlphaDes: "First starter", wantAlphaLng: "Long description of the first starter."},
+		{lang: i18n.LangES, wantAlphaDes: "Primer starter", wantAlphaLng: "Descripción larga del primer starter."},
+	} {
+		t.Run(string(tc.lang), func(t *testing.T) {
+			var out bytes.Buffer
+			if err := headless.RunWindowsStartersList(cat, tc.lang, &out); err != nil {
+				t.Fatalf("RunWindowsStartersList() error = %v", err)
+			}
+			var resp struct {
+				Starters []starterResp `json:"starters"`
+			}
+			if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+				t.Fatalf("unmarshal starters list json: %v\nbody=%s", err, out.String())
+			}
+			if len(resp.Starters) == 0 || resp.Starters[0].ID != "alpha" {
+				t.Fatalf("starters = %+v, want first entry alpha", resp.Starters)
+			}
+			alpha := resp.Starters[0]
+			if alpha.Name != "Alpha" {
+				t.Errorf("alpha.Name = %q, want %q (name must not localize)", alpha.Name, "Alpha")
+			}
+			if alpha.Description != tc.wantAlphaDes {
+				t.Errorf("alpha.Description = %q, want %q", alpha.Description, tc.wantAlphaDes)
+			}
+			if alpha.LongDescription != tc.wantAlphaLng {
+				t.Errorf("alpha.LongDescription = %q, want %q", alpha.LongDescription, tc.wantAlphaLng)
+			}
+		})
+	}
+}
+
 // TestRunWindowsStartersList_EmptyCatalog asserts an empty catalog yields
 // {"starters":[]} (never null).
 func TestRunWindowsStartersList_EmptyCatalog(t *testing.T) {
 	cat := &fakeStarterCatalog{}
 
 	var out bytes.Buffer
-	if err := headless.RunWindowsStartersList(cat, &out); err != nil {
+	if err := headless.RunWindowsStartersList(cat, i18n.LangEN, &out); err != nil {
 		t.Fatalf("RunWindowsStartersList() error = %v", err)
 	}
 

@@ -39,12 +39,15 @@ type MCP struct {
 //                  written to the correct per-agent, per-target path (C-28).
 //                  (TBD) Remote/HTTP/SSE transport shape deferred — see MCP comment.
 type Starter struct {
-	ID          string   `yaml:"id"`
-	Name        string   `yaml:"name"`
-	Description string   `yaml:"description,omitempty"`
-	Harnesses   []string `yaml:"harnesses,omitempty"`
-	Includes    []string `yaml:"includes,omitempty"`
-	MCPs        []MCP    `yaml:"mcps,omitempty"`
+	ID          string        `yaml:"id"`
+	Name        string        `yaml:"name"`
+	Description LocalizedText `yaml:"description,omitempty"`
+	// LongDescription is mandatory (both languages) for every starter (D2,
+	// design.md catalog-localized-descriptions).
+	LongDescription LocalizedText `yaml:"long_description,omitempty"`
+	Harnesses       []string      `yaml:"harnesses,omitempty"`
+	Includes        []string      `yaml:"includes,omitempty"`
+	MCPs            []MCP         `yaml:"mcps,omitempty"`
 }
 
 // Validate performs field-level validation on this MCP's own fields.

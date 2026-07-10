@@ -3,13 +3,13 @@ package headless
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
@@ -31,9 +31,10 @@ type windowsOptionsResponse struct {
 }
 
 type windowsModeOption struct {
-	ID          string `json:"id"`
-	Label       string `json:"label"`
-	Description string `json:"description"`
+	ID              string `json:"id"`
+	Label           string `json:"label"`
+	Description     string `json:"description"`
+	LongDescription string `json:"long_description,omitempty"`
 }
 
 // windowsPermissionTier describes one permission tier for the GUI's tier
@@ -41,18 +42,20 @@ type windowsModeOption struct {
 // entries in display order; only TierCapable / TierCapableAgents vary with
 // the requested agent set.
 type windowsPermissionTier struct {
-	ID          string `json:"id"`
-	Label       string `json:"label"`
-	Description string `json:"description"`
-	Default     bool   `json:"default"`
-	Warning     string `json:"warning,omitempty"`
+	ID              string `json:"id"`
+	Label           string `json:"label"`
+	Description     string `json:"description"`
+	Default         bool   `json:"default"`
+	Warning         string `json:"warning,omitempty"`
+	LongDescription string `json:"long_description,omitempty"`
 }
 
 type windowsComponentOption struct {
-	ID          string `json:"id"`
-	Label       string `json:"label"`
-	Description string `json:"description"`
-	Recommended bool   `json:"recommended,omitempty"`
+	ID              string `json:"id"`
+	Label           string `json:"label"`
+	Description     string `json:"description"`
+	Recommended     bool   `json:"recommended,omitempty"`
+	LongDescription string `json:"long_description,omitempty"`
 }
 
 type windowsInstallEvent struct {
@@ -88,7 +91,7 @@ func detectAgents(homeDir string) []string {
 	return detected
 }
 
-func RunWindowsOptions(cat install.Catalog, agents []model.Agent, w io.Writer) error {
+func RunWindowsOptions(cat install.Catalog, agents []model.Agent, lang i18n.Lang, w io.Writer) error {
 	// D5 (windows-contract-tier-multiagent): the picker universe is "what can
 	// be picked", not "what will be installed" — install.SelectHarnesses with
 	// an empty Custom intent only ever force-adds the permissions harness, so
@@ -98,12 +101,12 @@ func RunWindowsOptions(cat install.Catalog, agents []model.Agent, w io.Writer) e
 	customHarnesses := install.CustomPickerHarnesses(cat, agents)
 
 	resp := windowsOptionsResponse{
-		Modes:             windowsModeOptions(),
+		Modes:             windowsModeOptions(lang),
 		ForcedComponents:  make([]windowsComponentOption, 0, 1),
 		CustomComponents:  make([]windowsComponentOption, 0, len(customHarnesses)),
 		TierCapable:       model.TierCapable(agents),
 		TierCapableAgents: tierCapableAgentIDs(agents),
-		PermissionTiers:   windowsPermissionTiers(),
+		PermissionTiers:   windowsPermissionTiers(lang),
 	}
 
 	seen := make(map[string]bool, len(customHarnesses))
@@ -114,10 +117,11 @@ func RunWindowsOptions(cat install.Catalog, agents []model.Agent, w io.Writer) e
 		seen[h.ID] = true
 
 		item := windowsComponentOption{
-			ID:          h.ID,
-			Label:       h.Name,
-			Description: windowsComponentDescription(h),
-			Recommended: h.InMode(model.ModeLite) || h.InMode(model.ModeFull),
+			ID:              h.ID,
+			Label:           h.Name,
+			Description:     windowsComponentDescription(lang, h),
+			Recommended:     h.InMode(model.ModeLite) || h.InMode(model.ModeFull),
+			LongDescription: h.LongDescription.Localized(string(lang)),
 		}
 		if h.ID == install.SecurityFirstHarnessID {
 			resp.ForcedComponents = append(resp.ForcedComponents, item)
@@ -163,10 +167,12 @@ func runWindowsPipeline(params ParsedFlags, cat install.Catalog, reg install.Reg
 
 	var lastStage pipeline.Stage
 
+	lang := params.Lang
+
 	emit(windowsInstallEvent{
 		Type:    "phase_started",
 		Phase:   "install",
-		Message: "Starting installation.",
+		Message: i18n.T(lang, "windows.install.starting"),
 	})
 
 	params.ProgressEventFn = func(e pipeline.ProgressEvent) {
@@ -175,10 +181,10 @@ func runWindowsPipeline(params ParsedFlags, cat install.Catalog, reg install.Reg
 			emit(windowsInstallEvent{
 				Type:    "phase_started",
 				Phase:   string(e.Stage),
-				Message: windowsPhaseMessage(e.Stage),
+				Message: windowsPhaseMessage(lang, e.Stage),
 			})
 		}
-		emit(mapProgressEvent(e))
+		emit(mapProgressEvent(lang, e))
 	}
 	params.DownloadEventFn = func(e install.DownloadEvent) {
 		emit(windowsInstallEvent{
@@ -209,7 +215,7 @@ func runWindowsPipeline(params ParsedFlags, cat install.Catalog, reg install.Reg
 		Type:    finishedEventType,
 		Phase:   "install",
 		Success: exitCode == 0,
-		Message: installFinishedMessage(exitCode),
+		Message: installFinishedMessage(lang, exitCode),
 	})
 
 	return exitCode
@@ -223,11 +229,12 @@ func RunWindowsUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, reg
 	}
 
 	var lastStage pipeline.Stage
+	lang := params.Lang
 
 	emit(windowsInstallEvent{
 		Type:    "phase_started",
 		Phase:   "uninstall",
-		Message: "Starting uninstall.",
+		Message: i18n.T(lang, "windows.uninstall.starting"),
 	})
 
 	progressFn := func(e pipeline.ProgressEvent) {
@@ -236,10 +243,10 @@ func RunWindowsUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, reg
 			emit(windowsInstallEvent{
 				Type:    "phase_started",
 				Phase:   string(e.Stage),
-				Message: windowsUninstallPhaseMessage(e.Stage),
+				Message: windowsUninstallPhaseMessage(lang, e.Stage),
 			})
 		}
-		emit(mapProgressEvent(e))
+		emit(mapProgressEvent(lang, e))
 	}
 
 	params2 := params
@@ -260,14 +267,14 @@ func RunWindowsUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, reg
 		emit(windowsInstallEvent{
 			Type:    "step_failed",
 			Phase:   "uninstall",
-			Message: "Uninstall plan failed.",
+			Message: i18n.T(lang, "windows.uninstall.plan_failed"),
 			Details: err.Error(),
 		})
 		emit(windowsInstallEvent{
 			Type:    "uninstall_finished",
 			Phase:   "uninstall",
 			Success: false,
-			Message: "Uninstall failed.",
+			Message: i18n.T(lang, "windows.uninstall.finished_fail"),
 		})
 		return 1
 	}
@@ -278,13 +285,13 @@ func RunWindowsUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, reg
 				Type:    "step_started",
 				Phase:   string(pipeline.StagePrepare),
 				StepID:  s.ID(),
-				Message: "Dry-run step planned.",
+				Message: i18n.T(lang, "windows.dryrun.planned"),
 			})
 			emit(windowsInstallEvent{
 				Type:    "step_succeeded",
 				Phase:   string(pipeline.StagePrepare),
 				StepID:  s.ID(),
-				Message: "Dry-run step listed.",
+				Message: i18n.T(lang, "windows.dryrun.listed"),
 			})
 		}
 		for _, s := range plan.Apply {
@@ -292,20 +299,20 @@ func RunWindowsUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, reg
 				Type:    "step_started",
 				Phase:   string(pipeline.StageApply),
 				StepID:  s.ID(),
-				Message: "Dry-run step planned.",
+				Message: i18n.T(lang, "windows.dryrun.planned"),
 			})
 			emit(windowsInstallEvent{
 				Type:    "step_succeeded",
 				Phase:   string(pipeline.StageApply),
 				StepID:  s.ID(),
-				Message: "Dry-run step listed.",
+				Message: i18n.T(lang, "windows.dryrun.listed"),
 			})
 		}
 		emit(windowsInstallEvent{
 			Type:    "uninstall_finished",
 			Phase:   "uninstall",
 			Success: true,
-			Message: "Uninstall finished successfully.",
+			Message: i18n.T(lang, "windows.uninstall.finished_ok"),
 		})
 		return 0
 	}
@@ -332,7 +339,7 @@ func RunWindowsUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, reg
 			Type:    "uninstall_finished",
 			Phase:   "uninstall",
 			Success: false,
-			Message: "Uninstall failed.",
+			Message: i18n.T(lang, "windows.uninstall.finished_fail"),
 			Details: result.Err.Error(),
 		})
 		return 1
@@ -342,13 +349,13 @@ func RunWindowsUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, reg
 		Type:    "uninstall_finished",
 		Phase:   "uninstall",
 		Success: true,
-		Message: "Uninstall finished successfully.",
+		Message: i18n.T(lang, "windows.uninstall.finished_ok"),
 	})
 
 	return 0
 }
 
-func mapProgressEvent(e pipeline.ProgressEvent) windowsInstallEvent {
+func mapProgressEvent(lang i18n.Lang, e pipeline.ProgressEvent) windowsInstallEvent {
 	event := windowsInstallEvent{
 		Phase:  string(e.Stage),
 		StepID: e.StepID,
@@ -356,19 +363,19 @@ func mapProgressEvent(e pipeline.ProgressEvent) windowsInstallEvent {
 	switch e.Status {
 	case pipeline.StepStatusRunning:
 		event.Type = "step_started"
-		event.Message = "Step started."
+		event.Message = i18n.T(lang, "windows.step.started")
 	case pipeline.StepStatusSucceeded:
 		event.Type = "step_succeeded"
-		event.Message = "Step completed."
+		event.Message = i18n.T(lang, "windows.step.succeeded")
 	case pipeline.StepStatusFailed:
 		event.Type = "step_failed"
-		event.Message = "Step failed."
+		event.Message = i18n.T(lang, "windows.step.failed")
 	case pipeline.StepStatusRolledBack:
 		event.Type = "rollback_finished"
-		event.Message = "Rollback step completed."
+		event.Message = i18n.T(lang, "windows.step.rolled_back")
 	case pipeline.StepStatusDegraded:
 		event.Type = "step_degraded"
-		event.Message = "Step completed with warnings."
+		event.Message = i18n.T(lang, "windows.step.degraded")
 	default:
 		event.Type = "step_output"
 		event.Message = string(e.Status)
@@ -379,29 +386,29 @@ func mapProgressEvent(e pipeline.ProgressEvent) windowsInstallEvent {
 	return event
 }
 
-func windowsPhaseMessage(stage pipeline.Stage) string {
+func windowsPhaseMessage(lang i18n.Lang, stage pipeline.Stage) string {
 	switch stage {
 	case pipeline.StagePrepare:
-		return "Preparing installation."
+		return i18n.T(lang, "windows.phase.prepare")
 	case pipeline.StageApply:
-		return "Applying installation steps."
+		return i18n.T(lang, "windows.phase.apply")
 	case pipeline.StageRollback:
-		return "Rolling back changes."
+		return i18n.T(lang, "windows.phase.rollback")
 	default:
-		return "Running installation."
+		return i18n.T(lang, "windows.phase.default")
 	}
 }
 
-func windowsUninstallPhaseMessage(stage pipeline.Stage) string {
+func windowsUninstallPhaseMessage(lang i18n.Lang, stage pipeline.Stage) string {
 	switch stage {
 	case pipeline.StagePrepare:
-		return "Preparing uninstall."
+		return i18n.T(lang, "windows.uninstall.phase.prepare")
 	case pipeline.StageApply:
-		return "Removing installed items."
+		return i18n.T(lang, "windows.uninstall.phase.apply")
 	case pipeline.StageRollback:
-		return "Restoring previous state."
+		return i18n.T(lang, "windows.uninstall.phase.rollback")
 	default:
-		return "Running uninstall."
+		return i18n.T(lang, "windows.uninstall.phase.default")
 	}
 }
 
@@ -428,20 +435,20 @@ func configStateAgent(id string) (model.Agent, bool) {
 	}
 }
 
-func windowsComponentDescription(h model.Harness) string {
+func windowsComponentDescription(lang i18n.Lang, h model.Harness) string {
 	switch {
 	case h.ID == install.SecurityFirstHarnessID:
-		return "Basic protection for safer setup. This is always installed."
-	case h.Description != "":
-		return h.Description
+		return i18n.T(lang, "component.fallback.security")
+	case h.Description.Localized(string(lang)) != "":
+		return h.Description.Localized(string(lang))
 	case h.Type == model.HarnessExternal:
-		return "Downloads and configures an external tool."
+		return i18n.T(lang, "component.fallback.external")
 	case h.Type == model.HarnessConfig:
-		return "Applies recommended configuration."
+		return i18n.T(lang, "component.fallback.config")
 	case h.Type == model.HarnessSkill:
-		return "Adds guided workflow helpers."
+		return i18n.T(lang, "component.fallback.skill")
 	default:
-		return fmt.Sprintf("Installs %s.", h.Name)
+		return i18n.Tf(lang, "component.fallback.generic_fmt", h.Name)
 	}
 }
 
@@ -462,32 +469,39 @@ func tierCapableAgentIDs(agents []model.Agent) []string {
 // windowsPermissionTiers lists the three permission tiers in display order
 // (estricto, balanceado, bypass), with balanceado marked as the default and
 // bypass carrying its autonomy warning (D3, design.md; mirrors the TUI's
-// tierOrder / bypassWarning in internal/tui/permissions_screen.go).
-func windowsPermissionTiers() []windowsPermissionTier {
+// tierOrder / bypassWarning in internal/tui/permissions_screen.go). Labels,
+// descriptions, long descriptions, and the bypass warning are sourced from
+// the i18n tables so they stay language-consistent (D5, i18n-engine-locales):
+// under en the labels are Strict/Balanced/Bypass; under es they are
+// Estricto/Balanceado/Bypass. Tier ids never change.
+func windowsPermissionTiers(lang i18n.Lang) []windowsPermissionTier {
 	return []windowsPermissionTier{
 		{
-			ID:          string(model.TierEstricto),
-			Label:       "Estricto",
-			Description: "Agent must ask for every operation. Highest friction, highest security.",
+			ID:              string(model.TierEstricto),
+			Label:           i18n.T(lang, "tier.estricto.label"),
+			Description:     i18n.T(lang, "tier.estricto.desc"),
+			LongDescription: i18n.T(lang, "tier.estricto.long"),
 		},
 		{
-			ID:          string(model.TierBalanceado),
-			Label:       "Balanceado",
-			Description: "Curated allow-list for safe, repetitive operations. Recommended starting point.",
-			Default:     true,
+			ID:              string(model.TierBalanceado),
+			Label:           i18n.T(lang, "tier.balanceado.label"),
+			Description:     i18n.T(lang, "tier.balanceado.desc"),
+			LongDescription: i18n.T(lang, "tier.balanceado.long"),
+			Default:         true,
 		},
 		{
-			ID:          string(model.TierBypass),
-			Label:       "Bypass",
-			Description: "Full autonomy opt-in. The security floor deny-list still applies.",
-			Warning:     "Bypass: autonomous mode — the security floor still applies (C-21)",
+			ID:              string(model.TierBypass),
+			Label:           i18n.T(lang, "tier.bypass.label"),
+			Description:     i18n.T(lang, "tier.bypass.desc"),
+			LongDescription: i18n.T(lang, "tier.bypass.long"),
+			Warning:         i18n.T(lang, "tier.bypass.warning"),
 		},
 	}
 }
 
-func installFinishedMessage(exitCode int) string {
+func installFinishedMessage(lang i18n.Lang, exitCode int) string {
 	if exitCode == 0 {
-		return "Installation finished successfully."
+		return i18n.T(lang, "windows.install.finished_ok")
 	}
-	return "Installation failed."
+	return i18n.T(lang, "windows.install.finished_fail")
 }

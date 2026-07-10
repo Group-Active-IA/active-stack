@@ -156,6 +156,11 @@ func buildFixtureCatalog(t *testing.T, starterID string, harnesses []FixtureHarn
 	for _, h := range harnesses {
 		sb.WriteString(fmt.Sprintf("  - id: %q\n", h.ID))
 		sb.WriteString("    name: " + fmt.Sprintf("%q\n", h.ID))
+		// L2 (catalog-localized-descriptions): description is bilingual and
+		// mandatory for every harness; these fixture harnesses are not
+		// starter-only, so long_description is mandatory too.
+		sb.WriteString("    description: { es: \"Harness de fixture E2E.\", en: \"E2E fixture harness.\" }\n")
+		sb.WriteString("    long_description: { es: \"Descripción larga de fixture E2E.\", en: \"E2E fixture harness long description.\" }\n")
 		sb.WriteString("    type: skill\n")
 		sb.WriteString("    install_modes: [custom]\n")
 		sb.WriteString("    source:\n")
@@ -174,7 +179,8 @@ func buildFixtureCatalog(t *testing.T, starterID string, harnesses []FixtureHarn
 	sb.WriteString("starters:\n")
 	sb.WriteString(fmt.Sprintf("  - id: %q\n", starterID))
 	sb.WriteString(fmt.Sprintf("    name: %q\n", "Fixture: "+starterID))
-	sb.WriteString("    description: \"E2E fixture starter\"\n")
+	sb.WriteString("    description: { es: \"Starter de fixture E2E.\", en: \"E2E fixture starter.\" }\n")
+	sb.WriteString("    long_description: { es: \"Descripción larga de starter de fixture E2E.\", en: \"E2E fixture starter long description.\" }\n")
 	sb.WriteString("    harnesses:\n")
 	for _, h := range harnesses {
 		sb.WriteString(fmt.Sprintf("      - %q\n", h.ID))

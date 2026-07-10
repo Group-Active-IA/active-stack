@@ -61,12 +61,16 @@ func TestBestEffortFlag_ParseFromYAML(t *testing.T) {
 	yaml := `harnesses:
   - id: be-skill
     name: Best Effort
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: skill
     best_effort: true
     source: { repo: some/repo, method: clone }
     install_modes: [full]
   - id: normal-skill
     name: Normal Skill
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: skill
     source: { repo: some/repo, method: clone }
     install_modes: [full]`
@@ -223,6 +227,8 @@ func TestCatalogValidation_ExternalMCP_WellFormedPasses(t *testing.T) {
 	valid := `harnesses:
   - id: good-external
     name: Good External
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: external
     external:
       method: homebrew
@@ -429,6 +435,8 @@ func TestMethodInference_ThirdParty(t *testing.T) {
 	yaml := `harnesses:
   - id: x
     name: X
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: skill
     third_party: true
     source: { repo: some/repo }
@@ -448,6 +456,8 @@ func TestMethodInference_OwnSkill(t *testing.T) {
 	yaml := `harnesses:
   - id: x
     name: X
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: skill
     source: { repo: some/repo }
     install_modes: [full]`
@@ -466,6 +476,8 @@ func TestMethodInference_ExplicitOverride(t *testing.T) {
 	yaml := `harnesses:
   - id: x
     name: X
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: skill
     source: { repo: some/repo, method: embed }
     install_modes: [full]`
@@ -486,8 +498,8 @@ func TestValidate_RejectsBadCatalogs(t *testing.T) {
 	}{
 		"duplicate id": {
 			yaml: `harnesses:
-  - {id: dup, name: A, type: config, install_modes: [lite]}
-  - {id: dup, name: B, type: config, install_modes: [lite]}`,
+  - {id: dup, name: A, type: config, install_modes: [lite], description: {es: Descripción., en: Description.}, long_description: {es: Larga., en: Long.}}
+  - {id: dup, name: B, type: config, install_modes: [lite], description: {es: Descripción., en: Description.}, long_description: {es: Larga., en: Long.}}`,
 			want: "duplicate",
 		},
 		"invalid type": {
@@ -596,6 +608,8 @@ func TestC31_CommandHarnessType_IsValidInCatalogYAML(t *testing.T) {
 	raw := `harnesses:
   - id: my-command
     name: My Command
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: command
     install_modes: [lite, full]
     agents: [claude, opencode]`
@@ -641,6 +655,7 @@ starters:
 	referencedYAML := `harnesses:
   - id: curated-skill
     name: Curated Skill
+    description: { es: Descripción., en: Description. }
     type: skill
     scope: starter-only
     source: { repo: some/repo, method: clone }
@@ -648,6 +663,8 @@ starters:
 starters:
   - id: my-starter
     name: My Starter
+    description: { es: Descripción de starter., en: Starter description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [curated-skill]`
 
 	if _, err := parse([]byte(referencedYAML)); err != nil {
@@ -686,6 +703,7 @@ starters:
 	fullOnlyYAML := `harnesses:
   - id: good-skill
     name: Good Skill
+    description: { es: Descripción., en: Description. }
     type: skill
     scope: starter-only
     source: { repo: some/repo, method: clone }
@@ -693,6 +711,8 @@ starters:
 starters:
   - id: my-starter
     name: My Starter
+    description: { es: Descripción de starter., en: Starter description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [good-skill]`
 
 	if _, err := parse([]byte(fullOnlyYAML)); err != nil {

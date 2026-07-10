@@ -4,18 +4,20 @@ import (
 	"encoding/json"
 	"io"
 
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/install"
 )
 
 // windowsStarterEntry is one entry in the "windows starters list" response
 // (design D2, windows-contract-hub-operations).
 type windowsStarterEntry struct {
-	ID          string   `json:"id"`
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Includes    []string `json:"includes"`
-	Harnesses   []string `json:"harnesses"`
-	MCPCount    int      `json:"mcp_count"`
+	ID              string   `json:"id"`
+	Name            string   `json:"name"`
+	Description     string   `json:"description"`
+	Includes        []string `json:"includes"`
+	Harnesses       []string `json:"harnesses"`
+	MCPCount        int      `json:"mcp_count"`
+	LongDescription string   `json:"long_description,omitempty"`
 }
 
 type windowsStartersListResponse struct {
@@ -27,7 +29,7 @@ type windowsStartersListResponse struct {
 // order (design D2). harnesses is the resolved id set from ResolveStarter;
 // mcp_count is len(ResolveStarterMCPs). An empty catalog yields
 // {"starters":[]} — never null.
-func RunWindowsStartersList(cat StarterCatalog, w io.Writer) error {
+func RunWindowsStartersList(cat StarterCatalog, lang i18n.Lang, w io.Writer) error {
 	all := cat.AllStarters()
 	resp := windowsStartersListResponse{Starters: make([]windowsStarterEntry, 0, len(all))}
 
@@ -52,12 +54,13 @@ func RunWindowsStartersList(cat StarterCatalog, w io.Writer) error {
 		}
 
 		resp.Starters = append(resp.Starters, windowsStarterEntry{
-			ID:          s.ID,
-			Name:        s.Name,
-			Description: s.Description,
-			Includes:    includes,
-			Harnesses:   harnessIDs,
-			MCPCount:    len(mcps),
+			ID:              s.ID,
+			Name:            s.Name,
+			Description:     s.Description.Localized(string(lang)),
+			Includes:        includes,
+			Harnesses:       harnessIDs,
+			MCPCount:        len(mcps),
+			LongDescription: s.LongDescription.Localized(string(lang)),
 		})
 	}
 

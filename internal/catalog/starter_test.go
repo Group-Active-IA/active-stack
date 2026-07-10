@@ -15,10 +15,14 @@ const minimalHarnessYAML = `
 harnesses:
   - id: h-one
     name: H One
+    description: { es: Descripción de H One., en: H One description. }
+    long_description: { es: Larga de H One., en: H One long description. }
     type: config
     install_modes: [lite]
   - id: h-two
     name: H Two
+    description: { es: Descripción de H Two., en: H Two description. }
+    long_description: { es: Larga de H Two., en: H Two long description. }
     type: config
     install_modes: [full]
 `
@@ -67,6 +71,8 @@ func TestStarters_ParseFromYAML(t *testing.T) {
 starters:
   - id: my-starter
     name: My Starter
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [h-one]
 `
 	c, err := parse([]byte(raw))
@@ -164,6 +170,8 @@ func TestStarterValidation_DetectsCycles(t *testing.T) {
 starters:
   - id: self
     name: Self
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     includes: [self]
 `,
 			want: "cycle",
@@ -173,9 +181,13 @@ starters:
 starters:
   - id: alpha
     name: Alpha
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     includes: [beta]
   - id: beta
     name: Beta
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     includes: [alpha]
 `,
 			want: "cycle",
@@ -203,6 +215,8 @@ func TestStarterByID_Known(t *testing.T) {
 starters:
   - id: known
     name: Known Starter
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
 `
 	c, err := parse([]byte(raw))
 	if err != nil {
@@ -240,25 +254,37 @@ func TestResolveStarter_CompositeExpands(t *testing.T) {
 harnesses:
   - id: h-ux
     name: H UX
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: config
     install_modes: [full]
   - id: h-be
     name: H BE
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: config
     install_modes: [full]
   - id: h-shared
     name: H Shared
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: config
     install_modes: [full]
 starters:
   - id: ux-ui
     name: UX/UI
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [h-ux, h-shared]
   - id: backend
     name: Backend
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [h-be, h-shared]
   - id: full-stack
     name: Full Stack
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     includes: [ux-ui, backend]
 `
 	c, err := parse([]byte(raw))
@@ -294,17 +320,25 @@ func TestResolveStarter_SharedHarnessDeduped(t *testing.T) {
 harnesses:
   - id: common
     name: Common
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     type: config
     install_modes: [full]
 starters:
   - id: a
     name: A
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [common]
   - id: b
     name: B
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     harnesses: [common]
   - id: parent
     name: Parent
+    description: { es: Descripción., en: Description. }
+    long_description: { es: Larga., en: Long. }
     includes: [a, b]
 `
 	c, err := parse([]byte(raw))
