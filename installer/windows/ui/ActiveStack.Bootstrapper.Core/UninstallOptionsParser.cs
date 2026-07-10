@@ -27,7 +27,7 @@ public static class UninstallOptionsParser
             .ToList();
 
         var modes = (response.Modes ?? [])
-            .Select(static mode => new InstallTypeChoice(mode.Id ?? string.Empty, mode.Label ?? string.Empty, mode.Description ?? string.Empty))
+            .Select(static mode => new InstallTypeChoice(mode.Id ?? string.Empty, mode.Label ?? string.Empty, mode.Description ?? string.Empty, mode.LongDescription ?? string.Empty))
             .ToList();
 
         var strategies = (response.Strategies ?? [])
@@ -36,7 +36,8 @@ public static class UninstallOptionsParser
                 strategy.Label ?? string.Empty,
                 strategy.Description ?? string.Empty,
                 strategy.Default,
-                strategy.RequiresManifest))
+                strategy.RequiresManifest,
+                strategy.LongDescription ?? string.Empty))
             .ToList();
 
         return new UninstallOptions(detectedAgents, modes, strategies);
@@ -70,6 +71,9 @@ public static class UninstallOptionsParser
 
         [JsonPropertyName("requires_manifest")]
         public bool RequiresManifest { get; init; }
+
+        [JsonPropertyName("long_description")]
+        public string? LongDescription { get; init; }
     }
 }
 
@@ -78,4 +82,4 @@ public sealed record UninstallOptions(
     IReadOnlyList<InstallTypeChoice> Modes,
     IReadOnlyList<UninstallStrategyChoice> Strategies);
 
-public sealed record UninstallStrategyChoice(string Id, string Label, string Description, bool IsDefault, bool RequiresManifest);
+public sealed record UninstallStrategyChoice(string Id, string Label, string Description, bool IsDefault, bool RequiresManifest, string LongDescription = "");

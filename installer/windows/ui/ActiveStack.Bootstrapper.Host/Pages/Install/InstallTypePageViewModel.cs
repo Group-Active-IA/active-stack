@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using ActiveStack.Bootstrapper.Core;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 
 namespace ActiveStack.Bootstrapper.Host.Pages.Install;
@@ -15,8 +16,8 @@ public sealed class InstallTypePageViewModel : WizardPageViewModelBase
     private readonly InstallSelection _selection;
     private string _selectedId;
 
-    public InstallTypePageViewModel(InstallerSessionState session, InstallSelection selection)
-        : base("Choose your installation type", "Pick how much of the workspace Active Stack should set up.")
+    public InstallTypePageViewModel(InstallerSessionState session, InstallSelection selection, string lang = "en")
+        : base(UiStrings.Get(lang, "page.installtype.title"), UiStrings.Get(lang, "page.installtype.subtitle"), lang)
     {
         _selection = selection;
         Choices = new ObservableCollection<InstallTypeChoice>(session.InstallTypeChoices);
@@ -46,8 +47,20 @@ public sealed class InstallTypePageViewModel : WizardPageViewModelBase
             _selectedId = value;
             _selection.Mode = value;
             RaisePropertyChanged(nameof(SelectedId));
+            RaisePropertyChanged(nameof(DetailTitle));
+            RaisePropertyChanged(nameof(DetailBody));
         }
     }
+
+    /// <summary>The selected install type's label, for the shared detail panel.</summary>
+    public string DetailTitle => SelectedChoice?.Label ?? string.Empty;
+
+    /// <summary>The selected install type's long description, falling back to its short description (D5, design.md).</summary>
+    public string DetailBody => !string.IsNullOrEmpty(SelectedChoice?.LongDescription)
+        ? SelectedChoice!.LongDescription
+        : SelectedChoice?.Description ?? string.Empty;
+
+    private InstallTypeChoice? SelectedChoice => Choices.FirstOrDefault(c => string.Equals(c.Id, SelectedId, StringComparison.Ordinal));
 
     public override bool CanAdvance => true;
 }

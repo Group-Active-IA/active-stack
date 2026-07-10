@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using ActiveStack.Bootstrapper.Core;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 
 namespace ActiveStack.Bootstrapper.Host.Pages.Install;
@@ -16,8 +17,8 @@ public sealed class PermissionsPageViewModel : WizardPageViewModelBase
     private readonly InstallSelection _selection;
     private string _selectedTierId;
 
-    public PermissionsPageViewModel(InstallerSessionState session, InstallSelection selection)
-        : base("Choose your permission tier", "Pick how autonomously Active Stack's agents can act.")
+    public PermissionsPageViewModel(InstallerSessionState session, InstallSelection selection, string lang = "en")
+        : base(UiStrings.Get(lang, "page.permissions.title"), UiStrings.Get(lang, "page.permissions.subtitle"), lang)
     {
         _selection = selection;
         Tiers = new ObservableCollection<PermissionTierChoice>(session.PermissionTierChoices);
@@ -49,10 +50,22 @@ public sealed class PermissionsPageViewModel : WizardPageViewModelBase
             _selection.Tier = value;
             RaisePropertyChanged(nameof(SelectedTierId));
             RaisePropertyChanged(nameof(WarningText));
+            RaisePropertyChanged(nameof(DetailTitle));
+            RaisePropertyChanged(nameof(DetailBody));
         }
     }
 
-    public string? WarningText => Tiers.FirstOrDefault(t => string.Equals(t.Id, SelectedTierId, StringComparison.Ordinal))?.Warning;
+    public string? WarningText => SelectedTier?.Warning;
+
+    /// <summary>The selected tier's label, for the shared detail panel.</summary>
+    public string DetailTitle => SelectedTier?.Label ?? string.Empty;
+
+    /// <summary>The selected tier's long description, falling back to its short description (D5, design.md).</summary>
+    public string DetailBody => !string.IsNullOrEmpty(SelectedTier?.LongDescription)
+        ? SelectedTier!.LongDescription
+        : SelectedTier?.Description ?? string.Empty;
+
+    private PermissionTierChoice? SelectedTier => Tiers.FirstOrDefault(t => string.Equals(t.Id, SelectedTierId, StringComparison.Ordinal));
 
     public override bool CanAdvance => !string.IsNullOrWhiteSpace(SelectedTierId);
 }

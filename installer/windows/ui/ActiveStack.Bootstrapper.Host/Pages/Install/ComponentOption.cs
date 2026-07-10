@@ -12,7 +12,7 @@ public sealed class ComponentOption : INotifyPropertyChanged
 {
     private bool _isSelected;
 
-    public ComponentOption(string id, string label, string description, bool isRecommended, bool isForced, bool isSelected)
+    public ComponentOption(string id, string label, string description, bool isRecommended, bool isForced, bool isSelected, string longDescription = "")
     {
         Id = id;
         Label = label;
@@ -20,6 +20,7 @@ public sealed class ComponentOption : INotifyPropertyChanged
         IsRecommended = isRecommended;
         IsForced = isForced;
         _isSelected = isSelected;
+        LongDescription = longDescription;
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -31,6 +32,9 @@ public sealed class ComponentOption : INotifyPropertyChanged
     public string Label { get; }
 
     public string Description { get; }
+
+    /// <summary>Long-form copy for the shared detail panel (gui-detail-panel, L5, design.md D1). Empty when the engine did not supply one.</summary>
+    public string LongDescription { get; }
 
     public bool IsRecommended { get; }
 

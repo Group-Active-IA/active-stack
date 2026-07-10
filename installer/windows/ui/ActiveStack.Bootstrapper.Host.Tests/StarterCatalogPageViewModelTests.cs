@@ -32,9 +32,51 @@ public sealed class StarterCatalogPageViewModelTests
         Assert.True(page.CanAdvance);
     }
 
+    [Fact]
+    public void DetailBody_ReflectsSelectedStartersLongDescriptionWhenPresent()
+    {
+        var starters = BuildStarters();
+        var selection = new StarterSelection();
+        var page = new StarterCatalogPageViewModel(starters, selection);
+
+        page.SelectedStarterId = "web";
+
+        Assert.Equal("Web Starter", page.DetailTitle);
+        Assert.Equal("Scaffolds a full-stack web app with auth and billing wired in.", page.DetailBody);
+    }
+
+    [Fact]
+    public void DetailBody_FallsBackToShortDescriptionWhenLongDescriptionIsEmpty()
+    {
+        var starters = BuildStarters();
+        var selection = new StarterSelection();
+        var page = new StarterCatalogPageViewModel(starters, selection);
+
+        page.SelectedStarterId = "cli";
+
+        Assert.Equal("CLI Starter", page.DetailTitle);
+        Assert.Equal("A CLI tool starter.", page.DetailBody);
+    }
+
+    [Fact]
+    public void SelectingADifferentStarter_RaisesPropertyChangedForDetailTitleAndBody()
+    {
+        var starters = BuildStarters();
+        var selection = new StarterSelection();
+        var page = new StarterCatalogPageViewModel(starters, selection);
+
+        var raised = new List<string>();
+        page.PropertyChanged += (_, e) => raised.Add(e.PropertyName!);
+
+        page.SelectedStarterId = "web";
+
+        Assert.Contains(nameof(page.DetailTitle), raised);
+        Assert.Contains(nameof(page.DetailBody), raised);
+    }
+
     private static IReadOnlyList<StarterChoice> BuildStarters() =>
     [
-        new StarterChoice("web", "Web Starter", "A web app starter.", [], ["claude", "opencode"], 2),
+        new StarterChoice("web", "Web Starter", "A web app starter.", [], ["claude", "opencode"], 2, "Scaffolds a full-stack web app with auth and billing wired in."),
         new StarterChoice("cli", "CLI Starter", "A CLI tool starter.", [], ["claude"], 1)
     ];
 }

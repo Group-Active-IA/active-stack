@@ -33,11 +33,51 @@ public sealed class UninstallModePageViewModelTests
         Assert.True(page.CanAdvance);
     }
 
+    [Fact]
+    public void DetailBody_ReflectsSelectedModesLongDescriptionWhenPresent()
+    {
+        var options = BuildOptions();
+        var selection = new UninstallSelection();
+        var page = new UninstallModePageViewModel(options, selection);
+
+        Assert.Equal("Complete", page.DetailTitle);
+        Assert.Equal("Removes every Active Stack harness the installer added.", page.DetailBody);
+    }
+
+    [Fact]
+    public void DetailBody_FallsBackToShortDescriptionWhenLongDescriptionIsEmpty()
+    {
+        var options = BuildOptions();
+        var selection = new UninstallSelection();
+        var page = new UninstallModePageViewModel(options, selection);
+
+        page.SelectedId = "lite";
+
+        Assert.Equal("Quick", page.DetailTitle);
+        Assert.Equal("Fast removal.", page.DetailBody);
+    }
+
+    [Fact]
+    public void SelectingADifferentMode_RaisesPropertyChangedForDetailTitleAndBody()
+    {
+        var options = BuildOptions();
+        var selection = new UninstallSelection();
+        var page = new UninstallModePageViewModel(options, selection);
+
+        var raised = new List<string>();
+        page.PropertyChanged += (_, e) => raised.Add(e.PropertyName!);
+
+        page.SelectedId = "lite";
+
+        Assert.Contains(nameof(page.DetailTitle), raised);
+        Assert.Contains(nameof(page.DetailBody), raised);
+    }
+
     private static UninstallOptions BuildOptions() =>
         new(["claude"],
             [
                 new InstallTypeChoice("lite", "Quick", "Fast removal."),
-                new InstallTypeChoice("full", "Complete", "Full removal."),
+                new InstallTypeChoice("full", "Complete", "Full removal.", "Removes every Active Stack harness the installer added."),
                 new InstallTypeChoice("custom", "Custom", "Choose exactly what to remove.")
             ],
             [new UninstallStrategyChoice("targeted", "Targeted", "Undo only what Active Stack added.", true, false)]);

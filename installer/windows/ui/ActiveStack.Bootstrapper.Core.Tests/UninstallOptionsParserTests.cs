@@ -39,6 +39,48 @@ public sealed class UninstallOptionsParserTests
     }
 
     [Fact]
+    public void BuildFromJson_MapsLongDescriptionIntoModesAndStrategies()
+    {
+        const string json = """
+        {
+          "detected_agents": ["claude"],
+          "modes": [
+            { "id": "full", "label": "Complete", "description": "Full recommended setup with all key tools.", "long_description": "Removes every Active Stack harness the installer added." }
+          ],
+          "strategies": [
+            { "id": "targeted", "label": "Targeted", "description": "Reverse each installed harness individually.", "default": true, "requires_manifest": false, "long_description": "Undoes only the specific changes Active Stack made, one by one." }
+          ]
+        }
+        """;
+
+        var options = UninstallOptionsParser.BuildFromJson(json);
+
+        Assert.Equal("Removes every Active Stack harness the installer added.", options.Modes[0].LongDescription);
+        Assert.Equal("Undoes only the specific changes Active Stack made, one by one.", options.Strategies[0].LongDescription);
+    }
+
+    [Fact]
+    public void BuildFromJson_AbsentLongDescription_DefaultsToEmptyString()
+    {
+        const string json = """
+        {
+          "detected_agents": ["claude"],
+          "modes": [
+            { "id": "full", "label": "Complete", "description": "Full recommended setup with all key tools." }
+          ],
+          "strategies": [
+            { "id": "targeted", "label": "Targeted", "description": "Reverse each installed harness individually.", "default": true, "requires_manifest": false }
+          ]
+        }
+        """;
+
+        var options = UninstallOptionsParser.BuildFromJson(json);
+
+        Assert.Equal(string.Empty, options.Modes[0].LongDescription);
+        Assert.Equal(string.Empty, options.Strategies[0].LongDescription);
+    }
+
+    [Fact]
     public void BuildFromJson_MissingCollections_DefaultToEmptyNotNull()
     {
         const string json = """{"detected_agents":[],"modes":[],"strategies":[]}""";

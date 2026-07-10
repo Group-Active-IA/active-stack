@@ -46,11 +46,54 @@ public sealed class UninstallStrategyPageViewModelTests
         Assert.Equal("restore", selection.Strategy);
     }
 
+    [Fact]
+    public void DetailBody_ReflectsSelectedStrategysLongDescriptionWhenPresent()
+    {
+        var options = BuildOptions();
+        var selection = new UninstallSelection();
+        var client = new FakeClient();
+        var page = new UninstallStrategyPageViewModel(options, selection, client);
+
+        Assert.Equal("Targeted", page.DetailTitle);
+        Assert.Equal("Undoes only the specific changes Active Stack made, one by one.", page.DetailBody);
+    }
+
+    [Fact]
+    public async Task DetailBody_FallsBackToShortDescriptionWhenLongDescriptionIsEmpty()
+    {
+        var options = BuildOptions();
+        var selection = new UninstallSelection();
+        var client = new FakeClient();
+        var page = new UninstallStrategyPageViewModel(options, selection, client);
+
+        await page.SelectStrategyAsync("restore");
+
+        Assert.Equal("Restore from backup", page.DetailTitle);
+        Assert.Equal("Restore a previous backup.", page.DetailBody);
+    }
+
+    [Fact]
+    public async Task SelectingADifferentStrategy_RaisesPropertyChangedForDetailTitleAndBody()
+    {
+        var options = BuildOptions();
+        var selection = new UninstallSelection();
+        var client = new FakeClient();
+        var page = new UninstallStrategyPageViewModel(options, selection, client);
+
+        var raised = new List<string>();
+        page.PropertyChanged += (_, e) => raised.Add(e.PropertyName!);
+
+        await page.SelectStrategyAsync("restore");
+
+        Assert.Contains(nameof(page.DetailTitle), raised);
+        Assert.Contains(nameof(page.DetailBody), raised);
+    }
+
     private static UninstallOptions BuildOptions() =>
         new(["claude"],
             [new InstallTypeChoice("full", "Complete", "Full removal.")],
             [
-                new UninstallStrategyChoice("targeted", "Targeted", "Undo only what Active Stack added.", true, false),
+                new UninstallStrategyChoice("targeted", "Targeted", "Undo only what Active Stack added.", true, false, "Undoes only the specific changes Active Stack made, one by one."),
                 new UninstallStrategyChoice("restore", "Restore from backup", "Restore a previous backup.", false, true)
             ]);
 
@@ -63,6 +106,7 @@ public sealed class UninstallStrategyPageViewModelTests
             _backups = backups ?? [];
         }
 
+        public string Language { get; set; } = "en";
         public int ListBackupsCallCount { get; private set; }
 
         public Task<InstallerSessionState> LoadSessionAsync(CancellationToken cancellationToken = default) => throw new NotSupportedException();

@@ -19,6 +19,44 @@
     <Setter Property="TextWrapping" Value="Wrap" />
   </Style>
 
+  <!-- Shared detail panel (gui-detail-panel, L5, design.md D4): the currently
+       selected/focused item's long description (falling back to its short
+       description), rendered once and referenced by every panel-bearing
+       page template via ContentPresenter Content="{Binding}" — the page VM
+       itself carries DetailHeader/DetailTitle/DetailBody. -->
+  <DataTemplate x:Key="DetailPanelTemplate">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <StackPanel>
+        <TextBlock Text="{Binding DetailHeader}" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Margin="0,10,0,4" Text="{Binding DetailTitle}" FontWeight="SemiBold" />
+        <TextBlock Text="{Binding DetailBody}" Style="{StaticResource PageBodyTextStyle}" />
+      </StackPanel>
+    </ScrollViewer>
+  </DataTemplate>
+
+  <!-- Language: the wizard's first page. Fixed bilingual title/subtitle (bound at the shell header); an extensible single-select list of language choices. -->
+  <DataTemplate DataType="{x:Type pages:LanguagePageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ListBox ItemsSource="{Binding Choices}"
+               BorderThickness="0"
+               Background="Transparent"
+               SelectedValuePath="Id"
+               SelectedValue="{Binding SelectedLanguageId, Mode=TwoWay}"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+        <ListBox.ItemContainerStyle>
+          <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="12,10" />
+          </Style>
+        </ListBox.ItemContainerStyle>
+        <ListBox.ItemTemplate>
+          <DataTemplate>
+            <TextBlock Text="{Binding Label}" FontSize="14" />
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+    </ScrollViewer>
+  </DataTemplate>
+
   <!-- Hub: entries as a single-select list; disabled entries carry a tooltip and cannot be selected. -->
   <DataTemplate DataType="{x:Type pages:HubPageViewModel}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
@@ -26,7 +64,8 @@
                BorderThickness="0"
                Background="Transparent"
                SelectedValuePath="Id"
-               SelectedValue="{Binding SelectedEntryId, Mode=TwoWay}">
+               SelectedValue="{Binding SelectedEntryId, Mode=TwoWay}"
+               ScrollViewer.HorizontalScrollBarVisibility="Disabled">
         <ListBox.ItemContainerStyle>
           <Style TargetType="ListBoxItem">
             <Setter Property="IsEnabled" Value="{Binding IsEnabled}" />
@@ -54,7 +93,7 @@
               <StackPanel Orientation="Horizontal">
                 <TextBlock Text="{Binding Label}" />
                 <TextBlock Margin="8,0,0,0"
-                           Text="Recommended"
+                           Text="{Binding DataContext.RecommendedLabel, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                            FontSize="11"
                            Foreground="#4F46E5"
                            Visibility="{Binding IsRecommended, Converter={StaticResource BooleanToVisibilityConverter}}" />
@@ -66,55 +105,20 @@
     </ScrollViewer>
   </DataTemplate>
 
-  <!-- InstallType: lite/full/custom cards, one always selected. -->
+  <!-- InstallType: lite/full/custom cards, one always selected. Right column renders the shared detail panel. -->
   <DataTemplate DataType="{x:Type install:InstallTypePageViewModel}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ListBox ItemsSource="{Binding Choices}"
-               BorderThickness="0"
-               Background="Transparent"
-               SelectedValuePath="Id"
-               SelectedValue="{Binding SelectedId, Mode=TwoWay}">
-        <ListBox.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Margin="0,0,0,4">
-              <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
-              <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
-            </StackPanel>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-    </ScrollViewer>
-  </DataTemplate>
-
-  <!-- Components (custom mode only): checkboxes; the security-first "permissions" harness is checked+disabled. -->
-  <DataTemplate DataType="{x:Type install:ComponentsPageViewModel}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ItemsControl ItemsSource="{Binding Choices}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <CheckBox Margin="0,0,0,10"
-                      IsChecked="{Binding IsSelected, Mode=TwoWay}"
-                      IsEnabled="{Binding IsToggleable}">
-              <StackPanel>
-                <TextBlock Text="{Binding Label}" />
-                <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" FontSize="12" />
-              </StackPanel>
-            </CheckBox>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-    </ScrollViewer>
-  </DataTemplate>
-
-  <!-- Permissions (tier-capable agents only): single-select tier radio group with a bypass warning. -->
-  <DataTemplate DataType="{x:Type install:PermissionsPageViewModel}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <StackPanel>
-        <ListBox ItemsSource="{Binding Tiers}"
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="3*" />
+        <ColumnDefinition Width="2*" MinWidth="230" />
+      </Grid.ColumnDefinitions>
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <ListBox ItemsSource="{Binding Choices}"
                  BorderThickness="0"
                  Background="Transparent"
                  SelectedValuePath="Id"
-                 SelectedValue="{Binding SelectedTierId, Mode=TwoWay}">
+                 SelectedValue="{Binding SelectedId, Mode=TwoWay}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
           <ListBox.ItemTemplate>
             <DataTemplate>
               <StackPanel Margin="0,0,0,4">
@@ -124,44 +128,110 @@
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-        <Border Margin="0,12,0,0"
-                Padding="12"
-                Background="#FFFBEB"
-                BorderBrush="#FDE68A"
-                BorderThickness="1"
-                CornerRadius="8">
-          <Border.Style>
-            <Style TargetType="Border">
-              <Style.Triggers>
-                <DataTrigger Binding="{Binding WarningText}" Value="{x:Null}">
-                  <Setter Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
-                <DataTrigger Binding="{Binding WarningText}" Value="">
-                  <Setter Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
-              </Style.Triggers>
-            </Style>
-          </Border.Style>
-          <TextBlock Text="{Binding WarningText}" Foreground="#92400E" TextWrapping="Wrap" />
-        </Border>
-      </StackPanel>
-    </ScrollViewer>
+      </ScrollViewer>
+      <ContentPresenter Grid.Column="1" Margin="16,0,0,0" Content="{Binding}" ContentTemplate="{StaticResource DetailPanelTemplate}" />
+    </Grid>
+  </DataTemplate>
+
+  <!-- Components (custom mode only): a ListBox drives row selection (feeds the detail panel via
+       SelectedComponentId) independently of each row's checkbox (feeds IsSelected/the engine payload,
+       D3, design.md); the security-first "permissions" harness is checked+disabled. -->
+  <DataTemplate DataType="{x:Type install:ComponentsPageViewModel}">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="3*" />
+        <ColumnDefinition Width="2*" MinWidth="230" />
+      </Grid.ColumnDefinitions>
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <ListBox ItemsSource="{Binding Choices}"
+                 BorderThickness="0"
+                 Background="Transparent"
+                 SelectedValuePath="Id"
+                 SelectedValue="{Binding SelectedComponentId, Mode=TwoWay}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <CheckBox Margin="0,0,0,10"
+                        IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                        IsEnabled="{Binding IsToggleable}">
+                <StackPanel>
+                  <TextBlock Text="{Binding Label}" />
+                  <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" FontSize="12" />
+                </StackPanel>
+              </CheckBox>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </ScrollViewer>
+      <ContentPresenter Grid.Column="1" Margin="16,0,0,0" Content="{Binding}" ContentTemplate="{StaticResource DetailPanelTemplate}" />
+    </Grid>
+  </DataTemplate>
+
+  <!-- Permissions (tier-capable agents only): single-select tier radio group with a bypass warning.
+       Right column renders the shared detail panel. -->
+  <DataTemplate DataType="{x:Type install:PermissionsPageViewModel}">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="3*" />
+        <ColumnDefinition Width="2*" MinWidth="230" />
+      </Grid.ColumnDefinitions>
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+          <ListBox ItemsSource="{Binding Tiers}"
+                   BorderThickness="0"
+                   Background="Transparent"
+                   SelectedValuePath="Id"
+                   SelectedValue="{Binding SelectedTierId, Mode=TwoWay}"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Margin="0,0,0,4">
+                  <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <Border Margin="0,12,0,0"
+                  Padding="12"
+                  Background="#FFFBEB"
+                  BorderBrush="#FDE68A"
+                  BorderThickness="1"
+                  CornerRadius="8">
+            <Border.Style>
+              <Style TargetType="Border">
+                <Style.Triggers>
+                  <DataTrigger Binding="{Binding WarningText}" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                  <DataTrigger Binding="{Binding WarningText}" Value="">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                  </DataTrigger>
+                </Style.Triggers>
+              </Style>
+            </Border.Style>
+            <TextBlock Text="{Binding WarningText}" Foreground="#92400E" TextWrapping="Wrap" />
+          </Border>
+        </StackPanel>
+      </ScrollViewer>
+      <ContentPresenter Grid.Column="1" Margin="16,0,0,0" Content="{Binding}" ContentTemplate="{StaticResource DetailPanelTemplate}" />
+    </Grid>
   </DataTemplate>
 
   <!-- Review: read-only summary; the shell's footer primary action reads "Install" here. -->
   <DataTemplate DataType="{x:Type install:ReviewPageViewModel}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
       <StackPanel>
-        <TextBlock Text="Assistants" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding AssistantsHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding AgentsSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
 
-        <TextBlock Text="Install type" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding InstallTypeHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding ModeSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
 
-        <TextBlock Text="Components" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding ComponentsHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding ComponentsSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
 
-        <TextBlock Text="Permission tier" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding PermissionTierHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding TierSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,0" />
       </StackPanel>
     </ScrollViewer>
@@ -198,7 +268,7 @@
   <!-- Complete: terminal success/degraded/rolled-back/error state. -->
   <DataTemplate DataType="{x:Type pages:CompletePageViewModel}">
     <StackPanel>
-      <TextBlock Text="{Binding State}" Style="{StaticResource PageHeadingStyle}" />
+      <TextBlock Text="{Binding StateLabel}" Style="{StaticResource PageHeadingStyle}" />
       <TextBlock Margin="0,8,0,0" Text="{Binding Message}" Style="{StaticResource PageBodyTextStyle}" />
     </StackPanel>
   </DataTemplate>
@@ -216,35 +286,20 @@
     </ScrollViewer>
   </DataTemplate>
 
-  <!-- UninstallMode: lite/full/custom radio group. -->
+  <!-- UninstallMode: lite/full/custom radio group. Right column renders the shared detail panel. -->
   <DataTemplate DataType="{x:Type uninstall:UninstallModePageViewModel}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ListBox ItemsSource="{Binding Choices}"
-               BorderThickness="0"
-               Background="Transparent"
-               SelectedValuePath="Id"
-               SelectedValue="{Binding SelectedId, Mode=TwoWay}">
-        <ListBox.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Margin="0,0,0,4">
-              <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
-              <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
-            </StackPanel>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-    </ScrollViewer>
-  </DataTemplate>
-
-  <!-- UninstallStrategy: targeted/restore radio group; restore reveals a backup selector by display_label. -->
-  <DataTemplate DataType="{x:Type uninstall:UninstallStrategyPageViewModel}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <StackPanel>
-        <ListBox ItemsSource="{Binding Strategies}"
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="3*" />
+        <ColumnDefinition Width="2*" MinWidth="230" />
+      </Grid.ColumnDefinitions>
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <ListBox ItemsSource="{Binding Choices}"
                  BorderThickness="0"
                  Background="Transparent"
                  SelectedValuePath="Id"
-                 SelectedValue="{Binding SelectedStrategyId, Mode=TwoWay}">
+                 SelectedValue="{Binding SelectedId, Mode=TwoWay}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
           <ListBox.ItemTemplate>
             <DataTemplate>
               <StackPanel Margin="0,0,0,4">
@@ -254,30 +309,63 @@
             </DataTemplate>
           </ListBox.ItemTemplate>
         </ListBox>
-        <StackPanel Margin="0,12,0,0" Visibility="{Binding ShowBackupSelector, Converter={StaticResource BooleanToVisibilityConverter}}">
-          <TextBlock Text="Choose a backup to restore" Style="{StaticResource PageHeadingStyle}" />
-          <ListBox Margin="0,8,0,0"
-                   ItemsSource="{Binding Backups}"
+      </ScrollViewer>
+      <ContentPresenter Grid.Column="1" Margin="16,0,0,0" Content="{Binding}" ContentTemplate="{StaticResource DetailPanelTemplate}" />
+    </Grid>
+  </DataTemplate>
+
+  <!-- UninstallStrategy: targeted/restore radio group; restore reveals a backup selector by display_label.
+       Right column renders the shared detail panel. -->
+  <DataTemplate DataType="{x:Type uninstall:UninstallStrategyPageViewModel}">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="3*" />
+        <ColumnDefinition Width="2*" MinWidth="230" />
+      </Grid.ColumnDefinitions>
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <StackPanel>
+          <ListBox ItemsSource="{Binding Strategies}"
                    BorderThickness="0"
                    Background="Transparent"
-                   SelectedItem="{Binding SelectedBackup, Mode=TwoWay}"
-                   DisplayMemberPath="DisplayLabel" />
+                   SelectedValuePath="Id"
+                   SelectedValue="{Binding SelectedStrategyId, Mode=TwoWay}"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <StackPanel Margin="0,0,0,4">
+                  <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                  <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+          <StackPanel Margin="0,12,0,0" Visibility="{Binding ShowBackupSelector, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <TextBlock Text="{Binding ChooseBackupHeading}" Style="{StaticResource PageHeadingStyle}" />
+            <ListBox Margin="0,8,0,0"
+                     ItemsSource="{Binding Backups}"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     SelectedItem="{Binding SelectedBackup, Mode=TwoWay}"
+                     DisplayMemberPath="DisplayLabel"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+          </StackPanel>
         </StackPanel>
-      </StackPanel>
-    </ScrollViewer>
+      </ScrollViewer>
+      <ContentPresenter Grid.Column="1" Margin="16,0,0,0" Content="{Binding}" ContentTemplate="{StaticResource DetailPanelTemplate}" />
+    </Grid>
   </DataTemplate>
 
   <!-- UninstallConfirm: read-only summary + destructive warning; triggers the uninstall stream. -->
   <DataTemplate DataType="{x:Type uninstall:UninstallConfirmPageViewModel}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
       <StackPanel>
-        <TextBlock Text="Agents" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding AgentsHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding AgentsSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
 
-        <TextBlock Text="Mode" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding ModeHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding ModeSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
 
-        <TextBlock Text="Strategy" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding StrategyHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding StrategySummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
 
         <StackPanel>
@@ -290,7 +378,7 @@
               </Style.Triggers>
             </Style>
           </StackPanel.Style>
-          <TextBlock Text="Restoring backup" Style="{StaticResource PageHeadingStyle}" />
+          <TextBlock Text="{Binding RestoringBackupHeading}" Style="{StaticResource PageHeadingStyle}" />
           <TextBlock Text="{Binding BackupSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
         </StackPanel>
 
@@ -301,42 +389,50 @@
     </ScrollViewer>
   </DataTemplate>
 
-  <!-- StarterCatalog: single-select list with name/description/harness count. -->
+  <!-- StarterCatalog: single-select list with name/description/harness count. Right column renders the shared detail panel. -->
   <DataTemplate DataType="{x:Type starters:StarterCatalogPageViewModel}">
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-      <ListBox ItemsSource="{Binding Choices}"
-               BorderThickness="0"
-               Background="Transparent"
-               SelectedValuePath="Id"
-               SelectedValue="{Binding SelectedStarterId, Mode=TwoWay}">
-        <ListBox.ItemTemplate>
-          <DataTemplate>
-            <StackPanel Margin="0,0,0,4">
-              <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
-              <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
-              <TextBlock Text="{Binding Harnesses.Count, StringFormat={}{0} harnesses}" FontSize="11" Foreground="#6B7280" />
-            </StackPanel>
-          </DataTemplate>
-        </ListBox.ItemTemplate>
-      </ListBox>
-    </ScrollViewer>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="3*" />
+        <ColumnDefinition Width="2*" MinWidth="230" />
+      </Grid.ColumnDefinitions>
+      <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto">
+        <ListBox ItemsSource="{Binding Choices}"
+                 BorderThickness="0"
+                 Background="Transparent"
+                 SelectedValuePath="Id"
+                 SelectedValue="{Binding SelectedStarterId, Mode=TwoWay}"
+                 ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <StackPanel Margin="0,0,0,4">
+                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding Description}" Style="{StaticResource PageBodyTextStyle}" />
+                <TextBlock Text="{Binding Harnesses.Count, StringFormat={}{0} harnesses}" FontSize="11" Foreground="#6B7280" />
+              </StackPanel>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </ScrollViewer>
+      <ContentPresenter Grid.Column="1" Margin="16,0,0,0" Content="{Binding}" ContentTemplate="{StaticResource DetailPanelTemplate}" />
+    </Grid>
   </DataTemplate>
 
   <!-- StarterTarget: folder picker (behind IFolderPicker) + agent checkboxes defaulting to claude+opencode. -->
   <DataTemplate DataType="{x:Type starters:StarterTargetPageViewModel}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
       <StackPanel>
-        <TextBlock Text="Target project" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding TargetProjectHeading}" Style="{StaticResource PageHeadingStyle}" />
         <Grid Margin="0,8,0,20">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="Auto" />
           </Grid.ColumnDefinitions>
           <TextBox Grid.Column="0" Text="{Binding ProjectPath, Mode=OneWay}" IsReadOnly="True" />
-          <Button Grid.Column="1" Margin="8,0,0,0" Content="Browse…" Command="{Binding PickFolderCommand}" />
+          <Button Grid.Column="1" Margin="8,0,0,0" Content="{Binding BrowseLabel}" Command="{Binding PickFolderCommand}" />
         </Grid>
 
-        <TextBlock Text="Agents" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding AgentsHeading}" Style="{StaticResource PageHeadingStyle}" />
         <ItemsControl ItemsSource="{Binding Agents}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
@@ -352,13 +448,13 @@
   <DataTemplate DataType="{x:Type starters:StarterReviewPageViewModel}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
       <StackPanel>
-        <TextBlock Text="Starter" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding StarterHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding StarterSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
 
-        <TextBlock Text="Target folder" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding TargetFolderHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding TargetSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,16" />
 
-        <TextBlock Text="Agents" Style="{StaticResource PageHeadingStyle}" />
+        <TextBlock Text="{Binding AgentsHeading}" Style="{StaticResource PageHeadingStyle}" />
         <TextBlock Text="{Binding AgentsSummary}" Style="{StaticResource PageBodyTextStyle}" Margin="0,4,0,0" />
       </StackPanel>
     </ScrollViewer>
@@ -368,7 +464,7 @@
   <DataTemplate DataType="{x:Type backups:BackupsPageViewModel}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
       <StackPanel>
-        <TextBlock Text="No backups yet."
+        <TextBlock Text="{Binding EmptyLabel}"
                    Style="{StaticResource PageBodyTextStyle}"
                    Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}" />
 
@@ -396,15 +492,15 @@
                   <TextBlock Grid.Column="0" Text="{Binding DisplayLabel}" FontWeight="SemiBold" VerticalAlignment="Center" />
                   <StackPanel Grid.Column="1" Orientation="Horizontal">
                     <Button Margin="4,0,0,0"
-                            Content="Restore"
+                            Content="{Binding DataContext.RestoreLabel, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                             Command="{Binding DataContext.BeginRestoreCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                             CommandParameter="{Binding}" />
                     <Button Margin="4,0,0,0"
-                            Content="Rename"
+                            Content="{Binding DataContext.RenameLabel, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                             Command="{Binding DataContext.BeginRenameCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                             CommandParameter="{Binding}" />
                     <Button Margin="4,0,0,0"
-                            Content="Delete"
+                            Content="{Binding DataContext.DeleteLabel, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                             Command="{Binding DataContext.BeginDeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
                             CommandParameter="{Binding}" />
                   </StackPanel>
@@ -425,8 +521,8 @@
             <TextBlock Text="{Binding ConfirmationText}" Foreground="#991B1B" TextWrapping="Wrap" FontWeight="SemiBold" />
             <TextBox Margin="0,8,0,0" Text="{Binding RenameInput, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
             <StackPanel Margin="0,10,0,0" Orientation="Horizontal">
-              <Button Content="Confirm" Command="{Binding ConfirmActionCommand}" />
-              <Button Margin="8,0,0,0" Content="Cancel" Command="{Binding CancelActionCommand}" />
+              <Button Content="{Binding ConfirmLabel}" Command="{Binding ConfirmActionCommand}" />
+              <Button Margin="8,0,0,0" Content="{Binding CancelLabel}" Command="{Binding CancelActionCommand}" />
             </StackPanel>
           </StackPanel>
         </Border>

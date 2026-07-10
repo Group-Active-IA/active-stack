@@ -153,6 +153,74 @@ public sealed class InstallerSessionStateBuilderTests
     }
 
     [Fact]
+    public void BuildFromJson_MapsLongDescriptionIntoInstallTypeComponentAndPermissionTierChoices()
+    {
+        const string detectJson = """
+        {
+          "detected_agents": ["claude"]
+        }
+        """;
+
+        const string optionsJson = """
+        {
+          "modes": [
+            { "id": "full", "label": "Complete", "description": "Full recommended setup with all key tools.", "long_description": "The full install sets up every recommended harness end to end." }
+          ],
+          "forced_components": [
+            { "id": "permissions", "label": "Basic protection", "description": "Helps avoid unsafe changes.", "long_description": "Permissions enforces a security floor deny-list on every agent." }
+          ],
+          "custom_components": [
+            { "id": "openspec", "label": "OpenSpec", "description": "Plan and organize changes.", "recommended": true, "long_description": "OpenSpec tracks proposals, specs, and tasks per change." }
+          ],
+          "permission_tiers": [
+            { "id": "balanceado", "label": "Balanceado", "description": "Curated allow-list.", "default": true, "long_description": "Balanceado allows safe, repetitive operations without prompting." }
+          ]
+        }
+        """;
+
+        var state = InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
+
+        Assert.Equal("The full install sets up every recommended harness end to end.", state.InstallTypeChoices[0].LongDescription);
+        Assert.Equal("Permissions enforces a security floor deny-list on every agent.", state.ForcedComponents[0].LongDescription);
+        Assert.Equal("OpenSpec tracks proposals, specs, and tasks per change.", state.CustomComponents[0].LongDescription);
+        Assert.Equal("Balanceado allows safe, repetitive operations without prompting.", state.PermissionTierChoices[0].LongDescription);
+    }
+
+    [Fact]
+    public void BuildFromJson_AbsentLongDescriptionDefaultsToEmptyString()
+    {
+        const string detectJson = """
+        {
+          "detected_agents": ["claude"]
+        }
+        """;
+
+        const string optionsJson = """
+        {
+          "modes": [
+            { "id": "full", "label": "Complete", "description": "Full recommended setup with all key tools." }
+          ],
+          "forced_components": [
+            { "id": "permissions", "label": "Basic protection", "description": "Helps avoid unsafe changes." }
+          ],
+          "custom_components": [
+            { "id": "openspec", "label": "OpenSpec", "description": "Plan and organize changes.", "recommended": true }
+          ],
+          "permission_tiers": [
+            { "id": "balanceado", "label": "Balanceado", "description": "Curated allow-list.", "default": true }
+          ]
+        }
+        """;
+
+        var state = InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
+
+        Assert.Equal(string.Empty, state.InstallTypeChoices[0].LongDescription);
+        Assert.Equal(string.Empty, state.ForcedComponents[0].LongDescription);
+        Assert.Equal(string.Empty, state.CustomComponents[0].LongDescription);
+        Assert.Equal(string.Empty, state.PermissionTierChoices[0].LongDescription);
+    }
+
+    [Fact]
     public void BuildFromJson_AbsentTierFieldsDefaultSafely()
     {
         const string detectJson = """

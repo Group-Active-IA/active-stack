@@ -23,11 +23,11 @@ public static class InstallerSessionStateBuilder
             .ToList();
 
         var installTypes = (options.Modes ?? [])
-            .Select(static mode => new InstallTypeChoice(mode.Id ?? string.Empty, mode.Label ?? string.Empty, mode.Description ?? string.Empty))
+            .Select(static mode => new InstallTypeChoice(mode.Id ?? string.Empty, mode.Label ?? string.Empty, mode.Description ?? string.Empty, mode.LongDescription ?? string.Empty))
             .ToList();
 
         var forced = (options.ForcedComponents ?? [])
-            .Select(static item => new ComponentChoice(item.Id ?? string.Empty, item.Label ?? string.Empty, item.Description ?? string.Empty, item.Recommended))
+            .Select(static item => new ComponentChoice(item.Id ?? string.Empty, item.Label ?? string.Empty, item.Description ?? string.Empty, item.Recommended, item.LongDescription ?? string.Empty))
             .ToList();
 
         var forcedIds = forced
@@ -37,7 +37,7 @@ public static class InstallerSessionStateBuilder
 
         var custom = (options.CustomComponents ?? [])
             .Where(item => string.IsNullOrWhiteSpace(item.Id) || !forcedIds.Contains(item.Id))
-            .Select(static item => new ComponentChoice(item.Id ?? string.Empty, item.Label ?? string.Empty, item.Description ?? string.Empty, item.Recommended))
+            .Select(static item => new ComponentChoice(item.Id ?? string.Empty, item.Label ?? string.Empty, item.Description ?? string.Empty, item.Recommended, item.LongDescription ?? string.Empty))
             .ToList();
 
         var recommendedModeId = installTypes.Any(static m => m.Id == "full")
@@ -54,7 +54,8 @@ public static class InstallerSessionStateBuilder
                 tier.Label ?? string.Empty,
                 tier.Description ?? string.Empty,
                 tier.Default,
-                tier.Warning))
+                tier.Warning,
+                tier.LongDescription ?? string.Empty))
             .ToList();
 
         return new InstallerSessionState(
@@ -98,11 +99,11 @@ public sealed record InstallerSessionState(
 
 public sealed record AssistantChoice(string Id, string Label);
 
-public sealed record InstallTypeChoice(string Id, string Label, string Description);
+public sealed record InstallTypeChoice(string Id, string Label, string Description, string LongDescription = "");
 
-public sealed record ComponentChoice(string Id, string Label, string Description, bool Recommended);
+public sealed record ComponentChoice(string Id, string Label, string Description, bool Recommended, string LongDescription = "");
 
-public sealed record PermissionTierChoice(string Id, string Label, string Description, bool IsDefault, string? Warning);
+public sealed record PermissionTierChoice(string Id, string Label, string Description, bool IsDefault, string? Warning, string LongDescription = "");
 
 internal sealed class WindowsDetectResponse
 {
@@ -147,6 +148,9 @@ internal sealed class WindowsPermissionTierOption
 
     [JsonPropertyName("warning")]
     public string? Warning { get; init; }
+
+    [JsonPropertyName("long_description")]
+    public string? LongDescription { get; init; }
 }
 
 internal sealed class WindowsModeOption
@@ -159,6 +163,9 @@ internal sealed class WindowsModeOption
 
     [JsonPropertyName("description")]
     public string? Description { get; init; }
+
+    [JsonPropertyName("long_description")]
+    public string? LongDescription { get; init; }
 }
 
 internal sealed class WindowsComponentOption
@@ -174,4 +181,7 @@ internal sealed class WindowsComponentOption
 
     [JsonPropertyName("recommended")]
     public bool Recommended { get; init; }
+
+    [JsonPropertyName("long_description")]
+    public string? LongDescription { get; init; }
 }

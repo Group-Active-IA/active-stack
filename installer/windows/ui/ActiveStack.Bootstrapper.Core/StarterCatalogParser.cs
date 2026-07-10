@@ -27,7 +27,8 @@ public static class StarterCatalogParser
                 entry.Description ?? string.Empty,
                 entry.Includes ?? [],
                 entry.Harnesses ?? [],
-                entry.McpCount))
+                entry.McpCount,
+                entry.LongDescription ?? string.Empty))
             .ToList();
     }
 
@@ -56,6 +57,9 @@ public static class StarterCatalogParser
 
         [JsonPropertyName("mcp_count")]
         public int McpCount { get; init; }
+
+        [JsonPropertyName("long_description")]
+        public string? LongDescription { get; init; }
     }
 }
 
@@ -65,4 +69,5 @@ public sealed record StarterChoice(
     string Description,
     IReadOnlyList<string> Includes,
     IReadOnlyList<string> Harnesses,
-    int McpCount);
+    int McpCount,
+    string LongDescription = "");

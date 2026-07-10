@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using ActiveStack.Bootstrapper.Core;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 
 namespace ActiveStack.Bootstrapper.Host.Pages.Uninstall;
@@ -14,8 +15,8 @@ public sealed class UninstallModePageViewModel : WizardPageViewModelBase
     private readonly UninstallSelection _selection;
     private string _selectedId;
 
-    public UninstallModePageViewModel(UninstallOptions options, UninstallSelection selection)
-        : base("Choose uninstall mode", "Pick how much of the workspace Active Stack should remove.")
+    public UninstallModePageViewModel(UninstallOptions options, UninstallSelection selection, string lang = "en")
+        : base(UiStrings.Get(lang, "page.uninstallmode.title"), UiStrings.Get(lang, "page.uninstallmode.subtitle"), lang)
     {
         _selection = selection;
         Choices = new ObservableCollection<InstallTypeChoice>(options.Modes);
@@ -45,8 +46,20 @@ public sealed class UninstallModePageViewModel : WizardPageViewModelBase
             _selectedId = value;
             _selection.Mode = value;
             RaisePropertyChanged(nameof(SelectedId));
+            RaisePropertyChanged(nameof(DetailTitle));
+            RaisePropertyChanged(nameof(DetailBody));
         }
     }
+
+    /// <summary>The selected mode's label, for the shared detail panel.</summary>
+    public string DetailTitle => SelectedChoice?.Label ?? string.Empty;
+
+    /// <summary>The selected mode's long description, falling back to its short description (D5, design.md).</summary>
+    public string DetailBody => !string.IsNullOrEmpty(SelectedChoice?.LongDescription)
+        ? SelectedChoice!.LongDescription
+        : SelectedChoice?.Description ?? string.Empty;
+
+    private InstallTypeChoice? SelectedChoice => Choices.FirstOrDefault(c => string.Equals(c.Id, SelectedId, StringComparison.Ordinal));
 
     public override bool CanAdvance => true;
 }

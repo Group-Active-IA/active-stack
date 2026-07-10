@@ -42,6 +42,38 @@ public sealed class StarterCatalogParserTests
     }
 
     [Fact]
+    public void BuildFromJson_MapsLongDescriptionIntoStarterChoice()
+    {
+        const string json = """
+        {
+          "starters": [
+            { "id": "alpha", "name": "Alpha", "description": "First starter", "includes": ["beta"], "harnesses": ["harness-a"], "mcp_count": 2, "long_description": "Alpha scaffolds a full-stack app with auth and billing wired in." }
+          ]
+        }
+        """;
+
+        var starters = StarterCatalogParser.BuildFromJson(json);
+
+        Assert.Equal("Alpha scaffolds a full-stack app with auth and billing wired in.", starters[0].LongDescription);
+    }
+
+    [Fact]
+    public void BuildFromJson_AbsentLongDescription_DefaultsToEmptyString()
+    {
+        const string json = """
+        {
+          "starters": [
+            { "id": "beta", "name": "Beta", "description": "Second starter", "includes": [], "harnesses": ["harness-b"], "mcp_count": 1 }
+          ]
+        }
+        """;
+
+        var starters = StarterCatalogParser.BuildFromJson(json);
+
+        Assert.Equal(string.Empty, starters[0].LongDescription);
+    }
+
+    [Fact]
     public void BuildFromJson_MissingIncludesAndHarnesses_DefaultsToEmptyLists()
     {
         const string json = """
