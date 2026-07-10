@@ -4,19 +4,27 @@
 #
 # Convención de modos: un harness de Lite lista [lite, full] (Full incluye a
 # Lite). Un harness exclusivo de Full lista [full]. Custom matchea todos.
+#
+# L2 (catalog-localized-descriptions): description es bilingüe ({es:, en:})
+# para TODO harness/starter; long_description es bilingüe y OBLIGATORIO para
+# harnesses global-picker (!IsStarterOnly()) y para TODOS los starters — es
+# OPCIONAL (pero si está presente, ambos idiomas) para harnesses starter-only.
+# catalog.Load() falla loudly si falta una traducción (D3, design.md).
 
 harnesses:
   # ── Externos (no son nuestros repos; se instalan/configuran) ──────────────
   - id: openspec
     name: OpenSpec CLI
-    description: CLI de Spec-Driven Development; fuente de verdad del estado.
+    description: { es: "CLI de Spec-Driven Development; fuente de verdad del estado.", en: "Spec-Driven Development CLI; source of truth for change state." }
+    long_description: { es: "El CLI de Spec-Driven Development: la fuente de verdad del estado de cada change del proyecto. Se instala como paquete npm (`@fission-ai/openspec`) y expone el comando `openspec`, que gestiona el ciclo explorar → proponer → aplicar → archivar manteniendo specs y tareas sincronizadas. Elegilo si querés que el flujo OPSX tenga un motor real detrás en vez de coordinar changes a mano; es la base sobre la que se apoyan casi todas las skills de fundación. Si no vas a trabajar con changes especificados, no lo necesitás.", en: "The Spec-Driven Development CLI: the source of truth for every project change's state. It installs as an npm package (`@fission-ai/openspec`) and exposes the `openspec` command, which drives the explore → propose → apply → archive cycle while keeping specs and tasks in sync. Choose it when you want a real engine behind the OPSX flow instead of tracking changes by hand; it's the foundation most of the foundation skills build on. If you're not going to work with specified changes, you don't need it." }
     type: external
     external: { method: npm, pkg: "@fission-ai/openspec" }
     install_modes: [lite, full]
 
   - id: engram
     name: Engram
-    description: Memoria persistente local (SQLite + FTS) vía MCP.
+    description: { es: "Memoria persistente local (SQLite + FTS) vía MCP.", en: "Local persistent memory (SQLite + FTS) via MCP." }
+    long_description: { es: "Memoria persistente local para que el contexto del proyecto sobreviva entre sesiones y compactaciones. Se instala vía Homebrew (`gentleman-programming/tap/engram`) y registra un MCP `engram` en el agente, que guarda decisiones, convenciones y descubrimientos en una base local SQLite con búsqueda full-text. Elegilo si trabajás en sesiones largas o en equipo y no querés reexplicarle al agente lo que ya se decidió; la memoria es consultable y versionable en el repo. No aporta demasiado si tus sesiones son cortas y autocontenidas.", en: "Local persistent memory so project context survives across sessions and compactions. It installs via Homebrew (`gentleman-programming/tap/engram`) and registers an `engram` MCP in the agent, storing decisions, conventions, and discoveries in a local SQLite database with full-text search. Choose it if you work in long sessions or on a team and don't want to re-explain past decisions to the agent; the memory is searchable and can be versioned in the repo. It adds little if your sessions are short and self-contained." }
     type: external
     external:
       method: homebrew
@@ -27,7 +35,8 @@ harnesses:
 
   - id: context7
     name: Context7
-    description: Documentación de librerías al día (MCP remoto).
+    description: { es: "Documentación de librerías al día (MCP remoto).", en: "Up-to-date library documentation (remote MCP)." }
+    long_description: { es: "Documentación de librerías y frameworks siempre al día, resuelta dentro del agente. Se configura como MCP remoto (`context7`, vía `npx @upstash/context7-mcp`) que consulta la documentación oficial y actualizada en vez de depender del conocimiento de entrenamiento, que puede estar desactualizado. Elegilo cuando trabajás con librerías que cambian seguido o versiones nuevas y querés que el agente responda con la API real, no con la que recuerda. Si tu stack es estable y bien conocido, aporta menos.", en: "Always-current library and framework documentation, resolved inside the agent. It's configured as a remote MCP (`context7`, via `npx @upstash/context7-mcp`) that queries official, up-to-date docs instead of relying on training knowledge, which can be stale. Choose it when you work with fast-moving libraries or new versions and want the agent to answer with the real API rather than the one it remembers. If your stack is stable and well-known, it adds less." }
     type: external
     external:
       method: mcp
@@ -41,7 +50,8 @@ harnesses:
   # ── Configuración (bundleados en el instalador) ───────────────────────────
   - id: sdd-orchestrator
     name: SDD Orchestrator
-    description: Configura el orquestador SDD con piezas componibles.
+    description: { es: "Configura el orquestador SDD con piezas componibles.", en: "Configures the SDD orchestrator with composable pieces." }
+    long_description: { es: "El bloque de instrucciones que convierte al agente en un orquestador SDD: coordina, delega y decide en vez de ejecutar todo inline. Se compone a partir de toggles modulares (TDD, Engram, model-routing, delegación, governance) y se inyecta con markers idempotentes en el `CLAUDE.md`/`AGENTS.md` del agente, así que reinstalar no duplica el bloque. Elegilo si querés el flujo de coordinación completo—sub-agentes por fase, ruteo de modelos, memoria persistente y niveles de autonomía por dominio. Si preferís un agente plano sin orquestación, dejalo afuera.", en: "The instruction block that turns the agent into an SDD orchestrator: it coordinates, delegates, and decides instead of doing everything inline. It's composed from modular toggles (TDD, Engram, model-routing, delegation, governance) and injected with idempotent markers into the agent's `CLAUDE.md`/`AGENTS.md`, so reinstalling never duplicates the block. Choose it if you want the full coordination flow—per-phase sub-agents, model routing, persistent memory, and per-domain autonomy levels. If you prefer a flat agent with no orchestration, leave it out." }
     type: config
     toggles: [tdd, engram, model-routing, delegation, governance]
     install_modes: [lite, full]
@@ -49,7 +59,8 @@ harnesses:
 
   - id: permissions
     name: Permissions (security-first)
-    description: Permisos seguros por defecto (bloquea .env, confirma git destructivo). No es opcional.
+    description: { es: "Permisos seguros por defecto (bloquea .env, confirma git destructivo). No es opcional.", en: "Safe-by-default permissions (blocks .env, confirms destructive git). Not optional." }
+    long_description: { es: "La configuración de permisos segura por defecto—no es opcional, siempre se instala. Preconfigura las reglas del agente para bloquear archivos sensibles (como `.env`) y pedir confirmación antes de operaciones git destructivas, inyectando el set en la config del agente. Es el piso de seguridad sobre el que después se eligen los tiers (estricto/balanceado/bypass): incluso en bypass, las denegaciones más peligrosas siguen aplicando. No se puede desactivar porque proteger tu config es el objetivo mínimo del instalador.", en: "The safe-by-default permission configuration—not optional, always installed. It pre-configures the agent's rules to block sensitive files (like `.env`) and require confirmation before destructive git operations, injecting the rule set into the agent's config. It's the security floor the tiers (strict/balanced/bypass) sit on top of: even in bypass, the most dangerous denials still apply. It can't be turned off, because protecting your config is the installer's minimum job." }
     type: config
     install_modes: [lite, full]
     agents: [claude, codex, opencode, gemini, vscode]
@@ -57,7 +68,8 @@ harnesses:
   # ── Skills propias ─────────────────────────────────────────────────────────
   - id: active-orchestrator
     name: active-orchestrator
-    description: Orquestador delgado de la fase de fundación (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction).
+    description: { es: "Orquestador delgado de la fase de fundación (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction).", en: "Thin orchestrator for the foundation phase (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction)." }
+    long_description: { es: "La skill que orquesta la fase de fundación de un proyecto nuevo, sin ejecutar el trabajo inline. Se clona desde `Group-Active-IA/active-orchestrator` al directorio de skills del agente y coordina, en orden, `openspec init` → kb-creator → roadmap-generator → find-skill → agent-instruction. Elegila si arrancás un proyecto desde cero y querés que el sustrato quede listo para el ciclo OPSX en una sola corrida guiada. Es exclusiva de Full: en Lite quedaría huérfana porque orquesta skills que solo entran en Full.", en: "The skill that orchestrates a new project's foundation phase without running the work inline. It's cloned from `Group-Active-IA/active-orchestrator` into the agent's skills directory and coordinates, in order, `openspec init` → kb-creator → roadmap-generator → find-skill → agent-instruction. Choose it when you start a project from scratch and want the substrate ready for the OPSX cycle in a single guided run. It's Full-only: in Lite it would be orphaned, since it orchestrates skills that only ship in Full." }
     type: skill
     source: { repo: Group-Active-IA/active-orchestrator, ref: latest, method: clone }
     # Full-only: orquesta kb-creator/roadmap-generator/agent-instruction/find-skill,
@@ -67,14 +79,16 @@ harnesses:
 
   - id: kb-creator
     name: kb-creator
-    description: Genera la knowledge-base canónica del dominio.
+    description: { es: "Genera la knowledge-base canónica del dominio.", en: "Generates the canonical domain knowledge base." }
+    long_description: { es: "La skill que construye la base de conocimiento canónica del proyecto. Se clona desde `Group-Active-IA/kb-creator` al directorio de skills del agente y genera los 10 documentos `.md` de la knowledge-base, ya sea a partir de fuentes existentes o de una entrevista interactiva. Elegila al empezar un proyecto para dejar documentado el dominio, las decisiones y el contexto antes de generar el roadmap. Es parte de la fundación (Full): si ya tenés tu KB armada, no la necesitás.", en: "The skill that builds the project's canonical knowledge base. It's cloned from `Group-Active-IA/kb-creator` into the agent's skills directory and generates the 10 knowledge-base `.md` documents, either from existing sources or through an interactive interview. Choose it when starting a project, to document the domain, decisions, and context before generating the roadmap. It's part of the foundation (Full); if you already have your KB, you don't need it." }
     type: skill
     source: { repo: Group-Active-IA/kb-creator, ref: latest, method: clone }
     install_modes: [full]
 
   - id: roadmap-generator
     name: roadmap-generator
-    description: Genera CHANGES.md (backlog técnico) desde la KB.
+    description: { es: "Genera CHANGES.md (backlog técnico) desde la KB.", en: "Generates CHANGES.md (technical backlog) from the KB." }
+    long_description: { es: "La skill que traduce la knowledge-base en un roadmap operativo de changes. Se clona desde `Group-Active-IA/roadmap-generator` al directorio de skills del agente y genera `CHANGES.md`: un índice de changes OpenSpec con árbol de dependencias, gates de paralelismo y camino crítico. Elegila después de armar la KB, cuando querés convertir el dominio documentado en un plan de implementación accionable. Depende de openspec y kb-creator, así que corre más tarde en la fundación.", en: "The skill that translates the knowledge base into an operational change roadmap. It's cloned from `Group-Active-IA/roadmap-generator` into the agent's skills directory and generates `CHANGES.md`: an index of OpenSpec changes with a dependency tree, parallelism gates, and the critical path. Choose it after building the KB, when you want to turn the documented domain into an actionable implementation plan. It depends on openspec and kb-creator, so it runs later in the foundation." }
     type: skill
     source: { repo: Group-Active-IA/roadmap-generator, ref: latest, method: clone }
     install_modes: [full]
@@ -82,14 +96,16 @@ harnesses:
 
   - id: agent-instruction
     name: agent-instruction
-    description: Genera AGENTS.md/CLAUDE.md correcto con todas las referencias.
+    description: { es: "Genera AGENTS.md/CLAUDE.md correcto con todas las referencias.", en: "Generates a correct AGENTS.md/CLAUDE.md with all references." }
+    long_description: { es: "La skill que redacta la constitución operativa del proyecto—el `AGENTS.md`/`CLAUDE.md` con todas las referencias correctas. Se clona desde `JuanCruzRobledo/agent-instruction` al directorio de skills del agente y arma stack, convenciones, reglas duras y el mapa de navegación hacia la KB y el roadmap, sin duplicar lo que el orquestador global ya define. Elegila cuando querés que los agentes tengan reglas de proyecto claras y específicas en vez de improvisar. Es parte de la fundación (Full).", en: "The skill that writes the project's operating constitution—the `AGENTS.md`/`CLAUDE.md` with all the right references. It's cloned from `JuanCruzRobledo/agent-instruction` into the agent's skills directory and assembles the stack, conventions, hard rules, and the navigation map to the KB and roadmap, without duplicating what the global orchestrator already defines. Choose it when you want agents to have clear, project-specific rules instead of improvising. It's part of the foundation (Full)." }
     type: skill
     source: { repo: JuanCruzRobledo/agent-instruction, ref: latest, method: clone }
     install_modes: [full]
 
   - id: skill-registry
     name: skill-registry
-    description: Crea/actualiza el registro de skills del proyecto.
+    description: { es: "Crea/actualiza el registro de skills del proyecto.", en: "Creates/updates the project's skill registry." }
+    long_description: { es: "La skill que crea y mantiene el registro de skills del proyecto. Se clona desde `JuanCruzRobledo/skill-registry` al directorio de skills del agente, escanea las skills disponibles y documenta cuáles aplican a cada convención del proyecto en un registro que los agentes pueden consultar. Elegila cuando querés que el orquestador sepa qué skills de dominio existen y cuándo usarlas, en vez de descubrirlas al azar. Es parte de la fundación (Full).", en: "The skill that creates and maintains the project's skill registry. It's cloned from `JuanCruzRobledo/skill-registry` into the agent's skills directory, scans the available skills, and documents which ones apply to each project convention in a registry agents can consult. Choose it when you want the orchestrator to know which domain skills exist and when to use them, instead of stumbling onto them. It's part of the foundation (Full)." }
     type: skill
     source: { repo: JuanCruzRobledo/skill-registry, ref: latest, method: clone }
     install_modes: [full]
@@ -97,7 +113,8 @@ harnesses:
   # ── Slash-commands (embebidos en el binario) ─────────────────────────────
   - id: starter-add-command
     name: Starter Add Command
-    description: Slash-command /active:starter-add (Claude) / /active-starter-add (OpenCode) — wrapper thin sobre active-stack starter add.
+    description: { es: "Slash-command /active:starter-add (Claude) / /active-starter-add (OpenCode) — wrapper thin sobre active-stack starter add.", en: "Slash-command /active:starter-add (Claude) / /active-starter-add (OpenCode) — thin wrapper over active-stack starter add." }
+    long_description: { es: "El slash-command que expone la instalación de starters como comando nativo del agente. Materializa un archivo de comando en el directorio del agente—`/active:starter-add` en Claude, `/active-starter-add` en OpenCode—que es un wrapper delgado sobre `active-stack starter add`. Elegilo para agregar starters (backend, ux-ui, active-ia) desde adentro del agente sin salir a la terminal. Está acotado a Claude y OpenCode, e integra tanto en Lite como en Full por ser parte de la superficie mínima útil.", en: "The slash-command that exposes starter installation as a native agent command. It materializes a command file in the agent's directory—`/active:starter-add` in Claude, `/active-starter-add` in OpenCode—as a thin wrapper over `active-stack starter add`. Choose it to add starters (backend, ux-ui, active-ia) from inside the agent without dropping to a terminal. It's scoped to Claude and OpenCode and ships in both Lite and Full, as part of the minimal useful surface." }
     type: command
     # Scoped to the two focused P0 agents only (Claude + OpenCode).
     # Other agent variants are out of scope for C-31 (D3: focused-only).
@@ -108,7 +125,8 @@ harnesses:
   # ── Skills de terceros (se descargan con el stack) ────────────────────────
   - id: find-skill
     name: find-skill
-    description: Busca y recomienda skills relevantes (registry de Vercel).
+    description: { es: "Busca y recomienda skills relevantes (registry de Vercel).", en: "Finds and recommends relevant skills (Vercel's registry)." }
+    long_description: { es: "La skill de terceros que busca y recomienda skills instalables relevantes a lo que pedís. Se clona desde el registry de Vercel (`vercel-labs/skills`, subdir `skills/find-skills`) al directorio de skills del agente y consulta ese catálogo para sugerir capacidades que encajen con tu tarea. Elegila cuando no sabés si existe una skill para lo que querés hacer y preferís descubrirla antes que armarla. Es best-effort: si el clone falla, el install no aborta, porque el layout de un repo de terceros puede cambiar.", en: "The third-party skill that finds and recommends installable skills relevant to your request. It's cloned from Vercel's registry (`vercel-labs/skills`, subdir `skills/find-skills`) into the agent's skills directory and queries that catalog to suggest capabilities matching your task. Choose it when you're not sure a skill exists for what you want and prefer discovering one over building it. It's best-effort: if the clone fails the install doesn't abort, since a third-party repo's layout can change." }
     type: skill
     third_party: true
     best_effort: true # falla del clone no aborta el install (terceros: layout puede cambiar)
@@ -118,7 +136,8 @@ harnesses:
 
   - id: skill-creator
     name: skill-creator
-    description: Crea nuevas skills siguiendo la spec de Agent Skills.
+    description: { es: "Crea nuevas skills siguiendo la spec de Agent Skills.", en: "Creates new skills following the Agent Skills spec." }
+    long_description: { es: "La skill de terceros que guía la creación de una skill nueva completa. Se clona desde `anthropics/skills` (subdir `skills/skill-creator`) al directorio de skills del agente y te acompaña a armar el `SKILL.md` y sus assets conforme a la especificación oficial de Agent Skills. Elegila cuando querés empaquetar un flujo repetible como skill reutilizable y bien formada. Es best-effort: si el clone falla, el install no aborta, porque el layout upstream puede cambiar.", en: "The third-party skill that guides the creation of a complete new skill. It's cloned from `anthropics/skills` (subdir `skills/skill-creator`) into the agent's skills directory and walks you through authoring the `SKILL.md` and its assets per the official Agent Skills specification. Choose it when you want to package a repeatable workflow into a reusable, well-formed skill. It's best-effort: if the clone fails the install doesn't abort, since the upstream layout can change." }
     type: skill
     third_party: true
     best_effort: true # falla del clone no aborta el install (terceros: layout puede cambiar)
@@ -130,11 +149,13 @@ harnesses:
   #   PROPIAS/FORK (14): apuntan al monorepo Group-Active-IA/active-skills, SIN third_party.
   #   TERCEROS   (16): third_party: true, best_effort: true, apuntan al upstream confirmado.
   # install_modes: [full] — materializadas vía `active-stack starter add`, no por modo base.
+  # long_description es OPCIONAL para estos harnesses (scope: starter-only, D3) — se omite
+  # en esta migración (L3 puede sumarla si el detalle de starter add lo necesita).
 
   # ── Propias puras (8) — contenido 100% del usuario ────────────────────────
   - id: fastapi-domain-service
     name: FastAPI Domain Service
-    description: Patrón de servicio de dominio con FastAPI (arquitectura por capas).
+    description: { es: "Patrón de servicio de dominio con FastAPI (arquitectura por capas).", en: "FastAPI domain service pattern (layered architecture)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/fastapi-domain-service }
@@ -142,7 +163,7 @@ harnesses:
 
   - id: alembic-migrations
     name: Alembic Migrations
-    description: Gestión de migraciones de base de datos con Alembic + SQLAlchemy.
+    description: { es: "Gestión de migraciones de base de datos con Alembic + SQLAlchemy.", en: "Database migration management with Alembic + SQLAlchemy." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/alembic-migrations }
@@ -150,7 +171,7 @@ harnesses:
 
   - id: zustand-store-pattern
     name: Zustand Store Pattern
-    description: Patrón de store global con Zustand para React.
+    description: { es: "Patrón de store global con Zustand para React.", en: "Global store pattern with Zustand for React." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/zustand-store-pattern }
@@ -158,7 +179,7 @@ harnesses:
 
   - id: react19-form-pattern
     name: React 19 Form Pattern
-    description: Patrón de formularios con React 19 (Server Actions + useFormState).
+    description: { es: "Patrón de formularios con React 19 (Server Actions + useFormState).", en: "Form pattern with React 19 (Server Actions + useFormState)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/react19-form-pattern }
@@ -166,7 +187,7 @@ harnesses:
 
   - id: dashboard-crud-page
     name: Dashboard CRUD Page
-    description: Página de dashboard con operaciones CRUD completas.
+    description: { es: "Página de dashboard con operaciones CRUD completas.", en: "Dashboard page with full CRUD operations." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/dashboard-crud-page }
@@ -174,7 +195,7 @@ harnesses:
 
   - id: ws-frontend-subscription
     name: WebSocket Frontend Subscription
-    description: Patrón de suscripción WebSocket en el frontend (React + reconnect).
+    description: { es: "Patrón de suscripción WebSocket en el frontend (React + reconnect).", en: "WebSocket subscription pattern on the frontend (React + reconnect)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/ws-frontend-subscription }
@@ -182,7 +203,7 @@ harnesses:
 
   - id: help-system-content
     name: Help System Content
-    description: Patrón de contenido para sistemas de ayuda in-app.
+    description: { es: "Patrón de contenido para sistemas de ayuda in-app.", en: "Content pattern for in-app help systems." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/help-system-content }
@@ -190,7 +211,7 @@ harnesses:
 
   - id: monorepo-scaffold
     name: Monorepo Scaffold
-    description: Scaffold de monorepo (Turborepo / pnpm workspaces).
+    description: { es: "Scaffold de monorepo (Turborepo / pnpm workspaces).", en: "Monorepo scaffold (Turborepo / pnpm workspaces)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/monorepo-scaffold }
@@ -199,7 +220,7 @@ harnesses:
   # ── Forks expandidos (6) — upstream existe pero contenido es el del usuario ─
   - id: postgresql-table-design
     name: PostgreSQL Table Design
-    description: Diseño de tablas PostgreSQL (fork expandido de wshobson/agents).
+    description: { es: "Diseño de tablas PostgreSQL (fork expandido de wshobson/agents).", en: "PostgreSQL table design (expanded fork of wshobson/agents)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/postgresql-table-design }
@@ -207,7 +228,7 @@ harnesses:
 
   - id: tailwind-design-system
     name: Tailwind Design System
-    description: Sistema de diseño basado en Tailwind CSS (fork expandido).
+    description: { es: "Sistema de diseño basado en Tailwind CSS (fork expandido).", en: "Design system based on Tailwind CSS (expanded fork)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/tailwind-design-system }
@@ -215,7 +236,7 @@ harnesses:
 
   - id: typescript-advanced-types
     name: TypeScript Advanced Types
-    description: Tipos avanzados de TypeScript — generics, utility types, branded types (fork expandido).
+    description: { es: "Tipos avanzados de TypeScript — generics, utility types, branded types (fork expandido).", en: "Advanced TypeScript types — generics, utility types, branded types (expanded fork)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/typescript-advanced-types }
@@ -223,7 +244,7 @@ harnesses:
 
   - id: interface-design
     name: Interface Design
-    description: Patrón de diseño de interfaces UI (fork expandido).
+    description: { es: "Patrón de diseño de interfaces UI (fork expandido).", en: "UI interface design pattern (expanded fork)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/interface-design }
@@ -231,7 +252,7 @@ harnesses:
 
   - id: clean-architecture
     name: Clean Architecture
-    description: Arquitectura limpia por capas (fork expandido — capa de dominio + aplicación + infra).
+    description: { es: "Arquitectura limpia por capas (fork expandido — capa de dominio + aplicación + infra).", en: "Layered clean architecture (expanded fork — domain + application + infra layers)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/clean-architecture }
@@ -239,7 +260,7 @@ harnesses:
 
   - id: fastapi-code-review
     name: FastAPI Code Review
-    description: Checklist de code review para APIs FastAPI (fork expandido de wshobson/agents).
+    description: { es: "Checklist de code review para APIs FastAPI (fork expandido de wshobson/agents).", en: "Code review checklist for FastAPI APIs (expanded fork of wshobson/agents)." }
     type: skill
     scope: starter-only
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/fastapi-code-review }
@@ -248,7 +269,7 @@ harnesses:
   # ── Terceros — capa base/transversal (6) ──────────────────────────────────
   - id: test-driven-development
     name: Test-Driven Development
-    description: Ciclo TDD — red/green/refactor (obra/superpowers).
+    description: { es: "Ciclo TDD — red/green/refactor (obra/superpowers).", en: "TDD cycle — red/green/refactor (obra/superpowers)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -258,7 +279,7 @@ harnesses:
 
   - id: systematic-debugging
     name: Systematic Debugging
-    description: Metodología de debugging sistemático (obra/superpowers).
+    description: { es: "Metodología de debugging sistemático (obra/superpowers).", en: "Systematic debugging methodology (obra/superpowers)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -268,7 +289,7 @@ harnesses:
 
   - id: requesting-code-review
     name: Requesting Code Review
-    description: Guía para solicitar code reviews efectivos (obra/superpowers).
+    description: { es: "Guía para solicitar code reviews efectivos (obra/superpowers).", en: "Guide for requesting effective code reviews (obra/superpowers)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -278,7 +299,7 @@ harnesses:
 
   - id: receiving-code-review
     name: Receiving Code Review
-    description: Guía para recibir y procesar code reviews (obra/superpowers).
+    description: { es: "Guía para recibir y procesar code reviews (obra/superpowers).", en: "Guide for receiving and processing code reviews (obra/superpowers)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -288,7 +309,7 @@ harnesses:
 
   - id: code-review-excellence
     name: Code Review Excellence
-    description: Excelencia en code review — cómo dar reviews de calidad (wshobson/agents).
+    description: { es: "Excelencia en code review — cómo dar reviews de calidad (wshobson/agents).", en: "Code review excellence — how to give quality reviews (wshobson/agents)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -298,7 +319,7 @@ harnesses:
 
   - id: agile-product-owner
     name: Agile Product Owner
-    description: Rol y responsabilidades del Product Owner ágil (alirezarezvani/claude-skills).
+    description: { es: "Rol y responsabilidades del Product Owner ágil (alirezarezvani/claude-skills).", en: "Role and responsibilities of the agile Product Owner (alirezarezvani/claude-skills)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -309,7 +330,7 @@ harnesses:
   # ── Terceros — capa backend (6) ───────────────────────────────────────────
   - id: fastapi-templates
     name: FastAPI Templates
-    description: Templates de proyecto FastAPI (wshobson/agents).
+    description: { es: "Templates de proyecto FastAPI (wshobson/agents).", en: "FastAPI project templates (wshobson/agents)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -319,7 +340,7 @@ harnesses:
 
   - id: python-testing-patterns
     name: Python Testing Patterns
-    description: Patrones de testing en Python con pytest (wshobson/agents).
+    description: { es: "Patrones de testing en Python con pytest (wshobson/agents).", en: "Python testing patterns with pytest (wshobson/agents)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -329,7 +350,7 @@ harnesses:
 
   - id: postgresql-optimization
     name: PostgreSQL Optimization
-    description: Optimización de consultas y esquema PostgreSQL (github/awesome-copilot).
+    description: { es: "Optimización de consultas y esquema PostgreSQL (github/awesome-copilot).", en: "PostgreSQL query and schema optimization (github/awesome-copilot)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -339,7 +360,7 @@ harnesses:
 
   - id: api-security-best-practices
     name: API Security Best Practices
-    description: Prácticas de seguridad para APIs REST (sickn33/antigravity-awesome-skills).
+    description: { es: "Prácticas de seguridad para APIs REST (sickn33/antigravity-awesome-skills).", en: "Security best practices for REST APIs (sickn33/antigravity-awesome-skills)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -349,7 +370,7 @@ harnesses:
 
   - id: multi-stage-dockerfile
     name: Multi-Stage Dockerfile
-    description: Dockerfiles multi-etapa optimizados (github/awesome-copilot).
+    description: { es: "Dockerfiles multi-etapa optimizados (github/awesome-copilot).", en: "Optimized multi-stage Dockerfiles (github/awesome-copilot)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -359,7 +380,7 @@ harnesses:
 
   - id: redis-best-practices
     name: Redis Best Practices
-    description: Mejores prácticas para Redis (Mindrally/skills — upstream confirmado, raíz del repo).
+    description: { es: "Mejores prácticas para Redis (Mindrally/skills — upstream confirmado, raíz del repo).", en: "Redis best practices (Mindrally/skills — confirmed upstream, repo root)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -369,7 +390,7 @@ harnesses:
 
   - id: websocket-engineer
     name: WebSocket Engineer
-    description: Ingeniería de WebSockets full-stack (Jeffallan/claude-skills — upstream confirmado v1.1.0+).
+    description: { es: "Ingeniería de WebSockets full-stack (Jeffallan/claude-skills — upstream confirmado v1.1.0+).", en: "Full-stack WebSocket engineering (Jeffallan/claude-skills — confirmed upstream v1.1.0+)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -380,7 +401,7 @@ harnesses:
   # ── Terceros — capa frontend/ux-ui (3) ────────────────────────────────────
   - id: vercel-react-best-practices
     name: Vercel React Best Practices
-    description: Mejores prácticas de React según Vercel (vercel-labs/agent-skills).
+    description: { es: "Mejores prácticas de React según Vercel (vercel-labs/agent-skills).", en: "React best practices per Vercel (vercel-labs/agent-skills)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -390,7 +411,7 @@ harnesses:
 
   - id: playwright-best-practices
     name: Playwright Best Practices
-    description: Mejores prácticas de testing E2E con Playwright (currents-dev/playwright-skills).
+    description: { es: "Mejores prácticas de testing E2E con Playwright (currents-dev/playwright-skills).", en: "E2E testing best practices with Playwright (currents-dev/playwright-skills)." }
     type: skill
     scope: starter-only
     third_party: true
@@ -400,9 +421,13 @@ harnesses:
 
   - id: pwa-development
     name: PWA Development
-    description: |
-      Desarrollo de Progressive Web Apps (alinaqi/claude-bootstrap — upstream confirmado).
-      WATCH: usa arquitectura modular con base.md; clonar el subdir puede dejar la skill incompleta.
+    description:
+      es: |
+        Desarrollo de Progressive Web Apps (alinaqi/claude-bootstrap — upstream confirmado).
+        WATCH: usa arquitectura modular con base.md; clonar el subdir puede dejar la skill incompleta.
+      en: |
+        Progressive Web App development (alinaqi/claude-bootstrap — confirmed upstream).
+        WATCH: uses a modular architecture with base.md; cloning the subdir may leave the skill incomplete.
     type: skill
     scope: starter-only
     third_party: true
@@ -413,11 +438,13 @@ harnesses:
 # ── Starters (bundles curados de harnesses, componibles vía includes) ─────────
 # C-30: composición curada. Cada starter resuelve su set total vía ResolveStarter.
 # Convención de includes: starter hijo → starter padre provee los transversales.
+# L2: description y long_description son bilingües y OBLIGATORIOS para TODOS los starters.
 starters:
   # base: 6 harnesses transversales compartidos por todos los starters de dominio.
   - id: base
     name: Base
-    description: Transversales metodológicos compartidos por todos los starters (TDD, debugging, code review, producto ágil).
+    description: { es: "Transversales metodológicos compartidos por todos los starters (TDD, debugging, code review, producto ágil).", en: "Cross-cutting methodology shared by every starter (TDD, debugging, code review, agile product)." }
+    long_description: { es: "El bundle base de harnesses metodológicos transversales que todo starter de dominio incluye. Agrupa 6 skills—TDD (red/green/refactor), debugging sistemático, solicitar y recibir code review, excelencia en review y product owner ágil—que se clonan al directorio de skills del agente vía `active-stack starter add`. Elegilo si querés la metodología de trabajo compartida sin la capa técnica de un stack particular. Rara vez se instala solo: `backend`, `ux-ui` y `active-ia` ya lo incluyen y deduplican.", en: "The base bundle of cross-cutting methodology harnesses that every domain starter includes. It groups 6 skills—TDD (red/green/refactor), systematic debugging, requesting and receiving code review, review excellence, and agile product owner—cloned into the agent's skills directory via `active-stack starter add`. Choose it when you want the shared working methodology without a specific stack's technical layer. It's rarely installed alone: `backend`, `ux-ui`, and `active-ia` already include and dedupe it." }
     harnesses:
       - test-driven-development
       - systematic-debugging
@@ -429,7 +456,8 @@ starters:
   # backend: base + 12 harnesses de capa backend.
   - id: backend
     name: Backend
-    description: Stack de backend Python/FastAPI con arquitectura limpia, BD, seguridad y contenedores.
+    description: { es: "Stack de backend Python/FastAPI con arquitectura limpia, BD, seguridad y contenedores.", en: "Python/FastAPI backend stack with clean architecture, database, security, and containers." }
+    long_description: { es: "El starter de backend Python/FastAPI con arquitectura limpia. Compone la base metodológica más 12 harnesses de capa backend—arquitectura limpia, FastAPI, migraciones Alembic, Redis, WebSockets, testing con pytest, PostgreSQL (diseño y optimización), seguridad de APIs y Docker multi-etapa—clonados vía `active-stack starter add`. Elegilo cuando arrancás un servicio backend en Python y querés los patrones de dominio, datos, seguridad y contenedores ya cargados. Si tu proyecto es solo frontend, usá `ux-ui`.", en: "The Python/FastAPI backend starter with clean architecture. It composes the methodology base plus 12 backend-layer harnesses—clean architecture, FastAPI, Alembic migrations, Redis, WebSockets, pytest testing, PostgreSQL (design and optimization), API security, and multi-stage Docker—cloned via `active-stack starter add`. Choose it when starting a Python backend service and you want the domain, data, security, and container patterns preloaded. If your project is frontend-only, use `ux-ui`." }
     includes: [base]
     harnesses:
       - clean-architecture
@@ -448,7 +476,8 @@ starters:
   # ux-ui: base + 11 harnesses de capa frontend/UX.
   - id: ux-ui
     name: UX/UI
-    description: Stack de frontend React con diseño, estado, formularios, WebSockets y testing E2E.
+    description: { es: "Stack de frontend React con diseño, estado, formularios, WebSockets y testing E2E.", en: "React frontend stack with design, state, forms, WebSockets, and E2E testing." }
+    long_description: { es: "El starter de frontend React con diseño, estado y testing E2E. Compone la base metodológica más 11 harnesses de capa frontend—React, Zustand, formularios con React 19, dashboards CRUD, suscripciones WebSocket, PWA, tipos avanzados de TypeScript, sistema de diseño Tailwind y testing E2E con Playwright—clonados vía `active-stack starter add`. Elegilo cuando construís una interfaz React y querés los patrones de UI, estado y pruebas ya listos. Si tu proyecto es solo backend, usá `backend`.", en: "The React frontend starter with design, state, and E2E testing. It composes the methodology base plus 11 frontend-layer harnesses—React, Zustand, React 19 forms, CRUD dashboards, WebSocket subscriptions, PWA, advanced TypeScript types, a Tailwind design system, and Playwright E2E testing—cloned via `active-stack starter add`. Choose it when building a React interface and you want the UI, state, and testing patterns ready to go. If your project is backend-only, use `backend`." }
     includes: [base]
     harnesses:
       - vercel-react-best-practices
@@ -466,7 +495,8 @@ starters:
   # active-ia: backend + ux-ui + monorepo-scaffold. base se deduplica automáticamente.
   - id: active-ia
     name: Active IA
-    description: Stack completo para proyectos de IA activa (compone backend + ux-ui + monorepo).
+    description: { es: "Stack completo para proyectos de IA activa (compone backend + ux-ui + monorepo).", en: "Full stack for Active IA projects (composes backend + ux-ui + monorepo)." }
+    long_description: { es: "El starter full-stack completo para proyectos de Active IA. Compone `backend` + `ux-ui` + el scaffold de monorepo, deduplicando la base automáticamente, así que instala toda la metodología, la capa backend y la frontend en una sola corrida vía `active-stack starter add`. Elegilo cuando levantás un proyecto full-stack de punta a punta y querés el kit completo desde el día uno. Si solo trabajás una capa, `backend` o `ux-ui` son más acotados.", en: "The complete full-stack starter for Active IA projects. It composes `backend` + `ux-ui` + the monorepo scaffold, deduping the base automatically, so it installs the whole methodology, the backend layer, and the frontend layer in a single run via `active-stack starter add`. Choose it when standing up an end-to-end full-stack project and you want the complete kit from day one. If you're working a single layer, `backend` or `ux-ui` are more focused." }
     includes: [backend, ux-ui]
     harnesses:
       - monorepo-scaffold
