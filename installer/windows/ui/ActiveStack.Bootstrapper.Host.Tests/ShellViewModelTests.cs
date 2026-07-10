@@ -12,21 +12,117 @@ namespace ActiveStack.Bootstrapper.Host.Tests;
 public sealed class ShellViewModelTests
 {
     [Fact]
-    public void Constructor_StartsAtHubWithBackDisabledAndNextLabel()
+    public void Constructor_StartsOnLanguageWithBackDisabled()
     {
-        var shell = new ShellViewModel(new FakeInstallerEngineClient(BuildSession(["claude"])));
+        var shell = new ShellViewModel(new FakeInstallerEngineClient(BuildSession(["claude"])), persistLanguage: NoopPersist);
+
+        Assert.IsType<LanguagePageViewModel>(shell.CurrentPage);
+        Assert.False(shell.CanGoBack);
+    }
+
+    [Fact]
+    public async Task AdvancingFromLanguage_MovesToHubWithBackEnabledAndNextLabel()
+    {
+        var shell = new ShellViewModel(new FakeInstallerEngineClient(BuildSession(["claude"])), persistLanguage: NoopPersist);
+
+        await shell.AdvanceAsync();
 
         Assert.IsType<HubPageViewModel>(shell.CurrentPage);
-        Assert.False(shell.CanGoBack);
+        Assert.True(shell.CanGoBack);
         Assert.Equal("Next", shell.PrimaryLabel);
         Assert.False(shell.PrimaryEnabled);
+    }
+
+    [Fact]
+    public async Task GoBack_FromHub_ReturnsToLanguage()
+    {
+        var shell = new ShellViewModel(new FakeInstallerEngineClient(BuildSession(["claude"])), persistLanguage: NoopPersist);
+        await shell.AdvanceAsync();
+        Assert.IsType<HubPageViewModel>(shell.CurrentPage);
+
+        shell.GoBack();
+
+        Assert.IsType<LanguagePageViewModel>(shell.CurrentPage);
+        Assert.False(shell.CanGoBack);
+    }
+
+    [Fact]
+    public void GoBack_AtLanguage_IsANoOp()
+    {
+        var shell = new ShellViewModel(new FakeInstallerEngineClient(BuildSession(["claude"])), persistLanguage: NoopPersist);
+
+        shell.GoBack();
+
+        Assert.IsType<LanguagePageViewModel>(shell.CurrentPage);
+        Assert.False(shell.CanGoBack);
+    }
+
+    [Fact]
+    public async Task AdvancingFromLanguage_SetsActiveLanguagePersistsItAndConfiguresTheClient()
+    {
+        var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
+        string? persisted = null;
+        var shell = new ShellViewModel(client, persistLanguage: lang => persisted = lang);
+
+        ((LanguagePageViewModel)shell.CurrentPage).SelectedLanguageId = "es";
+        await shell.AdvanceAsync();
+
+        Assert.Equal("es", persisted);
+        Assert.Equal("es", client.Language);
+    }
+
+    [Fact]
+    public async Task ChangingLanguageOnReturnToLanguagePage_InvalidatesCachedEngineData()
+    {
+        var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
+        var shell = new ShellViewModel(client, initialLanguage: "en", persistLanguage: NoopPersist);
+
+        await shell.AdvanceAsync(); // Language(en) -> Hub, no change yet
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Assistants (loads session once)
+        Assert.Equal(1, client.LoadSessionCallCount);
+
+        shell.GoBack(); // Assistants -> Hub
+        shell.GoBack(); // Hub -> Language
+
+        ((LanguagePageViewModel)shell.CurrentPage).SelectedLanguageId = "es";
+        await shell.AdvanceAsync(); // Language(es, changed) -> Hub
+
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Assistants: session was invalidated, re-fetched
+
+        Assert.Equal(2, client.LoadSessionCallCount);
+    }
+
+    [Fact]
+    public async Task ReselectingTheSameLanguage_DoesNotInvalidateCachedEngineData()
+    {
+        var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
+        var shell = new ShellViewModel(client, initialLanguage: "en", persistLanguage: NoopPersist);
+
+        await shell.AdvanceAsync(); // Language(en) -> Hub
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Assistants (loads session once)
+        Assert.Equal(1, client.LoadSessionCallCount);
+
+        shell.GoBack(); // Assistants -> Hub
+        shell.GoBack(); // Hub -> Language
+
+        ((LanguagePageViewModel)shell.CurrentPage).SelectedLanguageId = "en"; // same as before
+        await shell.AdvanceAsync(); // Language(en, unchanged) -> Hub
+
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Assistants: no re-fetch needed
+
+        Assert.Equal(1, client.LoadSessionCallCount);
     }
 
     [Fact]
     public async Task AdvancingFromHub_LoadsSessionAndMovesToAssistants()
     {
         var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
 
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
         Assert.True(shell.PrimaryEnabled);
@@ -42,7 +138,8 @@ public sealed class ShellViewModelTests
     public async Task FullClaudeFlow_GoesAssistantsInstallTypePermissionsReview_WithInstallPrimaryLabelOnReview()
     {
         var client = new FakeInstallerEngineClient(BuildSession(["claude"], tierCapableAgents: ["claude"]));
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
         await shell.AdvanceAsync();
 
@@ -63,7 +160,8 @@ public sealed class ShellViewModelTests
     public async Task GeminiOnlyFlow_SkipsPermissionsStraightToReview()
     {
         var client = new FakeInstallerEngineClient(BuildSession(["gemini"], tierCapableAgents: ["claude"]));
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
         await shell.AdvanceAsync();
         await shell.AdvanceAsync(); // -> InstallType
@@ -77,7 +175,8 @@ public sealed class ShellViewModelTests
     public async Task GoBack_FromReview_SkipsPagesNotInThePathForGeminiOnlyFlow()
     {
         var client = new FakeInstallerEngineClient(BuildSession(["gemini"], tierCapableAgents: ["claude"]));
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
         await shell.AdvanceAsync();
         await shell.AdvanceAsync();
@@ -93,7 +192,8 @@ public sealed class ShellViewModelTests
     public async Task PrimaryEnabled_ReflectsCurrentPageCanAdvance()
     {
         var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
         await shell.AdvanceAsync();
 
@@ -109,21 +209,11 @@ public sealed class ShellViewModelTests
     }
 
     [Fact]
-    public void GoBack_AtHub_IsANoOp()
-    {
-        var shell = new ShellViewModel(new FakeInstallerEngineClient(BuildSession(["claude"])));
-
-        shell.GoBack();
-
-        Assert.IsType<HubPageViewModel>(shell.CurrentPage);
-        Assert.False(shell.CanGoBack);
-    }
-
-    [Fact]
     public async Task ConfirmingReview_RunsInstallAndReachesComplete()
     {
         var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
         await shell.AdvanceAsync(); // Assistants
         await shell.AdvanceAsync(); // InstallType (full, claude not tier-capable in this session)
@@ -140,13 +230,145 @@ public sealed class ShellViewModelTests
     }
 
     [Fact]
+    public async Task ConfirmingReview_ReachesComplete_WithFinishPrimaryLabel()
+    {
+        var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Assistants
+        await shell.AdvanceAsync(); // InstallType
+        await shell.AdvanceAsync(); // -> Review
+        await shell.AdvanceAsync(); // Install -> Complete
+
+        Assert.IsType<CompletePageViewModel>(shell.CurrentPage);
+        Assert.Equal("Finish", shell.PrimaryLabel);
+    }
+
+    [Fact]
+    public async Task ConfirmingReview_ReachesComplete_WithFinalizarPrimaryLabelInSpanish_AndNextLabelUnaffectedElsewhere()
+    {
+        var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
+        var shell = new ShellViewModel(client, initialLanguage: "es", persistLanguage: NoopPersist);
+
+        await shell.AdvanceAsync(); // Language(es) -> Hub
+        Assert.IsType<HubPageViewModel>(shell.CurrentPage);
+        Assert.Equal("Siguiente", shell.PrimaryLabel); // non-Complete page: special-case must not leak
+
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Assistants
+        await shell.AdvanceAsync(); // InstallType
+        await shell.AdvanceAsync(); // -> Review
+        await shell.AdvanceAsync(); // Install -> Complete
+
+        Assert.IsType<CompletePageViewModel>(shell.CurrentPage);
+        Assert.Equal("Finalizar", shell.PrimaryLabel);
+    }
+
+    [Fact]
+    public async Task AdvancingFromComplete_RaisesCloseRequested_DoesNotThrow_AndDoesNotNavigateOrReenterInstall()
+    {
+        var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Assistants
+        await shell.AdvanceAsync(); // InstallType
+        await shell.AdvanceAsync(); // -> Review
+        await shell.AdvanceAsync(); // Install -> Complete
+        Assert.IsType<CompletePageViewModel>(shell.CurrentPage);
+        Assert.Equal(1, client.RunInstallCallCount);
+
+        var raised = false;
+        shell.CloseRequested += (_, _) => raised = true;
+
+        var exception = await Record.ExceptionAsync(() => shell.AdvanceAsync());
+
+        Assert.Null(exception);
+        Assert.True(raised);
+        Assert.Equal(1, client.RunInstallCallCount); // advancing on Complete did not re-enter the install flow
+        Assert.IsType<CompletePageViewModel>(shell.CurrentPage);
+    }
+
+    [Fact]
+    public async Task OnComplete_BackStaysDisabled_AndInvokingPrimaryTwiceRaisesCloseRequestedTwiceWithoutThrowingOrNavigating()
+    {
+        var client = new FakeInstallerEngineClient(BuildSession(["claude"]));
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Assistants
+        await shell.AdvanceAsync(); // InstallType
+        await shell.AdvanceAsync(); // -> Review
+        await shell.AdvanceAsync(); // Install -> Complete
+        Assert.IsType<CompletePageViewModel>(shell.CurrentPage);
+        Assert.False(shell.CanGoBack);
+
+        var raisedCount = 0;
+        shell.CloseRequested += (_, _) => raisedCount++;
+
+        var firstException = await Record.ExceptionAsync(() => shell.AdvanceAsync());
+        var secondException = await Record.ExceptionAsync(() => shell.AdvanceAsync());
+
+        Assert.Null(firstException);
+        Assert.Null(secondException);
+        Assert.Equal(2, raisedCount);
+        Assert.False(shell.CanGoBack);
+        Assert.IsType<CompletePageViewModel>(shell.CurrentPage);
+    }
+
+    [Fact]
+    public async Task AdvancingFromReview_WhenStreamThrowsMidEnumeration_LandsOnCompleteErrorPageInsteadOfPropagating()
+    {
+        var client = new FakeInstallerEngineClient(BuildSession(["claude"]))
+        {
+            RunInstallFailureMessage = "Installer engine exited with code 1."
+        };
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Assistants
+        await shell.AdvanceAsync(); // InstallType (full, claude not tier-capable here)
+        await shell.AdvanceAsync(); // -> Review
+        Assert.IsType<ReviewPageViewModel>(shell.CurrentPage);
+
+        var exception = await Record.ExceptionAsync(() => shell.AdvanceAsync()); // Review -> stream throws mid-enumeration
+
+        Assert.Null(exception);
+        var complete = Assert.IsType<CompletePageViewModel>(shell.CurrentPage);
+        Assert.Equal(CompleteState.Error, complete.State);
+    }
+
+    [Fact]
+    public async Task AdvancingFromReview_WhenStreamThrows_ErrorPageMessageCarriesTheFailureText()
+    {
+        var client = new FakeInstallerEngineClient(BuildSession(["claude"]))
+        {
+            RunInstallFailureMessage = "Network unreachable while downloading harness payload."
+        };
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
+        ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Assistants
+        await shell.AdvanceAsync(); // InstallType
+        await shell.AdvanceAsync(); // -> Review
+
+        await shell.AdvanceAsync(); // Review -> stream throws mid-enumeration
+
+        var complete = Assert.IsType<CompletePageViewModel>(shell.CurrentPage);
+        Assert.Equal(CompleteState.Error, complete.State);
+        Assert.Equal("Network unreachable while downloading harness payload.", complete.Message);
+    }
+
+    [Fact]
     public async Task AdvancingFromHub_WithUninstallSelected_SetsOperationAndMovesToUninstallAgents()
     {
         var client = new FakeInstallerEngineClient(BuildSession(["claude"]))
         {
             UninstallOptions = BuildUninstallOptions(["claude"])
         };
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
 
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "uninstall";
         await shell.AdvanceAsync();
@@ -161,7 +383,8 @@ public sealed class ShellViewModelTests
         {
             Starters = [new StarterChoice("s1", "Starter One", "desc", [], ["claude"], 0)]
         };
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
 
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "starters";
         await shell.AdvanceAsync();
@@ -176,7 +399,8 @@ public sealed class ShellViewModelTests
         {
             Backups = []
         };
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
 
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "backups";
         await shell.AdvanceAsync();
@@ -191,7 +415,8 @@ public sealed class ShellViewModelTests
         {
             UninstallOptions = BuildUninstallOptions(["claude"])
         };
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "uninstall";
         await shell.AdvanceAsync();
         Assert.IsType<UninstallAgentsPageViewModel>(shell.CurrentPage);
@@ -213,7 +438,8 @@ public sealed class ShellViewModelTests
         {
             UninstallOptions = BuildUninstallOptions(["claude"])
         };
-        var shell = new ShellViewModel(client);
+        var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
+        await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "uninstall";
         await shell.AdvanceAsync(); // UninstallAgents
         await shell.AdvanceAsync(); // UninstallMode
@@ -227,6 +453,20 @@ public sealed class ShellViewModelTests
 
         Assert.IsType<CompletePageViewModel>(shell.CurrentPage);
         Assert.Equal(1, client.RunUninstallCallCount);
+    }
+
+    /// <summary>
+    /// Every test that advances past the Language page triggers
+    /// <c>ShellViewModel</c>'s persist-language side effect. Without an
+    /// explicit override it defaults to the real
+    /// <see cref="ActiveStack.Bootstrapper.Core.Localization.LanguagePreference.Save"/>
+    /// against the developer's actual <c>~/.active-stack/config.json</c> —
+    /// unacceptable in unit tests (and a real contention hazard under
+    /// xUnit's parallel test execution). Every construction in this file
+    /// passes this no-op instead.
+    /// </summary>
+    private static void NoopPersist(string lang)
+    {
     }
 
     private static UninstallOptions BuildUninstallOptions(IReadOnlyList<string> detectedAgents) =>
@@ -264,6 +504,8 @@ public sealed class ShellViewModelTests
             _session = session;
         }
 
+        public string Language { get; set; } = "en";
+
         public int LoadSessionCallCount { get; private set; }
 
         public int RunInstallCallCount { get; private set; }
@@ -275,6 +517,16 @@ public sealed class ShellViewModelTests
         public IReadOnlyList<StarterChoice>? Starters { get; set; }
 
         public IReadOnlyList<BackupEntry>? Backups { get; set; }
+
+        /// <summary>
+        /// When set, <see cref="RunInstallAsync"/> yields one in-progress
+        /// snapshot and then throws mid-enumeration with this message,
+        /// simulating a real engine/stream failure (D1, design.md) — drives
+        /// the shell's real <c>ReviewPageViewModel</c> (a real
+        /// <c>IStreamTriggerPage</c>) through its actual <c>StartStream</c>
+        /// path rather than bypassing it.
+        /// </summary>
+        public string? RunInstallFailureMessage { get; set; }
 
         public Task<InstallerSessionState> LoadSessionAsync(CancellationToken cancellationToken = default)
         {
@@ -290,6 +542,13 @@ public sealed class ShellViewModelTests
             [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             RunInstallCallCount++;
+            yield return new InstallProgressSnapshot("phase_started", "prepare", null, "Preparing...", true);
+
+            if (RunInstallFailureMessage is not null)
+            {
+                throw new InvalidOperationException(RunInstallFailureMessage);
+            }
+
             yield return new InstallProgressSnapshot("install_finished", "install", null, "Installation finished successfully.", true);
             await Task.CompletedTask;
         }

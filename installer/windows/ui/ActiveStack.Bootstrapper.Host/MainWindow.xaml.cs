@@ -1,3 +1,5 @@
+using System.Globalization;
+using ActiveStack.Bootstrapper.Core.Localization;
 using ActiveStack.Bootstrapper.Host.Navigation;
 using ActiveStack.Bootstrapper.Host.Pages;
 using ActiveStack.Bootstrapper.Host.Pages.Install;
@@ -18,8 +20,17 @@ public partial class MainWindow : System.Windows.Window
 
         var resolvedEnginePath = ResolveEnginePath(enginePath);
         BootstrapperTrace.Write($"MainWindow ctor resolvedEnginePath={resolvedEnginePath}");
-        _viewModel = new ShellViewModel(new ProcessInstallerEngineClient(resolvedEnginePath), new WpfFolderPicker());
+
+        var homeDir = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        // ACTIVE_STACK_UI_LANG (automation) > persisted preference > OS UI culture > English.
+        var persistedOrOverride = _launchOptions.LanguageOverride ?? LanguagePreference.Load(homeDir);
+        var initialLanguage = LanguagePreselector.Resolve(persistedOrOverride, static () => CultureInfo.CurrentUICulture.Name);
+
+        _viewModel = new ShellViewModel(new ProcessInstallerEngineClient(resolvedEnginePath), new WpfFolderPicker(), initialLanguage);
         DataContext = _viewModel;
+        // Finish on the Complete page (D2a, design.md): ShellViewModel stays
+        // WPF-free and raises CloseRequested instead of owning the Window.
+        _viewModel.CloseRequested += (_, _) => Close();
 
         Loaded += OnLoadedAsync;
     }
@@ -43,54 +54,15 @@ public partial class MainWindow : System.Windows.Window
     }
 
     /// <summary>
-    /// Headless/CI automation path (ACTIVE_STACK_AUTO_INSTALL): selects
-    /// "Install" on the Hub, applies the assistant/mode overrides from
-    /// launch options as each relevant page is reached, advances through
-    /// the wizard, and confirms on Review. There is no longer a single
-    /// "start install" call to preserve verbatim — the wizard replaces the
-    /// old one-screen dashboard — so this walks the same
-    /// <see cref="ShellViewModel"/> the interactive user drives.
+    /// Headless/CI automation path (ACTIVE_STACK_AUTO_INSTALL). Delegates to
+    /// <see cref="AutoInstallDriver"/> (no WPF dependency, unit-testable):
+    /// traverses the preselected Language page, selects "Install" on the
+    /// Hub, applies the assistant/mode overrides from launch options as
+    /// each relevant page is reached, advances through the wizard, and
+    /// confirms on Review.
     /// </summary>
-    private async Task RunAutoInstallAsync()
-    {
-        if (_viewModel.CurrentPage is HubPageViewModel hub)
-        {
-            hub.SelectedEntryId = "install";
-        }
-
-        while (_viewModel.CurrentPage is not ReviewPageViewModel)
-        {
-            ApplyAutomationOverrides();
-
-            if (!_viewModel.PrimaryEnabled)
-            {
-                BootstrapperTrace.Write("MainWindow auto-install stalled: current page cannot advance.");
-                return;
-            }
-
-            await _viewModel.AdvanceAsync();
-        }
-
-        await _viewModel.AdvanceAsync();
-    }
-
-    private void ApplyAutomationOverrides()
-    {
-        if (_viewModel.CurrentPage is AssistantsPageViewModel assistants &&
-            !string.IsNullOrWhiteSpace(_launchOptions.AssistantId))
-        {
-            foreach (var choice in assistants.Choices)
-            {
-                choice.IsSelected = string.Equals(choice.Id, _launchOptions.AssistantId, System.StringComparison.OrdinalIgnoreCase);
-            }
-        }
-
-        if (_viewModel.CurrentPage is InstallTypePageViewModel installType &&
-            !string.IsNullOrWhiteSpace(_launchOptions.InstallModeId))
-        {
-            installType.SelectedId = _launchOptions.InstallModeId!;
-        }
-    }
+    private Task RunAutoInstallAsync() =>
+        AutoInstallDriver.RunAsync(_viewModel, _launchOptions.AssistantId, _launchOptions.InstallModeId, BootstrapperTrace.Write);
 
     private void BackButton_Click(object sender, System.Windows.RoutedEventArgs e)
     {
