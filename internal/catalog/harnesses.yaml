@@ -217,6 +217,22 @@ harnesses:
     source: { repo: Group-Active-IA/active-skills, ref: latest, method: clone, path: skills/monorepo-scaffold }
     install_modes: [full]
 
+  - id: rubrica-builder
+    name: rubrica-builder
+    description: { es: "Crea, cura y audita rúbricas de evaluación autosuficientes para Active-IA.", en: "Creates, curates, and audits self-sufficient Active-IA grading rubrics." }
+    type: skill
+    scope: starter-only
+    source: { repo: JuanCruzRobledo/rubrica-builder, ref: latest, method: clone }
+    install_modes: [full]
+
+  - id: tup-campus-navigator
+    name: tup-campus-navigator
+    description: { es: "Opera el campus Moodle de la TUP (UTN) por API REST: pendientes, notas, informes.", en: "Operates the TUP (UTN) Moodle campus via REST API: pending work, grades, reports." }
+    type: skill
+    scope: starter-only
+    source: { repo: Group-Active-IA/Skill-Moodle, ref: latest, method: clone }
+    install_modes: [full]
+
   # ── Forks expandidos (6) — upstream existe pero contenido es el del usuario ─
   - id: postgresql-table-design
     name: PostgreSQL Table Design
@@ -500,3 +516,12 @@ starters:
     includes: [backend, ux-ui]
     harnesses:
       - monorepo-scaffold
+
+  # tutor-tupad: sin base (no es un stack de código) — dominio de tutoría TUP.
+  - id: tutor-tupad
+    name: Tutor TUPAD
+    description: { es: "Stack para tutores TUPAD: rúbricas de evaluación + operación del campus Moodle.", en: "Stack for TUPAD tutors: grading rubrics + Moodle campus operation." }
+    long_description: { es: "El starter para tutores de la Tecnicatura Universitaria en Programación (TUPAD, UTN). Agrupa 2 harnesses—`rubrica-builder`, que crea, cura y audita rúbricas de evaluación autosuficientes para Active-IA, y `tup-campus-navigator`, que opera el campus Moodle de la TUP por API REST (pendientes, notas, informes por comisión)—clonados vía `active-stack starter add`. Elegilo si sos tutor de la TUPAD y necesitás las skills de rúbricas y campus en un solo paquete. No incluye la base metodológica de código (TDD, arquitectura): es un dominio de tutoría, no de desarrollo.", en: "The starter for tutors of the Tecnicatura Universitaria en Programación (TUPAD, UTN). It groups 2 harnesses—`rubrica-builder`, which creates, curates, and audits self-sufficient Active-IA grading rubrics, and `tup-campus-navigator`, which operates the TUP Moodle campus via REST API (pending work, grades, per-section reports)—cloned via `active-stack starter add`. Choose it if you tutor for TUPAD and need the rubric and campus skills in one bundle. It does not include the code methodology base (TDD, architecture): this is a tutoring domain, not a development one." }
+    harnesses:
+      - rubrica-builder
+      - tup-campus-navigator
