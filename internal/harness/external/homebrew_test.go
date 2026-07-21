@@ -197,7 +197,7 @@ func TestDownloadBinary_EmptyProfileOS(t *testing.T) {
 	// pipeline was doing in externalStep.Run() before the fix.
 	profile := system.PlatformProfile{} // OS intentionally empty
 
-	_, err := downloadBinary(nil, h, profile, nil)
+	_, _, err := downloadBinary(nil, h, profile, nil)
 	if err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
@@ -254,7 +254,7 @@ func TestDownloadBinary_TarGz(t *testing.T) {
 	h := harnessWithMethod("homebrew", "engram", "")
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	outPath, err := downloadBinary(nil, h, profile, nil)
+	outPath, _, err := downloadBinary(nil, h, profile, nil)
 	if err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
@@ -300,7 +300,7 @@ func TestDownloadBinary_Zip(t *testing.T) {
 	h := harnessWithMethod("homebrew", "engram", "")
 	profile := system.PlatformProfile{OS: "windows", PackageManager: "winget"}
 
-	outPath, err := downloadBinary(nil, h, profile, nil)
+	outPath, _, err := downloadBinary(nil, h, profile, nil)
 	if err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
@@ -359,7 +359,7 @@ func TestDownloadBinary_SkipsNonSemverLatestRelease(t *testing.T) {
 	h.External.Repo = "Gentleman-Programming/engram"
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	outPath, err := downloadBinary(nil, h, profile, nil)
+	outPath, _, err := downloadBinary(nil, h, profile, nil)
 	if err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
@@ -414,9 +414,69 @@ func TestDownloadBinary_APIError(t *testing.T) {
 	h := harnessWithMethod("homebrew", "engram", "")
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	_, err := downloadBinary(nil, h, profile, nil)
+	_, _, err := downloadBinary(nil, h, profile, nil)
 	if err == nil {
 		t.Fatal("expected error for API 404, got nil")
+	}
+}
+
+// TestDownloadBinary_SkipsWhenAlreadyInstalled is a regression test for the
+// real-world Windows install failure: every "windows install" run
+// unconditionally re-downloaded and overwrote the binary, even when it was
+// already installed and actively running as an MCP server (e.g. engram, with
+// one process per open Claude Code session). Windows refuses to truncate or
+// rename a running .exe when several processes hold it open at once, so the
+// whole install failed with "the process cannot access the file because it
+// is being used by another process." Idempotent installs must check for the
+// binary's presence first and skip the download entirely — matching the
+// AlreadyInstalled convention already used by the mcp install path.
+func TestDownloadBinary_SkipsWhenAlreadyInstalled(t *testing.T) {
+	requested := false
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requested = true
+		w.WriteHeader(http.StatusInternalServerError)
+	}))
+	defer srv.Close()
+
+	origBase := githubBaseURL
+	githubBaseURL = srv.URL
+	defer func() { githubBaseURL = origBase }()
+
+	origClient := httpClient
+	httpClient = srv.Client()
+	defer func() { httpClient = origClient }()
+
+	installDir := t.TempDir()
+	origFn := binaryInstallDirFn
+	binaryInstallDirFn = func(string) string { return installDir }
+	defer func() { binaryInstallDirFn = origFn }()
+
+	h := harnessWithMethod("homebrew", "engram", "")
+	h.External.Repo = "Gentleman-Programming/engram"
+	profile := system.PlatformProfile{OS: "windows", PackageManager: ""}
+
+	outPath := filepath.Join(installDir, "engram.exe")
+	if err := os.WriteFile(outPath, []byte("already-installed"), 0o755); err != nil {
+		t.Fatalf("seed existing binary: %v", err)
+	}
+
+	gotPath, alreadyInstalled, err := downloadBinary(nil, h, profile, nil)
+	if err != nil {
+		t.Fatalf("downloadBinary failed: %v", err)
+	}
+	if !alreadyInstalled {
+		t.Error("alreadyInstalled = false, want true when the binary is already present")
+	}
+	if gotPath != outPath {
+		t.Errorf("gotPath = %q, want %q", gotPath, outPath)
+	}
+	if requested {
+		t.Error("downloadBinary hit the network even though the binary was already installed")
+	}
+
+	data, err := os.ReadFile(outPath)
+	if err != nil || string(data) != "already-installed" {
+		t.Errorf("existing binary content changed: got %q (err %v), want %q", data, err, "already-installed")
 	}
 }
 
@@ -456,7 +516,7 @@ func TestDownloadBinary_UsesRepoOverPkg(t *testing.T) {
 	h.External.Repo = "Gentleman-Programming/engram"
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	if _, err := downloadBinary(nil, h, profile, nil); err != nil {
+	if _, _, err := downloadBinary(nil, h, profile, nil); err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
 	if !strings.Contains(gotAPIPath, "Gentleman-Programming/engram") {
@@ -503,7 +563,7 @@ func TestDownloadBinary_AddsInstallDirToPath(t *testing.T) {
 	h := harnessWithMethod("homebrew", "engram", "")
 	profile := system.PlatformProfile{OS: "linux", PackageManager: "apt"}
 
-	if _, err := downloadBinary(nil, h, profile, nil); err != nil {
+	if _, _, err := downloadBinary(nil, h, profile, nil); err != nil {
 		t.Fatalf("downloadBinary failed: %v", err)
 	}
 	if gotDir != installDir {

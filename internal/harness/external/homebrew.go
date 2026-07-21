@@ -45,11 +45,11 @@ func installHomebrew(ctx context.Context, h model.Harness, profile system.Platfo
 	}
 
 	// Fallback: download binary from GitHub Releases.
-	binaryPath, err := downloadBinary(ctx, h, profile, downloadFn)
+	binaryPath, alreadyInstalled, err := downloadBinary(ctx, h, profile, downloadFn)
 	if err != nil {
 		return Result{}, err
 	}
-	return Result{BinaryPath: binaryPath}, nil
+	return Result{BinaryPath: binaryPath, AlreadyInstalled: alreadyInstalled}, nil
 }
 
 func runBrew(ctx context.Context, pkg string) (Result, error) {
@@ -67,7 +67,7 @@ func runBrew(ctx context.Context, pkg string) (Result, error) {
 // falls back to h.External.Pkg — this keeps the brew formula (Pkg) separate
 // from the GitHub repo (Repo), e.g. brew "engram" vs repo
 // "Gentleman-Programming/engram". h.External.URL may override the GitHub base.
-func downloadBinary(ctx context.Context, h model.Harness, profile system.PlatformProfile, downloadFn DownloadEventFunc) (string, error) {
+func downloadBinary(ctx context.Context, h model.Harness, profile system.PlatformProfile, downloadFn DownloadEventFunc) (string, bool, error) {
 	source := h.External.Repo
 	if source == "" {
 		source = h.External.Pkg
@@ -88,6 +88,22 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 		binaryName = repo + ".exe"
 	}
 
+	installDir := binaryInstallDirFn(goos)
+	outPath := filepath.Join(installDir, binaryName)
+
+	// Idempotent: if the binary is already on disk, skip the download
+	// entirely instead of overwriting it in place. This also sidesteps a
+	// Windows-specific hazard: when the existing binary is a long-running MCP
+	// server (e.g. engram, with one process per open Claude Code session),
+	// several processes can hold the .exe open at once, and Windows then
+	// refuses both the truncate-in-place write and the rename-aside retry
+	// ("the process cannot access the file because it is being used by
+	// another process"), failing the whole install.
+	if _, err := os.Stat(outPath); err == nil {
+		_ = addToUserPath(installDir)
+		return outPath, true, nil
+	}
+
 	baseURL := githubBaseURL
 	if h.External.URL != "" && !strings.HasPrefix(h.External.URL, "https://mcp.") {
 		// URL field overrides GitHub base only for download harnesses, not mcp.
@@ -96,18 +112,15 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 
 	version, err := fetchLatestVersion(owner, repo, baseURL)
 	if err != nil {
-		return "", fmt.Errorf("fetch latest version for %s/%s: %w", owner, repo, err)
+		return "", false, fmt.Errorf("fetch latest version for %s/%s: %w", owner, repo, err)
 	}
 
 	goarch := normalizeArch(runtime.GOARCH)
 	assetURL := buildAssetURL(baseURL, owner, repo, version, goos, goarch)
 
-	installDir := binaryInstallDirFn(goos)
 	if err := os.MkdirAll(installDir, 0o755); err != nil {
-		return "", fmt.Errorf("create install dir %q: %w", installDir, err)
+		return "", false, fmt.Errorf("create install dir %q: %w", installDir, err)
 	}
-
-	outPath := filepath.Join(installDir, binaryName)
 
 	if downloadFn != nil {
 		downloadFn(DownloadEvent{
@@ -119,11 +132,11 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 
 	if strings.HasSuffix(assetURL, ".zip") {
 		if err := downloadAndExtractZip(assetURL, binaryName, outPath); err != nil {
-			return "", fmt.Errorf("download %s zip: %w", repo, err)
+			return "", false, fmt.Errorf("download %s zip: %w", repo, err)
 		}
 	} else {
 		if err := downloadAndExtractTarGz(assetURL, repo, outPath); err != nil {
-			return "", fmt.Errorf("download %s tar.gz: %w", repo, err)
+			return "", false, fmt.Errorf("download %s tar.gz: %w", repo, err)
 		}
 	}
 
@@ -144,7 +157,7 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 	// inaccesible.
 	_ = addToUserPath(installDir)
 
-	return outPath, nil
+	return outPath, false, nil
 }
 
 // resolveOwnerRepo parses "owner/repo" or returns "<pkg>/<pkg>" for bare names.
