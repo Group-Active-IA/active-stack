@@ -185,6 +185,40 @@ func TestNPM_CommandBuilt_WithSudo(t *testing.T) {
 	}
 }
 
+// TestNPM_IgnoreScripts asserts every npm install passes --ignore-scripts.
+// npm packages can ship postinstall hooks (e.g. @fission-ai/openspec's
+// shell-completion tip) that spawn "node" through a lifecycle-script shell
+// npm builds itself; on some Windows setups that shell fails to resolve
+// "node" on PATH even though the interactive shell resolves it fine,
+// turning an optional, cosmetic postinstall script into a hard install
+// failure. --ignore-scripts sidesteps the whole class of failure since we
+// never depend on install-time lifecycle scripts.
+func TestNPM_IgnoreScripts(t *testing.T) {
+	fr := &fakeRunner{output: []byte("ok")}
+	defer withFakeRunner(fr)()
+	defer withFakeLookPath(func(name string) (string, error) {
+		return "/usr/local/bin/" + name, nil
+	})()
+
+	h := harnessWithMethod("npm", "@fission-ai/openspec", "")
+	profile := system.PlatformProfile{OS: "windows", NpmWritable: false}
+
+	_, err := installNPM(context.Background(), h, profile)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	found := false
+	for _, a := range fr.capturedArgs {
+		if a == "--ignore-scripts" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("args %v do not contain --ignore-scripts", fr.capturedArgs)
+	}
+}
+
 func TestNPM_Install_Error(t *testing.T) {
 	fr := &fakeRunner{err: errors.New("npm not found")}
 	defer withFakeRunner(fr)()
