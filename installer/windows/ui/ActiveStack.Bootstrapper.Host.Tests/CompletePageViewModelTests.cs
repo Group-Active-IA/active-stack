@@ -47,6 +47,36 @@ public sealed class CompletePageViewModelTests
     }
 
     [Fact]
+    public void Message_WhenTerminalSnapshotCarriesDetails_AppendsThemToTheGenericMessage()
+    {
+        var snapshot = new InstallProgressSnapshot("install_finished", "install", null, "Installation failed.", false, Details: "git clone failed: repository not found");
+
+        var page = new CompletePageViewModel(snapshot, hadDegradedSteps: false, hadRollback: false);
+
+        Assert.Equal("Installation failed.\n\ngit clone failed: repository not found", page.Message);
+    }
+
+    [Fact]
+    public void Message_WhenNoDetails_IsJustTheGenericMessage()
+    {
+        var snapshot = new InstallProgressSnapshot("install_finished", "install", null, "Installation finished successfully.", true);
+
+        var page = new CompletePageViewModel(snapshot, hadDegradedSteps: false, hadRollback: false);
+
+        Assert.Equal("Installation finished successfully.", page.Message);
+    }
+
+    [Fact]
+    public void Message_WhenDetailsDuplicateTheMessage_IsNotRepeated()
+    {
+        var snapshot = new InstallProgressSnapshot("install_finished", "install", null, "Installation failed.", false, Details: "Installation failed.");
+
+        var page = new CompletePageViewModel(snapshot, hadDegradedSteps: false, hadRollback: false);
+
+        Assert.Equal("Installation failed.", page.Message);
+    }
+
+    [Fact]
     public void StateLabel_DefaultsToTheEnglishLocalizedShortLabel()
     {
         var snapshot = new InstallProgressSnapshot("install_finished", "install", null, "Installation finished successfully.", true);

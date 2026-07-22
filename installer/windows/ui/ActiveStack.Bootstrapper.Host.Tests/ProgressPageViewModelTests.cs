@@ -73,6 +73,44 @@ public sealed class ProgressPageViewModelTests
     }
 
     [Fact]
+    public async Task ConsumeAsync_TerminalFailureWithoutOwnDetails_IsEnrichedWithTheLastStepFailureDetail()
+    {
+        var viewModel = new ProgressPageViewModel();
+
+        await viewModel.ConsumeAsync(ToStream(
+            new InstallProgressSnapshot("phase_started", "apply", null, "Applying.", false),
+            new InstallProgressSnapshot("step_failed", "apply", "openspec", "Failed installing OpenSpec.", false, Details: "git clone failed: repository not found"),
+            new InstallProgressSnapshot("install_finished", "install", null, "Installation failed.", false)));
+
+        Assert.NotNull(viewModel.TerminalSnapshot);
+        Assert.Equal("git clone failed: repository not found", viewModel.TerminalSnapshot!.Details);
+    }
+
+    [Fact]
+    public async Task ConsumeAsync_TerminalFailureWithItsOwnDetails_KeepsThemAsIs()
+    {
+        var viewModel = new ProgressPageViewModel();
+
+        await viewModel.ConsumeAsync(ToStream(
+            new InstallProgressSnapshot("step_failed", "apply", "openspec", "Failed installing OpenSpec.", false, Details: "earlier detail"),
+            new InstallProgressSnapshot("install_finished", "install", null, "Installation failed.", false, Details: "authoritative detail")));
+
+        Assert.Equal("authoritative detail", viewModel.TerminalSnapshot!.Details);
+    }
+
+    [Fact]
+    public async Task ConsumeAsync_TerminalSuccess_IsNeverEnrichedEvenIfAnEarlierStepDegraded()
+    {
+        var viewModel = new ProgressPageViewModel();
+
+        await viewModel.ConsumeAsync(ToStream(
+            new InstallProgressSnapshot("step_degraded", "apply", "context7", "Context7 degraded.", false, Details: "network timeout"),
+            new InstallProgressSnapshot("install_finished", "install", null, "Installation finished successfully.", true)));
+
+        Assert.Null(viewModel.TerminalSnapshot!.Details);
+    }
+
+    [Fact]
     public async Task ConsumeAsync_CapturesDegradedAndRollbackAndTheTerminalSnapshot()
     {
         var viewModel = new ProgressPageViewModel();

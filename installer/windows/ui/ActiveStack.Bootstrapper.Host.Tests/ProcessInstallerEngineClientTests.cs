@@ -288,4 +288,21 @@ public sealed class ProcessInstallerEngineClientTests
 
         Assert.Equal(BackupActionResultParser.BuildFromJson(json), result);
     }
+
+    [Theory]
+    [InlineData("install_finished", true)]
+    [InlineData("starter_finished", true)]
+    [InlineData("uninstall_finished", true)]
+    [InlineData("INSTALL_FINISHED", true)]
+    [InlineData("step_failed", false)]
+    [InlineData("step_output", false)]
+    [InlineData(null, false)]
+    public void IsTerminalEventType_RecognizesOnlyTheThreeStreamTerminalTypes(string? type, bool expected)
+    {
+        // A non-zero engine exit AFTER one of these three event types is an
+        // already-reported failure (the terminal snapshot carries its own
+        // Success=false + Message) — RunStreamingCommandAsync must not
+        // override it with the generic "exited with code N" fallback.
+        Assert.Equal(expected, ProcessInstallerEngineClient.IsTerminalEventType(type));
+    }
 }

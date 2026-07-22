@@ -23,6 +23,7 @@ public sealed class ProgressPageViewModel : WizardPageViewModelBase
     private double _progressValue;
     private bool _installSucceeded;
     private bool _isFinished;
+    private string? _lastFailureDetail;
 
     public ProgressPageViewModel(string lang = "en")
         : base(UiStrings.Get(lang, "page.installing.title"), UiStrings.Get(lang, "page.installing.subtitle"), lang)
@@ -121,11 +122,25 @@ public sealed class ProgressPageViewModel : WizardPageViewModelBase
             HadRollback = true;
         }
 
+        // Track the last step_failed's Details (the real underlying pipeline
+        // error, e.g. "git clone failed: repository not found") so a
+        // terminal install_finished failure that carries no Details of its
+        // own (the engine's finished-event message is always a generic
+        // localized string, D3/design.md) can be enriched with the actual
+        // reason instead of showing only that generic text.
+        if (string.Equals(snapshot.Type, "step_failed", StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(snapshot.Details))
+        {
+            _lastFailureDetail = snapshot.Details;
+        }
+
         if (string.Equals(snapshot.Type, "install_finished", StringComparison.OrdinalIgnoreCase))
         {
             InstallSucceeded = snapshot.Success;
             IsFinished = true;
-            TerminalSnapshot = snapshot;
+            TerminalSnapshot = !snapshot.Success && string.IsNullOrWhiteSpace(snapshot.Details) && !string.IsNullOrWhiteSpace(_lastFailureDetail)
+                ? snapshot with { Details = _lastFailureDetail }
+                : snapshot;
         }
     }
 

@@ -130,6 +130,7 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
         process.Start();
 
         var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        var sawTerminalEvent = false;
 
         while (!process.StandardOutput.EndOfStream)
         {
@@ -141,17 +142,45 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
                 continue;
             }
 
-            yield return InstallProgressSnapshotParser.Parse(line);
+            var snapshot = InstallProgressSnapshotParser.Parse(line);
+            if (IsTerminalEventType(snapshot.Type))
+            {
+                sawTerminalEvent = true;
+            }
+
+            yield return snapshot;
         }
 
         await process.WaitForExitAsync(cancellationToken);
         var error = await errorTask;
 
-        if (process.ExitCode != 0)
+        // A non-zero exit after a terminal event (install_finished /
+        // starter_finished / uninstall_finished) is an ALREADY-REPORTED
+        // failure — the engine never writes to stderr for these (D3,
+        // design.md JSON event-stream contract), so overriding here would
+        // discard the terminal snapshot's own Success=false + Message with a
+        // hollow "exited with code N" fallback. Only a genuine crash BEFORE
+        // any terminal event (no stream contract honored at all) should
+        // surface via this exception.
+        if (process.ExitCode != 0 && !sawTerminalEvent)
         {
             throw new InvalidOperationException(string.IsNullOrWhiteSpace(error) ? $"Installer engine exited with code {process.ExitCode}." : error.Trim());
         }
     }
+
+    /// <summary>
+    /// The three "stream is done, terminal snapshot carries the outcome"
+    /// event types (design.md D3) shared by install/starter-install/uninstall.
+    /// Extracted as a pure, internal, testable predicate (mirrors
+    /// <see cref="ResolveDetectedAgentsCsv"/>'s seam pattern) so the
+    /// exit-code-vs-terminal-event decision in
+    /// <see cref="RunStreamingCommandAsync"/> is unit-testable without
+    /// spawning a real process.
+    /// </summary>
+    internal static bool IsTerminalEventType(string? type) =>
+        string.Equals(type, "install_finished", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(type, "starter_finished", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(type, "uninstall_finished", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Shared one-shot JSON command helper for every non-streaming subcommand

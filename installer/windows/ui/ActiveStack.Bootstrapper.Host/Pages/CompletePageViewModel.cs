@@ -18,7 +18,7 @@ public sealed class CompletePageViewModel : WizardPageViewModelBase
     {
         State = DetermineState(terminalSnapshot, hadDegradedSteps, hadRollback);
         StateLabel = UiStrings.Get(lang, $"complete.state.{StateKey(State)}.label");
-        Message = terminalSnapshot.Message ?? string.Empty;
+        Message = BuildMessage(terminalSnapshot);
     }
 
     public CompleteState State { get; }
@@ -30,6 +30,23 @@ public sealed class CompletePageViewModel : WizardPageViewModelBase
 
     /// <summary>Always advanceable — the primary action here is "Close"/"Finish", not blocked by any gate.</summary>
     public override bool CanAdvance => true;
+
+    /// <summary>
+    /// Appends the terminal snapshot's <c>Details</c> (the real underlying
+    /// reason — a step's Go pipeline error, or an unexpected-crash
+    /// exception's message) to its generic localized <c>Message</c>, unless
+    /// there is no Details or it merely repeats the message verbatim.
+    /// </summary>
+    private static string BuildMessage(InstallProgressSnapshot snapshot)
+    {
+        var message = snapshot.Message ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(snapshot.Details) || string.Equals(snapshot.Details, message, StringComparison.Ordinal))
+        {
+            return message;
+        }
+
+        return $"{message}\n\n{snapshot.Details}";
+    }
 
     private static CompleteState DetermineState(InstallProgressSnapshot snapshot, bool hadDegradedSteps, bool hadRollback)
     {
