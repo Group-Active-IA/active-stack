@@ -68,8 +68,22 @@ type windowsInstallEvent struct {
 	Timestamp string `json:"timestamp,omitempty"`
 }
 
-func RunWindowsDetect(homeDir string, _ install.Registry, w io.Writer) error {
-	return json.NewEncoder(w).Encode(windowsDetectResponse{DetectedAgents: detectAgents(homeDir)})
+func RunWindowsDetect(homeDir string, reg install.Registry, w io.Writer) error {
+	all := detectAgents(homeDir)
+	if reg == nil {
+		return json.NewEncoder(w).Encode(windowsDetectResponse{DetectedAgents: all})
+	}
+	// Only surface agents that have a registered adapter. This mirrors
+	// tui.AvailableAgentsList and prevents "no adapter registered for agent X"
+	// failures in BuildPlan when the user selects an agent detected on the
+	// machine but not yet implemented by the installer.
+	supported := make([]string, 0, len(all))
+	for _, id := range all {
+		if _, ok := reg.Get(model.Agent(id)); ok {
+			supported = append(supported, id)
+		}
+	}
+	return json.NewEncoder(w).Encode(windowsDetectResponse{DetectedAgents: supported})
 }
 
 // detectAgents scans homeDir for agent configs and returns the detected agent
