@@ -96,6 +96,41 @@ func TestInjectMarkdownSection_EmptyContentRemovesSection(t *testing.T) {
 	}
 }
 
+func TestInjectMarkdownSection_LegacyJrStackSectionIsReplacedAndUpgradedToCurrentPrefix(t *testing.T) {
+	existing := "# Config\n\n<!-- jr-stack:sdd-orchestrator -->\nold content\n<!-- /jr-stack:sdd-orchestrator -->\n\nOther stuff.\n"
+	result := InjectMarkdownSection(existing, "sdd-orchestrator", "new content")
+
+	want := "# Config\n\n<!-- active-stack:sdd-orchestrator -->\nnew content\n<!-- /active-stack:sdd-orchestrator -->\n\nOther stuff.\n"
+	if result != want {
+		t.Fatalf("legacy section replace+upgrade:\ngot:  %q\nwant: %q", result, want)
+	}
+	if strings.Contains(result, "jr-stack:") {
+		t.Fatalf("result must not contain any leftover jr-stack: marker:\ngot: %q", result)
+	}
+}
+
+func TestInjectMarkdownSection_EmptyContentRemovesLegacyJrStackSection(t *testing.T) {
+	existing := "# Config\n\n<!-- jr-stack:persona -->\nstale leftover\n<!-- /jr-stack:persona -->\n\nOther stuff.\n"
+	result := InjectMarkdownSection(existing, "persona", "")
+
+	want := "# Config\n\nOther stuff.\n"
+	if result != want {
+		t.Fatalf("empty content removes legacy section:\ngot:  %q\nwant: %q", result, want)
+	}
+}
+
+func TestInjectMarkdownSection_PrefersCurrentPrefixWhenBothExist(t *testing.T) {
+	existing := "<!-- active-stack:sdd-orchestrator -->\ncurrent\n<!-- /active-stack:sdd-orchestrator -->\n" +
+		"<!-- jr-stack:sdd-orchestrator -->\nstale leftover\n<!-- /jr-stack:sdd-orchestrator -->\n"
+	result := InjectMarkdownSection(existing, "sdd-orchestrator", "updated")
+
+	want := "<!-- active-stack:sdd-orchestrator -->\nupdated\n<!-- /active-stack:sdd-orchestrator -->\n" +
+		"<!-- jr-stack:sdd-orchestrator -->\nstale leftover\n<!-- /jr-stack:sdd-orchestrator -->\n"
+	if result != want {
+		t.Fatalf("prefers current prefix section when both exist:\ngot:  %q\nwant: %q", result, want)
+	}
+}
+
 func TestInjectMarkdownSection_EmptyContentOnMissingSectionNoOp(t *testing.T) {
 	existing := "# Config\n\nSome content.\n"
 	result := InjectMarkdownSection(existing, "sdd", "")

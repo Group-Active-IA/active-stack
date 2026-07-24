@@ -58,6 +58,28 @@ func TestMarkedSectionIDs(t *testing.T) {
 				"<!-- active-stack:dup -->\nsecond\n<!-- /active-stack:dup -->\n",
 			want: []string{"dup"},
 		},
+		{
+			name:    "legacy jr-stack section is recognized",
+			content: "<!-- jr-stack:persona -->\nbody\n<!-- /jr-stack:persona -->\n",
+			want:    []string{"persona"},
+		},
+		{
+			name: "legacy and current sections both reported in document order",
+			content: "<!-- jr-stack:persona -->\na\n<!-- /jr-stack:persona -->\n" +
+				"<!-- active-stack:sdd-orchestrator -->\nb\n<!-- /active-stack:sdd-orchestrator -->\n",
+			want: []string{"persona", "sdd-orchestrator"},
+		},
+		{
+			name: "same id under both prefixes reported once (first-seen order)",
+			content: "<!-- active-stack:sdd-orchestrator -->\ncurrent\n<!-- /active-stack:sdd-orchestrator -->\n" +
+				"<!-- jr-stack:sdd-orchestrator -->\nstale leftover\n<!-- /jr-stack:sdd-orchestrator -->\n",
+			want: []string{"sdd-orchestrator"},
+		},
+		{
+			name:    "legacy open marker without legacy close is ignored",
+			content: "<!-- jr-stack:orphan -->\nbody but no close marker\n",
+			want:    nil,
+		},
 	}
 
 	for _, tt := range tests {

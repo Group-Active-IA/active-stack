@@ -73,6 +73,74 @@ func TestInject_PurgesStaleSections(t *testing.T) {
 	}
 }
 
+// legacyJrStackClaudeMD reproduces a CLAUDE.md left behind by the project's
+// previous name ("JR Stack", before the active-stack rebrand in 2f8336e),
+// when markers were written as "<!-- jr-stack:ID -->" instead of today's
+// "<!-- active-stack:ID -->". Mirrors legacyClaudeMD exactly, prefix aside.
+const legacyJrStackClaudeMD = "# My Project Config\n\n" +
+	"<!-- jr-stack:persona -->\n## Rules\nlegacy persona body\n<!-- /jr-stack:persona -->\n\n" +
+	"<!-- jr-stack:engram-protocol -->\n## Engram Protocol\nlegacy engram body\n<!-- /jr-stack:engram-protocol -->\n\n" +
+	"<!-- jr-stack:sdd-orchestrator -->\n# Old OPSX\n" +
+	"<!-- jr-stack:sdd-delegation -->\nold delegation\n<!-- /jr-stack:sdd-delegation -->\n" +
+	"<!-- jr-stack:sdd-model-assignments -->\nold routing\n<!-- /jr-stack:sdd-model-assignments -->\n" +
+	"<!-- /jr-stack:sdd-orchestrator -->\n\n" +
+	"<!-- jr-stack:strict-tdd-mode -->\nStrict TDD Mode: enabled\n<!-- /jr-stack:strict-tdd-mode -->\n"
+
+// TestInject_MigratesLegacyJrStackInstallation is the regression guard for
+// the reported bug: an install (or reinstall) run against a CLAUDE.md left
+// by the old "JR Stack" installer name must purge every stale jr-stack:
+// section and upgrade the owned sdd-orchestrator block to the current
+// active-stack: prefix — not leave the old blocks orphaned forever.
+func TestInject_MigratesLegacyJrStackInstallation(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "CLAUDE.md")
+	if err := os.WriteFile(target, []byte(legacyJrStackClaudeMD), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	composed := "# OPSX Orchestrator Instructions\n\nFresh orchestrator block.\n"
+	snapshotDir := filepath.Join(dir, "backups")
+
+	if _, err := config.Inject(target, composed, snapshotDir); err != nil {
+		t.Fatalf("Inject error: %v", err)
+	}
+
+	raw, err := os.ReadFile(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := string(raw)
+
+	// No jr-stack: marker of any kind should survive — stale sections
+	// purged, and the owned section upgraded to the active-stack: prefix.
+	if strings.Contains(got, "jr-stack:") {
+		t.Errorf("no jr-stack: marker should survive an install, got:\n%s", got)
+	}
+
+	// The owned section must be present exactly once, under the current prefix.
+	if c := strings.Count(got, "<!-- active-stack:sdd-orchestrator -->"); c != 1 {
+		t.Errorf("sdd-orchestrator marker count = %d, want 1", c)
+	}
+	if !strings.Contains(got, "Fresh orchestrator block.") {
+		t.Error("fresh composed content should be present")
+	}
+	if strings.Contains(got, "# Old OPSX") {
+		t.Error("old orchestrator body should have been replaced")
+	}
+
+	// Stale legacy sections must be gone entirely, not just re-prefixed.
+	for _, id := range []string{"persona", "engram-protocol", "strict-tdd-mode"} {
+		if strings.Contains(got, id) {
+			t.Errorf("stale legacy section %q should have been purged, not carried over", id)
+		}
+	}
+
+	// User content outside any marker must be preserved.
+	if !strings.Contains(got, "# My Project Config") {
+		t.Error("user content outside markers must be preserved")
+	}
+}
+
 // TestInject_PreservesOwnedNestedChildren guards against the purge being too
 // aggressive: sdd-delegation / sdd-model-assignments are owned (nested children
 // of sdd-orchestrator) and must NEVER be purged as standalone stale sections.
