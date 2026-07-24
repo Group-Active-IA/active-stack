@@ -6,16 +6,32 @@ namespace ActiveStack.Bootstrapper.Host.Tests;
 public sealed class UninstallFlowTests
 {
     [Fact]
-    public void NextPage_WalksHubThroughConfirmToInstallingAndComplete()
+    public void NextPage_TargetedStrategy_WalksHubThroughStrategyModeConfirmToInstallingAndComplete()
+    {
+        var selection = new UninstallSelection { Strategy = "targeted" };
+
+        Assert.Equal(WizardPageId.UninstallAgents, UninstallFlow.NextPage(WizardPageId.Hub, selection));
+        Assert.Equal(WizardPageId.UninstallStrategy, UninstallFlow.NextPage(WizardPageId.UninstallAgents, selection));
+        Assert.Equal(WizardPageId.UninstallMode, UninstallFlow.NextPage(WizardPageId.UninstallStrategy, selection));
+        Assert.Equal(WizardPageId.UninstallConfirm, UninstallFlow.NextPage(WizardPageId.UninstallMode, selection));
+        Assert.Equal(WizardPageId.Installing, UninstallFlow.NextPage(WizardPageId.UninstallConfirm, selection));
+        Assert.Equal(WizardPageId.Complete, UninstallFlow.NextPage(WizardPageId.Installing, selection));
+    }
+
+    [Fact]
+    public void NextPage_RestoreStrategy_SkipsModeEntirely()
+    {
+        var selection = new UninstallSelection { Strategy = "restore" };
+
+        Assert.Equal(WizardPageId.UninstallConfirm, UninstallFlow.NextPage(WizardPageId.UninstallStrategy, selection));
+    }
+
+    [Fact]
+    public void NextPage_NoStrategyChosenYet_DefaultsToShowingModeLikeTargeted()
     {
         var selection = new UninstallSelection();
 
-        Assert.Equal(WizardPageId.UninstallAgents, UninstallFlow.NextPage(WizardPageId.Hub, selection));
-        Assert.Equal(WizardPageId.UninstallMode, UninstallFlow.NextPage(WizardPageId.UninstallAgents, selection));
-        Assert.Equal(WizardPageId.UninstallStrategy, UninstallFlow.NextPage(WizardPageId.UninstallMode, selection));
-        Assert.Equal(WizardPageId.UninstallConfirm, UninstallFlow.NextPage(WizardPageId.UninstallStrategy, selection));
-        Assert.Equal(WizardPageId.Installing, UninstallFlow.NextPage(WizardPageId.UninstallConfirm, selection));
-        Assert.Equal(WizardPageId.Complete, UninstallFlow.NextPage(WizardPageId.Installing, selection));
+        Assert.Equal(WizardPageId.UninstallMode, UninstallFlow.NextPage(WizardPageId.UninstallStrategy, selection));
     }
 
     [Fact]
@@ -27,14 +43,22 @@ public sealed class UninstallFlowTests
     }
 
     [Fact]
-    public void PreviousPage_IsTheInverseOfNextAcrossTheWholeFlow()
+    public void PreviousPage_TargetedStrategy_IsTheInverseOfNextAcrossTheWholeFlow()
     {
-        var selection = new UninstallSelection();
+        var selection = new UninstallSelection { Strategy = "targeted" };
+
+        Assert.Equal(WizardPageId.UninstallMode, UninstallFlow.PreviousPage(WizardPageId.UninstallConfirm, selection));
+        Assert.Equal(WizardPageId.UninstallStrategy, UninstallFlow.PreviousPage(WizardPageId.UninstallMode, selection));
+        Assert.Equal(WizardPageId.UninstallAgents, UninstallFlow.PreviousPage(WizardPageId.UninstallStrategy, selection));
+        Assert.Equal(WizardPageId.Hub, UninstallFlow.PreviousPage(WizardPageId.UninstallAgents, selection));
+    }
+
+    [Fact]
+    public void PreviousPage_RestoreStrategy_FromConfirmGoesStraightBackToStrategy()
+    {
+        var selection = new UninstallSelection { Strategy = "restore" };
 
         Assert.Equal(WizardPageId.UninstallStrategy, UninstallFlow.PreviousPage(WizardPageId.UninstallConfirm, selection));
-        Assert.Equal(WizardPageId.UninstallMode, UninstallFlow.PreviousPage(WizardPageId.UninstallStrategy, selection));
-        Assert.Equal(WizardPageId.UninstallAgents, UninstallFlow.PreviousPage(WizardPageId.UninstallMode, selection));
-        Assert.Equal(WizardPageId.Hub, UninstallFlow.PreviousPage(WizardPageId.UninstallAgents, selection));
     }
 
     [Fact]
