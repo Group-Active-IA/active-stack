@@ -279,17 +279,27 @@ func (s *permissionsRemovalStep) ID() string { return "permissions-removal:" + s
 func (s *permissionsRemovalStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *permissionsRemovalStep) Run() error {
-	// The permissions harness writes JSON settings files.
-	// The cleanest reversal is restore-to-snapshot (D3 from design).
-	// The uninstall-time snapshot captured the current (installed) settings;
-	// restoring it rolls back the uninstall if it fails mid-way.
-	// If an install-time backup is provided (StrategyRestore), that is used
-	// by the restoreStep instead — permissionsRemovalStep handles the targeted case.
-	if s.manifest == nil {
-		// No snapshot yet (shouldn't happen in correct usage); no-op to stay safe.
-		return nil
-	}
-	return restoreFn(*s.manifest)
+	// (TBD) There is no dedicated mechanism yet to selectively strip just the
+	// permissions overlay back out of settings.json — the reverse of
+	// internal/harness/config/permissions/install.go's mergeJSONFile/agentOverlay.
+	//
+	// This used to call restoreFn(*s.manifest) here (a copy of Rollback's own
+	// body — see below), which was a real bug: s.manifest is the ENTIRE
+	// uninstall-time snapshot shared across every harness being removed in
+	// this run, not something scoped to permissions/settings.json alone.
+	// Calling it from Run silently reverted every OTHER harness this uninstall
+	// had already removed (e.g. markerRemovalStep's CLAUDE.md edit) back to
+	// its pre-uninstall state, making a targeted uninstall of anything appear
+	// to do nothing whenever "permissions" (the mandatory security floor) was
+	// part of the selection — which it always is.
+	//
+	// Run is a safe no-op until a properly scoped removal exists: the
+	// settings.json permissions overlay is left in place rather than risk
+	// clobbering sibling harnesses' removals. Rollback (below) still
+	// legitimately restores the full manifest — that IS its job when the
+	// overall uninstall pipeline fails and everything applied so far must be
+	// undone.
+	return nil
 }
 
 func (s *permissionsRemovalStep) Rollback() error {
