@@ -129,7 +129,7 @@ public sealed class InstallerSessionStateBuilderTests
           "permission_tiers": [
             { "id": "estricto", "label": "Estricto", "description": "Agent must ask for every operation. Highest friction, highest security.", "default": false },
             { "id": "balanceado", "label": "Balanceado", "description": "Curated allow-list for safe, repetitive operations. Recommended starting point.", "default": true },
-            { "id": "bypass", "label": "Bypass", "description": "Full autonomy opt-in. The security floor deny-list still applies.", "default": false, "warning": "Bypass: autonomous mode — the security floor still applies (C-21)" }
+            { "id": "bypass", "label": "Bypass", "description": "Full autonomy opt-in. The security floor deny-list still applies.", "default": false, "warning": "Bypass: autonomous mode — the security floor still applies" }
           ]
         }
         """;
@@ -149,7 +149,7 @@ public sealed class InstallerSessionStateBuilderTests
 
         var bypass = state.PermissionTierChoices.Single(t => t.Id == "bypass");
         Assert.False(bypass.IsDefault);
-        Assert.Equal("Bypass: autonomous mode — the security floor still applies (C-21)", bypass.Warning);
+        Assert.Equal("Bypass: autonomous mode — the security floor still applies", bypass.Warning);
     }
 
     [Fact]

@@ -31,7 +31,7 @@ public sealed class PermissionsPageViewModelTests
         page.SelectedTierId = "bypass";
 
         Assert.Equal("bypass", selection.Tier);
-        Assert.Equal("Bypass: autonomous mode — the security floor still applies (C-21)", page.WarningText);
+        Assert.Equal("Bypass: autonomous mode — the security floor still applies", page.WarningText);
     }
 
     [Fact]
@@ -43,7 +43,7 @@ public sealed class PermissionsPageViewModelTests
         var page = new PermissionsPageViewModel(session, selection);
 
         Assert.Equal("bypass", page.SelectedTierId);
-        Assert.Equal("Bypass: autonomous mode — the security floor still applies (C-21)", page.WarningText);
+        Assert.Equal("Bypass: autonomous mode — the security floor still applies", page.WarningText);
     }
 
     [Fact]
@@ -100,6 +100,6 @@ public sealed class PermissionsPageViewModelTests
             [
                 new PermissionTierChoice("estricto", "Estricto", "Ask before every change.", false, null),
                 new PermissionTierChoice("balanceado", "Balanceado", "Ask for risky changes only.", true, null, "Balanceado applies a curated allow-list for safe, repetitive operations."),
-                new PermissionTierChoice("bypass", "Bypass", "Never ask.", false, "Bypass: autonomous mode — the security floor still applies (C-21)")
+                new PermissionTierChoice("bypass", "Bypass", "Never ask.", false, "Bypass: autonomous mode — the security floor still applies")
             ]);
 }

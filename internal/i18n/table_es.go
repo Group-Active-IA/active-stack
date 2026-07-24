@@ -70,7 +70,7 @@ var tableES = map[string]string{
 	"tier.bypass.label":   "Bypass",
 	"tier.bypass.desc":    "Autonomía total opcional. El piso de seguridad de denegación sigue aplicando.",
 	"tier.bypass.long":    "Bypass le da al agente autonomía total para actuar sin preguntar. El piso de seguridad de denegación sigue bloqueando las operaciones más peligrosas—esa capa no se desactiva—pero todo lo demás corre sin supervisión. Elegilo solo cuando confiás plenamente en el flujo y la fricción te frena más de lo que te protege. Usalo con precaución: es el nivel de menor control.",
-	"tier.bypass.warning": "Bypass: modo autónomo — el piso de seguridad sigue aplicando (C-21)",
+	"tier.bypass.warning": "Bypass: modo autónomo — el piso de seguridad sigue aplicando",
 
 	// strategy.{targeted,restore}.{label,desc,long} — uninstall strategies.
 	"strategy.targeted.label": "Dirigida",

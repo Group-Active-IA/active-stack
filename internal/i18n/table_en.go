@@ -71,7 +71,7 @@ var tableEN = map[string]string{
 	"tier.bypass.label":   "Bypass",
 	"tier.bypass.desc":    "Full autonomy opt-in. The security floor deny-list still applies.",
 	"tier.bypass.long":    "Bypass grants the agent full autonomy to act without asking. The security floor deny-list still blocks the most dangerous operations—that layer never turns off—but everything else runs unattended. Choose it only when you fully trust the flow and friction is holding you back more than protecting you. Use it with caution: it is the lowest-control level.",
-	"tier.bypass.warning": "Bypass: autonomous mode — the security floor still applies (C-21)",
+	"tier.bypass.warning": "Bypass: autonomous mode — the security floor still applies",
 
 	// strategy.{targeted,restore}.{label,desc,long} — uninstall strategies.
 	"strategy.targeted.label": "Targeted",

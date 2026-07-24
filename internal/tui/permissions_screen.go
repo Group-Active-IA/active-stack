@@ -37,7 +37,7 @@ func defaultTierCursor() int {
 }
 
 // bypassWarning is the text shown when the cursor is on the bypass tier.
-const bypassWarning = "⚠ Bypass: autonomous mode — the security floor still applies (C-21)"
+const bypassWarning = "⚠ Bypass: autonomous mode — the security floor still applies"
 
 // enterPermissions transitions the model to ScreenPermissions, preselecting
 // TierBalanceado. Called from ScreenMode and ScreenCustomPicker transitions.
