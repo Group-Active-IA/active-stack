@@ -3,6 +3,7 @@ package install
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
@@ -11,6 +12,34 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 	"github.com/Group-Active-IA/active-stack/internal/planner"
 )
+
+// snapshotHomeDirFn resolves the real home directory. Overridable in tests
+// (SetSnapshotHomeDirFn) — mirrors the selfInstallBinaryInstallDirFn seam
+// pattern (self_install.go).
+var snapshotHomeDirFn = os.UserHomeDir
+
+// resolveSnapshotHomeDir returns the directory backups must always live
+// under, regardless of install Target. It intentionally does NOT use
+// effectiveBase: a Project-target install (e.g. a starter) writes its
+// content under the chosen project folder, but its safety-net backup must
+// stay in one canonical, always-findable place — otherwise "Gestionar
+// backups" only ever looks at the home dir and never finds backups left
+// behind in whichever project folder a starter was installed into.
+// opts.HomeDir is used when set (already the resolved real home for
+// Machine-target installs); Project-target installs deliberately leave it
+// empty (see BuildStarterInstallParams), so this falls back to the real OS
+// home. restore already writes back to each ManifestEntry.OriginalPath,
+// which is absolute and independent of where the manifest itself lives, so
+// this does not affect what gets restored.
+func resolveSnapshotHomeDir(opts Options) string {
+	if opts.HomeDir != "" {
+		return opts.HomeDir
+	}
+	if home, err := snapshotHomeDirFn(); err == nil {
+		return home
+	}
+	return opts.HomeDir
+}
 
 // BuildPlan converts an Intent into a Plan ready for execution.
 //
@@ -106,8 +135,10 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 	}
 
 	// 6. Collect all paths that Apply steps will write; build the snapshot step.
-	// Snapshot dir follows the same effective base (project root for Project target).
-	snapshotDir := filepath.Join(effectiveBase, ".active-stack", "backups", "install")
+	// Snapshot dir always resolves against the real home (resolveSnapshotHomeDir),
+	// never against effectiveBase — a Project-target install must not leave its
+	// backup mixed into the project folder it writes content to.
+	snapshotDir := filepath.Join(resolveSnapshotHomeDir(opts), ".active-stack", "backups", "install")
 	writePaths := collectWritePaths(adapters, effectiveBase, opts.Target, resolved.OrderedIDs, cat)
 	// Also include MCP write paths from the starter (C-28 D5).
 	collectStarterMCPPaths(opts.Starter, adapters, effectiveBase, opts.Target, &writePaths)

@@ -187,3 +187,11 @@ func SetAddToUserPathFn(fn func(dir string) error) (restore func()) {
 	selfInstallAddToUserPathFn = fn
 	return func() { selfInstallAddToUserPathFn = old }
 }
+
+// SetSnapshotHomeDirFn replaces snapshotHomeDirFn (os.UserHomeDir) for
+// testing. Returns a restore function; always defer the restore.
+func SetSnapshotHomeDirFn(fn func() (string, error)) (restore func()) {
+	old := snapshotHomeDirFn
+	snapshotHomeDirFn = fn
+	return func() { snapshotHomeDirFn = old }
+}

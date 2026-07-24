@@ -51,9 +51,15 @@ func (a projectAdapter) PathsFor(base string, t model.InstallTarget) model.Agent
 	})
 }
 
-// TestBuildPlanProjectTarget_SnapshotDirUnderProjectRoot verifies that when
-// Target=Project, the snapshot dir is <projectRoot>/.active-stack/backups/install (D4).
-func TestBuildPlanProjectTarget_SnapshotDirUnderProjectRoot(t *testing.T) {
+// TestBuildPlanProjectTarget_SnapshotDirUnderHomeDir verifies that when
+// Target=Project, the snapshot dir stays under the resolved home directory,
+// NOT under projectRoot — starter installs must not leave a ".active-stack"
+// folder mixed into the project's own content. Backups always live in one
+// canonical place so "Gestionar backups" finds them regardless of where the
+// content was installed; restore still writes back to the original absolute
+// paths (under projectRoot), since ManifestEntry.OriginalPath is independent
+// of where the manifest itself is stored.
+func TestBuildPlanProjectTarget_SnapshotDirUnderHomeDir(t *testing.T) {
 	projectRoot := t.TempDir()
 	homeDir := t.TempDir()
 	capturedSnapDir := ""
@@ -103,7 +109,72 @@ func TestBuildPlanProjectTarget_SnapshotDirUnderProjectRoot(t *testing.T) {
 		_ = step.Run()
 	}
 
-	wantSnapDir := filepath.Join(projectRoot, ".active-stack", "backups", "install")
+	wantSnapDir := filepath.Join(homeDir, ".active-stack", "backups", "install")
+	if capturedSnapDir != wantSnapDir {
+		t.Errorf("snapshot dir = %q, want %q", capturedSnapDir, wantSnapDir)
+	}
+}
+
+// TestBuildPlanProjectTarget_EmptyHomeDir_FallsBackToResolvedHomeDir mirrors
+// the real starter-install flow (cmd/active-stack/headless/starter_params.go),
+// where opts.HomeDir is deliberately left empty for Project-target installs.
+// The snapshot dir must still resolve to a real home directory (via the
+// injectable resolver), never to the empty string joined with projectRoot's
+// sibling paths, and never to projectRoot itself.
+func TestBuildPlanProjectTarget_EmptyHomeDir_FallsBackToResolvedHomeDir(t *testing.T) {
+	projectRoot := t.TempDir()
+	resolvedHome := t.TempDir()
+	capturedSnapDir := ""
+
+	restoreHome := install.SetSnapshotHomeDirFn(func() (string, error) {
+		return resolvedHome, nil
+	})
+	defer restoreHome()
+
+	restore := install.SetSnapshotCreate(func(dir string, _ []string) (backup.Manifest, error) {
+		capturedSnapDir = dir
+		return backup.Manifest{}, nil
+	})
+	defer restore()
+
+	restoreConfig := install.SetConfigInstallFn(func(_ model.Harness, _ interface{}, _ string) error {
+		return nil
+	})
+	defer restoreConfig()
+
+	h := model.Harness{
+		ID:           "cfg-h",
+		Name:         "Cfg H",
+		Type:         model.HarnessConfig,
+		Toggles:      []string{},
+		InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull},
+		Agents:       []model.Agent{model.AgentClaude},
+	}
+	cat := &fakeCatalog{harnesses: []model.Harness{h}}
+	reg := &fakeRegistry{adapters: map[model.Agent]install.AgentAdapter{
+		model.AgentClaude: projectAdapter{agent: model.AgentClaude},
+	}}
+	intent := install.Intent{
+		Agents: []model.Agent{model.AgentClaude},
+		Mode:   model.ModeLite,
+	}
+	opts := install.Options{
+		HomeDir:     "", // deliberately empty, like a real starter install
+		ProjectRoot: projectRoot,
+		Target:      model.Project,
+		Registry:    reg,
+	}
+
+	plan, err := install.BuildPlan(cat, intent, opts)
+	if err != nil {
+		t.Fatalf("BuildPlan() error = %v", err)
+	}
+
+	for _, step := range plan.Prepare {
+		_ = step.Run()
+	}
+
+	wantSnapDir := filepath.Join(resolvedHome, ".active-stack", "backups", "install")
 	if capturedSnapDir != wantSnapDir {
 		t.Errorf("snapshot dir = %q, want %q", capturedSnapDir, wantSnapDir)
 	}
