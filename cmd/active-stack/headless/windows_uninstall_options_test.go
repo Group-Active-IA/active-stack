@@ -10,7 +10,61 @@ import (
 
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
 	"github.com/Group-Active-IA/active-stack/internal/i18n"
+	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/model"
 )
+
+// stubRegistry is a minimal install.Registry for the detected-agents filter
+// test below (mirrors headless_test's own local doubles; kept package-local
+// since detectSupportedAgents itself is unexported and tested internally).
+type stubRegistry struct {
+	supported map[model.Agent]bool
+}
+
+func (r *stubRegistry) Get(agent model.Agent) (install.AgentAdapter, bool) {
+	if r.supported[agent] {
+		return nil, true
+	}
+	return nil, false
+}
+
+// TestRunWindowsUninstallOptions_FiltersUnsupportedAgents is the regression
+// guard for a real production bug: RunWindowsUninstallOptions used to call
+// the unfiltered detectAgents directly, so an agent detected on disk (e.g. an
+// empty/leftover config dir for gemini or antigravity) but with no
+// registered adapter would appear in detected_agents. The GUI's Uninstall
+// flow pre-selects every detected agent, so an unsupported one would be
+// included by default and make uninstall.BuildPlan fail with "no adapter
+// registered for agent X" — after any earlier, legitimate removals had
+// already run, making a targeted uninstall look like it silently failed.
+func TestRunWindowsUninstallOptions_FiltersUnsupportedAgents(t *testing.T) {
+	home := t.TempDir()
+	if err := os.MkdirAll(home+"/.claude", 0o755); err != nil {
+		t.Fatalf("mkdir .claude: %v", err)
+	}
+	if err := os.MkdirAll(home+"/.gemini", 0o755); err != nil {
+		t.Fatalf("mkdir .gemini: %v", err)
+	}
+
+	// Registry only supports claude — gemini has no registered adapter.
+	reg := &stubRegistry{supported: map[model.Agent]bool{model.AgentClaude: true}}
+
+	var out bytes.Buffer
+	if err := headless.RunWindowsUninstallOptions(home, reg, i18n.LangEN, &out); err != nil {
+		t.Fatalf("RunWindowsUninstallOptions() error = %v", err)
+	}
+
+	var resp struct {
+		DetectedAgents []string `json:"detected_agents"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal uninstall-options json: %v\nbody=%s", err, out.String())
+	}
+
+	if len(resp.DetectedAgents) != 1 || resp.DetectedAgents[0] != "claude" {
+		t.Fatalf("detected_agents = %v, want [claude] (gemini has no registered adapter)", resp.DetectedAgents)
+	}
+}
 
 // TestRunWindowsUninstallOptions_CarriesDetectedAgentsModesAndStrategies
 // asserts that "windows uninstall-options" reports detected_agents equal to
@@ -34,7 +88,7 @@ func TestRunWindowsUninstallOptions_CarriesDetectedAgentsModesAndStrategies(t *t
 	}
 
 	var out bytes.Buffer
-	if err := headless.RunWindowsUninstallOptions(home, i18n.LangEN, &out); err != nil {
+	if err := headless.RunWindowsUninstallOptions(home, nil, i18n.LangEN, &out); err != nil {
 		t.Fatalf("RunWindowsUninstallOptions() error = %v", err)
 	}
 
@@ -107,7 +161,7 @@ func TestRunWindowsUninstallOptions_LongDescriptions(t *testing.T) {
 	home := t.TempDir()
 
 	var out bytes.Buffer
-	if err := headless.RunWindowsUninstallOptions(home, i18n.LangEN, &out); err != nil {
+	if err := headless.RunWindowsUninstallOptions(home, nil, i18n.LangEN, &out); err != nil {
 		t.Fatalf("RunWindowsUninstallOptions() error = %v", err)
 	}
 
@@ -166,7 +220,7 @@ func TestRunWindowsUninstallOptions_SpanishLocalizesLabels(t *testing.T) {
 	home := t.TempDir()
 
 	var out bytes.Buffer
-	if err := headless.RunWindowsUninstallOptions(home, i18n.LangES, &out); err != nil {
+	if err := headless.RunWindowsUninstallOptions(home, nil, i18n.LangES, &out); err != nil {
 		t.Fatalf("RunWindowsUninstallOptions() error = %v", err)
 	}
 

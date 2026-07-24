@@ -69,28 +69,16 @@ type windowsInstallEvent struct {
 }
 
 func RunWindowsDetect(homeDir string, reg install.Registry, w io.Writer) error {
-	all := detectAgents(homeDir)
-	if reg == nil {
-		return json.NewEncoder(w).Encode(windowsDetectResponse{DetectedAgents: all})
-	}
-	// Only surface agents that have a registered adapter. This mirrors
-	// tui.AvailableAgentsList and prevents "no adapter registered for agent X"
-	// failures in BuildPlan when the user selects an agent detected on the
-	// machine but not yet implemented by the installer.
-	supported := make([]string, 0, len(all))
-	for _, id := range all {
-		if _, ok := reg.Get(model.Agent(id)); ok {
-			supported = append(supported, id)
-		}
-	}
+	supported := detectSupportedAgents(homeDir, reg)
 	return json.NewEncoder(w).Encode(windowsDetectResponse{DetectedAgents: supported})
 }
 
 // detectAgents scans homeDir for agent configs and returns the detected agent
-// ids as strings. Extracted from RunWindowsDetect (design D6,
-// windows-contract-hub-operations) so RunWindowsUninstallOptions can report
-// the same detected_agents without duplicating the ScanConfigs +
-// configStateAgent loop.
+// ids as strings, WITHOUT filtering by adapter registration. Extracted from
+// RunWindowsDetect (design D6, windows-contract-hub-operations).
+//
+// Prefer detectSupportedAgents over this in any caller whose result feeds
+// back into BuildPlan (install or uninstall) — see its doc comment for why.
 func detectAgents(homeDir string) []string {
 	states := system.ScanConfigs(homeDir)
 	detected := make([]string, 0, len(states))
@@ -103,6 +91,33 @@ func detectAgents(homeDir string) []string {
 		}
 	}
 	return detected
+}
+
+// detectSupportedAgents is detectAgents filtered down to agents that have a
+// registered adapter. Shared by RunWindowsDetect (install) and
+// RunWindowsUninstallOptions (uninstall) so the two paths cannot drift.
+//
+// This mirrors tui.AvailableAgentsList and prevents "no adapter registered
+// for agent X" failures in BuildPlan when the user selects an agent detected
+// on the machine (e.g. an empty/leftover config dir for gemini or
+// antigravity) but not yet fully implemented by the installer. Before this
+// was shared, RunWindowsUninstallOptions called detectAgents directly with
+// no filtering: the uninstall flow would report and let the user select an
+// unsupported agent, then fail with "no adapter registered" while build the
+// removal steps — after having already removed whatever the user DID intend
+// to uninstall, i.e. a targeted uninstall would look like it entirely failed.
+func detectSupportedAgents(homeDir string, reg install.Registry) []string {
+	all := detectAgents(homeDir)
+	if reg == nil {
+		return all
+	}
+	supported := make([]string, 0, len(all))
+	for _, id := range all {
+		if _, ok := reg.Get(model.Agent(id)); ok {
+			supported = append(supported, id)
+		}
+	}
+	return supported
 }
 
 func RunWindowsOptions(cat install.Catalog, agents []model.Agent, lang i18n.Lang, w io.Writer) error {

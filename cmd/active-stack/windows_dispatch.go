@@ -178,7 +178,7 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 				return 1
 			}
 		}
-		if err := headless.RunWindowsUninstallOptions(homeDir, lang, w); err != nil {
+		if err := headless.RunWindowsUninstallOptions(homeDir, reg, lang, w); err != nil {
 			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}

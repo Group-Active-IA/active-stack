@@ -5,6 +5,7 @@ import (
 	"io"
 
 	"github.com/Group-Active-IA/active-stack/internal/i18n"
+	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
@@ -27,12 +28,15 @@ type windowsUninstallOptionsResponse struct {
 
 // RunWindowsUninstallOptions emits the option set consumed by the GUI's
 // guided-uninstall screen (design D6): detected agents (via the shared
-// detectAgents helper — same output as RunWindowsDetect), the install-mode
-// options, and the two uninstall strategies. The targeted strategy is
+// detectSupportedAgents helper — same output as RunWindowsDetect, filtered to
+// agents with a registered adapter so the uninstall flow never offers to
+// remove an agent BuildPlan can't resolve — see detectSupportedAgents' doc
+// comment for the production bug this fixes), the install-mode options, and
+// the two uninstall strategies. The targeted strategy is
 // default:true/requires_manifest:false; restore is requires_manifest:true.
-func RunWindowsUninstallOptions(homeDir string, lang i18n.Lang, w io.Writer) error {
+func RunWindowsUninstallOptions(homeDir string, reg install.Registry, lang i18n.Lang, w io.Writer) error {
 	resp := windowsUninstallOptionsResponse{
-		DetectedAgents: detectAgents(homeDir),
+		DetectedAgents: detectSupportedAgents(homeDir, reg),
 		Modes:          windowsModeOptions(lang),
 		Strategies: []windowsUninstallStrategy{
 			{
