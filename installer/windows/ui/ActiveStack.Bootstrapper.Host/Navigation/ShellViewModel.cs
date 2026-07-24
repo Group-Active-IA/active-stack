@@ -283,7 +283,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
             ?? new InstallProgressSnapshot("install_finished", null, null, null, progressPage.InstallSucceeded);
 
         _currentPageId = WizardPageId.Complete;
-        CurrentPage = new CompletePageViewModel(terminalSnapshot, progressPage.HadDegradedSteps, progressPage.HadRollback, _language);
+        CurrentPage = new CompletePageViewModel(terminalSnapshot, progressPage.HadDegradedSteps, progressPage.HadRollback, _operation, _language);
     }
 
     /// <summary>
@@ -298,7 +298,8 @@ public sealed class ShellViewModel : INotifyPropertyChanged
             new InstallProgressSnapshot("install_finished", null, null, exception.Message, Success: false),
             hadDegradedSteps: false,
             hadRollback: false,
-            _language);
+            operation: _operation,
+            lang: _language);
 
     /// <summary>
     /// Backups (D7, design.md) is a standalone page, not a wizard step, and

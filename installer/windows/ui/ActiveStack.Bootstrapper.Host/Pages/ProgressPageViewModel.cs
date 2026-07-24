@@ -61,7 +61,7 @@ public sealed class ProgressPageViewModel : WizardPageViewModelBase
         private set => SetField(ref _installSucceeded, value);
     }
 
-    /// <summary>True once a terminal (<c>install_finished</c>) snapshot has been applied.</summary>
+    /// <summary>True once a terminal snapshot (<see cref="TerminalEventTypes"/>) has been applied.</summary>
     public bool IsFinished
     {
         get => _isFinished;
@@ -74,7 +74,7 @@ public sealed class ProgressPageViewModel : WizardPageViewModelBase
     /// <summary>True if the pipeline entered its <c>rollback</c> phase.</summary>
     public bool HadRollback { get; private set; }
 
-    /// <summary>The final (<c>install_finished</c>) snapshot, for the Complete page's state mapping.</summary>
+    /// <summary>The final terminal snapshot (<see cref="TerminalEventTypes"/>), for the Complete page's state mapping.</summary>
     public InstallProgressSnapshot? TerminalSnapshot { get; private set; }
 
     public ObservableCollection<string> RecentActivity { get; } = [];
@@ -134,7 +134,7 @@ public sealed class ProgressPageViewModel : WizardPageViewModelBase
             _lastFailureDetail = snapshot.Details;
         }
 
-        if (string.Equals(snapshot.Type, "install_finished", StringComparison.OrdinalIgnoreCase))
+        if (TerminalEventTypes.Contains(snapshot.Type))
         {
             InstallSucceeded = snapshot.Success;
             IsFinished = true;
@@ -146,7 +146,7 @@ public sealed class ProgressPageViewModel : WizardPageViewModelBase
 
     private static double CalculateProgress(InstallProgressSnapshot snapshot, double current)
     {
-        if (string.Equals(snapshot.Type, "install_finished", StringComparison.OrdinalIgnoreCase))
+        if (TerminalEventTypes.Contains(snapshot.Type))
         {
             return 100;
         }
@@ -200,7 +200,7 @@ public sealed class ProgressPageViewModel : WizardPageViewModelBase
             "step_failed" when !string.IsNullOrWhiteSpace(label) => string.Format(UiStrings.Get(_lang, "progress.failed_fmt"), label),
             "download_started" when !string.IsNullOrWhiteSpace(label) => string.Format(UiStrings.Get(_lang, "progress.downloading_fmt"), label),
             "download_finished" when !string.IsNullOrWhiteSpace(label) => string.Format(UiStrings.Get(_lang, "progress.downloaded_fmt"), label),
-            "install_finished" => snapshot.Message ?? UiStrings.Get(_lang, snapshot.Success ? "progress.finished_success_default" : "progress.finished_failed_default"),
+            var t when TerminalEventTypes.Contains(t) => snapshot.Message ?? UiStrings.Get(_lang, snapshot.Success ? "progress.finished_success_default" : "progress.finished_failed_default"),
             _ => snapshot.Message ?? snapshot.Details ?? UiStrings.Get(_lang, "progress.running_default")
         };
     }

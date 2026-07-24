@@ -1,3 +1,4 @@
+using ActiveStack.Bootstrapper.Host.Navigation;
 using ActiveStack.Bootstrapper.Host.Pages;
 using Xunit;
 
@@ -5,6 +6,46 @@ namespace ActiveStack.Bootstrapper.Host.Tests;
 
 public sealed class CompletePageViewModelTests
 {
+    [Fact]
+    public void Error_DefaultOperation_KeepsTheExistingInstallTitle()
+    {
+        var snapshot = new InstallProgressSnapshot("install_finished", "install", null, "Installation failed.", false);
+
+        var page = new CompletePageViewModel(snapshot, hadDegradedSteps: false, hadRollback: false);
+
+        Assert.Equal("Installation failed", page.Title);
+    }
+
+    [Fact]
+    public void Error_UninstallOperation_UsesTheUninstallSpecificTitle()
+    {
+        var snapshot = new InstallProgressSnapshot("uninstall_finished", "uninstall", null, "Uninstall failed.", false);
+
+        var page = new CompletePageViewModel(snapshot, hadDegradedSteps: false, hadRollback: false, operation: WizardOperation.Uninstall);
+
+        Assert.Equal("Uninstallation failed", page.Title);
+    }
+
+    [Fact]
+    public void Error_StarterOperation_UsesTheStarterSpecificTitle()
+    {
+        var snapshot = new InstallProgressSnapshot("starter_finished", "apply", null, "Starter installation failed.", false);
+
+        var page = new CompletePageViewModel(snapshot, hadDegradedSteps: false, hadRollback: false, operation: WizardOperation.Starter);
+
+        Assert.Equal("Starter installation failed", page.Title);
+    }
+
+    [Fact]
+    public void Error_UninstallOperation_SpanishLanguage_UsesTheUninstallSpecificTitle()
+    {
+        var snapshot = new InstallProgressSnapshot("uninstall_finished", "uninstall", null, "La desinstalación falló.", false);
+
+        var page = new CompletePageViewModel(snapshot, hadDegradedSteps: false, hadRollback: false, operation: WizardOperation.Uninstall, lang: "es");
+
+        Assert.Equal("La desinstalación falló", page.Title);
+    }
+
     [Fact]
     public void Success_WhenFinishedSucceededWithNoDegradedSteps()
     {

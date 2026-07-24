@@ -177,10 +177,7 @@ public sealed class ProcessInstallerEngineClient : IInstallerEngineClient
     /// <see cref="RunStreamingCommandAsync"/> is unit-testable without
     /// spawning a real process.
     /// </summary>
-    internal static bool IsTerminalEventType(string? type) =>
-        string.Equals(type, "install_finished", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(type, "starter_finished", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(type, "uninstall_finished", StringComparison.OrdinalIgnoreCase);
+    internal static bool IsTerminalEventType(string? type) => TerminalEventTypes.Contains(type);
 
     /// <summary>
     /// Shared one-shot JSON command helper for every non-streaming subcommand

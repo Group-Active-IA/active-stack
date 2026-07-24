@@ -129,6 +129,68 @@ public sealed class ProgressPageViewModelTests
     }
 
     [Fact]
+    public async Task ConsumeAsync_UninstallFinished_IsRecognizedAsTerminalSuccess()
+    {
+        var viewModel = new ProgressPageViewModel();
+
+        await viewModel.ConsumeAsync(ToStream(
+            new InstallProgressSnapshot("phase_started", "uninstall", null, "Starting uninstall.", false),
+            new InstallProgressSnapshot("uninstall_finished", "uninstall", null, "Uninstall finished successfully.", true)));
+
+        Assert.True(viewModel.InstallSucceeded);
+        Assert.True(viewModel.IsFinished);
+        Assert.Equal(100, viewModel.ProgressValue);
+        Assert.NotNull(viewModel.TerminalSnapshot);
+        Assert.Equal("uninstall_finished", viewModel.TerminalSnapshot!.Type);
+        Assert.True(viewModel.TerminalSnapshot.Success);
+    }
+
+    [Fact]
+    public async Task ConsumeAsync_UninstallFinished_IsRecognizedAsTerminalFailure()
+    {
+        var viewModel = new ProgressPageViewModel();
+
+        await viewModel.ConsumeAsync(ToStream(
+            new InstallProgressSnapshot("uninstall_finished", "uninstall", null, "Uninstall failed.", false)));
+
+        Assert.False(viewModel.InstallSucceeded);
+        Assert.True(viewModel.IsFinished);
+        Assert.NotNull(viewModel.TerminalSnapshot);
+        Assert.False(viewModel.TerminalSnapshot!.Success);
+    }
+
+    [Fact]
+    public async Task ConsumeAsync_StarterFinished_IsRecognizedAsTerminalSuccess()
+    {
+        var viewModel = new ProgressPageViewModel();
+
+        await viewModel.ConsumeAsync(ToStream(
+            new InstallProgressSnapshot("phase_started", "apply", null, "Applying starter.", false),
+            new InstallProgressSnapshot("starter_finished", "apply", null, "Starter applied successfully.", true)));
+
+        Assert.True(viewModel.InstallSucceeded);
+        Assert.True(viewModel.IsFinished);
+        Assert.Equal(100, viewModel.ProgressValue);
+        Assert.NotNull(viewModel.TerminalSnapshot);
+        Assert.Equal("starter_finished", viewModel.TerminalSnapshot!.Type);
+        Assert.Equal("Starter applied successfully.", viewModel.ProgressMessage);
+    }
+
+    [Fact]
+    public async Task ConsumeAsync_StarterFinished_IsRecognizedAsTerminalFailure()
+    {
+        var viewModel = new ProgressPageViewModel();
+
+        await viewModel.ConsumeAsync(ToStream(
+            new InstallProgressSnapshot("starter_finished", "apply", null, "Starter installation failed.", false)));
+
+        Assert.False(viewModel.InstallSucceeded);
+        Assert.True(viewModel.IsFinished);
+        Assert.NotNull(viewModel.TerminalSnapshot);
+        Assert.False(viewModel.TerminalSnapshot!.Success);
+    }
+
+    [Fact]
     public async Task ConsumeAsync_SpanishLanguage_OwnMessagesLocalize_EngineMessagesShownVerbatim()
     {
         var viewModel = new ProgressPageViewModel("es");
