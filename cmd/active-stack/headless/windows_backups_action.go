@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"path/filepath"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 )
@@ -18,9 +17,8 @@ type windowsBackupActionResponse struct {
 }
 
 // RunWindowsBackupsAction dispatches "windows backups restore|delete|rename"
-// (design D5). It locates the manifest by id across
-// <home>/.active-stack/backups/{install,uninstall} via the public
-// backup.ListManifests API, then acts on it using ONLY the public
+// (design D5). It locates the manifest by id among the known backup slots
+// (readWindowsBackupSlots), then acts on it using ONLY the public
 // internal/backup API: RestoreService{}.Restore, DeleteBackup, RenameBackup.
 // internal/backup is NOT modified (governance ALTO — callers only).
 func RunWindowsBackupsAction(homeDir, action, id, description string, w io.Writer) int {
@@ -56,19 +54,18 @@ func RunWindowsBackupsAction(homeDir, action, id, description string, w io.Write
 	}
 }
 
-// findWindowsBackupManifest scans the home backup store (both install and
-// uninstall subdirectories) for a manifest whose ID matches id.
+// findWindowsBackupManifest looks up the manifest whose ID matches id among
+// the known backup slots (readWindowsBackupSlots, shared with
+// RunWindowsBackupsList — see windows_backups.go for why this reads each
+// slot's manifest.json directly instead of via backup.ListManifests).
 func findWindowsBackupManifest(homeDir, id string) (backup.Manifest, bool, error) {
-	root := filepath.Join(homeDir, ".active-stack", "backups")
-	for _, sub := range windowsBackupStoreSubdirs {
-		manifests, err := backup.ListManifests(filepath.Join(root, sub))
-		if err != nil {
-			return backup.Manifest{}, false, err
-		}
-		for _, m := range manifests {
-			if m.ID == id {
-				return m, true, nil
-			}
+	manifests, err := readWindowsBackupSlots(homeDir)
+	if err != nil {
+		return backup.Manifest{}, false, err
+	}
+	for _, m := range manifests {
+		if m.ID == id {
+			return m, true, nil
 		}
 	}
 	return backup.Manifest{}, false, nil

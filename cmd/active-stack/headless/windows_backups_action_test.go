@@ -2,6 +2,11 @@
 // (windows-contract-hub-operations, Tasks 5.1/5.2/5.3 RED). Manifests are
 // fabricated via the public backup API only; internal/backup is NOT modified
 // (governance ALTO — callers only).
+//
+// Fabrication mirrors the REAL shape the snapshotter produces: manifest.json
+// lives directly inside <home>/.active-stack/backups/<sub>, with
+// Manifest.ID == sub ("install" or "uninstall") — see the doc comment on
+// fabricateManifest in windows_backups_test.go for the full rationale.
 package headless_test
 
 import (
@@ -30,7 +35,7 @@ func TestRunWindowsBackupsAction_Restore(t *testing.T) {
 	// Fabricate a snapshot file and target: the target existed with old
 	// content, RestoreService.Restore should overwrite it back from the
 	// uncompressed snapshot.
-	snapshotDir := filepath.Join(home, ".active-stack", "backups", "install", "backup-1")
+	snapshotDir := filepath.Join(home, ".active-stack", "backups", "install")
 	snapshotFile := filepath.Join(snapshotDir, "snapshot-config.json")
 	if err := os.MkdirAll(snapshotDir, 0o755); err != nil {
 		t.Fatalf("mkdir snapshot dir: %v", err)
@@ -45,7 +50,7 @@ func TestRunWindowsBackupsAction_Restore(t *testing.T) {
 	}
 
 	manifest := backup.Manifest{
-		ID:      "backup-1",
+		ID:      "install",
 		RootDir: snapshotDir,
 		Source:  backup.BackupSourceInstall,
 		Entries: []backup.ManifestEntry{
@@ -57,7 +62,7 @@ func TestRunWindowsBackupsAction_Restore(t *testing.T) {
 	}
 
 	var out bytes.Buffer
-	exitCode := headless.RunWindowsBackupsAction(home, "restore", "backup-1", "", &out)
+	exitCode := headless.RunWindowsBackupsAction(home, "restore", "install", "", &out)
 	if exitCode != 0 {
 		t.Fatalf("RunWindowsBackupsAction(restore) exit = %d; output:\n%s", exitCode, out.String())
 	}
@@ -66,8 +71,8 @@ func TestRunWindowsBackupsAction_Restore(t *testing.T) {
 	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
 		t.Fatalf("unmarshal restore response: %v\nbody=%s", err, out.String())
 	}
-	if !resp.Success || resp.ID != "backup-1" {
-		t.Fatalf("restore response = %+v, want success=true id=backup-1", resp)
+	if !resp.Success || resp.ID != "install" {
+		t.Fatalf("restore response = %+v, want success=true id=install", resp)
 	}
 
 	restored, err := os.ReadFile(targetFile)
@@ -83,14 +88,14 @@ func TestRunWindowsBackupsAction_Restore(t *testing.T) {
 // the backup via DeleteBackup and returns success:true.
 func TestRunWindowsBackupsAction_Delete(t *testing.T) {
 	home := t.TempDir()
-	backupDir := filepath.Join(home, ".active-stack", "backups", "install", "backup-del")
-	manifest := backup.Manifest{ID: "backup-del", RootDir: backupDir, Source: backup.BackupSourceInstall}
+	backupDir := filepath.Join(home, ".active-stack", "backups", "install")
+	manifest := backup.Manifest{ID: "install", RootDir: backupDir, Source: backup.BackupSourceInstall}
 	if err := backup.WriteManifest(filepath.Join(backupDir, backup.ManifestFilename), manifest); err != nil {
 		t.Fatalf("write manifest: %v", err)
 	}
 
 	var out bytes.Buffer
-	exitCode := headless.RunWindowsBackupsAction(home, "delete", "backup-del", "", &out)
+	exitCode := headless.RunWindowsBackupsAction(home, "delete", "install", "", &out)
 	if exitCode != 0 {
 		t.Fatalf("RunWindowsBackupsAction(delete) exit = %d; output:\n%s", exitCode, out.String())
 	}
@@ -99,8 +104,8 @@ func TestRunWindowsBackupsAction_Delete(t *testing.T) {
 	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
 		t.Fatalf("unmarshal delete response: %v\nbody=%s", err, out.String())
 	}
-	if !resp.Success || resp.ID != "backup-del" {
-		t.Fatalf("delete response = %+v, want success=true id=backup-del", resp)
+	if !resp.Success || resp.ID != "install" {
+		t.Fatalf("delete response = %+v, want success=true id=install", resp)
 	}
 
 	if _, err := os.Stat(backupDir); !os.IsNotExist(err) {
@@ -112,15 +117,15 @@ func TestRunWindowsBackupsAction_Delete(t *testing.T) {
 // updates the manifest description via RenameBackup and returns success:true.
 func TestRunWindowsBackupsAction_Rename(t *testing.T) {
 	home := t.TempDir()
-	backupDir := filepath.Join(home, ".active-stack", "backups", "uninstall", "backup-ren")
-	manifest := backup.Manifest{ID: "backup-ren", RootDir: backupDir, Source: backup.BackupSourceUpgrade, Description: "old description"}
+	backupDir := filepath.Join(home, ".active-stack", "backups", "uninstall")
+	manifest := backup.Manifest{ID: "uninstall", RootDir: backupDir, Source: backup.BackupSourceUpgrade, Description: "old description"}
 	manifestPath := filepath.Join(backupDir, backup.ManifestFilename)
 	if err := backup.WriteManifest(manifestPath, manifest); err != nil {
 		t.Fatalf("write manifest: %v", err)
 	}
 
 	var out bytes.Buffer
-	exitCode := headless.RunWindowsBackupsAction(home, "rename", "backup-ren", "before upgrade", &out)
+	exitCode := headless.RunWindowsBackupsAction(home, "rename", "uninstall", "before upgrade", &out)
 	if exitCode != 0 {
 		t.Fatalf("RunWindowsBackupsAction(rename) exit = %d; output:\n%s", exitCode, out.String())
 	}
@@ -129,8 +134,8 @@ func TestRunWindowsBackupsAction_Rename(t *testing.T) {
 	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
 		t.Fatalf("unmarshal rename response: %v\nbody=%s", err, out.String())
 	}
-	if !resp.Success || resp.ID != "backup-ren" {
-		t.Fatalf("rename response = %+v, want success=true id=backup-ren", resp)
+	if !resp.Success || resp.ID != "uninstall" {
+		t.Fatalf("rename response = %+v, want success=true id=uninstall", resp)
 	}
 
 	updated, err := backup.ReadManifest(manifestPath)
