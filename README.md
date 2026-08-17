@@ -96,6 +96,27 @@ Cada release publica su [`SHA256SUMS.txt`](https://github.com/Group-Active-IA/ac
 
 ---
 
+## Requisitos previos
+
+**Para compilar desde fuente** (`build.bat` / `build.sh`):
+
+| Dependencia | Para qué | Descarga |
+|---|---|---|
+| **Go 1.26+** | Compila el binario `active-stack` | [go.dev/dl](https://go.dev/dl/) |
+
+**Para que el instalador funcione** (aplica tanto si compilaste desde fuente como si bajaste el binario o el `.exe` de [Releases](https://github.com/Group-Active-IA/active-stack/releases)):
+
+| Dependencia | Para qué | Descarga |
+|---|---|---|
+| **Git** | El instalador clona harnesses de tipo `skill` | [git-scm.com/install/windows](https://git-scm.com/install/windows) |
+| **Node.js** (LTS) | El instalador instala harnesses `external` vía `npm` (ej. OpenSpec CLI) | [nodejs.org/es/download](https://nodejs.org/es/download) |
+
+Además, necesitás tener ya instalado un [agente de IA soportado](#agentes-y-plataformas) (Claude Code, Codex u OpenCode) — sin uno, no hay nada que el instalador pueda configurar.
+
+> 💡 Go **no** hace falta para instalar ni para correr los binarios/`.exe` de Releases — solo para compilar desde fuente.
+
+---
+
 ## Quick start
 
 ```bash
