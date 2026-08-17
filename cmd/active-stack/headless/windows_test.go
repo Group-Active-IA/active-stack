@@ -52,6 +52,87 @@ func TestRunWindowsDetect_JSON(t *testing.T) {
 	}
 }
 
+// windowsDependencyEntryDTO mirrors the JSON shape of one dependency entry in
+// the "windows detect" response, for test decoding only.
+type windowsDependencyEntryDTO struct {
+	Name           string `json:"name"`
+	Required       bool   `json:"required"`
+	Installed      bool   `json:"installed"`
+	Version        string `json:"version"`
+	InstallHint    string `json:"install_hint"`
+	InstallCommand string `json:"install_command"`
+}
+
+type windowsDependenciesResponseDTO struct {
+	Dependencies    []windowsDependencyEntryDTO `json:"dependencies"`
+	AllPresent      bool                        `json:"all_present"`
+	MissingRequired []string                    `json:"missing_required"`
+	MissingOptional []string                    `json:"missing_optional"`
+}
+
+func TestRunWindowsDetect_IncludesDependencies(t *testing.T) {
+	homeDir := t.TempDir()
+	reg := &fakeExecRegistry{adapters: map[model.Agent]install.AgentAdapter{}}
+
+	var out bytes.Buffer
+	if err := headless.RunWindowsDetect(homeDir, reg, &out); err != nil {
+		t.Fatalf("RunWindowsDetect() error = %v", err)
+	}
+
+	var resp struct {
+		Dependencies windowsDependenciesResponseDTO `json:"dependencies"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal detect json: %v\nbody=%s", err, out.String())
+	}
+
+	if len(resp.Dependencies.Dependencies) == 0 {
+		t.Fatal("expected dependencies to be populated")
+	}
+	found := false
+	for _, dep := range resp.Dependencies.Dependencies {
+		if dep.Name == "git" {
+			found = true
+			if !dep.Required {
+				t.Error("git should be reported as required")
+			}
+		}
+	}
+	if !found {
+		t.Fatalf("dependencies = %+v, want an entry named git", resp.Dependencies.Dependencies)
+	}
+}
+
+// TestRunWindowsDetect_DetectedAgentsUnaffectedByDependencies is a regression
+// guard for the additive-field claim: adding "dependencies" to the response
+// must not change detected_agents's shape or values.
+func TestRunWindowsDetect_DetectedAgentsUnaffectedByDependencies(t *testing.T) {
+	homeDir := t.TempDir()
+	if err := os.MkdirAll(homeDir+"/.claude", 0o755); err != nil {
+		t.Fatalf("mkdir .claude: %v", err)
+	}
+
+	reg := &fakeExecRegistry{adapters: map[model.Agent]install.AgentAdapter{
+		model.AgentClaude: fakeExecAdapter{agent: model.AgentClaude},
+	}}
+
+	var out bytes.Buffer
+	if err := headless.RunWindowsDetect(homeDir, reg, &out); err != nil {
+		t.Fatalf("RunWindowsDetect() error = %v", err)
+	}
+
+	var resp struct {
+		DetectedAgents []string `json:"detected_agents"`
+	}
+	if err := json.Unmarshal(out.Bytes(), &resp); err != nil {
+		t.Fatalf("unmarshal detect json: %v\nbody=%s", err, out.String())
+	}
+
+	if len(resp.DetectedAgents) != 1 || resp.DetectedAgents[0] != "claude" {
+		t.Fatalf("detected_agents = %v, want [claude]", resp.DetectedAgents)
+	}
+}
+
 func TestRunWindowsOptions_JSON(t *testing.T) {
 	cat := &fakeExecCatalog{harnesses: []model.Harness{
 		{ID: "openspec", Name: "OpenSpec", Description: model.LocalizedText{"es": "CLI de specs", "en": "Specs CLI"}, InstallModes: []model.InstallMode{model.ModeLite, model.ModeFull}, Agents: []model.Agent{model.AgentClaude}},

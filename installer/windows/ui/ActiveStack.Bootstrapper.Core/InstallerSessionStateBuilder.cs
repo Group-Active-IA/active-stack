@@ -48,6 +48,16 @@ public static class InstallerSessionStateBuilder
             .Where(static id => !string.IsNullOrWhiteSpace(id))
             .ToList();
 
+        var dependencies = (detect.Dependencies?.Dependencies ?? [])
+            .Select(static d => new DependencyChoice(
+                d.Name ?? string.Empty,
+                d.Required,
+                d.Installed,
+                d.Version ?? string.Empty,
+                d.InstallHint ?? string.Empty,
+                d.InstallCommand ?? string.Empty))
+            .ToList();
+
         var permissionTierChoices = (options.PermissionTiers ?? [])
             .Select(static tier => new PermissionTierChoice(
                 tier.Id ?? string.Empty,
@@ -67,7 +77,8 @@ public static class InstallerSessionStateBuilder
             custom,
             options.TierCapable,
             tierCapableAgents,
-            permissionTierChoices);
+            permissionTierChoices,
+            dependencies);
     }
 
     private static string ToAssistantLabel(string id) => id switch
@@ -90,11 +101,14 @@ public sealed record InstallerSessionState(
     IReadOnlyList<ComponentChoice> CustomComponents,
     bool TierCapable = false,
     IReadOnlyList<string>? TierCapableAgents = null,
-    IReadOnlyList<PermissionTierChoice>? PermissionTierChoices = null)
+    IReadOnlyList<PermissionTierChoice>? PermissionTierChoices = null,
+    IReadOnlyList<DependencyChoice>? Dependencies = null)
 {
     public IReadOnlyList<string> TierCapableAgents { get; init; } = TierCapableAgents ?? [];
 
     public IReadOnlyList<PermissionTierChoice> PermissionTierChoices { get; init; } = PermissionTierChoices ?? [];
+
+    public IReadOnlyList<DependencyChoice> Dependencies { get; init; } = Dependencies ?? [];
 }
 
 public sealed record AssistantChoice(string Id, string Label);
@@ -105,10 +119,51 @@ public sealed record ComponentChoice(string Id, string Label, string Description
 
 public sealed record PermissionTierChoice(string Id, string Label, string Description, bool IsDefault, string? Warning, string LongDescription = "");
 
+public sealed record DependencyChoice(string Name, bool Required, bool Installed, string Version, string InstallHint, string InstallCommand);
+
 internal sealed class WindowsDetectResponse
 {
     [JsonPropertyName("detected_agents")]
     public List<string>? DetectedAgents { get; init; }
+
+    [JsonPropertyName("dependencies")]
+    public WindowsDependenciesResponse? Dependencies { get; init; }
+}
+
+internal sealed class WindowsDependenciesResponse
+{
+    [JsonPropertyName("dependencies")]
+    public List<WindowsDependencyEntry>? Dependencies { get; init; }
+
+    [JsonPropertyName("all_present")]
+    public bool AllPresent { get; init; }
+
+    [JsonPropertyName("missing_required")]
+    public List<string>? MissingRequired { get; init; }
+
+    [JsonPropertyName("missing_optional")]
+    public List<string>? MissingOptional { get; init; }
+}
+
+internal sealed class WindowsDependencyEntry
+{
+    [JsonPropertyName("name")]
+    public string? Name { get; init; }
+
+    [JsonPropertyName("required")]
+    public bool Required { get; init; }
+
+    [JsonPropertyName("installed")]
+    public bool Installed { get; init; }
+
+    [JsonPropertyName("version")]
+    public string? Version { get; init; }
+
+    [JsonPropertyName("install_hint")]
+    public string? InstallHint { get; init; }
+
+    [JsonPropertyName("install_command")]
+    public string? InstallCommand { get; init; }
 }
 
 internal sealed class WindowsOptionsResponse

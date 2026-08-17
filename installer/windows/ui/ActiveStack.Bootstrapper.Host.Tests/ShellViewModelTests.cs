@@ -79,17 +79,20 @@ public sealed class ShellViewModelTests
 
         await shell.AdvanceAsync(); // Language(en) -> Hub, no change yet
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
-        await shell.AdvanceAsync(); // Hub -> Assistants (loads session once)
+        await shell.AdvanceAsync(); // Hub -> Dependencies
+        await shell.AdvanceAsync(); // Dependencies -> Assistants (loads session once)
         Assert.Equal(1, client.LoadSessionCallCount);
 
-        shell.GoBack(); // Assistants -> Hub
+        shell.GoBack(); // Assistants -> Dependencies
+        shell.GoBack(); // Dependencies -> Hub
         shell.GoBack(); // Hub -> Language
 
         ((LanguagePageViewModel)shell.CurrentPage).SelectedLanguageId = "es";
         await shell.AdvanceAsync(); // Language(es, changed) -> Hub
 
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
-        await shell.AdvanceAsync(); // Hub -> Assistants: session was invalidated, re-fetched
+        await shell.AdvanceAsync(); // Hub -> Dependencies
+        await shell.AdvanceAsync(); // Dependencies -> Assistants: session was invalidated, re-fetched
 
         Assert.Equal(2, client.LoadSessionCallCount);
     }
@@ -102,17 +105,20 @@ public sealed class ShellViewModelTests
 
         await shell.AdvanceAsync(); // Language(en) -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
-        await shell.AdvanceAsync(); // Hub -> Assistants (loads session once)
+        await shell.AdvanceAsync(); // Hub -> Dependencies
+        await shell.AdvanceAsync(); // Dependencies -> Assistants (loads session once)
         Assert.Equal(1, client.LoadSessionCallCount);
 
-        shell.GoBack(); // Assistants -> Hub
+        shell.GoBack(); // Assistants -> Dependencies
+        shell.GoBack(); // Dependencies -> Hub
         shell.GoBack(); // Hub -> Language
 
         ((LanguagePageViewModel)shell.CurrentPage).SelectedLanguageId = "en"; // same as before
         await shell.AdvanceAsync(); // Language(en, unchanged) -> Hub
 
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
-        await shell.AdvanceAsync(); // Hub -> Assistants: no re-fetch needed
+        await shell.AdvanceAsync(); // Hub -> Dependencies
+        await shell.AdvanceAsync(); // Dependencies -> Assistants: no re-fetch needed
 
         Assert.Equal(1, client.LoadSessionCallCount);
     }
@@ -127,7 +133,8 @@ public sealed class ShellViewModelTests
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
         Assert.True(shell.PrimaryEnabled);
 
-        await shell.AdvanceAsync();
+        await shell.AdvanceAsync(); // Hub -> Dependencies
+        await shell.AdvanceAsync(); // Dependencies -> Assistants
 
         Assert.IsType<AssistantsPageViewModel>(shell.CurrentPage);
         Assert.True(shell.CanGoBack);
@@ -141,6 +148,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync();
 
         Assert.IsType<AssistantsPageViewModel>(shell.CurrentPage);
@@ -163,6 +171,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync();
         await shell.AdvanceAsync(); // -> InstallType
 
@@ -178,6 +187,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync();
         await shell.AdvanceAsync();
         await shell.AdvanceAsync();
@@ -195,6 +205,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync();
 
         var assistants = (AssistantsPageViewModel)shell.CurrentPage;
@@ -215,6 +226,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync(); // Assistants
         await shell.AdvanceAsync(); // InstallType (full, claude not tier-capable in this session)
         await shell.AdvanceAsync(); // -> Review (claude not tier-capable here since BuildSession default tierCapableAgents is empty)
@@ -236,6 +248,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync(); // Assistants
         await shell.AdvanceAsync(); // InstallType
         await shell.AdvanceAsync(); // -> Review
@@ -256,6 +269,7 @@ public sealed class ShellViewModelTests
         Assert.Equal("Siguiente", shell.PrimaryLabel); // non-Complete page: special-case must not leak
 
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync(); // Assistants
         await shell.AdvanceAsync(); // InstallType
         await shell.AdvanceAsync(); // -> Review
@@ -272,6 +286,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync(); // Assistants
         await shell.AdvanceAsync(); // InstallType
         await shell.AdvanceAsync(); // -> Review
@@ -297,6 +312,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync(); // Assistants
         await shell.AdvanceAsync(); // InstallType
         await shell.AdvanceAsync(); // -> Review
@@ -327,6 +343,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync(); // Assistants
         await shell.AdvanceAsync(); // InstallType (full, claude not tier-capable here)
         await shell.AdvanceAsync(); // -> Review
@@ -349,6 +366,7 @@ public sealed class ShellViewModelTests
         var shell = new ShellViewModel(client, persistLanguage: NoopPersist);
         await shell.AdvanceAsync(); // Language -> Hub
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync(); // Assistants
         await shell.AdvanceAsync(); // InstallType
         await shell.AdvanceAsync(); // -> Review
@@ -426,6 +444,7 @@ public sealed class ShellViewModelTests
         Assert.IsType<HubPageViewModel>(shell.CurrentPage);
 
         ((HubPageViewModel)shell.CurrentPage).SelectedEntryId = "install";
+        await shell.AdvanceAsync(); // Hub -> Dependencies
         await shell.AdvanceAsync();
 
         Assert.IsType<AssistantsPageViewModel>(shell.CurrentPage);

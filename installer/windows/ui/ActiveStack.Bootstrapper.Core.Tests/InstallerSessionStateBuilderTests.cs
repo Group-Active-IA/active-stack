@@ -221,6 +221,131 @@ public sealed class InstallerSessionStateBuilderTests
     }
 
     [Fact]
+    public void BuildFromJson_MapsDependenciesIntoDependencyChoices()
+    {
+        const string detectJson = """
+        {
+          "detected_agents": ["claude"],
+          "dependencies": {
+            "dependencies": [
+              { "name": "git", "required": true, "installed": true, "version": "2.43.0", "install_hint": "install git from https://git-scm.com/" },
+              { "name": "node", "required": true, "installed": false, "install_hint": "winget install OpenJS.NodeJS.LTS" }
+            ],
+            "all_present": false,
+            "missing_required": ["node"],
+            "missing_optional": []
+          }
+        }
+        """;
+
+        const string optionsJson = """
+        {
+          "modes": [],
+          "forced_components": [],
+          "custom_components": []
+        }
+        """;
+
+        var state = InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
+
+        Assert.Collection(
+            state.Dependencies,
+            first => Assert.Equal("git", first.Name),
+            second => Assert.Equal("node", second.Name));
+        Assert.True(state.Dependencies[0].Installed);
+        Assert.Equal("2.43.0", state.Dependencies[0].Version);
+        Assert.False(state.Dependencies[1].Installed);
+        Assert.True(state.Dependencies[1].Required);
+    }
+
+    [Fact]
+    public void BuildFromJson_DependencyInstallHintAndCommandRoundTrip()
+    {
+        const string detectJson = """
+        {
+          "detected_agents": ["claude"],
+          "dependencies": {
+            "dependencies": [
+              { "name": "git", "required": true, "installed": false, "install_hint": "install git from https://git-scm.com/", "install_command": "winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements" }
+            ],
+            "all_present": false,
+            "missing_required": ["git"],
+            "missing_optional": []
+          }
+        }
+        """;
+
+        const string optionsJson = """
+        {
+          "modes": [],
+          "forced_components": [],
+          "custom_components": []
+        }
+        """;
+
+        var state = InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
+
+        var git = Assert.Single(state.Dependencies);
+        Assert.Equal("install git from https://git-scm.com/", git.InstallHint);
+        Assert.Equal("winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements", git.InstallCommand);
+    }
+
+    [Fact]
+    public void BuildFromJson_AllDependenciesPresent()
+    {
+        const string detectJson = """
+        {
+          "detected_agents": ["claude"],
+          "dependencies": {
+            "dependencies": [
+              { "name": "curl", "required": true, "installed": true, "version": "8.4.0" },
+              { "name": "go", "required": false, "installed": true, "version": "1.22.5" }
+            ],
+            "all_present": true,
+            "missing_required": [],
+            "missing_optional": []
+          }
+        }
+        """;
+
+        const string optionsJson = """
+        {
+          "modes": [],
+          "forced_components": [],
+          "custom_components": []
+        }
+        """;
+
+        var state = InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
+
+        Assert.Equal(2, state.Dependencies.Count);
+        Assert.All(state.Dependencies, d => Assert.True(d.Installed));
+        Assert.False(state.Dependencies.Single(d => d.Name == "go").Required);
+    }
+
+    [Fact]
+    public void BuildFromJson_AbsentDependenciesDefaultsToEmptyList()
+    {
+        const string detectJson = """
+        {
+          "detected_agents": ["claude"]
+        }
+        """;
+
+        const string optionsJson = """
+        {
+          "modes": [],
+          "forced_components": [],
+          "custom_components": []
+        }
+        """;
+
+        var state = InstallerSessionStateBuilder.BuildFromJson(detectJson, optionsJson);
+
+        Assert.Empty(state.Dependencies);
+    }
+
+    [Fact]
     public void BuildFromJson_AbsentTierFieldsDefaultSafely()
     {
         const string detectJson = """

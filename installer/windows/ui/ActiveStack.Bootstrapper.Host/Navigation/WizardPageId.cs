@@ -10,6 +10,7 @@ public enum WizardPageId
 {
     Language,
     Hub,
+    Dependencies,
     Assistants,
     InstallType,
     Components,

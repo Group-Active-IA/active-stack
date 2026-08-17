@@ -2,6 +2,7 @@ package headless
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"os"
@@ -18,7 +19,60 @@ import (
 )
 
 type windowsDetectResponse struct {
-	DetectedAgents []string `json:"detected_agents"`
+	DetectedAgents []string                    `json:"detected_agents"`
+	Dependencies   windowsDependenciesResponse `json:"dependencies"`
+}
+
+// windowsDependencyEntry is one dependency's wire shape in the "windows
+// detect" response. InstallCommand is a single display string pre-joined
+// from system.InstallCommandsForDep — the .NET side only ever needs text to
+// show, never argv it could execute.
+type windowsDependencyEntry struct {
+	Name           string `json:"name"`
+	Required       bool   `json:"required"`
+	Installed      bool   `json:"installed"`
+	Version        string `json:"version,omitempty"`
+	InstallHint    string `json:"install_hint"`
+	InstallCommand string `json:"install_command,omitempty"`
+}
+
+type windowsDependenciesResponse struct {
+	Dependencies    []windowsDependencyEntry `json:"dependencies"`
+	AllPresent      bool                     `json:"all_present"`
+	MissingRequired []string                 `json:"missing_required"`
+	MissingOptional []string                 `json:"missing_optional"`
+}
+
+// toWindowsDependenciesResponse translates a system.DependencyReport into its
+// JSON wire shape, joining each missing dependency's platform install command
+// (if any) into a single display string via system.InstallCommandsForDep.
+func toWindowsDependenciesResponse(report system.DependencyReport, profile system.PlatformProfile) windowsDependenciesResponse {
+	entries := make([]windowsDependencyEntry, 0, len(report.Dependencies))
+	for _, dep := range report.Dependencies {
+		entry := windowsDependencyEntry{
+			Name:        dep.Name,
+			Required:    dep.Required,
+			Installed:   dep.Installed,
+			Version:     dep.Version,
+			InstallHint: dep.InstallHint,
+		}
+		if !dep.Installed {
+			if cmds := system.InstallCommandsForDep(dep.Name, profile); len(cmds) > 0 {
+				lines := make([]string, 0, len(cmds))
+				for _, cmd := range cmds {
+					lines = append(lines, strings.Join(cmd, " "))
+				}
+				entry.InstallCommand = strings.Join(lines, "\n")
+			}
+		}
+		entries = append(entries, entry)
+	}
+	return windowsDependenciesResponse{
+		Dependencies:    entries,
+		AllPresent:      report.AllPresent,
+		MissingRequired: report.MissingRequired,
+		MissingOptional: report.MissingOptional,
+	}
 }
 
 type windowsOptionsResponse struct {
@@ -70,7 +124,16 @@ type windowsInstallEvent struct {
 
 func RunWindowsDetect(homeDir string, reg install.Registry, w io.Writer) error {
 	supported := detectSupportedAgents(homeDir, reg)
-	return json.NewEncoder(w).Encode(windowsDetectResponse{DetectedAgents: supported})
+
+	detection, err := system.Detect(context.Background())
+	if err != nil {
+		detection = system.DetectionResult{}
+	}
+
+	return json.NewEncoder(w).Encode(windowsDetectResponse{
+		DetectedAgents: supported,
+		Dependencies:   toWindowsDependenciesResponse(detection.Dependencies, detection.System.Profile),
+	})
 }
 
 // detectAgents scans homeDir for agent configs and returns the detected agent

@@ -6,6 +6,46 @@ namespace ActiveStack.Bootstrapper.Host.Tests;
 public sealed class WizardFlowTests
 {
     [Fact]
+    public void NextPage_FromHub_GoesToDependencies()
+    {
+        var selection = new InstallSelection { Mode = "full", Agents = ["claude"] };
+
+        var next = WizardFlow.NextPage(WizardPageId.Hub, selection, ["claude"]);
+
+        Assert.Equal(WizardPageId.Dependencies, next);
+    }
+
+    [Fact]
+    public void NextPage_FromDependencies_GoesToAssistants()
+    {
+        var selection = new InstallSelection { Mode = "full", Agents = ["claude"] };
+
+        var next = WizardFlow.NextPage(WizardPageId.Dependencies, selection, ["claude"]);
+
+        Assert.Equal(WizardPageId.Assistants, next);
+    }
+
+    [Fact]
+    public void PreviousPage_FromDependencies_GoesToHub()
+    {
+        var selection = new InstallSelection { Mode = "full", Agents = ["claude"] };
+
+        var previous = WizardFlow.PreviousPage(WizardPageId.Dependencies, selection, ["claude"]);
+
+        Assert.Equal(WizardPageId.Hub, previous);
+    }
+
+    [Fact]
+    public void PreviousPage_FromAssistants_GoesToDependencies()
+    {
+        var selection = new InstallSelection { Mode = "full", Agents = ["claude"] };
+
+        var previous = WizardFlow.PreviousPage(WizardPageId.Assistants, selection, ["claude"]);
+
+        Assert.Equal(WizardPageId.Dependencies, previous);
+    }
+
+    [Fact]
     public void NextPage_FromInstallType_FullWithTierCapableAgent_GoesToPermissions()
     {
         var selection = new InstallSelection { Mode = "full", Agents = ["claude"] };
@@ -96,23 +136,27 @@ public sealed class WizardFlowTests
     }
 
     [Fact]
-    public void NextPage_FromHub_GoesToAssistants()
+    public void NextPage_FromHub_EventuallyReachesAssistants()
     {
         var selection = new InstallSelection();
 
-        var next = WizardFlow.NextPage(WizardPageId.Hub, selection, []);
+        var afterHub = WizardFlow.NextPage(WizardPageId.Hub, selection, []);
+        var afterDependencies = WizardFlow.NextPage(afterHub, selection, []);
 
-        Assert.Equal(WizardPageId.Assistants, next);
+        Assert.Equal(WizardPageId.Dependencies, afterHub);
+        Assert.Equal(WizardPageId.Assistants, afterDependencies);
     }
 
     [Fact]
-    public void PreviousPage_FromAssistants_GoesToHub()
+    public void PreviousPage_FromAssistants_EventuallyReachesHub()
     {
         var selection = new InstallSelection();
 
-        var previous = WizardFlow.PreviousPage(WizardPageId.Assistants, selection, []);
+        var afterAssistants = WizardFlow.PreviousPage(WizardPageId.Assistants, selection, []);
+        var afterDependencies = WizardFlow.PreviousPage(afterAssistants, selection, []);
 
-        Assert.Equal(WizardPageId.Hub, previous);
+        Assert.Equal(WizardPageId.Dependencies, afterAssistants);
+        Assert.Equal(WizardPageId.Hub, afterDependencies);
     }
 
     [Fact]

@@ -326,6 +326,7 @@ public sealed class ShellViewModel : INotifyPropertyChanged
     {
         WizardPageId.Language => new LanguagePageViewModel(_language),
         WizardPageId.Hub => new HubPageViewModel(_language),
+        WizardPageId.Dependencies => new DependenciesPageViewModel(RequireSession(), _language),
         WizardPageId.Assistants => new AssistantsPageViewModel(RequireSession(), _selection, _language),
         WizardPageId.InstallType => new InstallTypePageViewModel(RequireSession(), _selection, _language),
         WizardPageId.Components => new ComponentsPageViewModel(RequireSession(), _selection, _language),

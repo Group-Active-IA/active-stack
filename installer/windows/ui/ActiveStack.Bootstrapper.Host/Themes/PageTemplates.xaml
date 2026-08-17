@@ -82,6 +82,48 @@
     </ScrollViewer>
   </DataTemplate>
 
+  <!-- Dependencies: read-only report of system.DetectDependencies. Never blocks
+       (CanAdvance is always true) — for a missing dependency, InstallHint and
+       InstallCommand are shown as read-only, selectable text only. No control
+       on this template ever executes anything (gui-installer-dependency-detection). -->
+  <DataTemplate DataType="{x:Type install:DependenciesPageViewModel}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+      <ItemsControl ItemsSource="{Binding Rows}">
+        <ItemsControl.ItemTemplate>
+          <DataTemplate>
+            <StackPanel Margin="0,0,0,14">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Name}" FontWeight="SemiBold" />
+                <TextBlock Margin="8,0,0,0" Text="{Binding StatusLabel}" />
+                <TextBlock Margin="8,0,0,0" Text="{Binding RequiredLabel}" Foreground="#6B7280" FontSize="11" />
+                <TextBlock Margin="8,0,0,0" Text="{Binding Version}" Foreground="#6B7280" FontSize="11" />
+              </StackPanel>
+              <TextBlock Margin="0,4,0,0"
+                         Text="{Binding InstallHint}"
+                         Style="{StaticResource PageBodyTextStyle}"
+                         Visibility="{Binding HasInstallHint, Converter={StaticResource BooleanToVisibilityConverter}}" />
+              <StackPanel Orientation="Horizontal"
+                          Margin="0,4,0,0"
+                          Visibility="{Binding HasInstallCommand, Converter={StaticResource BooleanToVisibilityConverter}}">
+                <TextBlock Text="{Binding DataContext.RunLabel, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                           Foreground="#6B7280"
+                           FontSize="11"
+                           VerticalAlignment="Center" />
+                <TextBox Margin="6,0,0,0"
+                         Text="{Binding InstallCommand, Mode=OneWay}"
+                         IsReadOnly="True"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         FontFamily="Consolas"
+                         FontSize="11" />
+              </StackPanel>
+            </StackPanel>
+          </DataTemplate>
+        </ItemsControl.ItemTemplate>
+      </ItemsControl>
+    </ScrollViewer>
+  </DataTemplate>
+
   <!-- Assistants: multi-select checkboxes, min 1 (CanAdvance gates the footer). -->
   <DataTemplate DataType="{x:Type install:AssistantsPageViewModel}">
     <ScrollViewer VerticalScrollBarVisibility="Auto">
