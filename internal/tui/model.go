@@ -27,6 +27,10 @@ type ModelDeps struct {
 	// AvailableAgents is the intersection of detected + registered agents
 	// (pre-computed before creating the model).
 	AvailableAgents []model.Agent
+	// Detection is the full system/tools/dependencies/configs report shown on
+	// ScreenDetection, pre-computed before creating the model (same lifecycle
+	// as AvailableAgents). Zero value renders sanely (empty sections).
+	Detection system.DetectionResult
 	// BuildPlanFn is the plan-builder function. Defaults to install.BuildPlan.
 	// Tests inject a fake to avoid filesystem side effects.
 	BuildPlanFn func(cat install.Catalog, intent install.Intent, opts install.Options) (install.Plan, error)
@@ -563,11 +567,6 @@ func (m Model) viewWelcome() string {
 	}
 	sb.WriteString("\nUp/Down = navigate  Enter = select\n")
 	return sb.String()
-}
-
-func (m Model) viewDetection() string {
-	return titleStyle.Render("Detecting environment") + "\n\n" +
-		"Press Enter to continue.\n"
 }
 
 func (m Model) viewAgents() string {

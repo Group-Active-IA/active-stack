@@ -6,7 +6,22 @@ import (
 
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
 	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 )
+
+func TestModelDeps_NewFields_Detection(t *testing.T) {
+	detection := system.DetectionResult{
+		System: system.SystemInfo{OS: "linux", Arch: "amd64"},
+	}
+	deps := ModelDeps{Detection: detection}
+	m := newModel(deps)
+	if m.deps.Detection.System.OS != "linux" {
+		t.Errorf("Detection.System.OS = %q, want %q", m.deps.Detection.System.OS, "linux")
+	}
+	if m.deps.Detection.System.Arch != "amd64" {
+		t.Errorf("Detection.System.Arch = %q, want %q", m.deps.Detection.System.Arch, "amd64")
+	}
+}
 
 // TestModelDeps_NewFields verifies that the new fields added to ModelDeps
 // are accessible after construction and do not break existing construction.

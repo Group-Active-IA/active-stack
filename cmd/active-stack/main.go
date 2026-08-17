@@ -10,6 +10,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -19,6 +20,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/catalog"
 	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/system"
 	"github.com/Group-Active-IA/active-stack/internal/tui"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 	"github.com/Group-Active-IA/active-stack/internal/verify"
@@ -218,6 +220,14 @@ func runInstall(args []string) error {
 	detectedAgents := tui.DetectInstalledAgents(homeDir)
 	availableAgents := tui.AvailableAgentsList(detectedAgents, reg.SupportedAgents())
 
+	// Full system/tools/dependencies/configs report for ScreenDetection. On
+	// error, degrade to the zero value rather than failing TUI startup — the
+	// screen renders sanely with empty sections.
+	detection, err := system.Detect(context.Background())
+	if err != nil {
+		detection = system.DetectionResult{}
+	}
+
 	// 5. Build the TUI deps with the embedded skills FS wired.
 	uninstallRegWrapper := uninstallRegistryAdapter{r: reg}
 	deps := tui.ModelDeps{
@@ -225,6 +235,7 @@ func runInstall(args []string) error {
 		Registry:        regWrapper,
 		HomeDir:         homeDir,
 		AvailableAgents: availableAgents,
+		Detection:       detection,
 		BuildPlanFn: func(c install.Catalog, intent install.Intent, opts install.Options) (install.Plan, error) {
 			opts = install.WithEmbeddedSkillsFS(opts, assets.SkillsFS)
 
