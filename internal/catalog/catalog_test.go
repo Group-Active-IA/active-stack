@@ -329,14 +329,16 @@ func TestForMode_ActiveOrchestratorIsFullOnly(t *testing.T) {
 }
 
 // TestForMode_CustomReturnsOnlyGlobal asserts that custom mode returns only the
-// 13 foundation-global harnesses — NOT the 30 starter-only C-30 skills.
+// 15 foundation-global harnesses — NOT the 30 starter-only C-30 skills.
 // C-32: replaces TestForMode_CustomReturnsAll (which incorrectly expected all 43).
+// Bumped 13->15 when discovery-research and web-scraper were catalogued as
+// Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses).
 func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 	c, err := Load()
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
-	const wantFoundationGlobal = 13
+	const wantFoundationGlobal = 15
 	got := c.ForMode(model.ModeCustom)
 	if len(got) != wantFoundationGlobal {
 		t.Errorf("custom mode returned %d harnesses, want %d foundation-global", len(got), wantFoundationGlobal)
@@ -351,6 +353,8 @@ func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 // TestForMode_ExcludesStarterOnlyHarnesses asserts that ForMode excludes
 // starter-only harnesses from all modes (lite, full, custom).
 // C-32: core invariant test — covers all three modes with count assertions.
+// Full/Custom bumped 13->15 when discovery-research and web-scraper were
+// catalogued as Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses).
 func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 	c, err := Load()
 	if err != nil {
@@ -362,8 +366,8 @@ func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 		wantCount int
 	}{
 		{model.ModeLite, 6},
-		{model.ModeFull, 13},
-		{model.ModeCustom, 13},
+		{model.ModeFull, 15},
+		{model.ModeCustom, 15},
 	}
 
 	for _, tc := range cases {

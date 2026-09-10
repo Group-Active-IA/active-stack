@@ -68,8 +68,8 @@ harnesses:
   # ── Skills propias ─────────────────────────────────────────────────────────
   - id: active-orchestrator
     name: active-orchestrator
-    description: { es: "Orquestador delgado de la fase de fundación (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction).", en: "Thin orchestrator for the foundation phase (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction)." }
-    long_description: { es: "La skill que orquesta la fase de fundación de un proyecto nuevo, sin ejecutar el trabajo inline. Se clona desde `Group-Active-IA/active-orchestrator` al directorio de skills del agente y coordina, en orden, `openspec init` → kb-creator → roadmap-generator → find-skill → agent-instruction. Elegila si arrancás un proyecto desde cero y querés que el sustrato quede listo para el ciclo OPSX en una sola corrida guiada. Es exclusiva de Full: en Lite quedaría huérfana porque orquesta skills que solo entran en Full.", en: "The skill that orchestrates a new project's foundation phase without running the work inline. It's cloned from `Group-Active-IA/active-orchestrator` into the agent's skills directory and coordinates, in order, `openspec init` → kb-creator → roadmap-generator → find-skill → agent-instruction. Choose it when you start a project from scratch and want the substrate ready for the OPSX cycle in a single guided run. It's Full-only: in Lite it would be orphaned, since it orchestrates skills that only ship in Full." }
+    description: { es: "Orquestador delgado de la fase de fundación (openspec init → discovery-research opcional → kb-creator → roadmap-generator → find-skill → agent-instruction).", en: "Thin orchestrator for the foundation phase (openspec init → optional discovery-research → kb-creator → roadmap-generator → find-skill → agent-instruction)." }
+    long_description: { es: "La skill que orquesta la fase de fundación de un proyecto nuevo, sin ejecutar el trabajo inline. Se clona desde `Group-Active-IA/active-orchestrator` al directorio de skills del agente y coordina, en orden, `openspec init` → (gate opcional) discovery-research → kb-creator → roadmap-generator → find-skill → agent-instruction. Elegila si arrancás un proyecto desde cero y querés que el sustrato quede listo para el ciclo OPSX en una sola corrida guiada, con la opción de investigar competidores y usuarios antes de documentar. Es exclusiva de Full: en Lite quedaría huérfana porque orquesta skills que solo entran en Full.", en: "The skill that orchestrates a new project's foundation phase without running the work inline. It's cloned from `Group-Active-IA/active-orchestrator` into the agent's skills directory and coordinates, in order, `openspec init` → (optional gate) discovery-research → kb-creator → roadmap-generator → find-skill → agent-instruction. Choose it when you start a project from scratch and want the substrate ready for the OPSX cycle in a single guided run, with the option to research competitors and users before documenting. It's Full-only: in Lite it would be orphaned, since it orchestrates skills that only ship in Full." }
     type: skill
     source: { repo: Group-Active-IA/active-orchestrator, ref: latest, method: clone }
     # Full-only: orquesta kb-creator/roadmap-generator/agent-instruction/find-skill,
@@ -109,6 +109,23 @@ harnesses:
     type: skill
     source: { repo: JuanCruzRobledo/skill-registry, ref: latest, method: clone }
     install_modes: [full]
+
+  - id: web-scraper
+    name: web-scraper
+    description: { es: "Investiga competidores desde una URL, sin API keys ni costos extra.", en: "Investigates competitors from a URL, no API keys or extra cost." }
+    long_description: { es: "La skill que convierte una URL de un competidor en una nota markdown comparable. Se clona desde `Group-Active-IA/web-scraper` al directorio de skills del agente y usa `WebFetch`/`WebSearch` (ya incluidos en el agente) para extraer problema que resuelve, usuarios objetivo, features, pricing y posicionamiento, con un esquema fijo por corrida. Elegila cuando querés investigar un competidor puntual desde una URL, sola o invocada por `discovery-research` durante la fase de Discovery. A diferencia de otras skills de scraping del ecosistema, no depende de un servicio pago de terceros.", en: "The skill that turns a competitor's URL into a comparable markdown note. It's cloned from `Group-Active-IA/web-scraper` into the agent's skills directory and uses `WebFetch`/`WebSearch` (already available to the agent) to extract the problem solved, target users, features, pricing, and positioning, with a fixed schema every run. Choose it when you want to research one competitor from a URL, standalone or invoked by `discovery-research` during the Discovery phase. Unlike other scraping skills in the ecosystem, it doesn't depend on a paid third-party service." }
+    type: skill
+    source: { repo: Group-Active-IA/web-scraper, ref: latest, method: clone }
+    install_modes: [full]
+
+  - id: discovery-research
+    name: discovery-research
+    description: { es: "Fase de Discovery/Investigación (11 puntos) antes de armar la Knowledge Base.", en: "Discovery/Research phase (11 points) before building the Knowledge Base." }
+    long_description: { es: "La skill que corre la fase de Discovery/Investigación que falta antes de `kb-creator`. Se clona desde `Group-Active-IA/discovery-research` al directorio de skills del agente y guía un checklist de 11 puntos—problema, usuarios, casos de uso, competidores, funcionalidades necesarias y opcionales, reglas de negocio, integraciones, restricciones, riesgos y preguntas abiertas—invocando a `web-scraper` cuando hay URLs de competidores para investigar. Elegila cuando `active-orchestrator` ofrece el gate de Discovery al arrancar la fundación, o cuando todavía no tenés claro qué vas a construir. Es opcional dentro de Full: si no la corrés, el flujo sigue exactamente igual que antes.", en: "The skill that runs the Discovery/Research phase missing before `kb-creator`. It's cloned from `Group-Active-IA/discovery-research` into the agent's skills directory and guides an 11-point checklist—problem, users, use cases, competitors, required and optional features, business rules, integrations, constraints, risks, and open questions—invoking `web-scraper` when there are competitor URLs to research. Choose it when `active-orchestrator` offers the Discovery gate at the start of the foundation flow, or when you're still not sure what you're building. It's optional within Full: skip it and the flow behaves exactly as before." }
+    type: skill
+    source: { repo: Group-Active-IA/discovery-research, ref: latest, method: clone }
+    install_modes: [full]
+    depends_on: [web-scraper]
 
   # ── Slash-commands (embebidos en el binario) ─────────────────────────────
   - id: starter-add-command
