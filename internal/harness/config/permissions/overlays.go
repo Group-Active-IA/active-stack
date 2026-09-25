@@ -152,26 +152,29 @@ type opencodePermissionShape struct {
 	LSP               string           `json:"lsp,omitempty"`
 }
 
-// opencodeSettingsShape is the top-level opencode.json structure.
-type opencodeSettingsShape struct {
-	Permission opencodePermissionShape `json:"permission"`
-}
-
 // composeOpencodeOverlay returns the JSON overlay bytes for opencode given a
 // permission tier. Zero-value tier normalizes to TierBalanceado (never TierBypass).
 //
 // LAST-MATCH-WINS: deny rules MUST be the last entries in the bash pattern-object.
 // orderedBashBlock guarantees serialization order (deny-last).
+//
+// The whole "permission" object is wrapped in the __replace__ sentinel (see
+// filemerge.MergeJSONObjects) so that switching tiers on reinstall fully
+// discards the previous tier's block instead of deep-merging into it. Without
+// this, a per-command override left over from a prior tier (e.g. balanceado's
+// "git push": "ask") survives an upgrade to bypass and, because opencode
+// evaluates bash rules last-match-wins, keeps winning over the new tier's
+// blanket "*": "allow" — bypass silently stops being a real bypass.
 func composeOpencodeOverlay(tier model.PermissionTier) []byte {
 	tier = tier.Normalize()
 
-	var shape opencodeSettingsShape
+	var shape opencodePermissionShape
 
 	switch tier {
 	case model.TierEstricto:
 		// Everything → ask; external_directory → deny for extra hardening.
 		// bash: wildcard ask first, then deny floor LAST (last-wins guarantee).
-		shape.Permission = opencodePermissionShape{
+		shape = opencodePermissionShape{
 			Read:              "ask",
 			Edit:              "ask",
 			Glob:              "ask",
@@ -191,7 +194,7 @@ func composeOpencodeOverlay(tier model.PermissionTier) []byte {
 
 	case model.TierBypass:
 		// Everything → allow; only the most catastrophic commands denied LAST.
-		shape.Permission = opencodePermissionShape{
+		shape = opencodePermissionShape{
 			Read:     "allow",
 			Edit:     "allow",
 			Glob:     "allow",
@@ -210,7 +213,7 @@ func composeOpencodeOverlay(tier model.PermissionTier) []byte {
 
 	default: // TierBalanceado (and zero-value after normalize)
 		// Safe operations auto-allowed; deny floor LAST in bash.
-		shape.Permission = opencodePermissionShape{
+		shape = opencodePermissionShape{
 			Read:      "allow",
 			Edit:      "ask",
 			Glob:      "allow",
@@ -233,7 +236,16 @@ func composeOpencodeOverlay(tier model.PermissionTier) []byte {
 		}
 	}
 
-	b, err := json.Marshal(shape)
+	// Wrap the whole permission block in __replace__ so that switching tiers
+	// on reinstall fully discards the previous tier's rules (e.g. balanceado's
+	// per-command "ask" overrides) instead of leaving them merged alongside
+	// the new tier's rules, where last-match-wins would let a stale "ask"
+	// keep overriding the new tier's blanket "*": "allow".
+	overlay := map[string]any{
+		"permission": map[string]any{"__replace__": shape},
+	}
+
+	b, err := json.Marshal(overlay)
 	if err != nil {
 		panic("permissions: composeOpencodeOverlay: marshal failed: " + err.Error())
 	}

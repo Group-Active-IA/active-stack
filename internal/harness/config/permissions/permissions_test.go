@@ -802,6 +802,100 @@ func TestOpencodeLastWinsDenyOrdering(t *testing.T) {
 	}
 }
 
+// TestInstallOpenCode_TierSwitchDiscardsStaleRules is a regression test for
+// the real-world bug where switching from balanceado to bypass on reinstall
+// left balanceado's per-command "ask" overrides (e.g. "git push": "ask") in
+// opencode.json alongside bypass's blanket "*": "allow". Because opencode
+// evaluates bash rules last-match-wins, those stale overrides kept winning —
+// bypass never actually granted full autonomy for those commands. The fix
+// wraps the opencode "permission" overlay in the __replace__ sentinel so a
+// tier switch fully discards the previous tier's rules instead of merging
+// into them.
+func TestInstallOpenCode_TierSwitchDiscardsStaleRules(t *testing.T) {
+	home := t.TempDir()
+	adapters := []permissions.PermissionsAdapter{openCodeAdapter()}
+
+	// First install: balanceado — writes per-command overrides like
+	// "git push": "ask" into permission.bash.
+	if _, err := permissions.Install(home, adapters, model.TierBalanceado); err != nil {
+		t.Fatalf("Install(balanceado) error = %v", err)
+	}
+
+	// Reinstall with bypass — should fully replace the permission block.
+	if _, err := permissions.Install(home, adapters, model.TierBypass); err != nil {
+		t.Fatalf("Install(bypass) error = %v", err)
+	}
+
+	settingsPath := filepath.Join(home, ".config", "opencode", "opencode.json")
+	content, err := os.ReadFile(settingsPath)
+	if err != nil {
+		t.Fatalf("read opencode.json: %v", err)
+	}
+
+	var settings map[string]any
+	if err := json.Unmarshal(content, &settings); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	perm, ok := settings["permission"].(map[string]any)
+	if !ok {
+		t.Fatalf("permission node missing: %#v", settings)
+	}
+	bash, ok := perm["bash"].(map[string]any)
+	if !ok {
+		t.Fatalf("permission.bash missing")
+	}
+
+	if bash["*"] != "allow" {
+		t.Errorf(`bash["*"] = %v, want "allow" (bypass)`, bash["*"])
+	}
+
+	// None of balanceado's per-command overrides must survive the switch —
+	// their presence would silently override bypass's blanket allow.
+	staleKeys := []string{"git push", "git push *", "git status", "git diff *", "go test *", "go build *"}
+	for _, key := range staleKeys {
+		if _, exists := bash[key]; exists {
+			t.Errorf("stale balanceado key %q survived switch to bypass: %v", key, bash[key])
+		}
+	}
+}
+
+// TestInstallOpenCode_TierSwitchDiscardsStaleTopLevelKey is a regression test
+// asserting that a top-level permission key set only by one tier (estricto's
+// "external_directory": "deny") does not leak into a different tier
+// (bypass, which never sets external_directory) after a reinstall.
+func TestInstallOpenCode_TierSwitchDiscardsStaleTopLevelKey(t *testing.T) {
+	home := t.TempDir()
+	adapters := []permissions.PermissionsAdapter{openCodeAdapter()}
+
+	if _, err := permissions.Install(home, adapters, model.TierEstricto); err != nil {
+		t.Fatalf("Install(estricto) error = %v", err)
+	}
+	if _, err := permissions.Install(home, adapters, model.TierBypass); err != nil {
+		t.Fatalf("Install(bypass) error = %v", err)
+	}
+
+	settingsPath := filepath.Join(home, ".config", "opencode", "opencode.json")
+	content, err := os.ReadFile(settingsPath)
+	if err != nil {
+		t.Fatalf("read opencode.json: %v", err)
+	}
+
+	var settings map[string]any
+	if err := json.Unmarshal(content, &settings); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+
+	perm, ok := settings["permission"].(map[string]any)
+	if !ok {
+		t.Fatalf("permission node missing: %#v", settings)
+	}
+
+	if _, exists := perm["external_directory"]; exists {
+		t.Errorf("stale estricto key %q survived switch to bypass: %v", "external_directory", perm["external_directory"])
+	}
+}
+
 // extractBashOrderedPairs parses the opencode.json and returns the ordered list
 // of [key, value] string pairs from the "permission.bash" object, preserving
 // insertion order. Uses json.Decoder's token stream to maintain order.
