@@ -263,14 +263,19 @@ func buildStdioOverlay(mcp model.MCP, adapter AgentAdapter) map[string]any {
 	case StrategyMergeIntoSettings:
 		if adapter.Agent() == model.AgentOpenCode {
 			// OpenCode local server format: type:"local" + enabled flag.
+			// OpenCode's McpLocalConfig schema requires "command" as a single
+			// string array combining the binary and its arguments — there is
+			// no separate "args" field. A split command/args shape fails that
+			// schema's validation, so OpenCode silently discards the whole
+			// entry (logged as "Ignoring MCP config entry without type").
 			localEntry := map[string]any{
 				"type":    "local",
-				"command": mcp.Command,
-				"args":    mcp.Args,
+				"command": append([]string{mcp.Command}, mcp.Args...),
 				"enabled": true,
 			}
 			if len(mcp.Env) > 0 {
-				localEntry["env"] = mcp.Env
+				// OpenCode's schema names this field "environment", not "env".
+				localEntry["environment"] = mcp.Env
 			}
 			// Wrap in __replace__ so any stale remote entry (e.g. {"type":"remote","url":...})
 			// is fully discarded on reinstall — a deep merge would leave orphan keys.

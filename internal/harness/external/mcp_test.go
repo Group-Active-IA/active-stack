@@ -484,10 +484,12 @@ func TestBuildStdioOverlay_MergeIntoSettings_Generic(t *testing.T) {
 
 // TestBuildStdioOverlay_OpenCode asserts that buildStdioOverlay for an
 // OpenCode adapter wraps the localEntry in the __replace__ sentinel:
-//   {"mcp": {"<name>": {"__replace__": {"type":"local","command":...,"args":[...],"enabled":true}}}}
+//   {"mcp": {"<name>": {"__replace__": {"type":"local","command":[...],"enabled":true}}}}
 //
-// Updated: localEntry is now wrapped in {"__replace__": ...} so that
-// MergeJSONObjects replaces any stale remote entry atomically (no orphan keys).
+// OpenCode's own McpLocalConfig schema requires "command" to be a single
+// string array combining the binary and its arguments — there is no
+// separate "args" field. A split command/args shape fails that schema's
+// validation and OpenCode silently discards the whole entry.
 func TestBuildStdioOverlay_OpenCode(t *testing.T) {
 	mcp := model.MCP{Name: "engram", Command: "engram", Args: []string{"mcp"}}
 	adapter := &fakeAdapter{agent: model.AgentOpenCode, strategy: StrategyMergeIntoSettings}
@@ -510,8 +512,12 @@ func TestBuildStdioOverlay_OpenCode(t *testing.T) {
 	if server["type"] != "local" {
 		t.Errorf("type = %v, want local", server["type"])
 	}
-	if server["command"] != "engram" {
-		t.Errorf("command = %v, want engram", server["command"])
+	command, ok := server["command"].([]string)
+	if !ok || len(command) != 2 || command[0] != "engram" || command[1] != "mcp" {
+		t.Errorf("command = %v, want [engram mcp] (OpenCode schema needs binary+args combined)", server["command"])
+	}
+	if _, hasArgs := server["args"]; hasArgs {
+		t.Error("OpenCode local overlay must not have a separate 'args' key")
 	}
 	if server["enabled"] != true {
 		t.Errorf("enabled = %v, want true", server["enabled"])
