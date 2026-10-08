@@ -329,16 +329,17 @@ func TestForMode_ActiveOrchestratorIsFullOnly(t *testing.T) {
 }
 
 // TestForMode_CustomReturnsOnlyGlobal asserts that custom mode returns only the
-// 15 foundation-global harnesses — NOT the 30 starter-only C-30 skills.
+// 16 foundation-global harnesses — NOT the 30 starter-only C-30 skills.
 // C-32: replaces TestForMode_CustomReturnsAll (which incorrectly expected all 43).
 // Bumped 13->15 when discovery-research and web-scraper were catalogued as
-// Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses).
+// Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Bumped 15->16 when design-mockups was
+// catalogued (add-design-mockups-toggle).
 func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 	c, err := Load()
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
-	const wantFoundationGlobal = 15
+	const wantFoundationGlobal = 16
 	got := c.ForMode(model.ModeCustom)
 	if len(got) != wantFoundationGlobal {
 		t.Errorf("custom mode returned %d harnesses, want %d foundation-global", len(got), wantFoundationGlobal)
@@ -354,7 +355,8 @@ func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 // starter-only harnesses from all modes (lite, full, custom).
 // C-32: core invariant test — covers all three modes with count assertions.
 // Full/Custom bumped 13->15 when discovery-research and web-scraper were
-// catalogued as Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses).
+// catalogued as Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Full/Custom bumped 15->16 when design-mockups was
+// catalogued (add-design-mockups-toggle); Lite stays at 6.
 func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 	c, err := Load()
 	if err != nil {
@@ -366,8 +368,8 @@ func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 		wantCount int
 	}{
 		{model.ModeLite, 6},
-		{model.ModeFull, 15},
-		{model.ModeCustom, 15},
+		{model.ModeFull, 16},
+		{model.ModeCustom, 16},
 	}
 
 	for _, tc := range cases {
@@ -721,5 +723,39 @@ starters:
 
 	if _, err := parse([]byte(fullOnlyYAML)); err != nil {
 		t.Errorf("unexpected error for starter-only harness with [full] only: %v", err)
+	}
+}
+
+// TestDesignMockups_InCatalog asserts the opt-in design-mockups harness is
+// catalogued as a Claude-only config harness that depends on sdd-orchestrator
+// and ships in Full (Custom matches everything) but not in Lite.
+func TestDesignMockups_InCatalog(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("Load(): %v", err)
+	}
+	h, ok := c.ByID("design-mockups")
+	if !ok {
+		t.Fatal("design-mockups must exist in the catalog")
+	}
+	if h.Type != model.HarnessConfig {
+		t.Errorf("Type = %q, want %q", h.Type, model.HarnessConfig)
+	}
+	if !h.SupportsAgent(model.AgentClaude) {
+		t.Error("design-mockups must support claude")
+	}
+	for _, a := range []model.Agent{model.AgentOpenCode, model.AgentCodex, model.AgentGemini} {
+		if h.SupportsAgent(a) {
+			t.Errorf("design-mockups must NOT support %q", a)
+		}
+	}
+	if len(h.DependsOn) != 1 || h.DependsOn[0] != "sdd-orchestrator" {
+		t.Errorf("DependsOn = %v, want [sdd-orchestrator]", h.DependsOn)
+	}
+	if !h.InMode(model.ModeFull) || !h.InMode(model.ModeCustom) {
+		t.Error("design-mockups must be in full and custom")
+	}
+	if h.InMode(model.ModeLite) {
+		t.Error("design-mockups must NOT be in lite")
 	}
 }

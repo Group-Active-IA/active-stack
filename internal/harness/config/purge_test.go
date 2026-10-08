@@ -173,3 +173,28 @@ func TestInject_PreservesOwnedNestedChildren(t *testing.T) {
 		}
 	}
 }
+
+// TestPurgeStaleSections_KeepsDesignMockups verifies the design-mockups section
+// is an owned section: purging legacy sections must leave both it and the
+// orchestrator intact while still removing the legacy persona block.
+func TestPurgeStaleSections_KeepsDesignMockups(t *testing.T) {
+	content := "# Mine\n\n" +
+		"<!-- active-stack:sdd-orchestrator -->\norchestrator body\n<!-- /active-stack:sdd-orchestrator -->\n\n" +
+		"<!-- active-stack:design-mockups -->\ndesign body\n<!-- /active-stack:design-mockups -->\n\n" +
+		"<!-- active-stack:persona -->\nlegacy\n<!-- /active-stack:persona -->\n"
+
+	got := config.PurgeStaleSections(content)
+
+	for _, keep := range []string{
+		"<!-- active-stack:sdd-orchestrator -->", "<!-- /active-stack:sdd-orchestrator -->",
+		"<!-- active-stack:design-mockups -->", "<!-- /active-stack:design-mockups -->",
+		"design body", "orchestrator body",
+	} {
+		if !strings.Contains(got, keep) {
+			t.Errorf("purge removed owned content %q", keep)
+		}
+	}
+	if strings.Contains(got, "active-stack:persona") {
+		t.Error("legacy persona section must still be purged")
+	}
+}

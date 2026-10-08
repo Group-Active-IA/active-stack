@@ -57,6 +57,9 @@ Anti-patterns — these ALWAYS inflate context:
 /opsx:apply    (implement tasks from the change)
        │
        ▼
+openspec-verify  (validate implementation vs specs/design/tasks)
+       │
+       ▼
 /opsx:archive  (sync specs + close the change)
 ```
 

@@ -741,3 +741,58 @@ func TestCheckForSkillHarness_MultipleAdapters(t *testing.T) {
 		t.Error("Ready = true, want false when opencode SKILL.md is missing")
 	}
 }
+
+// TestChecksForHarness_DesignMockups_ChecksOwnMarker verifies a section harness
+// is verified against its OWN marker, not the orchestrator's.
+func TestChecksForHarness_DesignMockups_ChecksOwnMarker(t *testing.T) {
+	h := model.Harness{ID: "design-mockups", Type: model.HarnessConfig, Agents: []model.Agent{model.AgentClaude}}
+	orch := "<!-- active-stack:sdd-orchestrator -->\nx\n<!-- /active-stack:sdd-orchestrator -->\n"
+	dm := "<!-- active-stack:design-mockups -->\ny\n<!-- /active-stack:design-mockups -->\n"
+
+	cases := []struct {
+		name     string
+		content  string
+		wantFail bool
+	}{
+		{"both sections pass", orch + dm, false},
+		{"only orchestrator fails", orch, true},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			homeDir := t.TempDir()
+			fa := newFakeAdapter(t, homeDir, model.AgentClaude)
+			if err := os.WriteFile(fa.InstructionsPath(homeDir), []byte(tc.content), 0o644); err != nil {
+				t.Fatal(err)
+			}
+			checks := verify.ChecksForHarness(h, []verify.Adapter{fa}, homeDir)
+			if len(checks) != 1 || checks[0].ID != "config:design-mockups:claude" {
+				t.Fatalf("checks = %+v, want exactly config:design-mockups:claude", checks)
+			}
+			r := runChecks(t, checks)[0]
+			if tc.wantFail {
+				if r.Status != verify.CheckStatusFailed {
+					t.Fatalf("status = %q, want failed", r.Status)
+				}
+				if !strings.Contains(r.Error, "active-stack:design-mockups") {
+					t.Errorf("error %q must name the design-mockups marker", r.Error)
+				}
+			} else if r.Status != verify.CheckStatusPassed {
+				t.Errorf("status = %q (%s), want passed", r.Status, r.Error)
+			}
+		})
+	}
+}
+
+// TestChecksForHarness_SkipsUnsupportedAgents verifies no checks are produced
+// for agents the harness does not support.
+func TestChecksForHarness_SkipsUnsupportedAgents(t *testing.T) {
+	homeDir := t.TempDir()
+	claude := newFakeAdapter(t, homeDir, model.AgentClaude)
+	oc := newFakeAdapter(t, homeDir, model.AgentOpenCode)
+	h := model.Harness{ID: "design-mockups", Type: model.HarnessConfig, Agents: []model.Agent{model.AgentClaude}}
+
+	checks := verify.ChecksForHarness(h, []verify.Adapter{claude, oc}, homeDir)
+	if len(checks) != 1 || checks[0].ID != "config:design-mockups:claude" {
+		t.Errorf("checks = %+v, want only the claude check", checks)
+	}
+}

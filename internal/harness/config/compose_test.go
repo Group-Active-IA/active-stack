@@ -231,3 +231,21 @@ func TestCompose_BaseAlwaysPresent(t *testing.T) {
 		t.Error("base is always present even with no toggles")
 	}
 }
+
+// TestCompose_ClaudeDiagramIncludesVerify: the claude OPSX diagram must show
+// the verify step (the openspec-verify skill) between apply and archive.
+func TestCompose_ClaudeDiagramIncludesVerify(t *testing.T) {
+	got, err := config.Compose([]string{}, "claude")
+	if err != nil {
+		t.Fatalf("Compose: %v", err)
+	}
+	apply := strings.Index(got, "/opsx:apply    (implement")
+	verify := strings.Index(got, "openspec-verify  (")
+	archive := strings.Index(got, "/opsx:archive  (sync")
+	if apply == -1 || verify == -1 || archive == -1 {
+		t.Fatalf("diagram steps missing: apply=%d verify=%d archive=%d", apply, verify, archive)
+	}
+	if !(apply < verify && verify < archive) {
+		t.Errorf("verify must sit between apply and archive: apply=%d verify=%d archive=%d", apply, verify, archive)
+	}
+}

@@ -37,6 +37,10 @@ uninstall-subcommand
 
 claude-agent-switch-research
   — independiente, cualquier ola —
+
+add-design-mockups-toggle (harness `design-mockups`, solo Claude)
+          │
+          └──► stitch-design            (futuro; harness hermano para opencode)
 ```
 
 > Notas de dependencia:
@@ -402,6 +406,38 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ---
 
+### `add-design-mockups-toggle` — Harness `design-mockups` (etapa de diseño con aprobación humana)
+
+- **Estado**: IMPLEMENTADO (pend. archive OPSX). Nombre histórico: la primera versión era un toggle.
+- **Entregable**: harness `design-mockups` (`config`, solo `claude`, `install_modes: [full]`,
+  `depends_on: [sdd-orchestrator]`). Inyecta la sección propia `active-stack:design-mockups` en el
+  `CLAUDE.md`: etapa de diseño entre `propose` y `apply`, mockups en
+  `openspec/changes/<name>/mockups/` (Artifact tipo Design, fallback HTML estático) y gate de
+  aprobación humana antes de `apply`. Suma una línea condicional: si `emil-design-eng` o una skill
+  de taste están instaladas, se cargan (sin dependencia dura). También corrige el diagrama OPSX del
+  base claude (agrega `openspec-verify`).
+- **Decisión (D1)**: harness propio, porque los toggles del orquestador no se exponen en TUI/GUI y
+  el paso quedaba activo para todos. **Alternativa descartada**: toggle `design-mockups` dentro de
+  `sdd-orchestrator` con texto solo para `variantKey == "claude"`.
+- **Governance**: MEDIO (`harness/config`, `verify`). La escritura en el `CLAUDE.md` del usuario es de
+  impacto ALTO pero reutiliza la API existente de `backup` + `filemerge` (sin modificar esos paquetes).
+- **Deuda registrada**: los adapters no se filtran por harness en `sdd-orchestrator` ni en el plan de
+  install (p. ej. gemini podría recibir el bloque si se elige junto a claude). Este change filtra solo
+  la ruta por sección y `verify`.
+- **Mejora opcional (repos externos, no editables acá)**: que `roadmap-generator` /
+  `active-orchestrator` (Group-Active-IA) marquen `UI: sí/no` por change como pista; la pregunta en
+  runtime sigue siendo la fuente de verdad.
+
+---
+
+### `stitch-design` — Harness hermano para opencode (FUTURO, NO implementado)
+
+- **Estado**: PENDIENTE. Depende de validar primero el flujo de `design-mockups` en Claude.
+- **Scope**: harness `config` para `opencode` con las herramientas MCP `stitch__*`; reutiliza la ruta
+  por sección de `internal/harness/config` (`sectionFragments`).
+
+---
+
 ## Tabla resumen
 
 | Change | Ola | Governance | Depende de | Habilita |
@@ -413,6 +449,8 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 | `tui-menu-hub` | 2 | BAJO/MEDIO | `uninstall-subcommand` | `tui-update-stack`, `tui-configure-models` | ✅ IMPLEMENTADO (pend. archive) |
 | `tui-update-stack` | 3 | MEDIO | `tui-menu-hub` | — |
 | `tui-configure-models` | 3 | MEDIO | `tui-menu-hub` | — |
+| `add-design-mockups-toggle` | libre | MEDIO | `sdd-orchestrator` (catálogo) | `stitch-design` | ✅ IMPLEMENTADO (pend. archive) |
+| `stitch-design` | futuro | MEDIO | `add-design-mockups-toggle` (validar en Claude) | — | PENDIENTE |
 
 **Camino crítico**: `uninstall-subcommand → tui-menu-hub → {tui-update-stack ‖ tui-configure-models}` (3 changes; los dos últimos en paralelo).
 

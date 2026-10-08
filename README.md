@@ -170,6 +170,7 @@ Lo que Active Stack puede instalar hoy (fuente de verdad: [`internal/catalog/har
 | **Context7** | external | lite · full | Documentación de librerías al día (MCP remoto) |
 | **SDD Orchestrator** | config | lite · full | Orquestador SDD componible por toggles (TDD, Engram, model-routing, delegación, governance) |
 | **Permissions** | config | lite · full | Permisos seguros por defecto (bloquea `.env`, confirma git destructivo) — **no opcional** |
+| **Design Mockups** | config | full (opt-in) | Solo Claude. Etapa de diseño de mockups entre `propose` y `apply` con gate de aprobación humana; los mockups viven en `openspec/changes/<name>/mockups/`. Requiere la herramienta Artifact (con fallback a HTML estático) |
 | **active-orchestrator** | skill | full | Orquestador delgado de la fase de fundación |
 | **kb-creator** | skill | full | Genera la knowledge-base canónica del dominio |
 | **roadmap-generator** | skill | full | Genera `CHANGES.md` (backlog técnico) desde la KB |

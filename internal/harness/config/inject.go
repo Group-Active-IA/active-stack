@@ -29,11 +29,25 @@ var SnapshotterCreate = func(snapshotDir string, paths []string) error {
 // live inside the `sdd-orchestrator` block (toggle-controlled). They are ours,
 // so they must never be purged as standalone stale sections.
 //
-// When a new owned section is added in the future, register it here.
+// Standalone section harnesses are NOT listed here: register them in
+// sectionFragments (assets.go) and isOwnedSection picks them up.
 var ownedSectionIDs = map[string]bool{
 	"sdd-orchestrator":      true,
 	"sdd-delegation":        true,
 	"sdd-model-assignments": true,
+}
+
+// isOwnedSection reports whether id is a section this installer manages: either
+// an orchestrator-nested one (ownedSectionIDs) or a standalone harness section
+// registered in sectionFragments (e.g. design-mockups). Deriving the second set
+// from the registry means adding a section harness needs a single edit, and
+// reinstalling/uninstalling the orchestrator never purges it.
+func isOwnedSection(id string) bool {
+	if ownedSectionIDs[id] {
+		return true
+	}
+	_, ok := sectionFragments[id]
+	return ok
 }
 
 // PurgeStaleSections removes every active-stack-marked section in content whose ID
@@ -50,7 +64,7 @@ var ownedSectionIDs = map[string]bool{
 // half-written marker is ignored by filemerge.MarkedSectionIDs and left intact.
 func PurgeStaleSections(content string) string {
 	for _, id := range filemerge.MarkedSectionIDs(content) {
-		if !ownedSectionIDs[id] {
+		if !isOwnedSection(id) {
 			content = filemerge.InjectMarkdownSection(content, id, "")
 		}
 	}
@@ -66,17 +80,25 @@ type InjectResult struct {
 }
 
 // Inject writes the composed content into the sdd-orchestrator section of the
-// file at path, with an atomic backup-first guarantee.
+// file at path, with an atomic backup-first guarantee. It is a thin wrapper
+// over InjectSection kept for the orchestrator callers.
+func Inject(path, composed, snapshotDir string) (InjectResult, error) {
+	return InjectSection(path, "sdd-orchestrator", composed, snapshotDir)
+}
+
+// InjectSection writes content into the sectionID section of the file at path,
+// with an atomic backup-first guarantee.
 //
 // Flow:
 //  1. Empty path → skip (no-op, no error).
 //  2. File exists → create backup at snapshotDir BEFORE any write.
 //  3. Read existing content (or start from empty string if file is new).
-//  4. Inject the sdd-orchestrator section via filemerge.InjectMarkdownSection.
+//  4. Purge stale (non-owned) sections, then inject the sectionID section via
+//     filemerge.InjectMarkdownSection. Other owned sections are left untouched.
 //  5. Write atomically via filemerge.WriteFileAtomic (skips if byte-identical).
 //
 // Backup failure → return error immediately, file is NOT touched.
-func Inject(path, composed, snapshotDir string) (InjectResult, error) {
+func InjectSection(path, sectionID, content, snapshotDir string) (InjectResult, error) {
 	if path == "" {
 		return InjectResult{}, nil
 	}
@@ -96,8 +118,8 @@ func Inject(path, composed, snapshotDir string) (InjectResult, error) {
 	// above already snapshotted the pre-purge state.
 	existing = PurgeStaleSections(existing)
 
-	// Inject (or replace) the sdd-orchestrator section.
-	updated := filemerge.InjectMarkdownSection(existing, "sdd-orchestrator", composed)
+	// Inject (or replace) the section.
+	updated := filemerge.InjectMarkdownSection(existing, sectionID, content)
 
 	// Write atomically (skips if byte-identical).
 	wr, err := filemerge.WriteFileAtomic(path, []byte(updated), 0o644)

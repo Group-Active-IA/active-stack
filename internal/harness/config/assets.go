@@ -22,6 +22,14 @@ var knownVariants = map[string]bool{
 	"generic":     true,
 }
 
+// sectionFragments maps a config harness ID to the asset fragment injected as
+// its own idempotent section (active-stack:<id>) in each supported agent's
+// instructions file. A harness absent from this map is treated as the
+// sdd-orchestrator (composed from toggles per agent variant).
+var sectionFragments = map[string]string{
+	"design-mockups": "design-mockups.md",
+}
+
 // loadVariant reads the sdd-orchestrator.md asset for the given variant key.
 // If the variant is not known, it falls back to "generic".
 func loadVariant(variantKey string) (string, error) {

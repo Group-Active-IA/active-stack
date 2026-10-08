@@ -74,6 +74,13 @@ Es un harness de **configuración** que arma el orquestador SDD con piezas
 El resultado es el bloque de instrucciones del orquestador que se inyecta en
 `CLAUDE.md` / `AGENTS.md`, compuesto a partir de los toggles elegidos.
 
+> Hoy los toggles salen del catálogo (`toggles:` en `harnesses.yaml`): el usuario
+> **no** los elige en la TUI/GUI, que solo muestran harnesses. Por eso una capacidad
+> opt-in (que el usuario deba poder activar o no) va como **harness `config` propio**
+> con sección propia en el archivo de instrucciones (`active-stack:<id>`), registrada
+> en `sectionFragments` de `internal/harness/config` (`isOwnedSection` la protege del
+> purge). Primer caso: `design-mockups` (solo Claude, depende de `sdd-orchestrator`).
+
 ---
 
 ## 3. Catálogo de harnesses (embebido)
@@ -95,6 +102,11 @@ que es la fuente de verdad de qué harnesses existen. Cada entrada declara:
   toggles: [tdd, engram, model-routing, delegation, governance]
   install_modes: [lite, full]
   ...
+- id: design-mockups
+  type: config           # sección propia: <!-- active-stack:design-mockups -->
+  install_modes: [full]
+  agents: [claude]
+  depends_on: [sdd-orchestrator]
 - id: engram
   type: external
   install: { method: homebrew | download, ... }

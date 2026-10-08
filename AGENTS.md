@@ -73,6 +73,15 @@ partir de **toggles modulares** (`tdd`, `engram`, `model-routing`, `delegation`,
 `governance`). El resultado es el bloque de instrucciones del orquestador que se
 inyecta en `CLAUDE.md`/`AGENTS.md` del proyecto destino.
 
+Los toggles del `sdd-orchestrator` **no se exponen en la TUI ni en la GUI** (salen
+literales del catálogo); los harnesses sí. Por eso las capacidades opt-in se
+entregan como harness propio. Ejemplo: **`design-mockups`** — `config`, solo
+`claude`, opt-in, depende de `sdd-orchestrator`; agrega la etapa de diseño de
+mockups (con gate de aprobación humana) entre `propose` y `apply`. Se inyecta como
+sección propia `active-stack:design-mockups` del `CLAUDE.md`, separada de la del
+orquestador (se registra en `sectionFragments` y `isOwnedSection` la reconoce, así
+el orquestador no la purga).
+
 ---
 
 ## 3. Reglas críticas NO negociables
