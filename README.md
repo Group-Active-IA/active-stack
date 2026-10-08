@@ -152,7 +152,7 @@ El catálogo agrupa los harnesses en tres presets. Convención: un harness de Li
 | Modo | Qué instala | Para qué |
 |------|-------------|----------|
 | **Lite** | El **sustrato** mínimo: `openspec`, `engram`, `context7`, `sdd-orchestrator`, `permissions` | Empezar a trabajar con la metodología ya |
-| **Full** | Sustrato **+ fundación guiada**: `active-orchestrator` y las skills que orquesta (`kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-registry`, `find-skill`, `skill-creator`) | El ecosistema completo, proyecto desde cero |
+| **Full** | Sustrato **+ fundación guiada**: `active-orchestrator` y las skills que orquesta (`kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-registry`, `find-skill`, `skill-creator`) más las skills de diseño opcionales para Claude (`emil-design-eng`, `design-taste-frontend-v1`) | El ecosistema completo, proyecto desde cero |
 | **Custom** | Vos elegís cada harness | Control total — con una excepción 👇 |
 
 > 🔒 **`permissions` no es desactivable.** Incluso en Custom, el harness de seguridad (permisos *security-first*) queda forzado. La seguridad no es opcional.
@@ -178,6 +178,8 @@ Lo que Active Stack puede instalar hoy (fuente de verdad: [`internal/catalog/har
 | **skill-registry** | skill | full | Crea/actualiza el registro de skills del proyecto |
 | **find-skill** | skill (terceros) | full | Busca y recomienda skills relevantes |
 | **skill-creator** | skill (terceros) | full | Crea nuevas skills siguiendo la spec de Agent Skills |
+| **emil-design-eng** | skill (terceros) | full, solo Claude | Principios de ingeniería de diseño de Emil Kowalski (pineada a un commit) |
+| **design-taste-frontend-v1** | skill (terceros) | full, solo Claude | Criterio de diseño frontend (taste skill v1, pineada a un commit) |
 
 El **`sdd-orchestrator`** es el harness clave: es de tipo `config` y se compone a partir de **toggles modulares** (`tdd`, `engram`, `model-routing`, `delegation`, `governance`). El resultado es el bloque de instrucciones del orquestador que se inyecta en el `CLAUDE.md` / `AGENTS.md` de tu proyecto.
 

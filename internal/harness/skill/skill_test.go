@@ -668,3 +668,200 @@ func TestNewInstaller_NilRunnerAndFS_Panics(t *testing.T) {
 
 // Ensure the embed FS type is exported so callers can pass fstest.MapFS.
 var _ fs.FS = fstest.MapFS{}
+
+// ── design-skills-harnesses: commit-SHA refs ─────────────────────────────────
+
+const testSHA = "b482f7a970abb98c4108d4a9f761e458c64cefc8"
+
+func shaHarness(ref string, agents ...model.Agent) model.Harness {
+	return model.Harness{
+		ID: "pinned", Name: "pinned", Type: model.HarnessSkill,
+		Agents:       agents,
+		Source:       &model.Source{Repo: "owner/pinned", Ref: ref, Method: "clone", Path: "skills/pinned"},
+		InstallModes: []model.InstallMode{model.ModeFull},
+	}
+}
+
+func TestClone_WithSHARef_FetchesCommit(t *testing.T) {
+	home := t.TempDir()
+	skillsDir := filepath.Join(home, "skills")
+
+	runner := &stubRunner{
+		sideEffect: func(args []string) {
+			// The checked-out tree appears on the checkout call.
+			if len(args) >= 4 && args[3] == "checkout" {
+				dir := filepath.Join(args[2], "skills", "pinned")
+				_ = os.MkdirAll(dir, 0o755)
+				_ = os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte("pinned content"), 0o644)
+			}
+		},
+	}
+	adapter := fakeAdapter{agent: model.AgentClaude, skillsDir: skillsDir}
+
+	ins := skill.NewInstaller(runner, nil)
+	if _, err := ins.Install(context.Background(), shaHarness(testSHA), []skill.AgentAdapter{adapter}, home, t.TempDir()); err != nil {
+		t.Fatalf("Install() error: %v", err)
+	}
+
+	if len(runner.called) != 3 {
+		t.Fatalf("expected 3 git calls (init, fetch, checkout), got %d: %v", len(runner.called), runner.called)
+	}
+	tmp := runner.called[0][2]
+	want := [][]string{
+		{"git", "init", tmp},
+		{"git", "-C", tmp, "fetch", "--depth", "1", "https://github.com/owner/pinned", testSHA},
+		{"git", "-C", tmp, "checkout", "--detach", "FETCH_HEAD"},
+	}
+	for i, w := range want {
+		if strings.Join(runner.called[i], " ") != strings.Join(w, " ") {
+			t.Errorf("call %d = %v, want %v", i, runner.called[i], w)
+		}
+	}
+	for _, c := range runner.called {
+		for _, a := range c {
+			if a == "--branch" {
+				t.Errorf("SHA ref must not use --branch; call: %v", c)
+			}
+		}
+	}
+	got, err := os.ReadFile(filepath.Join(skillsDir, "pinned", "SKILL.md"))
+	if err != nil {
+		t.Fatalf("SKILL.md not installed: %v", err)
+	}
+	if string(got) != "pinned content" {
+		t.Errorf("SKILL.md = %q, want %q", got, "pinned content")
+	}
+}
+
+func TestClone_WithSHARef_FetchError_ReturnsError(t *testing.T) {
+	home := t.TempDir()
+	skillsDir := filepath.Join(home, "skills")
+
+	runner := &stubRunner{}
+	failing := &fetchFailRunner{stubRunner: runner}
+	adapter := fakeAdapter{agent: model.AgentClaude, skillsDir: skillsDir}
+
+	ins := skill.NewInstaller(failing, nil)
+	_, err := ins.Install(context.Background(), shaHarness(testSHA), []skill.AgentAdapter{adapter}, home, t.TempDir())
+	if err == nil {
+		t.Fatal("expected error when fetch fails")
+	}
+	for _, s := range []string{"pinned", "https://github.com/owner/pinned", testSHA} {
+		if !strings.Contains(err.Error(), s) {
+			t.Errorf("error %q should mention %q", err.Error(), s)
+		}
+	}
+	if _, statErr := os.Stat(filepath.Join(skillsDir, "pinned")); !os.IsNotExist(statErr) {
+		t.Errorf("skills dir must not contain the skill after a failed fetch (stat err: %v)", statErr)
+	}
+	for _, c := range runner.called {
+		if len(c) > 3 && c[3] == "checkout" {
+			t.Errorf("checkout must not run after a failed fetch: %v", c)
+		}
+	}
+}
+
+// fetchFailRunner fails any call containing "fetch".
+type fetchFailRunner struct{ *stubRunner }
+
+func (r *fetchFailRunner) Run(ctx context.Context, args []string) error {
+	_ = r.stubRunner.Run(ctx, args)
+	for _, a := range args {
+		if a == "fetch" {
+			return errors.New("couldn't find remote ref")
+		}
+	}
+	return nil
+}
+
+// Characterization: hex shorter than 40 chars stays a branch/tag name.
+func TestClone_ShortHexRef_UsesBranchFlag(t *testing.T) {
+	home := t.TempDir()
+	skillsDir := filepath.Join(home, "skills")
+	runner := &stubRunner{
+		sideEffect: func(args []string) {
+			dir := filepath.Join(args[len(args)-1], "skills", "pinned")
+			_ = os.MkdirAll(dir, 0o755)
+			_ = os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte("ok"), 0o644)
+		},
+	}
+	adapter := fakeAdapter{agent: model.AgentClaude, skillsDir: skillsDir}
+	ins := skill.NewInstaller(runner, nil)
+	if _, err := ins.Install(context.Background(), shaHarness("e8a175d"), []skill.AgentAdapter{adapter}, home, t.TempDir()); err != nil {
+		t.Fatalf("Install() error: %v", err)
+	}
+	if len(runner.called) != 1 {
+		t.Fatalf("expected a single git clone call, got %v", runner.called)
+	}
+	args := runner.called[0]
+	if args[1] != "clone" {
+		t.Errorf("expected git clone, got %v", args)
+	}
+	found := false
+	for i, a := range args {
+		if a == "--branch" && i+1 < len(args) && args[i+1] == "e8a175d" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected --branch e8a175d; args: %v", args)
+	}
+}
+
+// ── design-skills-harnesses: agent scoping ───────────────────────────────────
+
+func embeddedSkillFS() fstest.MapFS {
+	return fstest.MapFS{"skills/e-skill/SKILL.md": &fstest.MapFile{Data: []byte("# embedded")}}
+}
+
+func TestInstaller_AgentScoped_SkipsUnsupportedAgent(t *testing.T) {
+	home := t.TempDir()
+	claudeDir := filepath.Join(home, "claude-skills")
+	opencodeDir := filepath.Join(home, "opencode-skills")
+	adapters := []skill.AgentAdapter{
+		fakeAdapter{agent: model.AgentClaude, skillsDir: claudeDir},
+		fakeAdapter{agent: model.AgentOpenCode, skillsDir: opencodeDir},
+	}
+	h := makeHarness("e-skill", "embed", "", false)
+	h.Agents = []model.Agent{model.AgentClaude}
+
+	ins := skill.NewInstaller(nil, embeddedSkillFS())
+	results, err := ins.Install(context.Background(), h, adapters, home, t.TempDir())
+	if err != nil {
+		t.Fatalf("Install() error: %v", err)
+	}
+	if len(results) != 1 {
+		t.Fatalf("expected exactly 1 result, got %d", len(results))
+	}
+	if _, err := os.Stat(filepath.Join(claudeDir, "e-skill", "SKILL.md")); err != nil {
+		t.Errorf("claude dir should have the skill: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(opencodeDir, "e-skill")); !os.IsNotExist(err) {
+		t.Errorf("opencode dir must not have the skill (stat err: %v)", err)
+	}
+}
+
+func TestInstaller_Unscoped_InstallsForAllAgents(t *testing.T) {
+	home := t.TempDir()
+	claudeDir := filepath.Join(home, "claude-skills")
+	opencodeDir := filepath.Join(home, "opencode-skills")
+	adapters := []skill.AgentAdapter{
+		fakeAdapter{agent: model.AgentClaude, skillsDir: claudeDir},
+		fakeAdapter{agent: model.AgentOpenCode, skillsDir: opencodeDir},
+	}
+	h := makeHarness("e-skill", "embed", "", false)
+
+	ins := skill.NewInstaller(nil, embeddedSkillFS())
+	results, err := ins.Install(context.Background(), h, adapters, home, t.TempDir())
+	if err != nil {
+		t.Fatalf("Install() error: %v", err)
+	}
+	if len(results) != 2 {
+		t.Fatalf("expected 2 results, got %d", len(results))
+	}
+	for _, d := range []string{claudeDir, opencodeDir} {
+		if _, err := os.Stat(filepath.Join(d, "e-skill", "SKILL.md")); err != nil {
+			t.Errorf("%s should have the skill: %v", d, err)
+		}
+	}
+}

@@ -80,7 +80,7 @@ entregan como harness propio. Ejemplo: **`design-mockups`** — `config`, solo
 mockups (con gate de aprobación humana) entre `propose` y `apply`. Se inyecta como
 sección propia `active-stack:design-mockups` del `CLAUDE.md`, separada de la del
 orquestador (se registra en `sectionFragments` y `isOwnedSection` la reconoce, así
-el orquestador no la purga).
+el orquestador no la purga). Las skills de terceros `emil-design-eng` y `design-taste-frontend-v1` son harnesses `skill` opcionales, solo Claude (Full, pineadas por SHA): la etapa de diseño las carga si están instaladas, sin dependencia dura.
 
 ---
 

@@ -91,7 +91,7 @@ const (
 // Source locates a skill harness in a git repository.
 type Source struct {
 	Repo   string `yaml:"repo"`             // e.g. Group-Active-IA/kb-creator
-	Ref    string `yaml:"ref,omitempty"`    // tag/branch/commit; defaults to "latest"
+	Ref    string `yaml:"ref,omitempty"`    // branch/tag/"latest", or a full 40-char commit SHA (fetched by commit); defaults to "latest"
 	Method string `yaml:"method,omitempty"` // clone | embed; inferred if empty
 	// Path is the subdir within the cloned repo where the SKILL.md lives.
 	// Empty = repo root (C-16 root-first behavior). Used by third-party

@@ -52,7 +52,7 @@ Un **harness** es cualquier módulo que prepara o guía el entorno de la IA.
 
 | Forma | Qué es | Origen | Ejemplos |
 |-------|--------|--------|----------|
-| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, active-orchestrator, skill-registry (propias); find-skill, skill-creator (terceros) |
+| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, active-orchestrator, skill-registry (propias); find-skill, skill-creator, emil-design-eng, design-taste-frontend-v1 (terceros; las dos de diseño, solo Claude y pineadas por SHA) |
 | **Configuración** | Texto/archivos que configuran el agente | bundleado en el instalador | `sdd-orchestrator` (orquestador con toggles: TDD, Engram, …), config de `AGENTS.md`/`CLAUDE.md`, permisos, MCP |
 | **Herramienta externa** | Binario/servicio de terceros | instalado/configurado, no es nuestro repo | Engram, OpenSpec CLI, Context7 (MCP) |
 
@@ -205,6 +205,14 @@ Cada incremento será un **change OPSX** (dogfooding) en `openspec/` (ignorado p
   core openspec (atadas a la versión del orquestador) → embebidas. El modelo de
   skill necesita un campo de método de fetch (clone/npx/embed), análogo a
   `External.Method`.
+- **Pin de skills por commit (design-skills-harnesses)**: si `source.ref` es un SHA completo de
+  40 hex, el installer de skills (`internal/harness/skill/clone.go`) hace `git init` +
+  `git fetch --depth 1 <url> <sha>` + `git checkout --detach FETCH_HEAD` en vez de
+  `git clone --branch` (que no acepta SHAs). Un hex más corto se sigue tratando como rama/tag.
+  Si el fetch falla, el error nombra harness, repo y ref (sin fallback a clone completo). Para
+  actualizar un pin: `gh api repos/<owner>/<repo>/commits/main --jq .sha`, releer el diff del
+  `SKILL.md` y editar el `ref` en el catálogo (bump manual). El installer también respeta
+  `agents:` del harness: no instala la skill en agentes no soportados.
 - **active-orchestrator — activador modular**: orquesta la fase de fundación y activa/llama
   los módulos (kb-creator, roadmap-generator, etc.) según cuáles estén instalados/
   activos (lazy-loading, §4.2). No es una skill monolítica.

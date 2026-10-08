@@ -52,6 +52,10 @@ func (ins *Installer) Install(
 
 	var results []Result
 	for _, adapter := range adapters {
+		if !h.SupportsAgent(adapter.Agent()) {
+			// Harness is scoped to other agents (agents: [...]) — skip.
+			continue
+		}
 		skillsDir := adapter.SkillsDir(homeDir)
 		if skillsDir == "" {
 			// This adapter does not support skills — skip silently.

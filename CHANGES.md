@@ -40,7 +40,8 @@ claude-agent-switch-research
 
 add-design-mockups-toggle (harness `design-mockups`, solo Claude)
           │
-          └──► stitch-design            (futuro; harness hermano para opencode)
+          ├──► stitch-design            (futuro; harness hermano para opencode)
+          └──► design-skills-harnesses  (IMPLEMENTADO; Emil Kowalski + taste skill v1, pineadas por SHA)
 ```
 
 > Notas de dependencia:
@@ -438,6 +439,24 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ---
 
+### `design-skills-harnesses` — Skills de diseño como harnesses
+
+- **Estado**: IMPLEMENTADO (pend. archive OPSX).
+- **Entregable**: dos harnesses `skill` de terceros, Full/Custom, solo Claude, `best_effort`, sin
+  `depends_on` (la relación con `design-mockups` sigue siendo blanda), pineados por commit el 2026-10-08:
+  - `emil-design-eng` — `emilkowalski/skills` (`skills/emil-design-eng`, MIT) @ `e8a175de22ae1e49370fc144c1f3bb9aeedf988d`.
+  - `design-taste-frontend-v1` — `Leonxlnx/taste-skill` (`skills/taste-skill-v1`, MIT) @ `b482f7a970abb98c4108d4a9f761e458c64cefc8`.
+- **Taste skill elegida**: `Leonxlnx/taste-skill` v1. **Descartadas**: `Leonxlnx/taste-skill` v2
+  (`skills/taste-skill`, experimental) y `senlindesign/taste-skill` (sin LICENSE, requiere Playwright
+  MCP, ejecuta JS en páginas externas).
+- **Agentes**: `agents: [claude]`, y el installer de skills ahora respeta `agents` (antes lo ignoraba).
+- **Extensión del installer**: un `ref` con SHA completo (40 hex) se baja con `init` + `fetch --depth 1`
+  + `checkout --detach`; el resto de los refs no cambia. Bump de pin manual (ver ARCHITECTURE.md §7).
+- **Conteos**: Full y Custom pasan de 16 a 18 harnesses globales; Lite sigue en 6.
+- **Governance**: BAJO (`catalog`) / MEDIO (`harness/skill`).
+
+---
+
 ## Tabla resumen
 
 | Change | Ola | Governance | Depende de | Habilita |
@@ -449,8 +468,9 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 | `tui-menu-hub` | 2 | BAJO/MEDIO | `uninstall-subcommand` | `tui-update-stack`, `tui-configure-models` | ✅ IMPLEMENTADO (pend. archive) |
 | `tui-update-stack` | 3 | MEDIO | `tui-menu-hub` | — |
 | `tui-configure-models` | 3 | MEDIO | `tui-menu-hub` | — |
-| `add-design-mockups-toggle` | libre | MEDIO | `sdd-orchestrator` (catálogo) | `stitch-design` | ✅ IMPLEMENTADO (pend. archive) |
+| `add-design-mockups-toggle` | libre | MEDIO | `sdd-orchestrator` (catálogo) | `stitch-design`, `design-skills-harnesses` | ✅ IMPLEMENTADO (pend. archive) |
 | `stitch-design` | futuro | MEDIO | `add-design-mockups-toggle` (validar en Claude) | — | PENDIENTE |
+| `design-skills-harnesses` | libre | BAJO/MEDIO | `add-design-mockups-toggle` | — | ✅ IMPLEMENTADO (pend. archive) |
 
 **Camino crítico**: `uninstall-subcommand → tui-menu-hub → {tui-update-stack ‖ tui-configure-models}` (3 changes; los dos últimos en paralelo).
 

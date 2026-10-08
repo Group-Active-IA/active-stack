@@ -2,6 +2,7 @@ package catalog
 
 import (
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -329,17 +330,17 @@ func TestForMode_ActiveOrchestratorIsFullOnly(t *testing.T) {
 }
 
 // TestForMode_CustomReturnsOnlyGlobal asserts that custom mode returns only the
-// 16 foundation-global harnesses — NOT the 30 starter-only C-30 skills.
+// 18 foundation-global harnesses — NOT the 30 starter-only C-30 skills.
 // C-32: replaces TestForMode_CustomReturnsAll (which incorrectly expected all 43).
 // Bumped 13->15 when discovery-research and web-scraper were catalogued as
-// Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Bumped 15->16 when design-mockups was
-// catalogued (add-design-mockups-toggle).
+// Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Bumped 15->16 (design-mockups) and 16->18 when emil-design-eng and
+// design-taste-frontend-v1 were catalogued (design-skills-harnesses).
 func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 	c, err := Load()
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
-	const wantFoundationGlobal = 16
+	const wantFoundationGlobal = 18
 	got := c.ForMode(model.ModeCustom)
 	if len(got) != wantFoundationGlobal {
 		t.Errorf("custom mode returned %d harnesses, want %d foundation-global", len(got), wantFoundationGlobal)
@@ -355,8 +356,8 @@ func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 // starter-only harnesses from all modes (lite, full, custom).
 // C-32: core invariant test — covers all three modes with count assertions.
 // Full/Custom bumped 13->15 when discovery-research and web-scraper were
-// catalogued as Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Full/Custom bumped 15->16 when design-mockups was
-// catalogued (add-design-mockups-toggle); Lite stays at 6.
+// catalogued as Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Full/Custom bumped 15->16 (design-mockups) and 16->18 when the two design
+// skills were catalogued (design-skills-harnesses); Lite stays at 6.
 func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 	c, err := Load()
 	if err != nil {
@@ -368,8 +369,8 @@ func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 		wantCount int
 	}{
 		{model.ModeLite, 6},
-		{model.ModeFull, 16},
-		{model.ModeCustom, 16},
+		{model.ModeFull, 18},
+		{model.ModeCustom, 18},
 	}
 
 	for _, tc := range cases {
@@ -757,5 +758,104 @@ func TestDesignMockups_InCatalog(t *testing.T) {
 	}
 	if h.InMode(model.ModeLite) {
 		t.Error("design-mockups must NOT be in lite")
+	}
+}
+
+// designSkillPins records, per design skill harness, the upstream coordinates
+// pinned by change design-skills-harnesses (pin date 2026-10-08).
+var designSkillPins = []struct {
+	id, repo, path, sha string
+}{
+	{"emil-design-eng", "emilkowalski/skills", "skills/emil-design-eng", "e8a175de22ae1e49370fc144c1f3bb9aeedf988d"},
+	{"design-taste-frontend-v1", "Leonxlnx/taste-skill", "skills/taste-skill-v1", "b482f7a970abb98c4108d4a9f761e458c64cefc8"},
+}
+
+// TestDesignSkills_InCatalog asserts both design skills are catalogued as
+// pinned, third-party, best-effort, Claude-only, Full/Custom-only skills.
+func TestDesignSkills_InCatalog(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("Load(): %v", err)
+	}
+	sha40 := regexp.MustCompile(`^[0-9a-f]{40}$`)
+	for _, want := range designSkillPins {
+		t.Run(want.id, func(t *testing.T) {
+			h, ok := c.ByID(want.id)
+			if !ok {
+				t.Fatalf("%s must exist in the catalog", want.id)
+			}
+			if h.Type != model.HarnessSkill {
+				t.Errorf("Type = %q, want skill", h.Type)
+			}
+			if h.Source == nil {
+				t.Fatal("Source is nil")
+			}
+			if h.Source.Repo != want.repo || h.Source.Path != want.path || h.Source.Method != "clone" {
+				t.Errorf("Source = %+v, want repo=%s path=%s method=clone", *h.Source, want.repo, want.path)
+			}
+			if h.Source.Ref != want.sha {
+				t.Errorf("Ref = %q, want %q", h.Source.Ref, want.sha)
+			}
+			if !sha40.MatchString(h.Source.Ref) {
+				t.Errorf("Ref %q must be a 40-char lowercase hex SHA", h.Source.Ref)
+			}
+			if !h.ThirdParty || !h.BestEffort {
+				t.Errorf("ThirdParty=%v BestEffort=%v, both must be true", h.ThirdParty, h.BestEffort)
+			}
+			if h.IsStarterOnly() {
+				t.Error("must not be starter-only")
+			}
+			if len(h.Agents) != 1 || h.Agents[0] != model.AgentClaude {
+				t.Errorf("Agents = %v, want [claude]", h.Agents)
+			}
+			if len(h.DependsOn) != 0 {
+				t.Errorf("DependsOn = %v, want none", h.DependsOn)
+			}
+			if !h.InMode(model.ModeFull) || !h.InMode(model.ModeCustom) {
+				t.Error("must be in full and custom")
+			}
+			if h.InMode(model.ModeLite) {
+				t.Error("must NOT be in lite")
+			}
+			for _, lang := range []string{"es", "en"} {
+				if h.Description[lang] == "" {
+					t.Errorf("description[%s] is empty", lang)
+				}
+				if h.LongDescription[lang] == "" {
+					t.Errorf("long_description[%s] is empty", lang)
+				}
+			}
+		})
+	}
+}
+
+// TestDesignSkills_RejectedTasteSourcesAbsent asserts the rejected taste
+// sources never enter the catalog and design-mockups stays decoupled.
+func TestDesignSkills_RejectedTasteSourcesAbsent(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("Load(): %v", err)
+	}
+	for _, h := range c.AllHarnesses() {
+		if h.Source == nil {
+			continue
+		}
+		if h.Source.Repo == "senlindesign/taste-skill" {
+			t.Errorf("%q uses rejected source senlindesign/taste-skill", h.ID)
+		}
+		if h.Source.Repo == "Leonxlnx/taste-skill" && h.Source.Path == "skills/taste-skill" {
+			t.Errorf("%q uses rejected experimental taste-skill v2 path", h.ID)
+		}
+	}
+	dm, ok := c.ByID("design-mockups")
+	if !ok {
+		t.Fatal("design-mockups must exist")
+	}
+	for _, dep := range dm.DependsOn {
+		for _, p := range designSkillPins {
+			if dep == p.id {
+				t.Errorf("design-mockups must not depend on %q (soft dependency only)", dep)
+			}
+		}
 	}
 }
