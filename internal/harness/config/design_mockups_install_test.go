@@ -208,3 +208,57 @@ func TestInstall_Orchestrator_KeepsDesignMockupsSection(t *testing.T) {
 		t.Error("orchestrator section must be present")
 	}
 }
+
+// TestDesignMockups_UpgradeReplacesOldSectionInPlace verifies that installing
+// over a file holding the previous section content replaces it in place: one
+// design-mockups section with the new visual verify step, and the orchestrator
+// section plus user content untouched byte for byte (visual-verify).
+func TestDesignMockups_UpgradeReplacesOldSectionInPlace(t *testing.T) {
+	home := t.TempDir()
+	claudeMD := filepath.Join(home, "CLAUDE.md")
+	orch := "<!-- active-stack:sdd-orchestrator -->\norchestrator body\n<!-- /active-stack:sdd-orchestrator -->"
+	oldSection := dmOpen + "\n## Design Stage — UI Mockups\n\nold content without the visual step\n" + dmClose
+	before := "# My notes\n\nmine before\n\n" + orch + "\n\n" + oldSection + "\n\nmine after\n"
+	if err := os.WriteFile(claudeMD, []byte(before), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := config.Install(designMockupsHarness(), []config.AgentAdapter{claudeAdapter{path: claudeMD}}, home)
+	if err != nil {
+		t.Fatalf("Install: %v", err)
+	}
+	if res.AllAlready {
+		t.Error("upgrade must report a change, not AllAlready")
+	}
+
+	got := readFile(t, claudeMD)
+	if c := strings.Count(got, dmOpen); c != 1 {
+		t.Errorf("design-mockups open marker count = %d, want 1", c)
+	}
+	if c := strings.Count(got, dmClose); c != 1 {
+		t.Errorf("design-mockups close marker count = %d, want 1", c)
+	}
+	if strings.Contains(got, "old content without the visual step") {
+		t.Error("old section content must be replaced")
+	}
+	if !strings.Contains(got, "Visual verify") {
+		t.Error("new section must contain the visual verify step")
+	}
+	for _, keep := range []string{"# My notes\n\nmine before\n\n" + orch + "\n\n", "\n\nmine after\n"} {
+		if !strings.Contains(got, keep) {
+			t.Errorf("surrounding content %q not preserved byte for byte", keep)
+		}
+	}
+	// No marker other than the two known sections was introduced.
+	if c := strings.Count(got, "<!-- active-stack:"); c != 2 {
+		t.Errorf("open marker count = %d, want 2 (orchestrator + design-mockups)", c)
+	}
+	// Re-running on the upgraded file is a no-op.
+	again, err := config.Install(designMockupsHarness(), []config.AgentAdapter{claudeAdapter{path: claudeMD}}, home)
+	if err != nil {
+		t.Fatalf("second Install: %v", err)
+	}
+	if !again.AllAlready {
+		t.Error("second install after upgrade should report AllAlready")
+	}
+}

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/Group-Active-IA/active-stack/internal/catalog"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/verify"
 )
@@ -794,5 +795,39 @@ func TestChecksForHarness_SkipsUnsupportedAgents(t *testing.T) {
 	checks := verify.ChecksForHarness(h, []verify.Adapter{claude, oc}, homeDir)
 	if len(checks) != 1 || checks[0].ID != "config:design-mockups:claude" {
 		t.Errorf("checks = %+v, want only the claude check", checks)
+	}
+}
+
+// TestHarnessChecks_Playwright pins the post-install checks of the catalog's
+// playwright harness (visual-verify, design D6): exactly one hard MCP-config
+// check for claude, no remote-endpoint check (no URL) and nothing for opencode.
+func TestHarnessChecks_Playwright(t *testing.T) {
+	c, err := catalog.Load()
+	if err != nil {
+		t.Fatalf("catalog.Load(): %v", err)
+	}
+	h, ok := c.ByID("playwright")
+	if !ok {
+		t.Fatal("playwright must exist in the catalog")
+	}
+	homeDir := t.TempDir()
+	claude := newFakeAdapter(t, homeDir, model.AgentClaude)
+	oc := newFakeAdapter(t, homeDir, model.AgentOpenCode)
+
+	checks := verify.ChecksForHarness(h, []verify.Adapter{claude, oc}, homeDir)
+
+	if len(checks) != 1 {
+		t.Fatalf("got %d checks, want exactly 1: %+v", len(checks), checks)
+	}
+	if checks[0].ID != "external:mcp-config:playwright:claude" {
+		t.Errorf("check ID = %q, want external:mcp-config:playwright:claude", checks[0].ID)
+	}
+	if checks[0].Soft {
+		t.Error("the MCP config check must be hard (not soft)")
+	}
+	for _, ck := range checks {
+		if strings.Contains(ck.ID, "mcp-endpoint") || strings.Contains(ck.ID, "opencode") {
+			t.Errorf("unexpected check %q", ck.ID)
+		}
 	}
 }

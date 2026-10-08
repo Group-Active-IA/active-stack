@@ -47,6 +47,20 @@ harnesses:
         args: ["-y", "--package=@upstash/context7-mcp@2.2.5", "--", "context7-mcp"]
     install_modes: [lite, full]
 
+  - id: playwright
+    name: Playwright MCP (Claude)
+    description: { es: "Navegador automatizado para verificar la UI contra los mockups (MCP stdio, solo Claude).", en: "Automated browser to verify the UI against the mockups (stdio MCP, Claude only)." }
+    long_description: { es: "Registra el servidor MCP oficial de Microsoft, Playwright MCP, como servidor stdio `playwright` en la config de MCP de Claude (`~/.claude.json`), lanzado con `npx` y una versión fija (`@playwright/mcp@0.0.83`) para que la instalación sea reproducible. Le da al agente un navegador real para abrir tu app, sacar capturas, leer la consola y los requests fallidos. Lo usa la verificación visual de `design-mockups` durante verify; sin este harness esa verificación degrada a un checklist manual. Es solo para Claude y requiere Node 18 o superior; no instala navegadores (Playwright MCP los gestiona en runtime). Desinstalar no remueve la entrada de `~/.claude.json`, igual que los demás MCP.", en: "Registers Microsoft's official MCP server, Playwright MCP, as a stdio server named `playwright` in Claude's MCP config (`~/.claude.json`), launched through `npx` with a pinned version (`@playwright/mcp@0.0.83`) so installs are reproducible. It gives the agent a real browser to open your app, take screenshots, and read the console and failed requests. The `design-mockups` visual verification uses it during verify; without this harness that check degrades to a manual checklist. It's Claude-only and requires Node 18 or newer; it does not install browsers (Playwright MCP manages them at runtime). Uninstalling does not remove the `~/.claude.json` entry, like the other MCPs." }
+    type: external
+    external:
+      method: mcp
+      mcp:
+        name: playwright
+        command: npx
+        args: ["-y", "@playwright/mcp@0.0.83"]
+    install_modes: [full]
+    agents: [claude]
+
   # ── Configuración (bundleados en el instalador) ───────────────────────────
   - id: sdd-orchestrator
     name: SDD Orchestrator
@@ -68,7 +82,7 @@ harnesses:
   - id: design-mockups
     name: Design Mockups (Claude)
     description: { es: "Paso de diseño de mockups con aprobación humana antes de implementar UI (solo Claude, opt-in).", en: "UI mockup design step with human approval before implementing UI (Claude only, opt-in)." }
-    long_description: { es: "Suma al orquestador OPSX una etapa de diseño entre propose y apply: cuando un change tiene interfaz de usuario, el agente te pregunta si querés mockups, los genera con la herramienta Artifact de Claude (tipo Design), los guarda en `openspec/changes/<name>/mockups/` y no empieza a implementar hasta que los aprobás explícitamente. Es exclusivo de Claude y opt-in: se inyecta como una sección propia del CLAUDE.md, separada de la del orquestador, así que podés instalarlo y desinstalarlo sin tocar el resto. Requiere la herramienta Artifact; si no está disponible, usa mockups HTML estáticos como alternativa. Depende de sdd-orchestrator.", en: "Adds a design stage to the OPSX orchestrator between propose and apply: when a change has a user interface, the agent asks whether you want mockups, generates them with Claude's Artifact tool (Design type), stores them in `openspec/changes/<name>/mockups/`, and does not start implementing until you explicitly approve them. It's Claude-only and opt-in: it's injected as its own CLAUDE.md section, separate from the orchestrator's, so you can install and uninstall it without touching anything else. It requires the Artifact tool; when that's unavailable it falls back to static HTML mockups. Depends on sdd-orchestrator." }
+    long_description: { es: "Suma al orquestador OPSX una etapa de diseño entre propose y apply: cuando un change tiene interfaz de usuario, el agente te pregunta si querés mockups, los genera con la herramienta Artifact de Claude (tipo Design), los guarda en `openspec/changes/<name>/mockups/` y no empieza a implementar hasta que los aprobás explícitamente. Es exclusivo de Claude y opt-in: se inyecta como una sección propia del CLAUDE.md, separada de la del orquestador, así que podés instalarlo y desinstalarlo sin tocar el resto. Requiere la herramienta Artifact; si no está disponible, usa mockups HTML estáticos como alternativa. La verificación visual en verify usa Playwright MCP si está instalado (harness `playwright`); sin él, degrada a un checklist manual. Depende de sdd-orchestrator.", en: "Adds a design stage to the OPSX orchestrator between propose and apply: when a change has a user interface, the agent asks whether you want mockups, generates them with Claude's Artifact tool (Design type), stores them in `openspec/changes/<name>/mockups/`, and does not start implementing until you explicitly approve them. It's Claude-only and opt-in: it's injected as its own CLAUDE.md section, separate from the orchestrator's, so you can install and uninstall it without touching anything else. It requires the Artifact tool; when that's unavailable it falls back to static HTML mockups. The visual verification in verify uses Playwright MCP when it is installed (the `playwright` harness); without it, it degrades to a manual checklist. Depends on sdd-orchestrator." }
     type: config
     install_modes: [full]
     agents: [claude]

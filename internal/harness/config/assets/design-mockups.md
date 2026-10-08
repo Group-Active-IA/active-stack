@@ -13,6 +13,7 @@ The design stage runs AFTER propose (the specs define the screens) and BEFORE ap
    - `Decision: yes | no | provided` (+ date)
    - `Mockups: <path to mockups/ and/or Artifact URL>`
    - `Approval: pending | approved (<date>, by user)`
+   - `Visual verify: passed | differences | manual (<date>)` (optional; written by step 7)
 3. yes → delegate to a general-purpose sub-agent (it has the Artifact tool): call
    Artifact with action "quickstart" and intent "design"; create the artifact from
    the returned `type_url` (never hardcode it; add a title and auto_open
@@ -31,5 +32,28 @@ The design stage runs AFTER propose (the specs define the screens) and BEFORE ap
 6. If design skills such as `emil-design-eng` (Emil Kowalski) or a taste skill are
    installed (if installed; this is a soft dependency, the stage works without them),
    load them for the design step.
+7. Visual verify (during verify): run only when `## UI Mockups` records
+   `Decision: yes | provided` AND `Approval: approved`; otherwise skip this step.
+   Include these instructions in the verify sub-agent brief.
+   - Playwright available (tools such as `browser_navigate`, `browser_resize`,
+     `browser_take_screenshot`, `browser_console_messages`,
+     `browser_network_requests`): start the dev server (script from package.json
+     or the project's CLAUDE.md; ask if unknown), open each mockup screen on its
+     localhost URL, capture it at mobile (390x844) and desktop (1440x900), read
+     console errors and failed network requests, compare against `mockups/`, then
+     stop the dev server you started. Save or reference captures under
+     `openspec/changes/<name>/mockups/verify/`. If the browser fails to open,
+     report the error and fall back to the manual path below.
+   - Report each difference with priority (blocker / major / minor), screen,
+     viewport, expected (mockup ref), observed, and reproduction steps. List which
+     screens and viewports were checked and which were not. Never claim a screen
+     matches or works unless you opened and checked it.
+   - Playwright not available: say explicitly that visual verification was NOT automated,
+     give the user a manual checklist (each screen x mobile and desktop), and
+     suggest installing the `playwright` harness (active-stack).
+     This is a soft dependency: design-mockups works without it.
+   - Record `Visual verify: passed | differences | manual (<date>)` under
+     `## UI Mockups`.
+
 Model: if the Model Assignments table is present, use design → sonnet for this stage.
 Artifact URLs are private until the user shares them.

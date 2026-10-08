@@ -79,7 +79,7 @@ El resultado es el bloque de instrucciones del orquestador que se inyecta en
 > opt-in (que el usuario deba poder activar o no) va como **harness `config` propio**
 > con sección propia en el archivo de instrucciones (`active-stack:<id>`), registrada
 > en `sectionFragments` de `internal/harness/config` (`isOwnedSection` la protege del
-> purge). Primer caso: `design-mockups` (solo Claude, depende de `sdd-orchestrator`).
+> purge). Primer caso: `design-mockups` (solo Claude, depende de `sdd-orchestrator`). Esa misma sección incluye el paso de verificación visual de `verify` (paso 7 del fragmento, sin sección nueva): usa el harness `playwright` si está instalado y, si no, degrada a checklist manual.
 
 ---
 
@@ -107,6 +107,11 @@ que es la fuente de verdad de qué harnesses existen. Cada entrada declara:
   install_modes: [full]
   agents: [claude]
   depends_on: [sdd-orchestrator]
+- id: playwright
+  type: external
+  external: { method: mcp, mcp: { name: playwright, command: npx, args: [-y, "@playwright/mcp@<x.y.z>"] } }
+  install_modes: [full]
+  agents: [claude]       # el install externo saltea los agentes no soportados
 - id: engram
   type: external
   install: { method: homebrew | download, ... }

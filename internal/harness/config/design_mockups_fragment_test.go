@@ -35,6 +35,25 @@ func TestDesignMockupsFragment_Content(t *testing.T) {
 		{"model for design phase", "design → sonnet"},
 		{"conditional design skills", "emil-design-eng"},
 		{"soft dependency on design skills", "if installed"},
+		// visual-verify: step 7 (spec: design-mockups-harness).
+		{"visual verify step", "Visual verify"},
+		{"playwright tools", "Playwright"},
+		{"dev server", "dev server"},
+		{"mobile capture", "mobile"},
+		{"desktop capture", "desktop"},
+		{"console errors", "console"},
+		{"failed requests", "failed network requests"},
+		{"captures location", "mockups/verify/"},
+		{"gated on approved UI mockups", "run only when `## UI Mockups` records"},
+		{"gated on decision", "Decision: yes | provided"},
+		{"priority levels", "blocker"},
+		{"reproduction steps", "reproduction steps"},
+		{"honesty rule", "Never claim"},
+		{"explicit degradation", "NOT automated"},
+		{"manual checklist fallback", "manual checklist"},
+		{"suggests playwright harness", "`playwright` harness"},
+		{"soft dependency on playwright", "design-mockups works without it"},
+		{"outcome record values", "passed | differences | manual"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

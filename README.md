@@ -152,7 +152,7 @@ El catálogo agrupa los harnesses en tres presets. Convención: un harness de Li
 | Modo | Qué instala | Para qué |
 |------|-------------|----------|
 | **Lite** | El **sustrato** mínimo: `openspec`, `engram`, `context7`, `sdd-orchestrator`, `permissions` | Empezar a trabajar con la metodología ya |
-| **Full** | Sustrato **+ fundación guiada**: `active-orchestrator` y las skills que orquesta (`kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-registry`, `find-skill`, `skill-creator`) más las skills de diseño opcionales para Claude (`emil-design-eng`, `design-taste-frontend-v1`) | El ecosistema completo, proyecto desde cero |
+| **Full** | Sustrato **+ fundación guiada**: `active-orchestrator` y las skills que orquesta (`kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-registry`, `find-skill`, `skill-creator`) más las skills de diseño opcionales para Claude (`emil-design-eng`, `design-taste-frontend-v1`) y el MCP de navegador `playwright` (Playwright MCP, solo Claude) para la verificación visual | El ecosistema completo, proyecto desde cero |
 | **Custom** | Vos elegís cada harness | Control total — con una excepción 👇 |
 
 > 🔒 **`permissions` no es desactivable.** Incluso en Custom, el harness de seguridad (permisos *security-first*) queda forzado. La seguridad no es opcional.
@@ -168,9 +168,10 @@ Lo que Active Stack puede instalar hoy (fuente de verdad: [`internal/catalog/har
 | **OpenSpec CLI** | external | lite · full | CLI de Spec-Driven Development; fuente de verdad del estado |
 | **Engram** | external | lite · full | Memoria persistente local (SQLite + FTS) vía MCP |
 | **Context7** | external | lite · full | Documentación de librerías al día (MCP remoto) |
+| **Playwright MCP** | external | full, solo Claude | MCP oficial de Microsoft registrado como servidor stdio `playwright` en `~/.claude.json` (`npx` con versión pinneada). Requiere Node >= 18 y **no instala navegadores** (Playwright MCP los gestiona en runtime). Lo usa la verificación visual de `design-mockups`. Desinstalar no remueve la entrada de `~/.claude.json`, igual que los otros MCP |
 | **SDD Orchestrator** | config | lite · full | Orquestador SDD componible por toggles (TDD, Engram, model-routing, delegación, governance) |
 | **Permissions** | config | lite · full | Permisos seguros por defecto (bloquea `.env`, confirma git destructivo) — **no opcional** |
-| **Design Mockups** | config | full (opt-in) | Solo Claude. Etapa de diseño de mockups entre `propose` y `apply` con gate de aprobación humana; los mockups viven en `openspec/changes/<name>/mockups/`. Requiere la herramienta Artifact (con fallback a HTML estático) |
+| **Design Mockups** | config | full (opt-in) | Solo Claude. Etapa de diseño de mockups entre `propose` y `apply` con gate de aprobación humana; los mockups viven en `openspec/changes/<name>/mockups/`. Requiere la herramienta Artifact (con fallback a HTML estático). Suma un paso de verificación visual en `verify` (capturas móvil/escritorio contra `mockups/`) que usa Playwright MCP si está instalado y, si no, degrada a un checklist manual diciéndolo explícitamente |
 | **active-orchestrator** | skill | full | Orquestador delgado de la fase de fundación |
 | **kb-creator** | skill | full | Genera la knowledge-base canónica del dominio |
 | **roadmap-generator** | skill | full | Genera `CHANGES.md` (backlog técnico) desde la KB |

@@ -41,7 +41,9 @@ claude-agent-switch-research
 add-design-mockups-toggle (harness `design-mockups`, solo Claude)
           │
           ├──► stitch-design            (futuro; harness hermano para opencode)
-          └──► design-skills-harnesses  (IMPLEMENTADO; Emil Kowalski + taste skill v1, pineadas por SHA)
+          ├──► design-skills-harnesses  (IMPLEMENTADO; Emil Kowalski + taste skill v1, pineadas por SHA)
+          └──► visual-verify            (IMPLEMENTADO; Playwright MCP + verify contra mockups/)
+                    └──► figma-mcp-opcional (futuro, al final)
 ```
 
 > Notas de dependencia:
@@ -457,6 +459,30 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ---
 
+### `visual-verify` — Verificación visual contra mockups
+
+- **Estado**: ✅ IMPLEMENTADO (pend. archive OPSX). Depende de `add-design-mockups-toggle`.
+- **Entregable**:
+  - Harness `playwright` (`external`, `method: mcp`, solo Claude, Full/Custom, sin `depends_on`):
+    registra Playwright MCP de Microsoft como servidor stdio en `~/.claude.json`, **pinneado**
+    (`@playwright/mcp@0.0.83`, reconfirmado el 2026-10-08). Requiere Node >= 18; no instala navegadores.
+  - Paso 7 (verificación visual) dentro del fragmento existente `design-mockups.md`, mismo marker, sin
+    sección nueva: corre en `verify` si hay mockups aprobados; con Playwright captura móvil/escritorio,
+    revisa consola y requests fallidos y compara contra `mockups/`; sin él degrada a checklist manual
+    diciéndolo explícitamente. Registra `Visual verify:` en `## UI Mockups`.
+  - **Dependencia suave**: `design-mockups` no depende de `playwright` (Full instala ambos juntos).
+  - `external.Install` ahora filtra adapters por `SupportsAgent` (mismo patrón que `config.Install`);
+    los externos sin `agents` no cambian.
+- **Conteos**: Full y Custom pasan de 18 a 19 harnesses globales; Lite sigue en 6.
+- **Deuda registrada**: (1) `collectWritePaths` (`internal/install/plan.go`) sigue agregando al snapshot
+  el path MCP de agentes no soportados (inocuo, no se escribe); (2) desinstalar un externo MCP en Claude
+  no remueve la entrada de `~/.claude.json` (limitación preexistente de todos los MCP; arreglarla toca la
+  remoción JSON cerca de `filemerge`, ALTO).
+- **Opcional futuro**: Figma MCP.
+- **Governance**: BAJO (`catalog`) / MEDIO (`harness/external`, fragmento).
+
+---
+
 ## Tabla resumen
 
 | Change | Ola | Governance | Depende de | Habilita |
@@ -468,9 +494,10 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 | `tui-menu-hub` | 2 | BAJO/MEDIO | `uninstall-subcommand` | `tui-update-stack`, `tui-configure-models` | ✅ IMPLEMENTADO (pend. archive) |
 | `tui-update-stack` | 3 | MEDIO | `tui-menu-hub` | — |
 | `tui-configure-models` | 3 | MEDIO | `tui-menu-hub` | — |
-| `add-design-mockups-toggle` | libre | MEDIO | `sdd-orchestrator` (catálogo) | `stitch-design`, `design-skills-harnesses` | ✅ IMPLEMENTADO (pend. archive) |
+| `add-design-mockups-toggle` | libre | MEDIO | `sdd-orchestrator` (catálogo) | `stitch-design`, `design-skills-harnesses`, `visual-verify` | ✅ IMPLEMENTADO (pend. archive) |
 | `stitch-design` | futuro | MEDIO | `add-design-mockups-toggle` (validar en Claude) | — | PENDIENTE |
 | `design-skills-harnesses` | libre | BAJO/MEDIO | `add-design-mockups-toggle` | — | ✅ IMPLEMENTADO (pend. archive) |
+| `visual-verify` | libre | MEDIO | `add-design-mockups-toggle` | Figma MCP opcional | ✅ IMPLEMENTADO (pend. archive) |
 
 **Camino crítico**: `uninstall-subcommand → tui-menu-hub → {tui-update-stack ‖ tui-configure-models}` (3 changes; los dos últimos en paralelo).
 

@@ -333,14 +333,14 @@ func TestForMode_ActiveOrchestratorIsFullOnly(t *testing.T) {
 // 18 foundation-global harnesses — NOT the 30 starter-only C-30 skills.
 // C-32: replaces TestForMode_CustomReturnsAll (which incorrectly expected all 43).
 // Bumped 13->15 when discovery-research and web-scraper were catalogued as
-// Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Bumped 15->16 (design-mockups) and 16->18 when emil-design-eng and
+// Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Bumped 16->18 when emil-design-eng and
 // design-taste-frontend-v1 were catalogued (design-skills-harnesses).
 func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 	c, err := Load()
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
-	const wantFoundationGlobal = 18
+	const wantFoundationGlobal = 19 // +1 playwright (visual-verify)
 	got := c.ForMode(model.ModeCustom)
 	if len(got) != wantFoundationGlobal {
 		t.Errorf("custom mode returned %d harnesses, want %d foundation-global", len(got), wantFoundationGlobal)
@@ -356,7 +356,7 @@ func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 // starter-only harnesses from all modes (lite, full, custom).
 // C-32: core invariant test — covers all three modes with count assertions.
 // Full/Custom bumped 13->15 when discovery-research and web-scraper were
-// catalogued as Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Full/Custom bumped 15->16 (design-mockups) and 16->18 when the two design
+// catalogued as Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Full/Custom bumped 16->18 when the two design
 // skills were catalogued (design-skills-harnesses); Lite stays at 6.
 func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 	c, err := Load()
@@ -369,8 +369,8 @@ func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 		wantCount int
 	}{
 		{model.ModeLite, 6},
-		{model.ModeFull, 18},
-		{model.ModeCustom, 18},
+		{model.ModeFull, 19},   // +1 playwright (visual-verify)
+		{model.ModeCustom, 19}, // +1 playwright (visual-verify)
 	}
 
 	for _, tc := range cases {
@@ -856,6 +856,150 @@ func TestDesignSkills_RejectedTasteSourcesAbsent(t *testing.T) {
 			if dep == p.id {
 				t.Errorf("design-mockups must not depend on %q (soft dependency only)", dep)
 			}
+		}
+	}
+}
+
+// TestPlaywrightHarness_Declared asserts the playwright harness is a
+// Full-only, Claude-only external MCP harness with a local stdio server and
+// no remote URL and no dependencies (visual-verify).
+func TestPlaywrightHarness_Declared(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("Load(): %v", err)
+	}
+	h, ok := c.ByID("playwright")
+	if !ok {
+		t.Fatal("playwright must exist in the catalog")
+	}
+	if h.Type != model.HarnessExternal {
+		t.Errorf("Type = %q, want external", h.Type)
+	}
+	if h.External == nil || h.External.Method != "mcp" {
+		t.Fatalf("External.Method must be mcp, got %+v", h.External)
+	}
+	if h.External.URL != "" {
+		t.Errorf("External.URL = %q, want empty (no remote endpoint)", h.External.URL)
+	}
+	if h.External.MCP == nil || h.External.MCP.Name != "playwright" || h.External.MCP.Command != "npx" {
+		t.Errorf("External.MCP = %+v, want name playwright, command npx", h.External.MCP)
+	}
+	if len(h.Agents) != 1 || h.Agents[0] != model.AgentClaude {
+		t.Errorf("Agents = %v, want [claude]", h.Agents)
+	}
+	if len(h.InstallModes) != 1 || h.InstallModes[0] != model.ModeFull {
+		t.Errorf("InstallModes = %v, want [full]", h.InstallModes)
+	}
+	if len(h.DependsOn) != 0 {
+		t.Errorf("DependsOn = %v, want empty", h.DependsOn)
+	}
+	for _, lang := range []string{"es", "en"} {
+		if h.Description[lang] == "" || h.LongDescription[lang] == "" {
+			t.Errorf("description/long_description must be present in %q", lang)
+		}
+	}
+}
+
+// TestPlaywrightHarness_VersionPinned asserts exactly one MCP arg pins
+// @playwright/mcp to MAJOR.MINOR.PATCH and that no arg floats on a tag.
+func TestPlaywrightHarness_VersionPinned(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("Load(): %v", err)
+	}
+	h, ok := c.ByID("playwright")
+	if !ok {
+		t.Fatal("playwright must exist in the catalog")
+	}
+	pinned := regexp.MustCompile(`^@playwright/mcp@\d+\.\d+\.\d+$`)
+	matches := 0
+	for _, a := range h.External.MCP.Args {
+		if pinned.MatchString(a) {
+			matches++
+		}
+		if strings.Contains(a, "@latest") || strings.Contains(a, "@next") {
+			t.Errorf("arg %q floats on a tag; pin an exact version", a)
+		}
+	}
+	if matches != 1 {
+		t.Errorf("want exactly 1 pinned @playwright/mcp@X.Y.Z arg, got %d in %v", matches, h.External.MCP.Args)
+	}
+}
+
+// TestPlaywrightHarness_ModeAndAgentScope asserts playwright is offered in
+// Full and Custom, not in Lite, and only for Claude.
+func TestPlaywrightHarness_ModeAndAgentScope(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("Load(): %v", err)
+	}
+	has := func(hs []model.Harness) bool {
+		for _, h := range hs {
+			if h.ID == "playwright" {
+				return true
+			}
+		}
+		return false
+	}
+	if !has(c.ForMode(model.ModeFull)) {
+		t.Error("ForMode(full) must contain playwright")
+	}
+	if !has(c.ForMode(model.ModeCustom)) {
+		t.Error("ForMode(custom) must contain playwright")
+	}
+	if has(c.ForMode(model.ModeLite)) {
+		t.Error("ForMode(lite) must NOT contain playwright")
+	}
+	if !has(c.ForAgent(model.AgentClaude)) {
+		t.Error("ForAgent(claude) must contain playwright")
+	}
+	for _, a := range []model.Agent{model.AgentOpenCode, model.AgentCodex} {
+		if has(c.ForAgent(a)) {
+			t.Errorf("ForAgent(%q) must NOT contain playwright", a)
+		}
+	}
+}
+
+// TestDesignMockups_NoHardDependencyOnPlaywright asserts the visual verify
+// recommendation stays soft: design-mockups depends on sdd-orchestrator only.
+func TestDesignMockups_NoHardDependencyOnPlaywright(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("Load(): %v", err)
+	}
+	h, ok := c.ByID("design-mockups")
+	if !ok {
+		t.Fatal("design-mockups must exist in the catalog")
+	}
+	var hasOrch bool
+	for _, d := range h.DependsOn {
+		if d == "sdd-orchestrator" {
+			hasOrch = true
+		}
+		if d == "playwright" {
+			t.Error("design-mockups must NOT hard-depend on playwright")
+		}
+	}
+	if !hasOrch {
+		t.Errorf("DependsOn = %v, want sdd-orchestrator", h.DependsOn)
+	}
+}
+
+// TestDesignMockups_DescribesVisualVerification asserts the long description
+// tells users, in both languages, that visual verification uses the
+// playwright harness when installed (design D5).
+func TestDesignMockups_DescribesVisualVerification(t *testing.T) {
+	c, err := Load()
+	if err != nil {
+		t.Fatalf("Load(): %v", err)
+	}
+	h, ok := c.ByID("design-mockups")
+	if !ok {
+		t.Fatal("design-mockups must exist in the catalog")
+	}
+	for _, lang := range []string{"es", "en"} {
+		if !strings.Contains(h.LongDescription[lang], "Playwright MCP") || !strings.Contains(h.LongDescription[lang], "`playwright`") {
+			t.Errorf("long_description[%s] must mention Playwright MCP and the `playwright` harness", lang)
 		}
 	}
 }
