@@ -30,6 +30,9 @@ const sddOrchestratorSectionID = "sdd-orchestrator"
 func ChecksForHarness(h model.Harness, adapters []Adapter, homeDir string) []Check {
 	var checks []Check
 	for _, adapter := range adapters {
+		if !h.SupportsAgent(adapter.Agent()) {
+			continue
+		}
 		checks = append(checks, checksForHarnessAdapter(h, adapter, homeDir)...)
 	}
 	return checks

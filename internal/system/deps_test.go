@@ -2,8 +2,16 @@ package system
 
 import (
 	"context"
+	"runtime"
 	"testing"
 )
+
+func echoCmd(arg string) []string {
+	if runtime.GOOS == "windows" {
+		return []string{"cmd", "/c", "echo", arg}
+	}
+	return []string{"echo", arg}
+}
 
 func TestParseVersionNode(t *testing.T) {
 	tests := []struct {
@@ -245,11 +253,11 @@ func TestRenderDependencyReportMissing(t *testing.T) {
 }
 
 func TestDetectSingleDepWithEchoTrue(t *testing.T) {
-	// This test uses "echo" which should be on PATH everywhere.
+	// This test uses echoCmd which is on PATH everywhere (echo on Unix, cmd /c echo on Windows).
 	dep := Dependency{
 		Name:      "echo",
 		Required:  true,
-		DetectCmd: []string{"echo", "v1.0.0"},
+		DetectCmd: echoCmd("v1.0.0"),
 	}
 
 	result := detectSingleDep(context.Background(), dep)
@@ -281,7 +289,7 @@ func TestDetectSingleDepMinVersionFail(t *testing.T) {
 		Name:       "echo",
 		Required:   true,
 		MinVersion: "99.0.0",
-		DetectCmd:  []string{"echo", "v1.0.0"},
+		DetectCmd:  echoCmd("v1.0.0"),
 	}
 
 	result := detectSingleDep(context.Background(), dep)
