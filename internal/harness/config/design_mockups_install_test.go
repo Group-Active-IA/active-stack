@@ -88,6 +88,95 @@ func TestInstall_DesignMockups_ClaudeOnly(t *testing.T) {
 	}
 }
 
+func TestInstall_DesignMockups_CodexUsesOwnWorkflow(t *testing.T) {
+	home := t.TempDir()
+	path := filepath.Join(home, "AGENTS.md")
+	h := designMockupsHarness()
+	h.Agents = []model.Agent{model.AgentClaude, model.AgentCodex}
+	adapter := fakeAdapter{agent: model.AgentCodex, path: path, variant: "codex"}
+
+	first, err := config.Install(h, []config.AgentAdapter{adapter}, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(first.Files) != 1 || first.Files[0] != path {
+		t.Fatalf("Files = %v, want [%s]", first.Files, path)
+	}
+	got := readFile(t, path)
+	for _, want := range []string{dmOpen, dmClose, "Codex", "design-system/README.md", "openspec/changes/<name>/mockups/", "Approval: approved", "verify", "Playwright"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("Codex section missing %q", want)
+		}
+	}
+	for _, forbidden := range []string{"Artifact with action", "design → sonnet", "CLAUDE.md"} {
+		if strings.Contains(got, forbidden) {
+			t.Errorf("Codex section contains Claude-only instruction %q", forbidden)
+		}
+	}
+	second, err := config.Install(h, []config.AgentAdapter{adapter}, home)
+	if err != nil || !second.AllAlready || strings.Count(readFile(t, path), dmOpen) != 1 {
+		t.Fatalf("reinstall: result=%+v err=%v", second, err)
+	}
+}
+
+func TestInstall_DesignMockups_OpenCodeUsesSharedRules(t *testing.T) {
+	home := t.TempDir()
+	instructions := filepath.Join(home, "oc", "AGENTS.md")
+	settings := filepath.Join(home, "oc", "opencode.json")
+	h := designMockupsHarness()
+	h.Agents = []model.Agent{model.AgentClaude, model.AgentCodex, model.AgentOpenCode}
+	adapter := opencodeAdapter{instr: instructions, settings: settings}
+
+	first, err := config.Install(h, []config.AgentAdapter{adapter}, home)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(first.Files) != 1 || first.Files[0] != instructions {
+		t.Fatalf("Files = %v, want shared rules file", first.Files)
+	}
+	got := readFile(t, instructions)
+	for _, required := range []string{dmOpen, dmClose, "design-system/README.md", "Approval: approved", "mockups/previews/"} {
+		if !strings.Contains(got, required) {
+			t.Errorf("OpenCode rules missing %q", required)
+		}
+	}
+	if _, err := os.Stat(settings); !os.IsNotExist(err) {
+		t.Errorf("design section must not register an OpenCode primary agent: %v", err)
+	}
+	second, err := config.Install(h, []config.AgentAdapter{adapter}, home)
+	if err != nil || !second.AllAlready || strings.Count(readFile(t, instructions), dmOpen) != 1 {
+		t.Fatalf("reinstall = %+v, error = %v", second, err)
+	}
+}
+
+func TestInstall_DesignMockups_OpenCodeAfterOrchestrator(t *testing.T) {
+	home := t.TempDir()
+	instructions := filepath.Join(home, "oc", "AGENTS.md")
+	settings := filepath.Join(home, "oc", "opencode.json")
+	adapter := opencodeAdapter{instr: instructions, settings: settings}
+	orch := model.Harness{ID: "sdd-orchestrator", Type: model.HarnessConfig, Toggles: []string{"delegation"}}
+	if _, err := config.Install(orch, []config.AgentAdapter{adapter}, home); err != nil {
+		t.Fatal(err)
+	}
+	h := designMockupsHarness()
+	h.Agents = []model.Agent{model.AgentClaude, model.AgentCodex, model.AgentOpenCode}
+	if _, err := config.Install(h, []config.AgentAdapter{adapter}, home); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(readFile(t, instructions), dmOpen) {
+		t.Fatal("OpenCode shared rules lack the visual gate")
+	}
+	if !strings.Contains(readFile(t, settings), "sdd-orchestrator") {
+		t.Fatal("OpenCode primary SDD agent was lost")
+	}
+	if _, err := config.Install(orch, []config.AgentAdapter{adapter}, home); err != nil {
+		t.Fatal(err)
+	}
+	if strings.Count(readFile(t, instructions), dmOpen) != 1 {
+		t.Fatal("reinstalling orchestrator lost or duplicated design gate")
+	}
+}
+
 // TestInstall_DesignMockups_Idempotent verifies re-installing neither
 // duplicates the section nor rewrites the file.
 func TestInstall_DesignMockups_Idempotent(t *testing.T) {

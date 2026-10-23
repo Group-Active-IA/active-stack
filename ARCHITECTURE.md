@@ -52,7 +52,7 @@ Un **harness** es cualquier módulo que prepara o guía el entorno de la IA.
 
 | Forma | Qué es | Origen | Ejemplos |
 |-------|--------|--------|----------|
-| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, active-orchestrator, skill-registry (propias); find-skill, skill-creator, emil-design-eng, design-taste-frontend-v1 (terceros; las dos de diseño, solo Claude y pineadas por SHA) |
+| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, active-orchestrator, skill-registry (propias); find-skill, skill-creator, emil-design-eng, design-taste-frontend-v1 (terceros; las dos de diseño, Claude/Codex/OpenCode y pineadas por SHA) |
 | **Configuración** | Texto/archivos que configuran el agente | bundleado en el instalador | `sdd-orchestrator` (orquestador con toggles: TDD, Engram, …), config de `AGENTS.md`/`CLAUDE.md`, permisos, MCP |
 | **Herramienta externa** | Binario/servicio de terceros | instalado/configurado, no es nuestro repo | Engram, OpenSpec CLI, Context7 (MCP) |
 
@@ -79,7 +79,7 @@ El resultado es el bloque de instrucciones del orquestador que se inyecta en
 > opt-in (que el usuario deba poder activar o no) va como **harness `config` propio**
 > con sección propia en el archivo de instrucciones (`active-stack:<id>`), registrada
 > en `sectionFragments` de `internal/harness/config` (`isOwnedSection` la protege del
-> purge). Primer caso: `design-mockups` (solo Claude, depende de `sdd-orchestrator`). Esa misma sección incluye el paso de verificación visual de `verify` (paso 7 del fragmento, sin sección nueva): usa el harness `playwright` si está instalado y, si no, degrada a checklist manual.
+> purge). Primer caso: `design-mockups` (Claude/Codex/OpenCode, depende de `sdd-orchestrator`). Los tres reciben el mismo fragmento bajo el mismo marker. En Full se instala automáticamente; en Custom se selecciona. Ante el primer change visual de un proyecto, exige crear o relevar `design-system/` y aprobar su vista HTML/CSS. Después cada change reutiliza la revisión aprobada para producir mockups HTML/CSS locales con capturas móvil/escritorio y aprobación antes de implementar. Nombre y logo pueden quedar `(TBD)` en rutas estables. La sección también define verificación visual en `verify` con `playwright` si está disponible y checklist manual si no. No requiere Artifact Design ni servicio externo.
 
 ---
 
@@ -105,13 +105,13 @@ que es la fuente de verdad de qué harnesses existen. Cada entrada declara:
 - id: design-mockups
   type: config           # sección propia: <!-- active-stack:design-mockups -->
   install_modes: [full]
-  agents: [claude]
+  agents: [claude, codex, opencode]
   depends_on: [sdd-orchestrator]
 - id: playwright
   type: external
   external: { method: mcp, mcp: { name: playwright, command: npx, args: [-y, "@playwright/mcp@<x.y.z>"] } }
   install_modes: [full]
-  agents: [claude]       # el install externo saltea los agentes no soportados
+  agents: [claude, codex, opencode] # el install externo saltea agentes no soportados
 - id: engram
   type: external
   install: { method: homebrew | download, ... }

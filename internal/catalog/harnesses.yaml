@@ -48,9 +48,9 @@ harnesses:
     install_modes: [lite, full]
 
   - id: playwright
-    name: Playwright MCP (Claude)
-    description: { es: "Navegador automatizado para verificar la UI contra los mockups (MCP stdio, solo Claude).", en: "Automated browser to verify the UI against the mockups (stdio MCP, Claude only)." }
-    long_description: { es: "Registra el servidor MCP oficial de Microsoft, Playwright MCP, como servidor stdio `playwright` en la config de MCP de Claude (`~/.claude.json`), lanzado con `npx` y una versión fija (`@playwright/mcp@0.0.83`) para que la instalación sea reproducible. Le da al agente un navegador real para abrir tu app, sacar capturas, leer la consola y los requests fallidos. Lo usa la verificación visual de `design-mockups` durante verify; sin este harness esa verificación degrada a un checklist manual. Es solo para Claude y requiere Node 18 o superior; no instala navegadores (Playwright MCP los gestiona en runtime). Desinstalar no remueve la entrada de `~/.claude.json`, igual que los demás MCP.", en: "Registers Microsoft's official MCP server, Playwright MCP, as a stdio server named `playwright` in Claude's MCP config (`~/.claude.json`), launched through `npx` with a pinned version (`@playwright/mcp@0.0.83`) so installs are reproducible. It gives the agent a real browser to open your app, take screenshots, and read the console and failed requests. The `design-mockups` visual verification uses it during verify; without this harness that check degrades to a manual checklist. It's Claude-only and requires Node 18 or newer; it does not install browsers (Playwright MCP manages them at runtime). Uninstalling does not remove the `~/.claude.json` entry, like the other MCPs." }
+    name: Playwright MCP (Claude/Codex/OpenCode)
+    description: { es: "Navegador para previsualizar diseños y verificar la UI (MCP stdio, Claude, Codex y OpenCode).", en: "Browser for previewing designs and verifying UI (stdio MCP, Claude, Codex and OpenCode)." }
+    long_description: { es: "Registra el servidor MCP oficial de Microsoft como servidor stdio `playwright` en Claude, Codex y OpenCode, con `npx` y versión fija (`@playwright/mcp@0.0.83`). Permite renderizar el sistema visual del proyecto y los mockups HTML, mostrar capturas móvil/escritorio antes de cada aprobación y comparar la UI implementada durante verify. También permite leer errores de consola y requests fallidos. Requiere Node 18 o superior; no instala navegadores (Playwright MCP los gestiona en runtime). Es una dependencia suave: sin navegador se entregan los HTML con instrucciones de apertura y verify usa un checklist manual. Desinstalar no remueve la entrada MCP, igual que los demás MCP.", en: "Registers Microsoft's official MCP server as `playwright` stdio MCP in Claude, Codex and OpenCode, using `npx` and a pinned version (`@playwright/mcp@0.0.83`). It renders the project's visual system and HTML mockups, provides mobile/desktop captures before each approval and compares the implemented UI during verify. It can also inspect console errors and failed requests. Requires Node 18 or newer; it does not install browsers (Playwright MCP manages them at runtime). This is a soft dependency: without a browser the agent provides HTML with opening instructions and verify uses a manual checklist. Uninstalling does not remove the MCP entry, like other MCPs." }
     type: external
     external:
       method: mcp
@@ -59,7 +59,7 @@ harnesses:
         command: npx
         args: ["-y", "@playwright/mcp@0.0.83"]
     install_modes: [full]
-    agents: [claude]
+    agents: [claude, codex, opencode]
 
   # ── Configuración (bundleados en el instalador) ───────────────────────────
   - id: sdd-orchestrator
@@ -80,12 +80,12 @@ harnesses:
     agents: [claude, codex, opencode, gemini, vscode]
 
   - id: design-mockups
-    name: Design Mockups (Claude)
-    description: { es: "Paso de diseño de mockups con aprobación humana antes de implementar UI (solo Claude, opt-in).", en: "UI mockup design step with human approval before implementing UI (Claude only, opt-in)." }
-    long_description: { es: "Suma al orquestador OPSX una etapa de diseño entre propose y apply: cuando un change tiene interfaz de usuario, el agente te pregunta si querés mockups, los genera con la herramienta Artifact de Claude (tipo Design), los guarda en `openspec/changes/<name>/mockups/` y no empieza a implementar hasta que los aprobás explícitamente. Es exclusivo de Claude y opt-in: se inyecta como una sección propia del CLAUDE.md, separada de la del orquestador, así que podés instalarlo y desinstalarlo sin tocar el resto. Requiere la herramienta Artifact; si no está disponible, usa mockups HTML estáticos como alternativa. La verificación visual en verify usa Playwright MCP si está instalado (harness `playwright`); sin él, degrada a un checklist manual. Depende de sdd-orchestrator.", en: "Adds a design stage to the OPSX orchestrator between propose and apply: when a change has a user interface, the agent asks whether you want mockups, generates them with Claude's Artifact tool (Design type), stores them in `openspec/changes/<name>/mockups/`, and does not start implementing until you explicitly approve them. It's Claude-only and opt-in: it's injected as its own CLAUDE.md section, separate from the orchestrator's, so you can install and uninstall it without touching anything else. It requires the Artifact tool; when that's unavailable it falls back to static HTML mockups. The visual verification in verify uses Playwright MCP when it is installed (the `playwright` harness); without it, it degrades to a manual checklist. Depends on sdd-orchestrator." }
+    name: Design System + Mockups
+    description: { es: "Sistema visual por proyecto y mockups HTML/CSS con aprobación humana (Claude, Codex y OpenCode).", en: "Project visual system and HTML/CSS mockups with human approval (Claude, Codex and OpenCode)." }
+    long_description: { es: "En Full se instala automáticamente para Claude, Codex y OpenCode; en Custom se puede seleccionar. Antes del primer mockup visual del proyecto, exige crear o relevar un `design-system/` local, mostrar una vista previa y registrar la aprobación humana. Permite nombre, logo o imágenes `(TBD)` con rutas y tokens estables para reemplazarlos fácilmente. Cada change visual reutiliza la revisión aprobada, crea mockups HTML/CSS locales, muestra capturas móvil/escritorio y espera otra aprobación antes de implementar. Si cambia el sistema o el mockup, identifica lo afectado y solicita nueva revisión. En verify compara la UI con los mockups usando Playwright MCP (harness `playwright`) si está disponible; sin navegador entrega instrucciones de apertura y un checklist manual. No requiere Artifact Design ni cuenta externa. Se inyecta en su sección propia y depende de sdd-orchestrator.", en: "Full installs this automatically for Claude, Codex and OpenCode; Custom can select it. Before a project's first visual mockup, it requires creating or auditing a local `design-system/`, showing a preview and recording human approval. Name, logo or imagery may remain `(TBD)` with stable paths and tokens for easy replacement. Each visual change reuses the approved revision, creates local HTML/CSS mockups, shows mobile/desktop captures and waits for another approval before implementation. A changed system or mockup identifies affected work and requires renewed review. Verify compares UI with mockups using Playwright MCP (the `playwright` harness) when available; without a browser it gives opening instructions and a manual checklist. It requires no Artifact Design or external account. It is injected in its own section and depends on sdd-orchestrator." }
     type: config
     install_modes: [full]
-    agents: [claude]
+    agents: [claude, codex, opencode]
     depends_on: [sdd-orchestrator]
 
   # ── Skills propias ─────────────────────────────────────────────────────────
@@ -184,7 +184,7 @@ harnesses:
     source: { repo: anthropics/skills, ref: latest, method: clone, path: skills/skill-creator }
     install_modes: [full]
 
-  # ── design-skills-harnesses: skills de diseño de terceros (opt-in, solo Claude) ──
+  # ── design-skills-harnesses: skills de diseño de terceros (Claude/Codex/OpenCode) ──
   # Pineadas a un commit SHA completo (fetch por commit, ver internal/harness/skill/clone.go).
   # Fecha del pin: 2026-10-08. Para actualizar un pin: consultar el HEAD con
   #   gh api repos/<owner>/<repo>/commits/main --jq .sha
@@ -194,22 +194,22 @@ harnesses:
   - id: emil-design-eng
     name: Emil Design Engineering
     description: { es: "Principios de ingeniería de diseño de Emil Kowalski para interfaces cuidadas.", en: "Emil Kowalski's design engineering principles for polished interfaces." }
-    long_description: { es: "Skill de terceros (MIT) con la filosofía de Emil Kowalski sobre detalles de UI, animaciones y feel de las interfaces. Se clona desde `emilkowalski/skills` (subdir `skills/emil-design-eng`), fijada al commit `e8a175de22ae1e49370fc144c1f3bb9aeedf988d` (2026-10-02), al directorio de skills de Claude. Es opcional: la etapa de diseño de `design-mockups` la carga si está instalada, pero ninguna depende de la otra. Solo Claude. Ojo: si la invocás sin una consulta concreta, responde con un saludo fijo del upstream. Es best-effort: si el clone falla, el install no aborta.", en: "Third-party skill (MIT) with Emil Kowalski's philosophy on UI details, animation and interface feel. It's cloned from `emilkowalski/skills` (subdir `skills/emil-design-eng`), pinned to commit `e8a175de22ae1e49370fc144c1f3bb9aeedf988d` (2026-10-02), into Claude's skills directory. It's optional: the `design-mockups` design stage loads it when installed, but neither depends on the other. Claude only. Note: invoked without a concrete question it answers with a fixed upstream greeting. It's best-effort: if the clone fails the install doesn't abort." }
+    long_description: { es: "Skill de terceros (MIT) con la filosofía de Emil Kowalski sobre detalles de UI, animaciones y feel de las interfaces. Se clona desde `emilkowalski/skills` (subdir `skills/emil-design-eng`), fijada al commit `e8a175de22ae1e49370fc144c1f3bb9aeedf988d` (2026-10-02), al directorio de skills del agente. Es opcional: la etapa de diseño de `design-mockups` la carga si está instalada, pero ninguna depende de la otra. Claude, Codex y OpenCode. Ojo: si la invocás sin una consulta concreta, responde con un saludo fijo del upstream. Es best-effort: si el clone falla, el install no aborta.", en: "Third-party skill (MIT) with Emil Kowalski's philosophy on UI details, animation and interface feel. It's cloned from `emilkowalski/skills` (subdir `skills/emil-design-eng`), pinned to commit `e8a175de22ae1e49370fc144c1f3bb9aeedf988d` (2026-10-02), into the agent's skills directory. It's optional: the `design-mockups` design stage loads it when installed, but neither depends on the other. Claude, Codex and OpenCode. Note: invoked without a concrete question it answers with a fixed upstream greeting. It's best-effort: if the clone fails the install doesn't abort." }
     type: skill
     third_party: true
     best_effort: true # falla del clone no aborta el install (terceros: layout puede cambiar)
-    agents: [claude]
+    agents: [claude, codex, opencode]
     source: { repo: emilkowalski/skills, ref: e8a175de22ae1e49370fc144c1f3bb9aeedf988d, method: clone, path: skills/emil-design-eng }
     install_modes: [full]
 
   - id: design-taste-frontend-v1
     name: Taste Skill v1 (frontend)
     description: { es: "Criterio de diseño frontend con baseline de variación, movimiento y densidad.", en: "Frontend design taste with a baseline for variance, motion and density." }
-    long_description: { es: "Skill de terceros (MIT) que fija un criterio estético opinado para frontend (variación de diseño, intensidad de movimiento y densidad visual por defecto). Se clona desde `Leonxlnx/taste-skill` (subdir `skills/taste-skill-v1`), fijada al commit `b482f7a970abb98c4108d4a9f761e458c64cefc8` (2026-10-07), al directorio de skills de Claude. Es la v1 estable: la v2 experimental del mismo repo no se incluye. Es opcional: la etapa de diseño de `design-mockups` la carga si está instalada, sin dependencia dura. Solo Claude. Es best-effort: si el clone falla, el install no aborta.", en: "Third-party skill (MIT) that sets an opinionated frontend aesthetic baseline (design variance, motion intensity and visual density defaults). It's cloned from `Leonxlnx/taste-skill` (subdir `skills/taste-skill-v1`), pinned to commit `b482f7a970abb98c4108d4a9f761e458c64cefc8` (2026-10-07), into Claude's skills directory. It's the stable v1: the experimental v2 of the same repo is not included. It's optional: the `design-mockups` design stage loads it when installed, with no hard dependency. Claude only. It's best-effort: if the clone fails the install doesn't abort." }
+    long_description: { es: "Skill de terceros (MIT) que fija un criterio estético opinado para frontend (variación de diseño, intensidad de movimiento y densidad visual por defecto). Se clona desde `Leonxlnx/taste-skill` (subdir `skills/taste-skill-v1`), fijada al commit `b482f7a970abb98c4108d4a9f761e458c64cefc8` (2026-10-07), al directorio de skills del agente. Es la v1 estable: la v2 experimental del mismo repo no se incluye. Es opcional: la etapa de diseño de `design-mockups` la carga si está instalada, sin dependencia dura. Claude, Codex y OpenCode. Es best-effort: si el clone falla, el install no aborta.", en: "Third-party skill (MIT) that sets an opinionated frontend aesthetic baseline (design variance, motion intensity and visual density defaults). It's cloned from `Leonxlnx/taste-skill` (subdir `skills/taste-skill-v1`), pinned to commit `b482f7a970abb98c4108d4a9f761e458c64cefc8` (2026-10-07), into the agent's skills directory. It's the stable v1: the experimental v2 of the same repo is not included. It's optional: the `design-mockups` design stage loads it when installed, with no hard dependency. Claude, Codex and OpenCode. It's best-effort: if the clone fails the install doesn't abort." }
     type: skill
     third_party: true
     best_effort: true # falla del clone no aborta el install (terceros: layout puede cambiar)
-    agents: [claude]
+    agents: [claude, codex, opencode]
     source: { repo: Leonxlnx/taste-skill, ref: b482f7a970abb98c4108d4a9f761e458c64cefc8, method: clone, path: skills/taste-skill-v1 }
     install_modes: [full]
 

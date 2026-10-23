@@ -728,7 +728,7 @@ starters:
 }
 
 // TestDesignMockups_InCatalog asserts the opt-in design-mockups harness is
-// catalogued as a Claude-only config harness that depends on sdd-orchestrator
+// catalogued for the three supported agents and depends on sdd-orchestrator
 // and ships in Full (Custom matches everything) but not in Lite.
 func TestDesignMockups_InCatalog(t *testing.T) {
 	c, err := Load()
@@ -745,7 +745,13 @@ func TestDesignMockups_InCatalog(t *testing.T) {
 	if !h.SupportsAgent(model.AgentClaude) {
 		t.Error("design-mockups must support claude")
 	}
-	for _, a := range []model.Agent{model.AgentOpenCode, model.AgentCodex, model.AgentGemini} {
+	if !h.SupportsAgent(model.AgentCodex) {
+		t.Error("design-mockups must support codex")
+	}
+	if !h.SupportsAgent(model.AgentOpenCode) {
+		t.Error("design-mockups must support opencode")
+	}
+	for _, a := range []model.Agent{model.AgentGemini} {
 		if h.SupportsAgent(a) {
 			t.Errorf("design-mockups must NOT support %q", a)
 		}
@@ -771,7 +777,7 @@ var designSkillPins = []struct {
 }
 
 // TestDesignSkills_InCatalog asserts both design skills are catalogued as
-// pinned, third-party, best-effort, Claude-only, Full/Custom-only skills.
+// pinned, third-party, best-effort, three-agent, Full/Custom-only skills.
 func TestDesignSkills_InCatalog(t *testing.T) {
 	c, err := Load()
 	if err != nil {
@@ -805,8 +811,8 @@ func TestDesignSkills_InCatalog(t *testing.T) {
 			if h.IsStarterOnly() {
 				t.Error("must not be starter-only")
 			}
-			if len(h.Agents) != 1 || h.Agents[0] != model.AgentClaude {
-				t.Errorf("Agents = %v, want [claude]", h.Agents)
+			if !h.SupportsAgent(model.AgentClaude) || !h.SupportsAgent(model.AgentCodex) || !h.SupportsAgent(model.AgentOpenCode) {
+				t.Errorf("Agents = %v, want claude, codex and opencode", h.Agents)
 			}
 			if len(h.DependsOn) != 0 {
 				t.Errorf("DependsOn = %v, want none", h.DependsOn)
@@ -861,7 +867,7 @@ func TestDesignSkills_RejectedTasteSourcesAbsent(t *testing.T) {
 }
 
 // TestPlaywrightHarness_Declared asserts the playwright harness is a
-// Full-only, Claude-only external MCP harness with a local stdio server and
+// Full-only, three-agent external MCP harness with a local stdio server and
 // no remote URL and no dependencies (visual-verify).
 func TestPlaywrightHarness_Declared(t *testing.T) {
 	c, err := Load()
@@ -884,8 +890,8 @@ func TestPlaywrightHarness_Declared(t *testing.T) {
 	if h.External.MCP == nil || h.External.MCP.Name != "playwright" || h.External.MCP.Command != "npx" {
 		t.Errorf("External.MCP = %+v, want name playwright, command npx", h.External.MCP)
 	}
-	if len(h.Agents) != 1 || h.Agents[0] != model.AgentClaude {
-		t.Errorf("Agents = %v, want [claude]", h.Agents)
+	if !h.SupportsAgent(model.AgentClaude) || !h.SupportsAgent(model.AgentCodex) || !h.SupportsAgent(model.AgentOpenCode) {
+		t.Errorf("Agents = %v, want claude, codex and opencode", h.Agents)
 	}
 	if len(h.InstallModes) != 1 || h.InstallModes[0] != model.ModeFull {
 		t.Errorf("InstallModes = %v, want [full]", h.InstallModes)
@@ -927,7 +933,7 @@ func TestPlaywrightHarness_VersionPinned(t *testing.T) {
 }
 
 // TestPlaywrightHarness_ModeAndAgentScope asserts playwright is offered in
-// Full and Custom, not in Lite, and only for Claude.
+// Full and Custom, not in Lite, and for all three supported agents.
 func TestPlaywrightHarness_ModeAndAgentScope(t *testing.T) {
 	c, err := Load()
 	if err != nil {
@@ -953,10 +959,11 @@ func TestPlaywrightHarness_ModeAndAgentScope(t *testing.T) {
 	if !has(c.ForAgent(model.AgentClaude)) {
 		t.Error("ForAgent(claude) must contain playwright")
 	}
-	for _, a := range []model.Agent{model.AgentOpenCode, model.AgentCodex} {
-		if has(c.ForAgent(a)) {
-			t.Errorf("ForAgent(%q) must NOT contain playwright", a)
-		}
+	if !has(c.ForAgent(model.AgentCodex)) {
+		t.Error("ForAgent(codex) must contain playwright")
+	}
+	if !has(c.ForAgent(model.AgentOpenCode)) {
+		t.Error("ForAgent(opencode) must contain playwright")
 	}
 }
 

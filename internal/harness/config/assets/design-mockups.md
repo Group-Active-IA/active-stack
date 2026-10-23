@@ -1,59 +1,108 @@
-## Design Stage — UI Mockups (Claude)
+## Design Stage — UI Mockups
 
-Extends the OPSX workflow above. Flow with this stage:
-explore → propose → **design** → apply → verify → archive.
-The design stage runs AFTER propose (the specs define the screens) and BEFORE apply. Never during apply.
+For visual changes, run: explore → propose → **design system** → **design** → apply → verify → archive.
+Visual work includes a new or changed page, screen, component, layout, style or interaction.
+Run the foundation and mockup gates automatically; do not ask whether they are needed.
+Only an explicit request from the user may skip mockups for a particular visual change.
+For nonvisual work, record `Decision: no (no UI)` and continue.
 
-1. Detect UI: if the change's proposal/specs/design/tasks mention pages, screens,
-   components, forms or other user-interface work → ask the user
-   "Does this change need mockups?" (yes / no / I already have them).
-   No UI signal → do not ask; record `Decision: no`.
-   If `design.md` already has a `## UI Mockups` decision → honour it, never re-ask.
-2. Record the outcome in `openspec/changes/<name>/design.md` under `## UI Mockups`:
-   - `Decision: yes | no | provided` (+ date)
-   - `Mockups: <path to mockups/ and/or Artifact URL>`
-   - `Approval: pending | approved (<date>, by user)`
-   - `Visual verify: passed | differences | manual (<date>)` (optional; written by step 7)
-3. yes → delegate to a general-purpose sub-agent (it has the Artifact tool): call
-   Artifact with action "quickstart" and intent "design"; create the artifact from
-   the returned `type_url` (never hardcode it; add a title and auto_open
-   "after_first_write") and follow the instructions the creation result returns.
-   Write `mockups/README.md` with the artifact URL, the screen list and the approval
-   state, and save an exported copy into `mockups/` when the tool allows it.
-   Artifact unavailable → write self-contained static HTML mockups into `mockups/`.
-   provided → copy or reference the user's mockups into `mockups/`.
-4. Approval gate (a deliberate exception to "never block on phase gates"): when the
-   decision is yes or provided, do NOT start apply until the user explicitly approves
-   the mockups and `Approval: approved` is recorded. Present them, ask, then record.
-   If the user asks for changes, iterate on the same artifact (republish by its url)
-   and set the approval back to `pending`. Decision `no` never gates apply.
-5. Store mockups under `openspec/changes/<name>/mockups/` and reference them from
-   `design.md` and `tasks.md`. In apply and verify they are visual acceptance criteria.
-6. If design skills such as `emil-design-eng` (Emil Kowalski) or a taste skill are
-   installed (if installed; this is a soft dependency, the stage works without them),
-   load them for the design step.
-7. Visual verify (during verify): run only when `## UI Mockups` records
-   `Decision: yes | provided` AND `Approval: approved`; otherwise skip this step.
-   Include these instructions in the verify sub-agent brief.
-   - Playwright available (tools such as `browser_navigate`, `browser_resize`,
-     `browser_take_screenshot`, `browser_console_messages`,
-     `browser_network_requests`): start the dev server (script from package.json
-     or the project's CLAUDE.md; ask if unknown), open each mockup screen on its
-     localhost URL, capture it at mobile (390x844) and desktop (1440x900), read
-     console errors and failed network requests, compare against `mockups/`, then
-     stop the dev server you started. Save or reference captures under
-     `openspec/changes/<name>/mockups/verify/`. If the browser fails to open,
-     report the error and fall back to the manual path below.
-   - Report each difference with priority (blocker / major / minor), screen,
-     viewport, expected (mockup ref), observed, and reproduction steps. List which
-     screens and viewports were checked and which were not. Never claim a screen
-     matches or works unless you opened and checked it.
-   - Playwright not available: say explicitly that visual verification was NOT automated,
-     give the user a manual checklist (each screen x mobile and desktop), and
-     suggest installing the `playwright` harness (active-stack).
-     This is a soft dependency: design-mockups works without it.
-   - Record `Visual verify: passed | differences | manual (<date>)` under
-     `## UI Mockups`.
+### Project-wide design system gate
 
-Model: if the Model Assignments table is present, use design → sonnet for this stage.
-Artifact URLs are private until the user shares them.
+1. Before creating change mockups, read project-root `design-system/README.md` and
+   check its `Revision:` and `Approval:` fields. An absent or unapproved system
+   blocks change mockups. A Full install provides this workflow; it does not
+   create a brand for every project at install time. During foundation of a
+   new UI project, run this gate after product discovery/KB and before planning
+   frontend changes. If that point has passed, run it at the first visual change.
+2. For a new project, make a brief from the product, audience, tasks, platform,
+   references and constraints. For an existing app, first audit its actual
+   logo, colors, typography, components and motion; preserve established
+   choices unless the user requests a rebrand. Mark unknown facts `(TBD)`.
+   Load relevant installed design skills such as `emil-design-eng` and
+   `design-taste-frontend-v1` when available; these are soft dependencies.
+3. Create the portable foundation at project root:
+   - `design-system/README.md`: purpose, source references, `Revision: 1`,
+     `Approval: pending`, open `(TBD)` decisions and replacement instructions.
+   - `design-system/brand.md`: product name, logo, imagery, visual tone and
+     usage rules, each with source or `(TBD)`.
+   - `design-system/brand.js`: one local brand-name constant and a tiny binding
+     for `[data-brand-name]` in HTML previews, so renaming does not require
+     editing every mockup. Keep the script self-contained and accessible.
+   - `design-system/tokens.css`: named CSS variables for color, typography,
+     spacing, radii, shadows, focus and motion, with reduced-motion behavior.
+   - `design-system/components.html`: local HTML/CSS reference for representative
+     components and states, importing `tokens.css` and local assets.
+   - `design-system/assets/`: stable local paths such as `logo.svg`. A provisional
+     logo must visibly say it is a placeholder, not imply an approved brand.
+   - `design-system/previews/`: rendered mobile and desktop captures.
+   Add other files only when the project needs them. Do not require a design
+   service, remote font, third-party account or Claude-only tool.
+4. Make unresolved name, logo and imagery replaceable at a single stable path
+   or named token (`brand.js` for displayed name, `assets/logo.svg` for the
+   logo, `tokens.css` for visual values). Record exact replacement steps in
+   `README.md`. The user may
+   approve a usable foundation with `(TBD)` items; keep them visibly provisional
+   in previews and later mockups. Never invent brand facts as if final.
+5. Render `components.html` in an available browser at 390x844 and 1440x900.
+   If Playwright MCP is installed, use it to open the local file (or serve the
+   folder on localhost if file navigation is blocked), resize and call
+   `browser_take_screenshot` with filenames in `design-system/previews/` (full
+   page when supported). Stop a preview server you started. Inspect the images
+   and fix obvious defects. Show the actual captures and a clickable local HTML
+   link to the user. If rendering is unavailable, give the HTML and exact manual
+   opening steps; say that visual inspection was not automated.
+6. Wait for explicit user approval of this foundation before creating change
+   mockups. Record `Approval: approved (<date>, by user)` in `README.md`;
+   otherwise keep `Approval: pending`. A requested revision resets it to pending.
+   Reuse the approved `Revision:` for later visual changes; do not regenerate
+   the foundation for each screen. When a shared token or asset changes, bump
+   the revision, identify affected mockups, rerender them and ask for renewed
+   review wherever their appearance changes.
+
+### Mockup gate for each visual change
+
+7. Read the approved design-system revision and the change proposal, specs,
+   design and tasks. Record `## UI Mockups` in
+   `openspec/changes/<name>/design.md` with:
+   - `Design system revision: <revision from design-system/README.md>`.
+   - `Decision: yes | provided | no` and date. Visual `no` requires the user's
+     explicit skip request; a user-supplied design uses `provided`.
+   - `Mockups: <path to mockups/>` and supplied source references.
+   - `Approval: pending | approved (<date>, by user)`.
+   - `Preview: rendered | manual (<date>, paths)`.
+   - `Visual verify: passed | differences | manual (<date>)` after verify.
+   Respect a recorded approval for the same revision; do not ask again.
+8. Write a short design brief covering audience, task, affected screens and
+   states, responsive sizes, approved tokens/assets, constraints and supplied
+   references. Use an installed design skill when relevant. If its advice
+   conflicts with the approved foundation, follow the foundation or propose
+   a foundation revision for user review.
+9. Under `openspec/changes/<name>/mockups/`, create local responsive HTML/CSS
+   for each affected screen and state, local assets only when needed, and a
+   README listing screens, sources, preview steps and `Approval: pending`.
+   Import the shared `design-system/tokens.css` and `brand.js`, and reference
+   stable assets rather than copying values when practical. Clearly mark
+   `(TBD)` placeholders.
+   A supplied Figma or other design can be a reference; the local HTML remains
+   the common review format for Claude, Codex and OpenCode.
+10. Render each mockup at 390x844 and 1440x900, using Playwright MCP when
+    installed. Save inspected captures in `mockups/previews/`, present images
+    and clickable HTML files, and record `Preview: rendered`. If no browser is
+    available, give manual opening steps, record `Preview: manual`, and do not
+    claim rendered inspection. A URL alone is not proof the user saw the design.
+11. Do NOT begin apply until the user explicitly approves the shown mockup
+    revision and `Approval: approved` is recorded. This is the deliberate
+    exception to "never block on phase gates". A revision resets approval to
+    pending. Link approved mockups and captures from `design.md` and `tasks.md`
+    as acceptance criteria. Never silently change an approved mockup.
+12. During verify, compare every implemented screen with its approved mockup
+    and the recorded design-system revision. With a browser, start the dev
+    server, capture mobile and desktop, inspect console errors and failed
+    network requests, save captures under `mockups/verify/`, then stop the
+    server. Report differences by priority (blocker / major / minor), screen,
+    viewport, expected mockup, observed result and reproduction steps. List
+    checked and unchecked screens. Never claim a match without opening it.
+    Without a browser, report that visual verification was NOT automated,
+    provide a screen-by-screen manual checklist, suggest the `playwright`
+    harness, and record `Visual verify: manual`. The browser is a soft
+    dependency; design-mockups still works with manual review.

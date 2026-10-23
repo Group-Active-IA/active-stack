@@ -81,12 +81,19 @@ inyecta en `CLAUDE.md`/`AGENTS.md` del proyecto destino.
 
 Los toggles del `sdd-orchestrator` **no se exponen en la TUI ni en la GUI** (salen
 literales del catálogo); los harnesses sí. Por eso las capacidades opt-in se
-entregan como harness propio. Ejemplo: **`design-mockups`** — `config`, solo
-`claude`, opt-in, depende de `sdd-orchestrator`; agrega la etapa de diseño de
-mockups (con gate de aprobación humana) entre `propose` y `apply`. Se inyecta como
-sección propia `active-stack:design-mockups` del `CLAUDE.md`, separada de la del
+entregan como harness propio. Ejemplo: **`design-mockups`** — `config`,
+`claude`, `codex` y `opencode`, Full automático o Custom seleccionable, depende de
+`sdd-orchestrator`; exige primero un `design-system/` aprobado por proyecto y
+después mockups aprobados por change entre `propose` y `apply`. Se inyecta como
+sección propia `active-stack:design-mockups` del `CLAUDE.md` o `AGENTS.md`, separada de la del
 orquestador (se registra en `sectionFragments` y `isOwnedSection` la reconoce, así
-el orquestador no la purga). La sección incluye la verificación visual en `verify` (paso 7) vía el harness `playwright` (MCP de navegador, solo Claude; dependencia suave: sin él degrada a checklist manual). Las skills de terceros `emil-design-eng` y `design-taste-frontend-v1` son harnesses `skill` opcionales, solo Claude (Full, pineadas por SHA): la etapa de diseño las carga si están instaladas, sin dependencia dura.
+el orquestador no la purga). Los tres agentes usan el mismo bundle HTML/CSS local,
+capturas móvil/escritorio y aprobación explícita en ambos gates; nombre y logo pueden
+quedar `(TBD)` con rutas estables para reemplazo. Claude no requiere Artifact Design.
+La sección incluye verificación visual en `verify` vía `playwright` (MCP de navegador
+para los tres agentes; dependencia suave, con checklist manual si falta). Las skills
+de terceros `emil-design-eng` y `design-taste-frontend-v1` son opcionales para los
+tres agentes (Full, pineadas por SHA), sin dependencia dura.
 
 ---
 

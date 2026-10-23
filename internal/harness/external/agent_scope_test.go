@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/Group-Active-IA/active-stack/internal/catalog"
@@ -89,12 +90,14 @@ func TestInstall_SkipsUnsupportedAgents(t *testing.T) {
 	}
 }
 
-// TestInstall_SkipsUnsupportedAgents_LeavesExistingFileUntouched: an existing
-// opencode config stays byte-for-byte identical.
+// TestInstall_SkipsUnsupportedAgents_LeavesExistingFileUntouched: when a
+// harness is explicitly scoped to Claude, an existing OpenCode config stays
+// byte-for-byte identical.
 func TestInstall_SkipsUnsupportedAgents_LeavesExistingFileUntouched(t *testing.T) {
 	stubSnapshotter(t)
 	home := t.TempDir()
 	h := playwrightHarness(t)
+	h.Agents = []model.Agent{model.AgentClaude}
 	claude := &claudeFixAdapter{homeDir: home}
 	opencode := &fakeAdapter{agent: model.AgentOpenCode, strategy: StrategyMergeIntoSettings}
 	ocPath := opencode.MCPConfigPath(home, h.ID)
@@ -116,6 +119,34 @@ func TestInstall_SkipsUnsupportedAgents_LeavesExistingFileUntouched(t *testing.T
 	}
 	if string(after) != string(before) {
 		t.Errorf("opencode config changed:\nbefore: %s\nafter:  %s", before, after)
+	}
+}
+
+func TestInstall_PlaywrightOpenCodeUsesLocalServer(t *testing.T) {
+	stubSnapshotter(t)
+	home := t.TempDir()
+	h := playwrightHarness(t)
+	opencode := &fakeAdapter{agent: model.AgentOpenCode, strategy: StrategyMergeIntoSettings}
+	path := opencode.MCPConfigPath(home, h.ID)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte(`{"mcp":{"keep":{"type":"remote","url":"https://example.com"}}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Install(context.Background(), h, system.PlatformProfile{}, []AgentAdapter{opencode}, home, nil); err != nil {
+		t.Fatal(err)
+	}
+	servers := readJSONFile(t, path)["mcp"].(map[string]any)
+	if _, ok := servers["keep"]; !ok {
+		t.Fatal("unrelated MCP server was lost")
+	}
+	entry := servers["playwright"].(map[string]any)
+	if entry["type"] != "local" || entry["enabled"] != true {
+		t.Fatalf("Playwright entry = %v, want enabled local server", entry)
+	}
+	if got := entry["command"].([]any); !reflect.DeepEqual(got, []any{"npx", "-y", "@playwright/mcp@0.0.83"}) {
+		t.Errorf("command = %v", got)
 	}
 }
 
@@ -174,6 +205,32 @@ func TestInstall_Playwright_Idempotent(t *testing.T) {
 	servers, _ := readJSONFile(t, filepath.Join(home, ".claude.json"))["mcpServers"].(map[string]any)
 	if len(servers) != 1 {
 		t.Errorf("want exactly 1 server entry, got %v", servers)
+	}
+}
+
+func TestInstall_Playwright_CodexMCPConfig(t *testing.T) {
+	stubSnapshotter(t)
+	home := t.TempDir()
+	h := playwrightHarness(t)
+	path := filepath.Join(home, ".codex", "config.toml")
+	codex := &fakeAdapter{agent: model.AgentCodex, configPath: path, strategy: StrategyMergeIntoTOML}
+
+	first, err := Install(context.Background(), h, system.PlatformProfile{}, []AgentAdapter{codex}, home, nil)
+	if err != nil || first.AlreadyInstalled {
+		t.Fatalf("first install: result=%+v err=%v", first, err)
+	}
+	raw, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"[mcp_servers.playwright]", `command = "npx"`, `"@playwright/mcp@0.0.83"`} {
+		if !strings.Contains(string(raw), want) {
+			t.Errorf("Codex config missing %q: %s", want, raw)
+		}
+	}
+	second, err := Install(context.Background(), h, system.PlatformProfile{}, []AgentAdapter{codex}, home, nil)
+	if err != nil || !second.AlreadyInstalled {
+		t.Fatalf("second install: result=%+v err=%v", second, err)
 	}
 }
 

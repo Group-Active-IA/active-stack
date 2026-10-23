@@ -20,21 +20,21 @@ func TestDesignMockupsFragment_Content(t *testing.T) {
 		want string
 	}{
 		{"heading", "## Design Stage — UI Mockups"},
-		{"stage between propose and apply", "propose → **design** → apply"},
+		{"foundation before change design", "propose → **design system** → **design** → apply"},
 		{"full flow with verify", "apply → verify → archive"},
 		{"mockups location", "openspec/changes/<name>/mockups/"},
-		{"three answers", "(yes / no / I already have them)"},
-		{"no UI signal is not asked", "No UI signal"},
+		{"visual changes trigger design automatically", "Run the foundation and mockup gates automatically"},
+		{"user can explicitly skip", "explicit request from the user"},
 		{"decision record section", "## UI Mockups"},
 		{"approval record", "Approval: approved"},
 		{"declared gate exception", "never block on phase gates"},
-		{"artifact quickstart", "action \"quickstart\""},
-		{"design intent", "intent \"design\""},
-		{"type comes from quickstart result", "type_url"},
-		{"static html fallback", "static HTML"},
-		{"model for design phase", "design → sonnet"},
+		{"project design system", "design-system/README.md"},
+		{"portable html review", "local responsive HTML/CSS"},
+		{"render before approval", "Render each mockup"},
+		{"captures are presented", "present images"},
+		{"preview location", "mockups/previews/"},
 		{"conditional design skills", "emil-design-eng"},
-		{"soft dependency on design skills", "if installed"},
+		{"soft dependency on design skills", "soft dependencies"},
 		// visual-verify: step 7 (spec: design-mockups-harness).
 		{"visual verify step", "Visual verify"},
 		{"playwright tools", "Playwright"},
@@ -44,7 +44,7 @@ func TestDesignMockupsFragment_Content(t *testing.T) {
 		{"console errors", "console"},
 		{"failed requests", "failed network requests"},
 		{"captures location", "mockups/verify/"},
-		{"gated on approved UI mockups", "run only when `## UI Mockups` records"},
+		{"gated on approved UI mockups", "approved mockup"},
 		{"gated on decision", "Decision: yes | provided"},
 		{"priority levels", "blocker"},
 		{"reproduction steps", "reproduction steps"},
@@ -52,12 +52,13 @@ func TestDesignMockupsFragment_Content(t *testing.T) {
 		{"explicit degradation", "NOT automated"},
 		{"manual checklist fallback", "manual checklist"},
 		{"suggests playwright harness", "`playwright` harness"},
-		{"soft dependency on playwright", "design-mockups works without it"},
+		{"soft dependency on playwright", "design-mockups still works"},
 		{"outcome record values", "passed | differences | manual"},
 	}
+	normalized := strings.Join(strings.Fields(got), " ")
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			if !strings.Contains(got, tc.want) {
+			if !strings.Contains(normalized, tc.want) {
 				t.Errorf("fragment missing %q", tc.want)
 			}
 		})
@@ -65,13 +66,13 @@ func TestDesignMockupsFragment_Content(t *testing.T) {
 }
 
 // TestDesignMockupsFragment_DoesNotHardcodeTypeURL guards against pinning a
-// per-account Artifact type URL into the fragment.
+// per-account or remote design service URL into the portable fragment.
 func TestDesignMockupsFragment_DoesNotHardcodeTypeURL(t *testing.T) {
 	got, err := loadFragment("design-mockups.md")
 	if err != nil {
 		t.Fatalf("loadFragment: %v", err)
 	}
 	if strings.Contains(got, "claude.ai/") || strings.Contains(got, "https://") {
-		t.Error("fragment must not hardcode URLs; type_url comes from quickstart at runtime")
+		t.Error("fragment must not hardcode remote design service URLs")
 	}
 }

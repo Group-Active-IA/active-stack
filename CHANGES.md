@@ -38,12 +38,19 @@ uninstall-subcommand
 claude-agent-switch-research
   — independiente, cualquier ola —
 
-add-design-mockups-toggle (harness `design-mockups`, solo Claude)
+add-design-mockups-toggle (harness `design-mockups`, origen Claude)
           │
-          ├──► stitch-design            (futuro; harness hermano para opencode)
+          ├──► stitch-design            (idea histórica; reemplazada por flujo HTML universal)
           ├──► design-skills-harnesses  (IMPLEMENTADO; Emil Kowalski + taste skill v1, pineadas por SHA)
           └──► visual-verify            (IMPLEMENTADO; Playwright MCP + verify contra mockups/)
                     └──► figma-mcp-opcional (futuro, al final)
+
+codex-design-mockups (adaptación Claude/Codex, en esta rama)
+  — depende de los tres changes de mockups archivados —
+          │
+          ▼
+universal-design-system (Claude/Codex/OpenCode y fundación visual por proyecto)
+  — depende de codex-design-mockups; en esta rama —
 ```
 
 > Notas de dependencia:
@@ -409,9 +416,29 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ---
 
+### `codex-design-mockups` — Adaptar la etapa de mockups a Codex
+
+- **Estado**: IMPLEMENTADO (2026-10-23); validado por la suite Go y una prueba sintética de mockup. Pendiente de validación con agentes ejecutándose en proyectos destino.
+- **Entregable**: `design-mockups`, `playwright`, `emil-design-eng` y `design-taste-frontend-v1` disponibles en Claude y Codex. Para cada cambio visual, ambos agentes crean HTML/CSS local, renderizan capturas móvil/escritorio, muestran capturas y archivos navegables y esperan aprobación explícita antes de `apply`. Artifact Design, Figma y Stitch son complementos opcionales. En `verify`, comparan la implementación con los mockups aprobados mediante navegador si está disponible.
+- **Origen de skills**: el proposal original de `design-skills-harnesses` eligió Emil y Taste v1 como repos independientes; Impeccable no figura en ese proposal ni en el catálogo. Agregarlo como harness requiere una decisión y evaluación separadas `(TBD)`.
+- **Governance**: BAJO (`catalog`) / MEDIO (`harness/config`). No modifica `backup`, `filemerge` ni `pipeline`.
+
+---
+
+### `universal-design-system` — Sistema visual compartido y mockups en tres agentes
+
+- **Estado**: IMPLEMENTADO (2026-10-23); estructura revisada con el usuario. Proposal y spec local en `openspec/changes/universal-design-system/`. Suite Go completa y prueba sintética de fundación/reutilización con aprobación simulada en verde. Pendiente de validación con los tres agentes ejecutándose en proyectos destino.
+- **Entregable**: en Full, `design-mockups` se instala automáticamente para Claude, Codex y OpenCode; en Custom se puede seleccionar. El primer change visual de cada proyecto crea o releva `design-system/` y espera aprobación humana. Los cambios posteriores reutilizan su revisión para generar mockups HTML/CSS con aprobación por change. Nombre, logo e imágenes `(TBD)` usan rutas o tokens estables para reemplazo. Claude deja de requerir Artifact Design. Playwright MCP y las dos skills visuales se ofrecen a los tres agentes.
+- **Ruta OpenCode**: su sección visual va al `AGENTS.md` compartido, para que cualquier agente que implemente UI respete los gates; el orquestador SDD sigue como agente principal separado en `opencode.json`.
+- **Governance**: BAJO (`catalog`) / MEDIO (`harness/config`, `harness/external`). No modifica `backup`, `filemerge` ni `pipeline`.
+
+---
+
 ### `add-design-mockups-toggle` — Harness `design-mockups` (etapa de diseño con aprobación humana)
 
-- **Estado**: IMPLEMENTADO (pend. archive OPSX). Nombre histórico: la primera versión era un toggle.
+- **Estado**: IMPLEMENTADO y ARCHIVADO (OPSX, 2026-10-08; rama `feat/design-mockups-harnesses`, pusheada,
+  PR sin abrir). **Falta validar el flujo de punta a punta** (Artifact tipo Design) con un change de UI
+  real en un proyecto destino. Nombre histórico: la primera versión era un toggle.
 - **Entregable**: harness `design-mockups` (`config`, solo `claude`, `install_modes: [full]`,
   `depends_on: [sdd-orchestrator]`). Inyecta la sección propia `active-stack:design-mockups` en el
   `CLAUDE.md`: etapa de diseño entre `propose` y `apply`, mockups en
@@ -443,7 +470,7 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ### `design-skills-harnesses` — Skills de diseño como harnesses
 
-- **Estado**: IMPLEMENTADO (pend. archive OPSX).
+- **Estado**: IMPLEMENTADO y ARCHIVADO (OPSX, 2026-10-08; rama `feat/design-mockups-harnesses`).
 - **Entregable**: dos harnesses `skill` de terceros, Full/Custom, solo Claude, `best_effort`, sin
   `depends_on` (la relación con `design-mockups` sigue siendo blanda), pineados por commit el 2026-10-08:
   - `emil-design-eng` — `emilkowalski/skills` (`skills/emil-design-eng`, MIT) @ `e8a175de22ae1e49370fc144c1f3bb9aeedf988d`.
@@ -461,7 +488,8 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ### `visual-verify` — Verificación visual contra mockups
 
-- **Estado**: ✅ IMPLEMENTADO (pend. archive OPSX). Depende de `add-design-mockups-toggle`.
+- **Estado**: ✅ IMPLEMENTADO y ARCHIVADO (OPSX, 2026-10-08; rama `feat/design-mockups-harnesses`).
+  Depende de `add-design-mockups-toggle`.
 - **Entregable**:
   - Harness `playwright` (`external`, `method: mcp`, solo Claude, Full/Custom, sin `depends_on`):
     registra Playwright MCP de Microsoft como servidor stdio en `~/.claude.json`, **pinneado**
@@ -478,7 +506,22 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
   el path MCP de agentes no soportados (inocuo, no se escribe); (2) desinstalar un externo MCP en Claude
   no remueve la entrada de `~/.claude.json` (limitación preexistente de todos los MCP; arreglarla toca la
   remoción JSON cerca de `filemerge`, ALTO).
-- **Opcional futuro**: Figma MCP.
+- **Opcional futuro**: Figma MCP (ver ficha `figma-mcp`).
+- **Governance**: BAJO (`catalog`) / MEDIO (`harness/external`, fragmento).
+
+---
+
+### `figma-mcp` — Figma MCP como entrada de diseños existentes (FUTURO, NO implementado)
+
+- **Estado**: PENDIENTE, **pospuesto a propósito** (no descartado). Conviene decidirlo después de probar
+  el flujo de `design-mockups` en un proyecto real: si la respuesta "ya los tengo" alcanza, quizá no
+  haga falta.
+- **Rol**: Claude Design (Artifact) **genera** mockups; Figma MCP **trae** diseños que ya existen en
+  Figma. No compiten. Hoy el camino manual es "ya los tengo" → copiar/referenciar en `mockups/`.
+- **Scope tentativo**: harness `external` solo para Claude (como `playwright`, versión pineada) + una
+  línea en el fragmento para el caso "ya los tengo con Figma". Comando de la guía (NO verificado contra
+  doc oficial): `claude plugin install figma@claude-plugins-official`. Depende de cuenta y permisos de
+  Figma; verificar antes de entrar al catálogo.
 - **Governance**: BAJO (`catalog`) / MEDIO (`harness/external`, fragmento).
 
 ---
@@ -494,10 +537,11 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 | `tui-menu-hub` | 2 | BAJO/MEDIO | `uninstall-subcommand` | `tui-update-stack`, `tui-configure-models` | ✅ IMPLEMENTADO (pend. archive) |
 | `tui-update-stack` | 3 | MEDIO | `tui-menu-hub` | — |
 | `tui-configure-models` | 3 | MEDIO | `tui-menu-hub` | — |
-| `add-design-mockups-toggle` | libre | MEDIO | `sdd-orchestrator` (catálogo) | `stitch-design`, `design-skills-harnesses`, `visual-verify` | ✅ IMPLEMENTADO (pend. archive) |
+| `add-design-mockups-toggle` | libre | MEDIO | `sdd-orchestrator` (catálogo) | `stitch-design`, `design-skills-harnesses`, `visual-verify` | ✅ IMPLEMENTADO y ARCHIVADO |
 | `stitch-design` | futuro | MEDIO | `add-design-mockups-toggle` (validar en Claude) | — | PENDIENTE |
-| `design-skills-harnesses` | libre | BAJO/MEDIO | `add-design-mockups-toggle` | — | ✅ IMPLEMENTADO (pend. archive) |
-| `visual-verify` | libre | MEDIO | `add-design-mockups-toggle` | Figma MCP opcional | ✅ IMPLEMENTADO (pend. archive) |
+| `design-skills-harnesses` | libre | BAJO/MEDIO | `add-design-mockups-toggle` | — | ✅ IMPLEMENTADO y ARCHIVADO |
+| `visual-verify` | libre | MEDIO | `add-design-mockups-toggle` | `figma-mcp` (opcional) | ✅ IMPLEMENTADO y ARCHIVADO |
+| `figma-mcp` | futuro | BAJO/MEDIO | `add-design-mockups-toggle` (validar en un proyecto real) | — | PENDIENTE (pospuesto) |
 
 **Camino crítico**: `uninstall-subcommand → tui-menu-hub → {tui-update-stack ‖ tui-configure-models}` (3 changes; los dos últimos en paralelo).
 

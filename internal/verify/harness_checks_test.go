@@ -21,11 +21,11 @@ import (
 func newFakeAdapter(t *testing.T, homeDir string, agent model.Agent) fakeAdapter {
 	t.Helper()
 	return fakeAdapter{
-		agent:           agent,
-		skillsDir:       filepath.Join(homeDir, "skills"),
+		agent:            agent,
+		skillsDir:        filepath.Join(homeDir, "skills"),
 		instructionsPath: filepath.Join(homeDir, "CLAUDE.md"),
-		settingsPath:    filepath.Join(homeDir, "settings.json"),
-		mcpConfigPath:   filepath.Join(homeDir, "mcp", "server.json"),
+		settingsPath:     filepath.Join(homeDir, "settings.json"),
+		mcpConfigPath:    filepath.Join(homeDir, "mcp", "server.json"),
 	}
 }
 
@@ -422,8 +422,8 @@ func TestCheckPermissionsClaudePluralKey(t *testing.T) {
 // not a hardcoded string. This covers D4 (self-describing failure message).
 func TestCheckPermissionsFailureMentionsCorrectKey(t *testing.T) {
 	tests := []struct {
-		name        string
-		agent       model.Agent
+		name         string
+		agent        model.Agent
 		settingsJSON string
 		wantKeyInMsg string
 	}{
@@ -578,7 +578,7 @@ func TestCheckForExternalHarness_MCP_Pass(t *testing.T) {
 	}
 
 	fa := fakeAdapter{
-		agent:        model.AgentClaude,
+		agent:         model.AgentClaude,
 		mcpConfigPath: filepath.Join(mcpDir, "server.json"),
 	}
 
@@ -630,7 +630,7 @@ func TestCheckForExternalHarness_MCP_FailInvalidJSON(t *testing.T) {
 	}
 
 	fa := fakeAdapter{
-		agent:        model.AgentClaude,
+		agent:         model.AgentClaude,
 		mcpConfigPath: filepath.Join(mcpDir, "server.json"),
 	}
 
@@ -663,7 +663,7 @@ func TestCheckForExternalHarness_SoftCheckProducesWarningNotFailure(t *testing.T
 	homeDir := t.TempDir()
 
 	fa := fakeAdapter{
-		agent:        model.AgentClaude,
+		agent:         model.AgentClaude,
 		mcpConfigPath: filepath.Join(homeDir, "mcp", "engram.json"),
 	}
 
@@ -799,8 +799,8 @@ func TestChecksForHarness_SkipsUnsupportedAgents(t *testing.T) {
 }
 
 // TestHarnessChecks_Playwright pins the post-install checks of the catalog's
-// playwright harness (visual-verify, design D6): exactly one hard MCP-config
-// check for claude, no remote-endpoint check (no URL) and nothing for opencode.
+// playwright harness: one hard MCP-config check per supported agent,
+// and no remote-endpoint check (no URL).
 func TestHarnessChecks_Playwright(t *testing.T) {
 	c, err := catalog.Load()
 	if err != nil {
@@ -812,21 +812,28 @@ func TestHarnessChecks_Playwright(t *testing.T) {
 	}
 	homeDir := t.TempDir()
 	claude := newFakeAdapter(t, homeDir, model.AgentClaude)
+	codex := newFakeAdapter(t, homeDir, model.AgentCodex)
 	oc := newFakeAdapter(t, homeDir, model.AgentOpenCode)
 
-	checks := verify.ChecksForHarness(h, []verify.Adapter{claude, oc}, homeDir)
+	checks := verify.ChecksForHarness(h, []verify.Adapter{claude, codex, oc}, homeDir)
 
-	if len(checks) != 1 {
-		t.Fatalf("got %d checks, want exactly 1: %+v", len(checks), checks)
+	if len(checks) != 3 {
+		t.Fatalf("got %d checks, want exactly 3: %+v", len(checks), checks)
 	}
-	if checks[0].ID != "external:mcp-config:playwright:claude" {
-		t.Errorf("check ID = %q, want external:mcp-config:playwright:claude", checks[0].ID)
-	}
-	if checks[0].Soft {
-		t.Error("the MCP config check must be hard (not soft)")
+	for _, want := range []string{"external:mcp-config:playwright:claude", "external:mcp-config:playwright:codex", "external:mcp-config:playwright:opencode"} {
+		var found bool
+		for _, ck := range checks {
+			found = found || ck.ID == want
+		}
+		if !found {
+			t.Errorf("missing check %q in %+v", want, checks)
+		}
 	}
 	for _, ck := range checks {
-		if strings.Contains(ck.ID, "mcp-endpoint") || strings.Contains(ck.ID, "opencode") {
+		if ck.Soft {
+			t.Error("the MCP config check must be hard (not soft)")
+		}
+		if strings.Contains(ck.ID, "mcp-endpoint") {
 			t.Errorf("unexpected check %q", ck.ID)
 		}
 	}

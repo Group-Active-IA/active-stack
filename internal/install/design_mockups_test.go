@@ -8,10 +8,35 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
-// TestCustomPickerHarnesses_DesignMockupsOnlyForClaude verifies, against the
-// real embedded catalog, that the opt-in design-mockups harness is pickable
-// when claude is selected and hidden when only opencode/codex are selected.
-func TestCustomPickerHarnesses_DesignMockupsOnlyForClaude(t *testing.T) {
+func TestFullOpenCodeIncludesDesignWorkflow(t *testing.T) {
+	cat, err := catalog.Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	selected, err := install.SelectHarnesses(cat, install.Intent{
+		Agents: []model.Agent{model.AgentOpenCode},
+		Mode:   model.ModeFull,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, id := range []string{"sdd-orchestrator", "design-mockups", "playwright", "emil-design-eng", "design-taste-frontend-v1"} {
+		found := false
+		for _, h := range selected {
+			if h.ID == id {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Errorf("Full OpenCode plan missing %q", id)
+		}
+	}
+}
+
+// TestCustomPickerHarnesses_DesignMockupsForClaudeAndCodex verifies that the
+// opt-in harness is offered for its supported agents only.
+func TestCustomPickerHarnesses_DesignMockupsForClaudeAndCodex(t *testing.T) {
 	cat, err := catalog.Load()
 	if err != nil {
 		t.Fatalf("catalog.Load() error = %v", err)
@@ -24,8 +49,8 @@ func TestCustomPickerHarnesses_DesignMockupsOnlyForClaude(t *testing.T) {
 	}{
 		{"claude offers it", []model.Agent{model.AgentClaude}, true},
 		{"claude+opencode offers it", []model.Agent{model.AgentClaude, model.AgentOpenCode}, true},
-		{"opencode hides it", []model.Agent{model.AgentOpenCode}, false},
-		{"codex hides it", []model.Agent{model.AgentCodex}, false},
+		{"opencode offers it", []model.Agent{model.AgentOpenCode}, true},
+		{"codex offers it", []model.Agent{model.AgentCodex}, true},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
@@ -75,10 +100,9 @@ func TestBuildPlanCustom_DesignMockupsPullsOrchestrator(t *testing.T) {
 	}
 }
 
-// TestCustomPickerHarnesses_DesignSkillsOnlyForClaude verifies, against the
-// real embedded catalog, that the Claude-only design skills are pickable when
-// claude is selected and hidden for opencode-only / codex-only selections.
-func TestCustomPickerHarnesses_DesignSkillsOnlyForClaude(t *testing.T) {
+// TestCustomPickerHarnesses_DesignSkillsForClaudeAndCodex verifies that the
+// design skills are offered for their supported agents only.
+func TestCustomPickerHarnesses_DesignSkillsForClaudeAndCodex(t *testing.T) {
 	cat, err := catalog.Load()
 	if err != nil {
 		t.Fatalf("catalog.Load() error = %v", err)
@@ -90,8 +114,8 @@ func TestCustomPickerHarnesses_DesignSkillsOnlyForClaude(t *testing.T) {
 	}{
 		{"claude offers them", []model.Agent{model.AgentClaude}, true},
 		{"claude+opencode offers them", []model.Agent{model.AgentClaude, model.AgentOpenCode}, true},
-		{"opencode hides them", []model.Agent{model.AgentOpenCode}, false},
-		{"codex hides them", []model.Agent{model.AgentCodex}, false},
+		{"opencode offers them", []model.Agent{model.AgentOpenCode}, true},
+		{"codex offers them", []model.Agent{model.AgentCodex}, true},
 	}
 	for _, id := range []string{"emil-design-eng", "design-taste-frontend-v1"} {
 		for _, tc := range cases {
