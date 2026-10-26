@@ -29,6 +29,8 @@ func Install(
 		return Result{}, fmt.Errorf("harness %q has no External config", h.ID)
 	}
 
+	adapters = supportedAdapters(h, adapters)
+
 	switch h.External.Method {
 	case "npm":
 		result, err := installNPM(ctx, h, profile)
@@ -49,6 +51,23 @@ func Install(
 	default:
 		return Result{}, fmt.Errorf("harness %q: unsupported install method %q (supported: npm, homebrew, mcp)", h.ID, h.External.Method)
 	}
+}
+
+// supportedAdapters returns only the adapters whose agent the harness supports,
+// preserving order. It mirrors the `!h.SupportsAgent(...) { continue }` guard in
+// config.Install: the catalog restricts what is offered (ForAgent) but the
+// install step receives every selected adapter, so without this filter an
+// agent-scoped MCP harness would write a broken entry into agents it does not
+// support (e.g. a URL-less harness into OpenCode). Harnesses with no Agents list
+// support every agent, so they are unaffected.
+func supportedAdapters(h model.Harness, adapters []AgentAdapter) []AgentAdapter {
+	out := make([]AgentAdapter, 0, len(adapters))
+	for _, a := range adapters {
+		if h.SupportsAgent(a.Agent()) {
+			out = append(out, a)
+		}
+	}
+	return out
 }
 
 // maybeRegisterStdioMCP checks whether h.External.MCP is set. If so, it calls

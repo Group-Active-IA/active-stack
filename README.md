@@ -152,7 +152,7 @@ El catálogo agrupa los harnesses en tres presets. Convención: un harness de Li
 | Modo | Qué instala | Para qué |
 |------|-------------|----------|
 | **Lite** | El **sustrato** mínimo: `openspec`, `engram`, `context7`, `sdd-orchestrator`, `permissions` | Empezar a trabajar con la metodología ya |
-| **Full** | Sustrato **+ fundación guiada**: `active-orchestrator` y las skills que orquesta (`kb-creator`, `roadmap-generator`, `agent-instruction`, `skill-registry`, `find-skill`, `skill-creator`) | El ecosistema completo, proyecto desde cero |
+| **Full** | Sustrato **+ fundación guiada**: `active-orchestrator` y sus skills, incluida la decisión visual por proyecto para Claude, Codex, OpenCode y Antigravity, las skills visuales `emil-design-eng` y `design-taste-frontend-v1` y Playwright MCP | El ecosistema completo, proyecto desde cero |
 | **Custom** | Vos elegís cada harness | Control total — con una excepción 👇 |
 
 > 🔒 **`permissions` no es desactivable.** Incluso en Custom, el harness de seguridad (permisos *security-first*) queda forzado. La seguridad no es opcional.
@@ -168,8 +168,11 @@ Lo que Active Stack puede instalar hoy (fuente de verdad: [`internal/catalog/har
 | **OpenSpec CLI** | external | lite · full | CLI de Spec-Driven Development; fuente de verdad del estado |
 | **Engram** | external | lite · full | Memoria persistente local (SQLite + FTS) vía MCP |
 | **Context7** | external | lite · full | Documentación de librerías al día (MCP remoto) |
+| **Playwright MCP** | external | full, Claude/Codex/OpenCode/Antigravity | MCP oficial de Microsoft registrado como servidor stdio `playwright` en la config del agente (`npx` con versión pinneada). Requiere Node >= 18 y **no instala navegadores** (Playwright MCP los gestiona en runtime). Sirve para mostrar el sistema visual y los mockups, y verificar luego la UI implementada. Desinstalar no remueve la entrada MCP, igual que los otros MCP |
 | **SDD Orchestrator** | config | lite · full | Orquestador SDD componible por toggles (TDD, Engram, model-routing, delegación, governance) |
 | **Permissions** | config | lite · full | Permisos seguros por defecto (bloquea `.env`, confirma git destructivo) — **no opcional** |
+| **Design System + Mockups** | config | full automático · custom seleccionable; Claude/Codex/OpenCode/Antigravity | Respeta la política visual guardada durante la fundación. Si se eligieron mockups, cada change visual presenta HTML/CSS para aprobar antes de `apply`; si se eligió `off`, no vuelve a pedirlos |
+| **design-system** | skill embebida | full automático · custom seleccionable; Claude/Codex/OpenCode/Antigravity | Define una sola vez `system-and-mockups`, `system-only`, `off` o `deferred`; crea y presenta el sistema visual si corresponde |
 | **active-orchestrator** | skill | full | Orquestador delgado de la fase de fundación |
 | **kb-creator** | skill | full | Genera la knowledge-base canónica del dominio |
 | **roadmap-generator** | skill | full | Genera `CHANGES.md` (backlog técnico) desde la KB |
@@ -177,6 +180,18 @@ Lo que Active Stack puede instalar hoy (fuente de verdad: [`internal/catalog/har
 | **skill-registry** | skill | full | Crea/actualiza el registro de skills del proyecto |
 | **find-skill** | skill (terceros) | full | Busca y recomienda skills relevantes |
 | **skill-creator** | skill (terceros) | full | Crea nuevas skills siguiendo la spec de Agent Skills |
+| **emil-design-eng** | skill (terceros) | full, Claude/Codex/OpenCode/Antigravity | Principios de ingeniería de diseño de Emil Kowalski (pineada a un commit) |
+| **design-taste-frontend-v1** | skill (terceros) | full, Claude/Codex/OpenCode/Antigravity | Criterio de diseño frontend (taste skill v1, pineada a un commit) |
+
+### Cómo ves y aprobás un mockup
+
+En la fundación, Active Orchestrator invoca la skill `design-system` y te pide elegir una política del proyecto: sistema con mockups por change, solo sistema, ninguna etapa visual, o diferir la decisión si todavía no habrá UI. Guarda esa elección en `.active-orchestrator-state.json` y `design-system/README.md`. Si elegís `off`, los cambios posteriores no vuelven a ofrecer mockups por rutina. En una fundación anterior, la política se agrega al primer cambio visual sin rehacer etapas completadas.
+
+Si elegís un sistema visual, la skill crea o releva `design-system/`: `README.md` (revisión y aprobación), `brand.md`, `brand.js` (nombre mostrado desde un solo lugar), `tokens.css`, `components.html`, `assets/` (logo en ruta estable) y `previews/`. El agente te muestra el sistema y espera aprobación. Nombre, logo e imágenes pueden quedar `(TBD)` como provisionales documentados para reemplazarlos con poco trabajo. En cambios posteriores reutiliza la revisión aprobada.
+
+Con `system-and-mockups`, cada change visual produce archivos HTML/CSS locales antes de modificar la UI real. Claude, Codex, OpenCode y Antigravity muestran capturas móvil/escritorio cuando disponen de navegador y enlazan los HTML. Si no pueden renderizarlos, dan los archivos y pasos concretos para abrirlos, y lo indican expresamente. El flujo no requiere Artifact Design ni una cuenta de Figma o Stitch.
+
+El agente espera tu aprobación explícita de esa revisión antes de `apply`. Si pedís cambios, actualiza el mockup, vuelve a mostrártelo y la aprobación anterior deja de valer. En `verify` compara la UI implementada con la versión aprobada.
 
 El **`sdd-orchestrator`** es el harness clave: es de tipo `config` y se compone a partir de **toggles modulares** (`tdd`, `engram`, `model-routing`, `delegation`, `governance`). El resultado es el bloque de instrucciones del orquestador que se inyecta en el `CLAUDE.md` / `AGENTS.md` de tu proyecto.
 

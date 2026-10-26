@@ -86,12 +86,16 @@ func (c *Catalog) validate() error {
 		}
 		switch h.Type {
 		case model.HarnessSkill:
-			if h.Source == nil || h.Source.Repo == "" {
-				return fmt.Errorf("catalog: skill harness %q needs a source.repo", h.ID)
+			if h.Source == nil {
+				return fmt.Errorf("catalog: skill harness %q needs a source.repo or embedded source", h.ID)
 			}
 			switch h.Source.Method {
-			case "clone", "embed":
-				// valid
+			case "clone":
+				if h.Source.Repo == "" {
+					return fmt.Errorf("catalog: cloned skill harness %q needs a source.repo", h.ID)
+				}
+			case "embed":
+				// The skill is bundled in assets/skills, so no remote repo is needed.
 			default:
 				return fmt.Errorf("catalog: skill harness %q has unknown source.method %q (want clone|embed)", h.ID, h.Source.Method)
 			}

@@ -52,7 +52,7 @@ Un **harness** es cualquier módulo que prepara o guía el entorno de la IA.
 
 | Forma | Qué es | Origen | Ejemplos |
 |-------|--------|--------|----------|
-| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, active-orchestrator, skill-registry (propias); find-skill, skill-creator (terceros) |
+| **Skill** | `SKILL.md` + assets, cargada bajo demanda | repo propio o de terceros, se baja al instalar | kb-creator, roadmap-generator, agent-instruction, active-orchestrator, skill-registry (propias); find-skill, skill-creator, emil-design-eng, design-taste-frontend-v1 (terceros; las dos de diseño, Claude/Codex/OpenCode y pineadas por SHA) |
 | **Configuración** | Texto/archivos que configuran el agente | bundleado en el instalador | `sdd-orchestrator` (orquestador con toggles: TDD, Engram, …), config de `AGENTS.md`/`CLAUDE.md`, permisos, MCP |
 | **Herramienta externa** | Binario/servicio de terceros | instalado/configurado, no es nuestro repo | Engram, OpenSpec CLI, Context7 (MCP) |
 
@@ -73,6 +73,13 @@ Es un harness de **configuración** que arma el orquestador SDD con piezas
 
 El resultado es el bloque de instrucciones del orquestador que se inyecta en
 `CLAUDE.md` / `AGENTS.md`, compuesto a partir de los toggles elegidos.
+
+> Hoy los toggles salen del catálogo (`toggles:` en `harnesses.yaml`): el usuario
+> **no** los elige en la TUI/GUI, que solo muestran harnesses. Por eso una capacidad
+> opt-in (que el usuario deba poder activar o no) va como **harness `config` propio**
+> con sección propia en el archivo de instrucciones (`active-stack:<id>`), registrada
+> en `sectionFragments` de `internal/harness/config` (`isOwnedSection` la protege del
+> purge). `design-mockups` se inyecta a Claude, Codex, OpenCode y Antigravity bajo el mismo marker. En Full se instala automáticamente; en Custom se selecciona. Depende de la skill embebida `design-system`, que Active Orchestrator invoca tras la KB para registrar una política persistente: `system-and-mockups`, `system-only`, `off` o `deferred`. Solo el primer modo exige un sistema aprobado y mockups HTML/CSS aprobados por change. `off` evita nuevas solicitudes de mockup; `deferred` retoma la elección en el primer change visual. Proyectos con una fundación anterior agregan `visual_design` al estado sin repetir fases. Nombre y logo pueden quedar `(TBD)` en rutas estables. En `verify`, Playwright es opcional y existe checklist manual. No requiere Artifact Design ni servicio externo.
 
 ---
 
@@ -95,6 +102,21 @@ que es la fuente de verdad de qué harnesses existen. Cada entrada declara:
   toggles: [tdd, engram, model-routing, delegation, governance]
   install_modes: [lite, full]
   ...
+- id: design-mockups
+  type: config           # sección propia: <!-- active-stack:design-mockups -->
+  install_modes: [full]
+  agents: [claude, codex, opencode, antigravity]
+  depends_on: [sdd-orchestrator, design-system]
+- id: design-system
+  type: skill
+  source: { method: embed }
+  install_modes: [full]
+  agents: [claude, codex, opencode, antigravity]
+- id: playwright
+  type: external
+  external: { method: mcp, mcp: { name: playwright, command: npx, args: [-y, "@playwright/mcp@<x.y.z>"] } }
+  install_modes: [full]
+  agents: [claude, codex, opencode, antigravity] # el install externo saltea agentes no soportados
 - id: engram
   type: external
   install: { method: homebrew | download, ... }
@@ -130,9 +152,11 @@ skills, en este orden (evolución de la skill `active-orchestrator`):
 ```
 1. openspec init        (solo la carpeta openspec/)
 2. kb-creator           (armar knowledge-base/)
-3. roadmap-generator    (armar CHANGES.md)
-4. find-skill           (instalar skills faltantes según stack)
-5. agent-instruction    (armar AGENTS.md/CLAUDE.md con todas las referencias)
+3. design-system        (guardar elección visual; crear sistema si se elige)
+4. roadmap-generator    (armar CHANGES.md)
+5. find-skill           (instalar skills faltantes según stack)
+6. skill-registry       (indexar skills instaladas)
+7. agent-instruction    (armar AGENTS.md/CLAUDE.md con todas las referencias)
 ```
 
 ### 4.3 Ciclo iterativo (por change)
@@ -193,6 +217,14 @@ Cada incremento será un **change OPSX** (dogfooding) en `openspec/` (ignorado p
   core openspec (atadas a la versión del orquestador) → embebidas. El modelo de
   skill necesita un campo de método de fetch (clone/npx/embed), análogo a
   `External.Method`.
+- **Pin de skills por commit (design-skills-harnesses)**: si `source.ref` es un SHA completo de
+  40 hex, el installer de skills (`internal/harness/skill/clone.go`) hace `git init` +
+  `git fetch --depth 1 <url> <sha>` + `git checkout --detach FETCH_HEAD` en vez de
+  `git clone --branch` (que no acepta SHAs). Un hex más corto se sigue tratando como rama/tag.
+  Si el fetch falla, el error nombra harness, repo y ref (sin fallback a clone completo). Para
+  actualizar un pin: `gh api repos/<owner>/<repo>/commits/main --jq .sha`, releer el diff del
+  `SKILL.md` y editar el `ref` en el catálogo (bump manual). El installer también respeta
+  `agents:` del harness: no instala la skill en agentes no soportados.
 - **active-orchestrator — activador modular**: orquesta la fase de fundación y activa/llama
   los módulos (kb-creator, roadmap-generator, etc.) según cuáles estén instalados/
   activos (lazy-loading, §4.2). No es una skill monolítica.

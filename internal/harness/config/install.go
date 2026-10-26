@@ -11,6 +11,9 @@ import (
 // It composes the sdd-orchestrator block from h.Toggles and injects it into
 // each adapter's instructions file, taking a backup first.
 //
+// Harnesses registered in sectionFragments are injected as their own section
+// (see installSection); everything else is the sdd-orchestrator path.
+//
 // Returns an error if:
 //   - h.Type is not model.HarnessConfig
 //   - any toggle in h.Toggles is unknown
@@ -19,6 +22,10 @@ func Install(h model.Harness, adapters []AgentAdapter, homeDir string) (Result, 
 	if h.Type != model.HarnessConfig {
 		return Result{}, fmt.Errorf("config.Install: harness %q has type %q, want %q",
 			h.ID, h.Type, model.HarnessConfig)
+	}
+
+	if fragment, ok := sectionFragments[h.ID]; ok {
+		return installSection(h, fragment, adapters, homeDir)
 	}
 
 	var written []string
@@ -74,6 +81,47 @@ func Install(h model.Harness, adapters []AgentAdapter, homeDir string) (Result, 
 		if wr.Changed {
 			allAlready = false
 			written = append(written, writtenPath)
+		}
+	}
+
+	return Result{
+		Files:      written,
+		AllAlready: allAlready && len(written) == 0,
+	}, nil
+}
+
+// installSection injects a registered fragment into its own section
+// (active-stack:<h.ID>) of each adapter's instructions file. It only touches
+// agents the harness supports and never registers a primary agent: a
+// section harness extends the orchestrator, it is not an agent itself.
+func installSection(h model.Harness, fragment string, adapters []AgentAdapter, homeDir string) (Result, error) {
+	content, err := loadFragment(fragment)
+	if err != nil {
+		return Result{}, fmt.Errorf("config.Install: %w", err)
+	}
+
+	var written []string
+	allAlready := true
+
+	for _, adapter := range adapters {
+		if !h.SupportsAgent(adapter.Agent()) {
+			continue
+		}
+		path := adapter.InstructionsPath(homeDir)
+		if path == "" {
+			// Adapter explicitly opts out of injection.
+			continue
+		}
+		snapshotDir := filepath.Join(homeDir, ".active-stack", "backups",
+			fmt.Sprintf("%s-%s", h.ID, adapter.Agent()))
+
+		r, err := InjectSection(path, h.ID, content, snapshotDir)
+		if err != nil {
+			return Result{}, fmt.Errorf("config.Install: inject %q for agent %q: %w", h.ID, adapter.Agent(), err)
+		}
+		if r.Changed {
+			allAlready = false
+			written = append(written, path)
 		}
 	}
 

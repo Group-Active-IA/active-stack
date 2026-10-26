@@ -1,0 +1,11 @@
+# Scratch de corridas (no son parte de la skill)
+__pycache__/
+*.pyc
+*.pyo
+
+# Paquete generado
+*.skill
+
+# Entornos locales
+.venv/
+.env

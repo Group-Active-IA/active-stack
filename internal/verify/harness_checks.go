@@ -13,11 +13,6 @@ import (
 	toml "github.com/pelletier/go-toml/v2"
 )
 
-// sddOrchestratorSectionID is the marker section written by the config harness
-// installer (internal/harness/config). It is the string used by
-// filemerge.InjectMarkdownSection when injecting the orchestrator block.
-const sddOrchestratorSectionID = "sdd-orchestrator"
-
 // ChecksForHarness derives the verify.Check slice for a single harness,
 // one check per (harness × adapter). It dispatches by HarnessType:
 //
@@ -30,6 +25,8 @@ const sddOrchestratorSectionID = "sdd-orchestrator"
 func ChecksForHarness(h model.Harness, adapters []Adapter, homeDir string) []Check {
 	var checks []Check
 	for _, adapter := range adapters {
+		// A harness is only installed for the agents it supports; verifying it
+		// elsewhere would be a false failure.
 		if !h.SupportsAgent(adapter.Agent()) {
 			continue
 		}
@@ -94,18 +91,19 @@ func checkSkill(h model.Harness, adapter Adapter, homeDir string) []Check {
 // ─────────────────────────────────────────────────────────────────────────────
 
 // checkConfig verifies that the injected block's marker appears exactly once
-// in the agent's instructions file. Uses the same sectionID the config installer
-// writes (internal/harness/config/inject.go: "sdd-orchestrator").
+// in the agent's instructions file. The section ID is the harness ID, the same
+// one the config installer writes (internal/harness/config: Inject uses
+// "sdd-orchestrator" for the orchestrator, installSection uses h.ID).
 func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
-	// Primary-agent delivery (e.g. OpenCode) writes to the settings JSON, not
-	// the instructions file — verify it where it actually lives.
-	if adapter.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
+	// Only the orchestrator is delivered as a primary agent. Section harnesses
+	// such as design-mockups still write a marker to AGENTS.md on OpenCode.
+	if h.ID == "sdd-orchestrator" && adapter.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
 		return checkPrimaryAgentConfig(h, adapter, homeDir)
 	}
 
 	instrPath := adapter.InstructionsPath(homeDir)
 	agentID := string(adapter.Agent())
-	openMarker := "<!-- active-stack:" + sddOrchestratorSectionID + " -->"
+	openMarker := "<!-- active-stack:" + h.ID + " -->"
 
 	return []Check{
 		{

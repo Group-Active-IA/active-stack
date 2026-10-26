@@ -47,6 +47,20 @@ harnesses:
         args: ["-y", "--package=@upstash/context7-mcp@2.2.5", "--", "context7-mcp"]
     install_modes: [lite, full]
 
+  - id: playwright
+    name: Playwright MCP (Claude/Codex/OpenCode/Antigravity)
+    description: { es: "Navegador para previsualizar diseños y verificar la UI (MCP stdio, Claude, Codex, OpenCode y Antigravity).", en: "Browser for previewing designs and verifying UI (stdio MCP, Claude, Codex, OpenCode and Antigravity)." }
+    long_description: { es: "Registra el servidor MCP oficial de Microsoft como servidor stdio `playwright` en Claude, Codex, OpenCode y Antigravity, con `npx` y versión fija (`@playwright/mcp@0.0.83`). Permite renderizar el sistema visual del proyecto y los mockups HTML, mostrar capturas móvil/escritorio antes de cada aprobación y comparar la UI implementada durante verify. También permite leer errores de consola y requests fallidos. Requiere Node 18 o superior; no instala navegadores (Playwright MCP los gestiona en runtime). Es una dependencia suave: sin navegador se entregan los HTML con instrucciones de apertura y verify usa un checklist manual. Desinstalar no remueve la entrada MCP, igual que los demás MCP.", en: "Registers Microsoft's official MCP server as `playwright` stdio MCP in Claude, Codex, OpenCode and Antigravity, using `npx` and a pinned version (`@playwright/mcp@0.0.83`). It renders the project's visual system and HTML mockups, provides mobile/desktop captures before each approval and compares the implemented UI during verify. It can also inspect console errors and failed requests. Requires Node 18 or newer; it does not install browsers (Playwright MCP manages them at runtime). This is a soft dependency: without a browser the agent provides HTML with opening instructions and verify uses a manual checklist. Uninstalling does not remove the MCP entry, like other MCPs." }
+    type: external
+    external:
+      method: mcp
+      mcp:
+        name: playwright
+        command: npx
+        args: ["-y", "@playwright/mcp@0.0.83"]
+    install_modes: [full]
+    agents: [claude, codex, opencode, antigravity]
+
   # ── Configuración (bundleados en el instalador) ───────────────────────────
   - id: sdd-orchestrator
     name: SDD Orchestrator
@@ -65,17 +79,37 @@ harnesses:
     install_modes: [lite, full]
     agents: [claude, codex, opencode, gemini, vscode]
 
+  - id: design-mockups
+    name: Design System + Mockups
+    description: { es: "Sistema visual opcional por proyecto y mockups HTML/CSS con aprobación humana (Claude, Codex, OpenCode y Antigravity).", en: "Optional project visual system and HTML/CSS mockups with human approval (Claude, Codex, OpenCode and Antigravity)." }
+    long_description: { es: "Full lo instala para Claude, Codex, OpenCode y Antigravity; Custom permite seleccionarlo. Lee la política del proyecto que registra design-system: con system-and-mockups exige sistema aprobado y mockups HTML/CSS aprobados por change; con system-only usa el sistema sin pedir mockups; con off omite ambos gates; con deferred pregunta una vez en el primer change visual. Las vistas son archivos locales con capturas móvil/escritorio y verificación opcional con Playwright MCP (harness `playwright`). No requiere Artifact Design ni cuenta externa.", en: "Full installs it for Claude, Codex, OpenCode and Antigravity; Custom can select it. It reads the project policy recorded by design-system: system-and-mockups requires an approved system and approved local HTML/CSS mockups per change; system-only uses the system without requesting mockups; off skips both gates; deferred asks once at the first visual change. Local previews include mobile/desktop captures and optional verification with Playwright MCP (the `playwright` harness). No Artifact Design or external account is required." }
+    type: config
+    install_modes: [full]
+    agents: [claude, codex, opencode, antigravity]
+    depends_on: [sdd-orchestrator, design-system]
+
   # ── Skills propias ─────────────────────────────────────────────────────────
   - id: active-orchestrator
     name: active-orchestrator
-    description: { es: "Orquestador delgado de la fase de fundación (openspec init → discovery-research opcional → kb-creator → roadmap-generator → find-skill → agent-instruction).", en: "Thin orchestrator for the foundation phase (openspec init → optional discovery-research → kb-creator → roadmap-generator → find-skill → agent-instruction)." }
-    long_description: { es: "La skill que orquesta la fase de fundación de un proyecto nuevo, sin ejecutar el trabajo inline. Se clona desde `Group-Active-IA/active-orchestrator` al directorio de skills del agente y coordina, en orden, `openspec init` → (gate opcional) discovery-research → kb-creator → roadmap-generator → find-skill → agent-instruction. Elegila si arrancás un proyecto desde cero y querés que el sustrato quede listo para el ciclo OPSX en una sola corrida guiada, con la opción de investigar competidores y usuarios antes de documentar. Es exclusiva de Full: en Lite quedaría huérfana porque orquesta skills que solo entran en Full.", en: "The skill that orchestrates a new project's foundation phase without running the work inline. It's cloned from `Group-Active-IA/active-orchestrator` into the agent's skills directory and coordinates, in order, `openspec init` → (optional gate) discovery-research → kb-creator → roadmap-generator → find-skill → agent-instruction. Choose it when you start a project from scratch and want the substrate ready for the OPSX cycle in a single guided run, with the option to research competitors and users before documenting. It's Full-only: in Lite it would be orphaned, since it orchestrates skills that only ship in Full." }
+    description: { es: "Orquestador de fundación: OpenSpec, KB, política visual, roadmap, skills y reglas.", en: "Foundation orchestrator: OpenSpec, KB, visual policy, roadmap, skills and rules." }
+    long_description: { es: "Orquesta la fundación sin rehacer las fases de otras skills: openspec init → discovery-research opcional → kb-creator → design-system → roadmap-generator → find-skill → skill-registry → agent-instruction. La fase visual guarda una decisión persistente y puede ejecutarse sola en proyectos existentes. Full la instala para Claude, Codex, OpenCode y Antigravity; depende de design-system.", en: "Orchestrates the foundation without reimplementing other skills: openspec init → optional discovery-research → kb-creator → design-system → roadmap-generator → find-skill → skill-registry → agent-instruction. The visual phase saves a persistent policy and can run on its own in existing projects. Full installs it for Claude, Codex, OpenCode and Antigravity; it depends on design-system." }
     type: skill
-    source: { repo: Group-Active-IA/active-orchestrator, ref: latest, method: clone }
+    source: { repo: Group-Active-IA/active-orchestrator, ref: 63c5131c3abfa28f266b0b763e3587fc64b50502, method: clone }
     # Full-only: orquesta kb-creator/roadmap-generator/agent-instruction/find-skill,
     # todas Full. En Lite quedaría huérfano. Lite = sustrato; Full = fundación guiada.
     install_modes: [full]
-    depends_on: [openspec]
+    agents: [claude, codex, opencode, antigravity]
+    depends_on: [openspec, design-system]
+
+  - id: design-system
+    name: Project Design System
+    description: { es: "Skill de fundación visual con elección persistente: sistema y mockups, solo sistema o saltear ambos.", en: "Visual foundation skill with a persistent choice: system and mockups, system only, or skip both." }
+    long_description: { es: "Skill incluida en el binario e instalada en Full para Claude, Codex, OpenCode y Antigravity. Active Orchestrator la invoca después de la KB en proyectos con UI; en fundaciones anteriores se usa antes del primer change visual. Crea o releva design-system/, muestra HTML/CSS local y espera aprobación. Guarda en .active-orchestrator-state.json una política que evita volver a ofrecer mockups cuando el usuario los desactivó. En Custom llega como dependencia de design-mockups.", en: "Skill bundled in the binary and installed in Full for Claude, Codex, OpenCode and Antigravity. Active Orchestrator invokes it after KB in UI projects; older foundations use it before their first visual change. It creates or audits design-system/, presents local HTML/CSS and waits for approval. A policy in .active-orchestrator-state.json prevents repeated mockup offers after the user opts out. In Custom it is pulled in by design-mockups." }
+    type: skill
+    source: { method: embed }
+    install_modes: [full]
+    agents: [claude, codex, opencode, antigravity]
+    depends_on: [sdd-orchestrator]
 
   - id: kb-creator
     name: kb-creator
@@ -159,6 +193,35 @@ harnesses:
     third_party: true
     best_effort: true # falla del clone no aborta el install (terceros: layout puede cambiar)
     source: { repo: anthropics/skills, ref: latest, method: clone, path: skills/skill-creator }
+    install_modes: [full]
+
+  # ── design-skills-harnesses: skills de diseño de terceros (Claude/Codex/OpenCode/Antigravity) ──
+  # Pineadas a un commit SHA completo (fetch por commit, ver internal/harness/skill/clone.go).
+  # Fecha del pin: 2026-10-08. Para actualizar un pin: consultar el HEAD con
+  #   gh api repos/<owner>/<repo>/commits/main --jq .sha
+  # releer el diff del SKILL.md y reemplazar el ref (no hay bump automático).
+  # Fuentes descartadas: Leonxlnx/taste-skill skills/taste-skill (v2 experimental) y
+  # senlindesign/taste-skill (sin LICENSE, requiere Playwright MCP).
+  - id: emil-design-eng
+    name: Emil Design Engineering
+    description: { es: "Principios de ingeniería de diseño de Emil Kowalski para interfaces cuidadas.", en: "Emil Kowalski's design engineering principles for polished interfaces." }
+    long_description: { es: "Skill de terceros (MIT) con la filosofía de Emil Kowalski sobre detalles de UI, animaciones y feel de las interfaces. Se clona desde `emilkowalski/skills` (subdir `skills/emil-design-eng`), fijada al commit `e8a175de22ae1e49370fc144c1f3bb9aeedf988d` (2026-10-02), al directorio de skills del agente. Es opcional: la etapa de diseño de `design-mockups` la carga si está instalada, pero ninguna depende de la otra. Claude, Codex, OpenCode y Antigravity. Ojo: si la invocás sin una consulta concreta, responde con un saludo fijo del upstream. Es best-effort: si el clone falla, el install no aborta.", en: "Third-party skill (MIT) with Emil Kowalski's philosophy on UI details, animation and interface feel. It's cloned from `emilkowalski/skills` (subdir `skills/emil-design-eng`), pinned to commit `e8a175de22ae1e49370fc144c1f3bb9aeedf988d` (2026-10-02), into the agent's skills directory. It's optional: the `design-mockups` design stage loads it when installed, but neither depends on the other. Claude, Codex, OpenCode and Antigravity. Note: invoked without a concrete question it answers with a fixed upstream greeting. It's best-effort: if the clone fails the install doesn't abort." }
+    type: skill
+    third_party: true
+    best_effort: true # falla del clone no aborta el install (terceros: layout puede cambiar)
+    agents: [claude, codex, opencode, antigravity]
+    source: { repo: emilkowalski/skills, ref: e8a175de22ae1e49370fc144c1f3bb9aeedf988d, method: clone, path: skills/emil-design-eng }
+    install_modes: [full]
+
+  - id: design-taste-frontend-v1
+    name: Taste Skill v1 (frontend)
+    description: { es: "Criterio de diseño frontend con baseline de variación, movimiento y densidad.", en: "Frontend design taste with a baseline for variance, motion and density." }
+    long_description: { es: "Skill de terceros (MIT) que fija un criterio estético opinado para frontend (variación de diseño, intensidad de movimiento y densidad visual por defecto). Se clona desde `Leonxlnx/taste-skill` (subdir `skills/taste-skill-v1`), fijada al commit `b482f7a970abb98c4108d4a9f761e458c64cefc8` (2026-10-07), al directorio de skills del agente. Es la v1 estable: la v2 experimental del mismo repo no se incluye. Es opcional: la etapa de diseño de `design-mockups` la carga si está instalada, sin dependencia dura. Claude, Codex, OpenCode y Antigravity. Es best-effort: si el clone falla, el install no aborta.", en: "Third-party skill (MIT) that sets an opinionated frontend aesthetic baseline (design variance, motion intensity and visual density defaults). It's cloned from `Leonxlnx/taste-skill` (subdir `skills/taste-skill-v1`), pinned to commit `b482f7a970abb98c4108d4a9f761e458c64cefc8` (2026-10-07), into the agent's skills directory. It's the stable v1: the experimental v2 of the same repo is not included. It's optional: the `design-mockups` design stage loads it when installed, with no hard dependency. Claude, Codex, OpenCode and Antigravity. It's best-effort: if the clone fails the install doesn't abort." }
+    type: skill
+    third_party: true
+    best_effort: true # falla del clone no aborta el install (terceros: layout puede cambiar)
+    agents: [claude, codex, opencode, antigravity]
+    source: { repo: Leonxlnx/taste-skill, ref: b482f7a970abb98c4108d4a9f761e458c64cefc8, method: clone, path: skills/taste-skill-v1 }
     install_modes: [full]
 
   # ── C-30: Skills curadas del starter pack ─────────────────────────────────

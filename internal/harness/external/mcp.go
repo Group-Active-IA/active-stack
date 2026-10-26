@@ -63,10 +63,10 @@ func installMCP(
 		}
 
 		var overlay map[string]any
-		if h.External.MCP != nil && adapter.Agent() != model.AgentOpenCode {
-			// Claude (and any agent that is not OpenCode): the remote endpoint of
-			// this MCP requires authentication → prefer the local stdio server
-			// (npx), which needs no auth.
+		if h.External.MCP != nil && (adapter.Agent() != model.AgentOpenCode || h.External.URL == "") {
+			// A local-only MCP (such as Playwright) must use stdio on every
+			// agent. For MCPs with both a URL and local command, OpenCode keeps
+			// its existing remote route while Claude uses stdio.
 			overlay = buildStdioOverlay(*h.External.MCP, adapter)
 		} else {
 			overlay = buildOverlay(h, adapter)
@@ -282,6 +282,15 @@ func buildStdioOverlay(mcp model.MCP, adapter AgentAdapter) map[string]any {
 			return map[string]any{
 				"mcp": map[string]any{
 					mcp.Name: map[string]any{"__replace__": localEntry},
+				},
+			}
+		}
+		if adapter.Agent() == model.AgentAntigravity {
+			// Antigravity infers stdio from command in mcpServers; its documented
+			// entry has no type discriminator. Replace stale entries atomically.
+			return map[string]any{
+				"mcpServers": map[string]any{
+					mcp.Name: map[string]any{"__replace__": entry},
 				},
 			}
 		}

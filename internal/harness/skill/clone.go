@@ -7,8 +7,34 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
+
+var commitSHARe = regexp.MustCompile(`^[0-9a-fA-F]{40}$`)
+
+// isCommitSHA reports whether ref is a full 40-char hexadecimal commit SHA.
+// Shorter hex strings are ambiguous with branch/tag names and are NOT SHAs.
+func isCommitSHA(ref string) bool { return commitSHARe.MatchString(ref) }
+
+// gitCommands builds the ordered git commands that materialize the repo in dir.
+// A full commit SHA cannot be passed to `git clone --branch`, so it is fetched
+// by commit (shallow) and checked out detached; any other ref keeps the
+// shallow `git clone [--branch <ref>]` behaviour.
+func gitCommands(ref, repoURL, dir string) [][]string {
+	if isCommitSHA(ref) {
+		return [][]string{
+			{"git", "init", dir},
+			{"git", "-C", dir, "fetch", "--depth", "1", repoURL, ref},
+			{"git", "-C", dir, "checkout", "--detach", "FETCH_HEAD"},
+		}
+	}
+	args := []string{"git", "clone", "--depth", "1"}
+	if ref != "" && ref != "latest" {
+		args = append(args, "--branch", ref)
+	}
+	return [][]string{append(args, repoURL, dir)}
+}
 
 // cloneInstaller performs a shallow git clone into a temp directory, copies
 // the skill subdirectory to the agent's skills dir, and cleans up on exit.
@@ -37,14 +63,13 @@ func cloneInstaller(
 	}
 	defer os.RemoveAll(tempDir) // always clean up, success or failure
 
-	args := []string{"git", "clone", "--depth", "1"}
-	if ref != "" && ref != "latest" {
-		args = append(args, "--branch", ref)
-	}
-	args = append(args, repoURL, tempDir)
-
-	if err := runner.Run(ctx, args); err != nil {
-		return Result{}, fmt.Errorf("skill %q: git clone %q: %w", skillID, repoURL, err)
+	for _, args := range gitCommands(ref, repoURL, tempDir) {
+		if err := runner.Run(ctx, args); err != nil {
+			if isCommitSHA(ref) {
+				return Result{}, fmt.Errorf("skill %q: git fetch %q at commit %q: %w", skillID, repoURL, ref, err)
+			}
+			return Result{}, fmt.Errorf("skill %q: git clone %q: %w", skillID, repoURL, err)
+		}
 	}
 
 	// Resolve the skill source directory.
