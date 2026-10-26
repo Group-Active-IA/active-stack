@@ -784,6 +784,24 @@ func TestChecksForHarness_DesignMockups_ChecksOwnMarker(t *testing.T) {
 	}
 }
 
+func TestChecksForHarness_DesignMockups_OpenCodeChecksInstructionsMarker(t *testing.T) {
+	homeDir := t.TempDir()
+	fa := newFakeAdapter(t, homeDir, model.AgentOpenCode)
+	fa.delivery = model.ConfigDeliveryPrimaryAgent
+	h := model.Harness{ID: "design-mockups", Type: model.HarnessConfig, Agents: []model.Agent{model.AgentOpenCode}}
+	content := "<!-- active-stack:design-mockups -->\nvisual rules\n<!-- /active-stack:design-mockups -->\n"
+	if err := os.WriteFile(fa.InstructionsPath(homeDir), []byte(content), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	checks := verify.ChecksForHarness(h, []verify.Adapter{fa}, homeDir)
+	if len(checks) != 1 || checks[0].ID != "config:design-mockups:opencode" {
+		t.Fatalf("checks = %+v, want instructions marker check", checks)
+	}
+	if result := runChecks(t, checks)[0]; result.Status != verify.CheckStatusPassed {
+		t.Fatalf("section installed in AGENTS.md should pass verify: %+v", result)
+	}
+}
+
 // TestChecksForHarness_SkipsUnsupportedAgents verifies no checks are produced
 // for agents the harness does not support.
 func TestChecksForHarness_SkipsUnsupportedAgents(t *testing.T) {

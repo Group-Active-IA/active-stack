@@ -95,9 +95,9 @@ func checkSkill(h model.Harness, adapter Adapter, homeDir string) []Check {
 // one the config installer writes (internal/harness/config: Inject uses
 // "sdd-orchestrator" for the orchestrator, installSection uses h.ID).
 func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
-	// Primary-agent delivery (e.g. OpenCode) writes to the settings JSON, not
-	// the instructions file — verify it where it actually lives.
-	if adapter.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
+	// Only the orchestrator is delivered as a primary agent. Section harnesses
+	// such as design-mockups still write a marker to AGENTS.md on OpenCode.
+	if h.ID == "sdd-orchestrator" && adapter.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
 		return checkPrimaryAgentConfig(h, adapter, homeDir)
 	}
 
