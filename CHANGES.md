@@ -51,6 +51,10 @@ codex-design-mockups (adaptación Claude/Codex, en esta rama)
           ▼
 universal-design-system (Claude/Codex/OpenCode y fundación visual por proyecto)
   — depende de codex-design-mockups; en esta rama —
+          │
+          ▼
+visual-foundation-policy (Claude/Codex/OpenCode/Antigravity, opt-out persistente)
+  — extiende universal-design-system y active-orchestrator —
 ```
 
 > Notas de dependencia:
@@ -430,6 +434,15 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 - **Estado**: IMPLEMENTADO (2026-10-23); estructura revisada con el usuario. Proposal y spec local en `openspec/changes/universal-design-system/`. Suite Go completa y prueba sintética de fundación/reutilización con aprobación simulada en verde. Pendiente de validación con los tres agentes ejecutándose en proyectos destino.
 - **Entregable**: en Full, `design-mockups` se instala automáticamente para Claude, Codex y OpenCode; en Custom se puede seleccionar. El primer change visual de cada proyecto crea o releva `design-system/` y espera aprobación humana. Los cambios posteriores reutilizan su revisión para generar mockups HTML/CSS con aprobación por change. Nombre, logo e imágenes `(TBD)` usan rutas o tokens estables para reemplazo. Claude deja de requerir Artifact Design. Playwright MCP y las dos skills visuales se ofrecen a los tres agentes.
 - **Ruta OpenCode**: su sección visual va al `AGENTS.md` compartido, para que cualquier agente que implemente UI respete los gates; el orquestador SDD sigue como agente principal separado en `opencode.json`.
+- **Governance**: BAJO (`catalog`) / MEDIO (`harness/config`, `harness/external`). No modifica `backup`, `filemerge` ni `pipeline`.
+
+---
+
+### `visual-foundation-policy` — Skill instalada y decisión visual persistente
+
+- **Estado**: en implementación (2026-10-25). Integra la rama visual con Antigravity y la skill `active-orchestrator` de su repositorio propio.
+- **Entregable**: `design-system` embebida e instalada para Claude, Codex, OpenCode y Antigravity en Full; Custom la ofrece y la selecciona por dependencia de `design-mockups` o `active-orchestrator`. Durante la fundación se elige `system-and-mockups`, `system-only`, `off` o `deferred` y se registra en `visual_design`. La política `off` evita solicitudes rutinarias de mockup. Fundaciones anteriores agregan la sección sin rehacer fases completadas. Los cuatro agentes comparten HTML/CSS local y verificación visual opcional.
+- **Pruebas**: instalación real de la skill a rutas de los cuatro adapters, selección Custom, validación de catálogo y configuración MCP de Antigravity. Suite Go completa en verde. Una revisión sintética de los modos `off`, `deferred` y `system-and-mockups`, incluida una fundación v4 completada, detectó y permitió corregir la resolución de `deferred` y la migración del JSON a v5. La prueba con Codex CLI no pudo leer el fixture temporal por una política local de ejecución, por lo que no cuenta como validación del agente en vivo.
 - **Governance**: BAJO (`catalog`) / MEDIO (`harness/config`, `harness/external`). No modifica `backup`, `filemerge` ni `pipeline`.
 
 ---

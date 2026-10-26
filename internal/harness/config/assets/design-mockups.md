@@ -2,18 +2,36 @@
 
 For visual changes, run: explore → propose → **design system** → **design** → apply → verify → archive.
 Visual work includes a new or changed page, screen, component, layout, style or interaction.
-Run the foundation and mockup gates automatically; do not ask whether they are needed.
-Only an explicit request from the user may skip mockups for a particular visual change.
+Run the foundation and mockup gates automatically when the project policy enables them.
+Before creating change mockups, read `visual_design.mode` in project-root
+`.active-orchestrator-state.json` and `Mode:` in `design-system/README.md`.
+The `design-system` skill owns that policy and the system creation workflow:
+
+- `system-and-mockups`: require an approved system, then create and present a
+  mockup for each visual change before apply.
+- `system-only`: require an approved system for UI work, but do not ask again
+  about mockups on each change. If change `design.md` exists, record
+  `Decision: no (project policy)` there.
+- `off`: continue visual changes without either gate and do not ask again
+  about mockups on each change. If change `design.md` exists, record
+  `Decision: no (project policy)` there.
+- `deferred` or no recorded mode: invoke the installed design-system skill at
+  the first visual change to ask once for the project-wide policy. Preserve
+  older foundation state and completed phases.
+
+If the JSON and README modes disagree, stop and reconcile with the user.
+Only an explicit request from the user may revise the project policy or skip one mockup without
+changing it. Do not treat a per-change skip as a permanent opt-out.
 For nonvisual work, record `Decision: no (no UI)` and continue.
 
 ### Project-wide design system gate
 
-1. Before creating change mockups, read project-root `design-system/README.md` and
+1. For `system-and-mockups` or `system-only`, read project-root `design-system/README.md` and
    check its `Revision:` and `Approval:` fields. An absent or unapproved system
-   blocks change mockups. A Full install provides this workflow; it does not
-   create a brand for every project at install time. During foundation of a
-   new UI project, run this gate after product discovery/KB and before planning
-   frontend changes. If that point has passed, run it at the first visual change.
+   blocks UI apply in these two modes. A Full install provides this workflow; it does not
+   create a brand for every project at install time. Active Orchestrator
+   invokes the design-system skill after discovery/KB and before planning
+   frontend changes. If that point has passed, invoke it at the first visual change.
 2. For a new project, make a brief from the product, audience, tasks, platform,
    references and constraints. For an existing app, first audit its actual
    logo, colors, typography, components and motion; preserve established
@@ -61,12 +79,18 @@ For nonvisual work, record `Decision: no (no UI)` and continue.
 
 ### Mockup gate for each visual change
 
+Run steps 7–12 only in `system-and-mockups` mode. In `system-only` or `off`,
+record `Decision: no (project policy)` in the change design document when it
+exists and continue without a mockup gate. Do not create an otherwise
+unnecessary design document solely to repeat the opt-out.
+
 7. Read the approved design-system revision and the change proposal, specs,
    design and tasks. Record `## UI Mockups` in
    `openspec/changes/<name>/design.md` with:
    - `Design system revision: <revision from design-system/README.md>`.
-   - `Decision: yes | provided | no` and date. Visual `no` requires the user's
-     explicit skip request; a user-supplied design uses `provided`.
+   - `Decision: yes | provided | no` and date. In `system-and-mockups`, visual
+     `no` requires the user's explicit per-change skip request; a user-supplied
+     design uses `provided`.
    - `Mockups: <path to mockups/>` and supplied source references.
    - `Approval: pending | approved (<date>, by user)`.
    - `Preview: rendered | manual (<date>, paths)`.
@@ -84,7 +108,7 @@ For nonvisual work, record `Decision: no (no UI)` and continue.
    stable assets rather than copying values when practical. Clearly mark
    `(TBD)` placeholders.
    A supplied Figma or other design can be a reference; the local HTML remains
-   the common review format for Claude, Codex and OpenCode.
+   the common review format for Claude, Codex, OpenCode and Antigravity.
 10. Render each mockup at 390x844 and 1440x900, using Playwright MCP when
     installed. Save inspected captures in `mockups/previews/`, present images
     and clickable HTML files, and record `Preview: rendered`. If no browser is

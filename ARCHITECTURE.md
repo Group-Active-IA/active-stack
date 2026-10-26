@@ -79,7 +79,7 @@ El resultado es el bloque de instrucciones del orquestador que se inyecta en
 > opt-in (que el usuario deba poder activar o no) va como **harness `config` propio**
 > con sección propia en el archivo de instrucciones (`active-stack:<id>`), registrada
 > en `sectionFragments` de `internal/harness/config` (`isOwnedSection` la protege del
-> purge). Primer caso: `design-mockups` (Claude/Codex/OpenCode, depende de `sdd-orchestrator`). Los tres reciben el mismo fragmento bajo el mismo marker. En Full se instala automáticamente; en Custom se selecciona. Ante el primer change visual de un proyecto, exige crear o relevar `design-system/` y aprobar su vista HTML/CSS. Después cada change reutiliza la revisión aprobada para producir mockups HTML/CSS locales con capturas móvil/escritorio y aprobación antes de implementar. Nombre y logo pueden quedar `(TBD)` en rutas estables. La sección también define verificación visual en `verify` con `playwright` si está disponible y checklist manual si no. No requiere Artifact Design ni servicio externo.
+> purge). `design-mockups` se inyecta a Claude, Codex, OpenCode y Antigravity bajo el mismo marker. En Full se instala automáticamente; en Custom se selecciona. Depende de la skill embebida `design-system`, que Active Orchestrator invoca tras la KB para registrar una política persistente: `system-and-mockups`, `system-only`, `off` o `deferred`. Solo el primer modo exige un sistema aprobado y mockups HTML/CSS aprobados por change. `off` evita nuevas solicitudes de mockup; `deferred` retoma la elección en el primer change visual. Proyectos con una fundación anterior agregan `visual_design` al estado sin repetir fases. Nombre y logo pueden quedar `(TBD)` en rutas estables. En `verify`, Playwright es opcional y existe checklist manual. No requiere Artifact Design ni servicio externo.
 
 ---
 
@@ -105,13 +105,18 @@ que es la fuente de verdad de qué harnesses existen. Cada entrada declara:
 - id: design-mockups
   type: config           # sección propia: <!-- active-stack:design-mockups -->
   install_modes: [full]
-  agents: [claude, codex, opencode]
-  depends_on: [sdd-orchestrator]
+  agents: [claude, codex, opencode, antigravity]
+  depends_on: [sdd-orchestrator, design-system]
+- id: design-system
+  type: skill
+  source: { method: embed }
+  install_modes: [full]
+  agents: [claude, codex, opencode, antigravity]
 - id: playwright
   type: external
   external: { method: mcp, mcp: { name: playwright, command: npx, args: [-y, "@playwright/mcp@<x.y.z>"] } }
   install_modes: [full]
-  agents: [claude, codex, opencode] # el install externo saltea agentes no soportados
+  agents: [claude, codex, opencode, antigravity] # el install externo saltea agentes no soportados
 - id: engram
   type: external
   install: { method: homebrew | download, ... }
@@ -147,9 +152,11 @@ skills, en este orden (evolución de la skill `active-orchestrator`):
 ```
 1. openspec init        (solo la carpeta openspec/)
 2. kb-creator           (armar knowledge-base/)
-3. roadmap-generator    (armar CHANGES.md)
-4. find-skill           (instalar skills faltantes según stack)
-5. agent-instruction    (armar AGENTS.md/CLAUDE.md con todas las referencias)
+3. design-system        (guardar elección visual; crear sistema si se elige)
+4. roadmap-generator    (armar CHANGES.md)
+5. find-skill           (instalar skills faltantes según stack)
+6. skill-registry       (indexar skills instaladas)
+7. agent-instruction    (armar AGENTS.md/CLAUDE.md con todas las referencias)
 ```
 
 ### 4.3 Ciclo iterativo (por change)

@@ -285,6 +285,15 @@ func buildStdioOverlay(mcp model.MCP, adapter AgentAdapter) map[string]any {
 				},
 			}
 		}
+		if adapter.Agent() == model.AgentAntigravity {
+			// Antigravity infers stdio from command in mcpServers; its documented
+			// entry has no type discriminator. Replace stale entries atomically.
+			return map[string]any{
+				"mcpServers": map[string]any{
+					mcp.Name: map[string]any{"__replace__": entry},
+				},
+			}
+		}
 		// Generic merge-into-settings (Claude → ~/.claude.json): replace the whole
 		// server object atomically so a stale remote entry (e.g. {"type":"http","url":...})
 		// is fully discarded on reinstall — a deep merge would leave the orphan "url".

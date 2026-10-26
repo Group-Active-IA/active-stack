@@ -17,6 +17,8 @@ func TestDesignMockupsVariantsRequireApprovedProjectFoundation(t *testing.T) {
 				"design-system/components.html", "design-system/brand.js", "design-system/assets/", "design-system/previews/",
 				"Approval: pending", "(TBD)", "Before creating change mockups",
 				"Design system revision:", "affected mockups",
+				"visual_design.mode", "system-and-mockups", "system-only", "off", "deferred",
+				"do not ask again", "design-system skill",
 			} {
 				if !strings.Contains(content, required) {
 					t.Errorf("missing project-wide contract %q", required)

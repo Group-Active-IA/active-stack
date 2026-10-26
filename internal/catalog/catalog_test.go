@@ -340,7 +340,7 @@ func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
-	const wantFoundationGlobal = 19 // +1 playwright (visual-verify)
+	const wantFoundationGlobal = 20 // +1 embedded design-system skill
 	got := c.ForMode(model.ModeCustom)
 	if len(got) != wantFoundationGlobal {
 		t.Errorf("custom mode returned %d harnesses, want %d foundation-global", len(got), wantFoundationGlobal)
@@ -369,8 +369,8 @@ func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 		wantCount int
 	}{
 		{model.ModeLite, 6},
-		{model.ModeFull, 19},   // +1 playwright (visual-verify)
-		{model.ModeCustom, 19}, // +1 playwright (visual-verify)
+		{model.ModeFull, 20},   // +1 embedded design-system skill
+		{model.ModeCustom, 20}, // +1 embedded design-system skill
 	}
 
 	for _, tc := range cases {
@@ -756,8 +756,8 @@ func TestDesignMockups_InCatalog(t *testing.T) {
 			t.Errorf("design-mockups must NOT support %q", a)
 		}
 	}
-	if len(h.DependsOn) != 1 || h.DependsOn[0] != "sdd-orchestrator" {
-		t.Errorf("DependsOn = %v, want [sdd-orchestrator]", h.DependsOn)
+	if len(h.DependsOn) != 2 || h.DependsOn[0] != "sdd-orchestrator" || h.DependsOn[1] != "design-system" {
+		t.Errorf("DependsOn = %v, want [sdd-orchestrator design-system]", h.DependsOn)
 	}
 	if !h.InMode(model.ModeFull) || !h.InMode(model.ModeCustom) {
 		t.Error("design-mockups must be in full and custom")

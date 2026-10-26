@@ -150,6 +150,25 @@ func TestInstall_PlaywrightOpenCodeUsesLocalServer(t *testing.T) {
 	}
 }
 
+func TestInstall_PlaywrightAntigravityUsesMCPServersShape(t *testing.T) {
+	stubSnapshotter(t)
+	home := t.TempDir()
+	h := playwrightHarness(t)
+	path := filepath.Join(home, ".gemini", "config", "mcp_config.json")
+	antigravity := &fakeAdapter{agent: model.AgentAntigravity, configPath: path, strategy: StrategyMergeIntoSettings}
+	if _, err := Install(context.Background(), h, system.PlatformProfile{}, []AgentAdapter{antigravity}, home, nil); err != nil {
+		t.Fatal(err)
+	}
+	servers := readJSONFile(t, path)["mcpServers"].(map[string]any)
+	entry := servers["playwright"].(map[string]any)
+	if entry["command"] != "npx" || !reflect.DeepEqual(entry["args"], []any{"-y", "@playwright/mcp@0.0.83"}) {
+		t.Fatalf("Antigravity Playwright entry = %v", entry)
+	}
+	if _, hasType := entry["type"]; hasType {
+		t.Fatalf("Antigravity MCP schema does not require a type discriminator: %v", entry)
+	}
+}
+
 // TestInstall_AgentAgnosticExternalStillInstallsForAll: regression guard — an
 // external without Agents (context7 shape) writes to every selected adapter.
 func TestInstall_AgentAgnosticExternalStillInstallsForAll(t *testing.T) {
