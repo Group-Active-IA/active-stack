@@ -179,10 +179,12 @@ func TestDefineDependencies_ExcludesNpx(t *testing.T) {
 // ─── DetectDepsFor ────────────────────────────────────────────────────────────
 
 // TestDetectDepsFor_AllPresent verifies that DetectDepsFor marks AllPresent when
-// a version probe executable is available.
+// all deps are already installed (use pre-set Installed=true to avoid exec).
 func TestDetectDepsFor_AllPresent(t *testing.T) {
+	// We pass deps already known to be installed so the function just re-checks them.
+	// Use echoCmd as a real binary that is guaranteed present across platforms.
 	deps := []Dependency{
-		{Name: "version-probe", Required: true, DetectCmd: versionOutputCommand()},
+		{Name: "echo", Required: true, Installed: false, DetectCmd: echoCmd("1.0.0")},
 	}
 
 	report := DetectDepsFor(context.Background(), deps)

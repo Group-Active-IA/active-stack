@@ -2,7 +2,7 @@
   <img src="https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white" alt="Go 1.26">
   <img src="https://img.shields.io/badge/TUI-Bubbletea-8b5cf6" alt="Bubbletea">
   <img src="https://img.shields.io/badge/binario-único%20cross--platform-6366f1" alt="Binario único cross-platform">
-  <img src="https://img.shields.io/badge/agentes-Claude%20%C2%B7%20Codex%20%C2%B7%20OpenCode-06b6d4" alt="Agentes soportados">
+  <img src="https://img.shields.io/badge/agentes-Claude%20%C2%B7%20Codex%20%C2%B7%20OpenCode%20%C2%B7%20Antigravity-06b6d4" alt="Agentes soportados">
   <img src="https://img.shields.io/badge/ciclo-OPSX-14b8a6" alt="OPSX">
   <img src="https://img.shields.io/badge/licencia-MIT-22c55e" alt="Licencia MIT">
 </p>
@@ -15,7 +15,7 @@
 
 ## ¿Qué es esto?
 
-**Active Stack** es un **instalador _methodology-first_**: un único binario en Go que toma tu agente de IA (Claude Code, Codex, OpenCode…) y le **inyecta, de forma modular y actualizable, todo el sustrato que exige una metodología de desarrollo asistido por IA.**
+**Active Stack** es un **instalador _methodology-first_**: un único binario en Go que toma tu agente de IA (Claude Code, Codex, OpenCode, Antigravity…) y le **inyecta, de forma modular y actualizable, todo el sustrato que exige una metodología de desarrollo asistido por IA.**
 
 No es un framework que corre en tu app. Es un **configurador del entorno del agente**. Corrés un comando, elegís un modo, y el stack deja tu proyecto listo para el ciclo **OPSX** (`explore → propose → apply → verify → archive`).
 
@@ -53,7 +53,7 @@ flowchart TD
         T3["<b>external</b><br/>binario/servicio de terceros<br/>CLI · MCP"]
     end
 
-    T1 --> AG["🤖 Tu agente de IA<br/>(Claude · Codex · OpenCode)"]
+    T1 --> AG["🤖 Tu agente de IA<br/>(Claude · Codex · OpenCode · Antigravity)"]
     T2 --> AG
     T3 --> AG
 
@@ -111,7 +111,7 @@ Cada release publica su [`SHA256SUMS.txt`](https://github.com/Group-Active-IA/ac
 | **Git** | El instalador clona harnesses de tipo `skill` | [git-scm.com/install/windows](https://git-scm.com/install/windows) |
 | **Node.js** (LTS) | El instalador instala harnesses `external` vía `npm` (ej. OpenSpec CLI) | [nodejs.org/es/download](https://nodejs.org/es/download) |
 
-Además, necesitás tener ya instalado un [agente de IA soportado](#agentes-y-plataformas) (Claude Code, Codex u OpenCode) — sin uno, no hay nada que el instalador pueda configurar.
+Además, necesitás tener ya instalado un [agente de IA soportado](#agentes-y-plataformas) (Claude Code, Codex, OpenCode o Antigravity) — sin uno, no hay nada que el instalador pueda configurar.
 
 > 💡 Go **no** hace falta para instalar ni para correr los binarios/`.exe` de Releases — solo para compilar desde fuente.
 
@@ -135,7 +135,7 @@ go build -o active-stack ./cmd/active-stack
 active-stack install                 # TUI interactiva (Bubbletea): elegís agente y modo
 active-stack install --dry-run       # Muestra el plan de instalación, no ejecuta nada
 active-stack install --mode full     # Instalación headless (no interactiva)
-active-stack install --agent claude  # Apuntá a un agente concreto
+active-stack install --agent claude  # Apuntá a un agente concreto (claude, codex, opencode, antigravity)
 active-stack install --help          # Todos los flags
 ```
 
@@ -257,7 +257,8 @@ El `active-orchestrator` coordina la fundación con lazy-loading de skills; dura
 | **Claude Code** | ✅ Soportado |
 | **Codex** | ✅ Soportado |
 | **OpenCode** | ✅ Soportado |
-| Gemini · Cursor · VS Code · Windsurf · Antigravity | 🔜 En el modelo de dominio, adapter en roadmap |
+| **Antigravity** | ✅ Soportado |
+| Gemini · Cursor · VS Code · Windsurf | 🔜 En el modelo de dominio, adapter en roadmap |
 
 > Agregar un agente es deliberadamente barato: un sub-paquete con el adapter + una entrada en el registry. Ningún installer ni interfaz existente cambia.
 

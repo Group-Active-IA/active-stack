@@ -570,7 +570,7 @@ func (a projectTargetAdapter) MCPConfigPath(_ string, server string) string {
 }
 func (a projectTargetAdapter) MCPStrategy() external.MCPStrategy {
 	switch a.paths().MCPStrategy {
-	case model.MCPStrategyMergeIntoSettings:
+	case model.MCPStrategyMergeIntoSettings, model.MCPStrategySingleFileMerge:
 		return external.StrategyMergeIntoSettings
 	case model.MCPStrategyMergeIntoTOML:
 		return external.StrategyMergeIntoTOML

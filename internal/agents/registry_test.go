@@ -71,7 +71,7 @@ func TestRegistry_SupportedAgents(t *testing.T) {
 	}
 
 	got := r.SupportedAgents()
-	want := []model.Agent{model.AgentClaude, model.AgentCodex, model.AgentOpenCode}
+	want := []model.Agent{model.AgentAntigravity, model.AgentClaude, model.AgentCodex, model.AgentOpenCode}
 
 	if len(got) != len(want) {
 		t.Fatalf("SupportedAgents() len = %d, want %d; got %v", len(got), len(want), got)
@@ -112,7 +112,6 @@ func TestDefaultRegistry_DoesNotContainRemainingAgents(t *testing.T) {
 		model.AgentCursor,
 		model.AgentVSCode,
 		model.AgentWindsurf,
-		model.AgentAntigravity,
 	}
 
 	for _, a := range remaining {

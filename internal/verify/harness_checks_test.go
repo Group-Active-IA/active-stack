@@ -838,3 +838,30 @@ func TestHarnessChecks_Playwright(t *testing.T) {
 		}
 	}
 }
+
+func TestChecksForHarness_SkipsAntigravityWhenUnsupported(t *testing.T) {
+	homeDir := t.TempDir()
+	claudeAdapter := newFakeAdapter(t, homeDir, model.AgentClaude)
+	antigravityAdapter := newFakeAdapter(t, filepath.Join(homeDir, "agy"), model.AgentAntigravity)
+
+	if err := os.WriteFile(claudeAdapter.SettingsPath(homeDir), []byte(`{"permissions":{"allow":[]}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	h := model.Harness{
+		ID:     "permissions",
+		Type:   model.HarnessConfig,
+		Agents: []model.Agent{model.AgentClaude, model.AgentCodex, model.AgentOpenCode},
+	}
+
+	checks := verify.ChecksForHarness(h, []verify.Adapter{claudeAdapter, antigravityAdapter}, homeDir)
+	if len(checks) != 1 {
+		t.Fatalf("len(checks) = %d, want 1 (antigravity must be skipped)", len(checks))
+	}
+
+	results := runChecks(t, checks)
+	report := verify.BuildReport(results)
+	if !report.Ready {
+		t.Errorf("report.Ready = false, want true; results = %+v", results)
+	}
+}

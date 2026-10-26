@@ -5,6 +5,7 @@ package agents_test
 
 import (
 	"github.com/Group-Active-IA/active-stack/internal/agents"
+	antigravityadapter "github.com/Group-Active-IA/active-stack/internal/agents/antigravity"
 	claudeadapter "github.com/Group-Active-IA/active-stack/internal/agents/claude"
 	codexadapter "github.com/Group-Active-IA/active-stack/internal/agents/codex"
 	opencodeadapter "github.com/Group-Active-IA/active-stack/internal/agents/opencode"
@@ -31,9 +32,15 @@ var _ config.AgentAdapter = (*codexadapter.Adapter)(nil)
 var _ permissions.PermissionsAdapter = (*codexadapter.Adapter)(nil)
 var _ external.AgentAdapter = (*codexadapter.Adapter)(nil)
 
-// C-31: both adapters satisfy the full agents.Adapter interface, including the
+var _ skill.AgentAdapter = (*antigravityadapter.Adapter)(nil)
+var _ config.AgentAdapter = (*antigravityadapter.Adapter)(nil)
+var _ permissions.PermissionsAdapter = (*antigravityadapter.Adapter)(nil)
+var _ external.AgentAdapter = (*antigravityadapter.Adapter)(nil)
+
+// C-31: adapters satisfy the full agents.Adapter interface, including the
 // new CommandsDir method added in C-31 (D1). RED: fails if CommandsDir is
-// missing from either adapter or from the interface.
+// missing from any adapter or from the interface.
 var _ agents.Adapter = (*claudeadapter.Adapter)(nil)
 var _ agents.Adapter = (*opencodeadapter.Adapter)(nil)
 var _ agents.Adapter = (*codexadapter.Adapter)(nil)
+var _ agents.Adapter = (*antigravityadapter.Adapter)(nil)

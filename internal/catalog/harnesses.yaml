@@ -69,7 +69,7 @@ harnesses:
     type: config
     toggles: [tdd, engram, model-routing, delegation, governance]
     install_modes: [lite, full]
-    agents: [claude, codex, opencode]
+    agents: [claude, codex, opencode, antigravity]
 
   - id: permissions
     name: Permissions (security-first)

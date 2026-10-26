@@ -220,6 +220,24 @@ func TestCompose_VariantCodex(t *testing.T) {
 	}
 }
 
+// TestCompose_VariantAntigravity verifies the antigravity variant loads its own base and toggles cleanly.
+func TestCompose_VariantAntigravity(t *testing.T) {
+	toggles := []string{"delegation", "model-routing", "engram", "tdd", "governance"}
+	out, err := config.Compose(toggles, "antigravity")
+	if err != nil {
+		t.Fatalf("Compose antigravity: %v", err)
+	}
+	if !strings.Contains(out, "Antigravity") {
+		t.Error("antigravity variant output should contain 'Antigravity'")
+	}
+	if !strings.Contains(out, "Delegation Rules") {
+		t.Error("antigravity variant with delegation should contain 'Delegation Rules'")
+	}
+	if !strings.Contains(out, "Model Assignments") {
+		t.Error("antigravity variant with model-routing should contain 'Model Assignments'")
+	}
+}
+
 // TestCompose_BaseAlwaysPresent verifies base content is never stripped even
 // when all toggles are off.
 func TestCompose_BaseAlwaysPresent(t *testing.T) {

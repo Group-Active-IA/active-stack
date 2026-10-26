@@ -6,13 +6,11 @@ import (
 	"testing"
 )
 
-// versionOutputCommand uses an actual executable on both Windows and Unix.
-// "echo" alone is a shell builtin on Windows, so exec.LookPath cannot find it.
-func versionOutputCommand() []string {
+func echoCmd(arg string) []string {
 	if runtime.GOOS == "windows" {
-		return []string{"powershell.exe", "-NoProfile", "-Command", "Write-Output v1.0.0"}
+		return []string{"cmd", "/c", "echo", arg}
 	}
-	return []string{"sh", "-c", "printf v1.0.0"}
+	return []string{"echo", arg}
 }
 
 func TestParseVersionNode(t *testing.T) {
@@ -255,15 +253,16 @@ func TestRenderDependencyReportMissing(t *testing.T) {
 }
 
 func TestDetectSingleDepWithEchoTrue(t *testing.T) {
+	// This test uses echoCmd which is on PATH everywhere (echo on Unix, cmd /c echo on Windows).
 	dep := Dependency{
-		Name:      "version-probe",
+		Name:      "echo",
 		Required:  true,
-		DetectCmd: versionOutputCommand(),
+		DetectCmd: echoCmd("v1.0.0"),
 	}
 
 	result := detectSingleDep(context.Background(), dep)
 	if !result.Installed {
-		t.Fatalf("expected version probe to be detected as installed")
+		t.Fatalf("expected echo to be detected as installed")
 	}
 
 	if result.Version != "1.0.0" {
@@ -285,11 +284,12 @@ func TestDetectSingleDepNonExistentBinary(t *testing.T) {
 }
 
 func TestDetectSingleDepMinVersionFail(t *testing.T) {
+	// Use echo to produce a version below the minimum.
 	dep := Dependency{
-		Name:       "version-probe",
+		Name:       "echo",
 		Required:   true,
 		MinVersion: "99.0.0",
-		DetectCmd:  versionOutputCommand(),
+		DetectCmd:  echoCmd("v1.0.0"),
 	}
 
 	result := detectSingleDep(context.Background(), dep)
