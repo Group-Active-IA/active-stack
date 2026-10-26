@@ -3,20 +3,20 @@ package tui
 import (
 	"os"
 	"path/filepath"
-	"slices"
 	"testing"
 
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
-func TestDetectInstalledAgentsIncludesCodex(t *testing.T) {
+func TestDetectInstalledAgents_IncludesAntigravity(t *testing.T) {
 	home := t.TempDir()
-	if err := os.MkdirAll(filepath.Join(home, ".codex"), 0o755); err != nil {
-		t.Fatal(err)
+	agyDir := filepath.Join(home, ".gemini", "antigravity")
+	if err := os.MkdirAll(agyDir, 0o755); err != nil {
+		t.Fatalf("MkdirAll(%s): %v", agyDir, err)
 	}
 
 	got := DetectInstalledAgents(home)
-	if !slices.Contains(got, model.AgentCodex) {
-		t.Fatalf("DetectInstalledAgents() = %v, want codex", got)
+	if len(got) != 1 || got[0] != model.AgentAntigravity {
+		t.Fatalf("DetectInstalledAgents() = %v, want [%s]", got, model.AgentAntigravity)
 	}
 }

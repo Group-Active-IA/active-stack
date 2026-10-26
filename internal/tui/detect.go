@@ -22,6 +22,7 @@ func DetectInstalledAgents(homeDir string) []model.Agent {
 		{model.AgentClaude, filepath.Join(homeDir, ".claude")},
 		{model.AgentCodex, filepath.Join(homeDir, ".codex")},
 		{model.AgentOpenCode, filepath.Join(homeDir, ".config", "opencode")},
+		{model.AgentAntigravity, filepath.Join(homeDir, ".gemini", "antigravity")},
 	}
 
 	var found []model.Agent
