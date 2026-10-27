@@ -19,6 +19,8 @@ import (
 // When TUI is true, no headless execution should happen; the caller must
 // launch the interactive TUI instead.
 type ParsedFlags struct {
+	// OnSuccess records a completed machine install for future updates.
+	OnSuccess func(install.Intent) error
 	// TUI is true when no headless intent was expressed (no --headless,
 	// no --mode, no --agent). The caller must launch the interactive TUI.
 	TUI bool
@@ -115,18 +117,18 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 	fs.SetOutput(os.Stderr)
 
 	var (
-		headless      bool
-		mode          string
-		agent         string
-		custom        string
-		tier          string
-		dryRun        bool
-		yes           bool
-		yShort        bool
-		home          string
-		noSelfInstall bool
+		headless          bool
+		mode              string
+		agent             string
+		custom            string
+		tier              string
+		dryRun            bool
+		yes               bool
+		yShort            bool
+		home              string
+		noSelfInstall     bool
 		windowsEventsFile string
-		lang          string
+		lang              string
 	)
 
 	fs.BoolVar(&headless, "headless", false, "non-interactive install; implied by --mode or --agent")
@@ -245,13 +247,13 @@ func ParseInstallFlags(args []string) (ParsedFlags, error) {
 	}
 
 	return ParsedFlags{
-		TUI:           false,
-		DryRun:        dryRun,
-		Yes:           yes,
-		HomeDir:       homeDir,
-		NoSelfInstall: noSelfInstall,
+		TUI:               false,
+		DryRun:            dryRun,
+		Yes:               yes,
+		HomeDir:           homeDir,
+		NoSelfInstall:     noSelfInstall,
 		WindowsEventsFile: windowsEventsFile,
-		Lang:          resolvedLang,
+		Lang:              resolvedLang,
 		Intent: install.Intent{
 			Mode:   installMode,
 			Agents: agents,

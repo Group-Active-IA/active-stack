@@ -14,6 +14,8 @@ import (
 // ParsedStarterAddFlags is the result of parsing the "starter add" sub-command
 // flags (C-29 D1/D2).
 type ParsedStarterAddFlags struct {
+	// OnSuccess records a project after its starter finishes successfully.
+	OnSuccess func(string) error
 	// StarterID is the positional required first argument.
 	StarterID string
 

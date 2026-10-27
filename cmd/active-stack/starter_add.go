@@ -69,6 +69,9 @@ func runStarterAdd(
 		fmt.Fprintf(w, "error: %v\n", err)
 		return 1
 	}
+	if flags.OnSuccess != nil {
+		params.OnSuccess = func(install.Intent) error { return flags.OnSuccess(flags.ProjectPath) }
+	}
 
 	// Execute via RunHeadless (gate + snapshot + orchestrator + rollback + dry-run).
 	exitCode := headless.RunHeadless(params, cat, reg, w)

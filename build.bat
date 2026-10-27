@@ -11,14 +11,16 @@ cd /d "%~dp0"
 set "OUT=."
 
 set "CGO_ENABLED=0"
+set "AS_VERSION=dev"
+for /f "delims=" %%v in ('git describe --tags --dirty --always 2^>nul') do set "AS_VERSION=%%v"
 
 echo == Windows amd64 ==
 set "GOOS=windows" & set "GOARCH=amd64"
-go build -trimpath -o "%OUT%\active-stack_windows_amd64.exe" ./cmd/active-stack || goto :err
+go build -trimpath -ldflags "-X main.buildVersion=%AS_VERSION%" -o "%OUT%\active-stack_windows_amd64.exe" ./cmd/active-stack || goto :err
 
 echo == Linux amd64 ==
 set "GOOS=linux" & set "GOARCH=amd64"
-go build -trimpath -o "%OUT%\active-stack_linux_amd64" ./cmd/active-stack || goto :err
+go build -trimpath -ldflags "-X main.buildVersion=%AS_VERSION%" -o "%OUT%\active-stack_linux_amd64" ./cmd/active-stack || goto :err
 
 echo == Acceso directo en el escritorio ==
 powershell -NoProfile -ExecutionPolicy Bypass -Command "$d=[Environment]::GetFolderPath('Desktop'); $exe=Join-Path '%~dp0' 'active-stack_windows_amd64.exe'; $w=New-Object -ComObject WScript.Shell; $s=$w.CreateShortcut((Join-Path $d 'Active Stack.lnk')); $s.TargetPath=$exe; $s.WorkingDirectory=('%~dp0').TrimEnd('\'); $s.IconLocation=$exe + ',0'; $s.Description='Active Stack installer'; $s.Save(); Write-Host ('  -> ' + (Join-Path $d 'Active Stack.lnk'))" || echo   (No se pudo crear el acceso directo; el build continua igual.)

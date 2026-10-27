@@ -15,6 +15,8 @@ import (
 // It is a slimmer sibling of ParsedFlags — no TUI field, no install-only fields
 // (D3: separate type keeps the uninstall surface clear).
 type ParsedUninstallFlags struct {
+	// OnSuccess invalidates recorded selections affected by a completed uninstall.
+	OnSuccess func(uninstall.Intent) error
 	// Intent is the resolved uninstall intent (agents, mode, custom harnesses, strategy).
 	Intent uninstall.Intent
 
@@ -56,16 +58,16 @@ func ParseUninstallFlags(args []string) (ParsedUninstallFlags, error) {
 	fs.SetOutput(os.Stderr)
 
 	var (
-		mode             string
-		agent            string
-		custom           string
-		strategy         string
-		restoreManifest  string
-		dryRun           bool
-		yes              bool
-		yShort           bool
-		home             string
-		lang             string
+		mode            string
+		agent           string
+		custom          string
+		strategy        string
+		restoreManifest string
+		dryRun          bool
+		yes             bool
+		yShort          bool
+		home            string
+		lang            string
 	)
 
 	fs.StringVar(&mode, "mode", "", "uninstall mode: lite|full|custom")
