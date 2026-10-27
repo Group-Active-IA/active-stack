@@ -11,13 +11,14 @@ cd "$(dirname "$0")"
 
 OUT=.
 export CGO_ENABLED=0
+AS_VERSION="$(git describe --tags --dirty --always 2>/dev/null || echo dev)"
 
 # build <goos> <goarch> [ext]
 build() {
   local goos=$1 goarch=$2 ext=${3:-}
   echo "== ${goos} ${goarch} =="
   GOOS="$goos" GOARCH="$goarch" \
-    go build -trimpath -o "${OUT}/active-stack_${goos}_${goarch}${ext}" ./cmd/active-stack
+    go build -trimpath -ldflags "-X main.buildVersion=${AS_VERSION}" -o "${OUT}/active-stack_${goos}_${goarch}${ext}" ./cmd/active-stack
 }
 
 # Matriz de targets. Agrega lineas para mas plataformas, p.ej.:

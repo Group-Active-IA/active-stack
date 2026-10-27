@@ -100,36 +100,9 @@ func cloneInstaller(
 			skillID, skillID, repoURL)
 	}
 
-	// Read SKILL.md content for idempotence check.
-	srcSKILLmd := filepath.Join(srcDir, "SKILL.md")
-	newContent, err := os.ReadFile(srcSKILLmd)
-	if err != nil {
-		return Result{}, fmt.Errorf("skill %q: SKILL.md not found in cloned repo: %w", skillID, err)
-	}
-
-	destDir := filepath.Join(skillsDir, skillID)
-
-	identical, err := checkIdempotent(skillsDir, skillID, newContent)
-	if err != nil {
-		return Result{}, err
-	}
-	if identical {
-		return Result{SkillPath: destDir, AlreadyInstalled: true}, nil
-	}
-
-	// Backup if destination exists.
-	if _, statErr := os.Stat(destDir); statErr == nil {
-		if backupErr := snapshotSkillDir(backupDir, skillsDir, skillID); backupErr != nil {
-			return Result{}, backupErr
-		}
-	}
-
-	// Copy srcDir → destDir recursively.
-	if err := copyDir(srcDir, destDir); err != nil {
-		return Result{}, fmt.Errorf("skill %q: copy to skills dir: %w", skillID, err)
-	}
-
-	return Result{SkillPath: destDir}, nil
+	return refreshSkillDirectory(skillsDir, skillID, backupDir, func(stage string) error {
+		return copyDir(srcDir, stage)
+	})
 }
 
 // copyDir recursively copies src directory to dst, excluding the .git/
@@ -138,6 +111,9 @@ func copyDir(src, dst string) error {
 	return filepath.WalkDir(src, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
 			return err
+		}
+		if d.Type()&os.ModeSymlink != 0 {
+			return fmt.Errorf("skill source contains symlink %q", path)
 		}
 		rel, err := filepath.Rel(src, path)
 		if err != nil {

@@ -11,8 +11,10 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/Group-Active-IA/active-stack/assets"
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
@@ -23,6 +25,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/system"
 	"github.com/Group-Active-IA/active-stack/internal/tui"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/update"
 	"github.com/Group-Active-IA/active-stack/internal/verify"
 )
 
@@ -58,6 +61,16 @@ func main() {
 	}
 
 	switch os.Args[1] {
+	case "--version", "version":
+		fmt.Fprintln(os.Stdout, buildVersion)
+	case "update":
+		if err := runUpdate(context.Background(), os.Args[2:], os.Stdout); err != nil {
+			if errors.Is(err, update.ErrHandoff) {
+				return
+			}
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
 	case "install":
 		if err := runInstall(os.Args[2:]); err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
@@ -171,6 +184,7 @@ func runInstall(args []string) error {
 	if !parsed.TUI {
 		// Use the home dir from the parsed flags (may have been --home overridden).
 		parsed.HomeDir = resolveHomeDir(parsed.HomeDir, reg)
+		parsed.OnSuccess = func(intent install.Intent) error { return update.SaveIntent(parsed.HomeDir, intent) }
 
 		// Resolve the running binary path once at the entry point (D3).
 		// The self-install step uses this to know which binary to copy.
@@ -257,6 +271,16 @@ func runInstall(args []string) error {
 		BackupDir:    resolveBackupDir(homeDir),
 		RunUninstall: buildRunUninstallCallback(cat, uninstallRegWrapper),
 		RunStarter:   buildRunStarterCallback(cat, regWrapper),
+		RunUpdate: func() (string, error) {
+			var log strings.Builder
+			err := runUpdate(context.Background(), nil, &log)
+			lines := strings.Split(strings.TrimSpace(log.String()), "\n")
+			if len(lines) > 6 {
+				lines = lines[len(lines)-6:]
+			}
+			return strings.Join(lines, " | "), err
+		},
+		OnInstallComplete: func(intent install.Intent) error { return update.SaveIntent(homeDir, intent) },
 	}
 
 	// 6. Launch the TUI program.

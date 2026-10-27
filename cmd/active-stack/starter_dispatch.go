@@ -3,10 +3,12 @@ package main
 import (
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/Group-Active-IA/active-stack/assets"
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
 	"github.com/Group-Active-IA/active-stack/internal/install"
+	"github.com/Group-Active-IA/active-stack/internal/update"
 	"github.com/Group-Active-IA/active-stack/internal/verify"
 )
 
@@ -64,6 +66,13 @@ func runStarterAddDispatch(
 		return 1
 	}
 	flags.ProjectPath = projectRoot
+	flags.OnSuccess = func(project string) error {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return err
+		}
+		return update.RecordStarter(home, project, flags.StarterID, flags.Agents)
+	}
 
 	// Wire the embedded SkillsFS and a no-op verify hook (real hook wired via adapters).
 	buildPlanFn := func(c install.Catalog, intent install.Intent, opts install.Options) (install.Plan, error) {

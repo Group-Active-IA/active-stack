@@ -437,6 +437,12 @@ func RunWindowsUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, reg
 		return 1
 	}
 
+	if params2.OnSuccess != nil {
+		if err := params2.OnSuccess(params2.Intent); err != nil {
+			emit(windowsInstallEvent{Type: "uninstall_finished", Phase: "uninstall", Success: false, Message: i18n.T(lang, "windows.uninstall.finished_fail"), Details: err.Error()})
+			return 1
+		}
+	}
 	emit(windowsInstallEvent{
 		Type:    "uninstall_finished",
 		Phase:   "uninstall",

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Group-Active-IA/active-stack/cmd/active-stack/headless"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/update"
 )
 
 // runUninstallDispatch handles the "uninstall" top-level subcommand.
@@ -33,6 +34,7 @@ func runUninstallDispatch(args []string, cat uninstall.Catalog, reg uninstall.Re
 		return 1
 	}
 
+	flags.OnSuccess = func(intent uninstall.Intent) error { return update.DropAgents(flags.HomeDir, intent.Agents) }
 	return headless.RunHeadlessUninstall(flags, cat, reg, w)
 }
 

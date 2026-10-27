@@ -105,6 +105,9 @@ func RunWindowsStartersInstall(
 		})
 		return 1
 	}
+	if flags.OnSuccess != nil {
+		params.OnSuccess = func(install.Intent) error { return flags.OnSuccess(flags.ProjectPath) }
+	}
 
 	return runWindowsPipeline(params, installCat, reg, w, "starter_finished")
 }

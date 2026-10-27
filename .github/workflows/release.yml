@@ -67,11 +67,12 @@ jobs:
 
           # Binarios CLI crudos (paridad con build.sh / build.bat)
           $env:CGO_ENABLED = "0"
+          $tag = if ('${{ github.event_name }}' -eq 'workflow_dispatch') { "v${{ inputs.version }}" } else { '${{ github.ref_name }}' }
           $env:GOOS = "windows"; $env:GOARCH = "amd64"
-          go build -trimpath -o release-assets/active-stack_windows_amd64.exe ./cmd/active-stack
+          go build -trimpath -ldflags "-X main.buildVersion=$tag" -o release-assets/active-stack_windows_amd64.exe ./cmd/active-stack
           if ($LASTEXITCODE -ne 0) { throw "go build windows/amd64 falló" }
           $env:GOOS = "linux"
-          go build -trimpath -o release-assets/active-stack_linux_amd64 ./cmd/active-stack
+          go build -trimpath -ldflags "-X main.buildVersion=$tag" -o release-assets/active-stack_linux_amd64 ./cmd/active-stack
           if ($LASTEXITCODE -ne 0) { throw "go build linux/amd64 falló" }
 
           Get-ChildItem release-assets | ForEach-Object {

@@ -170,6 +170,12 @@ func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, 
 			fmt.Fprintf(w, "  ⚠ %s: %s\n", ev.StepID, reason)
 		}
 	}
+	if params.OnSuccess != nil {
+		if err := params.OnSuccess(params.Intent); err != nil {
+			fmt.Fprintf(w, "error: save installation selection: %v\n", err)
+			return 1
+		}
+	}
 
 	return 0
 }

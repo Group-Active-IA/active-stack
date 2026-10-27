@@ -9,6 +9,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/update"
 )
 
 // buildRunUninstallCallback creates the RunUninstall callback for ModelDeps.
@@ -16,6 +17,7 @@ import (
 // signature to (flags, writer) int.
 func buildRunUninstallCallback(cat uninstall.Catalog, reg uninstall.Registry) func(headless.ParsedUninstallFlags, io.Writer) int {
 	return func(flags headless.ParsedUninstallFlags, w io.Writer) int {
+		flags.OnSuccess = func(intent uninstall.Intent) error { return update.DropAgents(flags.HomeDir, intent.Agents) }
 		return headless.RunHeadlessUninstall(flags, cat, reg, w)
 	}
 }
@@ -31,6 +33,13 @@ func buildRunStarterCallback(cat starterCatalog, reg install.Registry) func(stri
 			DryRun:      false,
 			Yes:         true,
 			Agents:      agents,
+			OnSuccess: func(project string) error {
+				home, err := os.UserHomeDir()
+				if err != nil {
+					return err
+				}
+				return update.RecordStarter(home, project, starterID, agents)
+			},
 		}
 		return runStarterAdd(flags, cat, reg, nil, w)
 	}

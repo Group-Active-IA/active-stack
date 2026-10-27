@@ -99,6 +99,12 @@ func RunHeadlessUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, re
 		}
 		return 1
 	}
+	if params.OnSuccess != nil {
+		if err := params.OnSuccess(params.Intent); err != nil {
+			fmt.Fprintf(w, "error: update installation state: %v\n", err)
+			return 1
+		}
+	}
 
 	return 0
 }

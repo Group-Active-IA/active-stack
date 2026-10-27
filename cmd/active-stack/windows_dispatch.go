@@ -13,6 +13,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
+	"github.com/Group-Active-IA/active-stack/internal/update"
 	"github.com/Group-Active-IA/active-stack/internal/verify"
 )
 
@@ -108,6 +109,7 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 		}
 
 		parsed.HomeDir = resolveHomeDir(parsed.HomeDir, nil)
+		parsed.OnSuccess = func(intent install.Intent) error { return update.SaveIntent(parsed.HomeDir, intent) }
 		if parsed.BinaryPath == "" {
 			if binPath, err := os.Executable(); err == nil {
 				parsed.BinaryPath = binPath
@@ -136,6 +138,7 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 			fmt.Fprintf(w, "error: %v\n", err)
 			return 1
 		}
+		parsed.OnSuccess = func(intent uninstall.Intent) error { return update.DropAgents(parsed.HomeDir, intent.Agents) }
 
 		var uninstallReg uninstall.Registry
 		switch typed := any(reg).(type) {
@@ -272,6 +275,13 @@ func runWindowsStartersDispatch(args []string, cat install.Catalog, reg install.
 			Yes:         yes,
 			Agents:      agents,
 			Lang:        lang,
+			OnSuccess: func(project string) error {
+				home, err := os.UserHomeDir()
+				if err != nil {
+					return err
+				}
+				return update.RecordStarter(home, project, starterID, agents)
+			},
 		}
 		buildPlanFn := func(c install.Catalog, intent install.Intent, opts install.Options) (install.Plan, error) {
 			opts = install.WithEmbeddedSkillsFS(opts, assets.SkillsFS)

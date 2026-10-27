@@ -258,54 +258,45 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 
 ---
 
-### `tui-update-stack` — Update rápido del stack desde la TUI
+### `tui-update-stack` — Update rápido del stack desde la TUI y CLI
 
-- **Estado**: PENDIENTE.
-- **Scope**:
-  - Portar `internal/update` + `internal/update/upgrade` del repo legacy
-    (`E:\ESCRITORIO\programar\2026\Framework\jr-stack-legacy`), **stripped** de
-    código `gga` y del theme cosmético del legacy.
-  - Agregar la opción "Update stack" al menú hub (`tui-menu-hub`): al seleccionarla,
-    la pantalla ScreenUpdate corre el flujo de actualización.
-  - Flujo de actualización:
-    - Check de versiones de `active-stack` + `engram` contra GitHub Releases API.
-    - Mostrar qué binarios están desactualizados (diff de versión).
-    - Upgrade de binarios: self-replace de `active-stack` (rename-trick para Windows
-      exe-in-use, ya resuelto en el legacy `update/upgrade/executor.go`) + upgrade
-      de `engram` vía el método de instalación correcto por OS.
-    - Re-sync de configs: re-inyectar los config-harness (`sdd-orchestrator`,
-      `permissions`) en los agentes detectados (vía el pipeline existente en modo
-      "solo config").
-  - Limpieza obligatoria al portar: eliminar todos los leftovers
-    `gentle-ai`/`gentle-stack`/`Gentleman.Dots`/GGA/theme del código portado.
-  - Tests: unit tests para la lógica de check de versiones y upgrade; mock de la
-    GitHub Releases API. TDD estricto activo.
+- **Estado**: IMPLEMENTADO para v0.4.0 en `codex/update-stack` (pendiente de publicación de release y archive OPSX).
+- **Scope actualizado con el plan aprobado**:
+  - Reinstalar skills como árboles completos: detectar cambios en `SKILL.md` y
+    assets, eliminar archivos retirados upstream, tomar snapshot y activar desde
+    staging. Mantener los SHA fijados por el catálogo.
+  - Registrar por agente la selección Lite/Full/Custom tras instalar y los
+    proyectos donde se aplicó `starter add`. Las skills antiguas detectadas
+    requieren adopción explícita para evitar pisar carpetas personales con el
+    mismo nombre; una colisión sin ownership bloquea la reaplicación de la
+    selección, incluida Full. Nunca inferir el modo anterior.
+  - `active-stack update --check`, `update`, `update --skills-only` y
+    `update --project`: consultar GitHub Releases, verificar SHA256SUMS,
+    reemplazar el binario invocado con backup y reejecutar la selección con el
+    catálogo nuevo. Windows delega el reemplazo a un proceso que espera el
+    cierre del ejecutable anterior; el traspaso es asincrónico y no confirma
+    la finalización. El hub TUI ejecuta ese mismo comando.
+  - Reutilizar el pipeline de install para reinyectar configs con backup y
+    markers, y para actualizar los harnesses externos seleccionados. Al
+    desinstalar, invalidar la selección registrada para evitar reinstalación.
+  - Pruebas herméticas de refresco de skills, registro, checksum, reemplazo
+    del binario y menú TUI. No portar GGA/theme/persona del legacy.
 - **Decisiones / notas clave**:
-  - **UX: replicar la riqueza del legacy (decisión del operador, 2026-06-06).** El
-    hub legacy NO tenía un solo "Update stack" — tenía **tres** entradas separadas
-    (`Upgrade tools`, `Sync configs`, `Upgrade + Sync`) más un **badge dinámico ★**
-    en el ítem del menú cuando hay updates disponibles (o sufijo `(up to date)` tras
-    el chequeo). Portar esa UX: las 3 acciones + el badge ★ vivo en el hub. Hoy el
-    hub (de `tui-menu-hub`) muestra solo "Update stack (coming soon)" como placeholder
-    inline (`hubNotice`); este change lo reemplaza por la entrada/entradas reales.
-  - Referencia legacy: `internal/tui/screens/welcome.go` (`WelcomeOptions` con el
-    badge ★ vía `update.HasUpdates`), `screens/upgrade.go`, `screens/sync_screen.go`,
-    `screens/upgrade_sync.go`.
-  - El rename-trick para Windows (escribir `.new`, mover target a `.old`, renombrar
-    `.new` → target, best-effort remove `.old`) ya está resuelto en `binary-self-install`
-    (`internal/install/self_install.go`) — reutilizarlo o factorizarlo a `internal/system`.
-  - El re-sync de configs debe pasar por el pipeline existente (backup + markers
-    idempotentes), no reescribir lógica de inyección.
-  - Checkpoint: proponer el diseño del flujo de re-sync al operador antes de
-    implementarlo (involucra `internal/install` en modo parcial).
+  - La UX ahora ofrece una entrada principal `Update stack` y flags separados
+    para comprobar o refrescar solo skills. Reemplaza la propuesta anterior
+    de tres entradas y badge dinámico en el hub.
+  - Las releases solo publican CLI Windows/Linux amd64: en otros sistemas se
+    puede sincronizar el stack y las skills, pero el binario se conserva.
+  - Un build local sin tag exacto no se sustituye automáticamente por una
+    release; evita downgrades de ramas de desarrollo.
+  - Desde v0.3.0 o anteriores hay que descargar una vez el binario nuevo:
+    esas versiones no tienen `update`. Solo se sustituye el binario invocado.
 - **Dependencias**: `tui-menu-hub` (el hub debe existir para agregar la entrada
   Update). No habilita nada (es el cierre del epic TUI).
 - **Governance**: MEDIO (self-replace de binario + re-inyección en config de
-  agentes). Implementar con checkpoints; superficiar el diseño del re-sync al
-  operador antes del apply.
+  agentes). Implementar con checkpoints y pruebas de regresión.
 - **Leer antes**:
-  - Repo legacy `internal/update/` y `internal/update/upgrade/executor.go` — lógica a portar.
-  - `internal/install/self_install.go` — rename-trick para Windows ya implementado (reusar).
+  - `internal/install/self_install.go` — patrón de reemplazo de binario en Windows.
   - `internal/agents/` — adapters por agente para detectar qué agentes están instalados.
   - `internal/harness/config/` — instalador de config-harnesses (para el re-sync).
   - `tui-menu-hub` change (debe estar terminado — depende de él).
@@ -548,7 +539,7 @@ Es la cadena más larga; el resto corre en paralelo o es independiente.
 | `uninstall-subcommand` | 1 | **ALTO** | — | `tui-menu-hub` | ✅ IMPLEMENTADO |
 | `claude-agent-switch-research` | 1+ (libre) | BAJO | — | — |
 | `tui-menu-hub` | 2 | BAJO/MEDIO | `uninstall-subcommand` | `tui-update-stack`, `tui-configure-models` | ✅ IMPLEMENTADO (pend. archive) |
-| `tui-update-stack` | 3 | MEDIO | `tui-menu-hub` | — |
+| `tui-update-stack` | 3 | MEDIO | `tui-menu-hub` | — | ✅ IMPLEMENTADO para v0.4.0 (pend. release/archive) |
 | `tui-configure-models` | 3 | MEDIO | `tui-menu-hub` | — |
 | `add-design-mockups-toggle` | libre | MEDIO | `sdd-orchestrator` (catálogo) | `stitch-design`, `design-skills-harnesses`, `visual-verify` | ✅ IMPLEMENTADO y ARCHIVADO |
 | `stitch-design` | futuro | MEDIO | `add-design-mockups-toggle` (validar en Claude) | — | PENDIENTE |

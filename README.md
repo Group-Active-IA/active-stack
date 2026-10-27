@@ -137,11 +137,29 @@ active-stack install --dry-run       # Muestra el plan de instalación, no ejecu
 active-stack install --mode full     # Instalación headless (no interactiva)
 active-stack install --agent claude  # Apuntá a un agente concreto (claude, codex, opencode, antigravity)
 active-stack install --help          # Todos los flags
+active-stack update --check          # Compara la versión del binario con la última release
+active-stack update                  # Actualiza binario y reaplica la selección instalada
+active-stack update --skills-only    # Refresca solo las skills instaladas
+active-stack update --project RUTA   # Incluye un proyecto con starters antiguos
+active-stack update --adopt-legacy-skills  # Adopta skills anteriores sin registro, tras revisarlas
+active-stack --version               # Muestra la versión integrada en el binario
 ```
 
 Pasar `--mode` o `--agent` activa el modo **headless** automáticamente (ideal para CI o scripts).
 
 > 💡 **¿Usuario final en Windows?** Una vez que tengas el binario (`active-stack.exe`), hacé **doble-click** para arrancar la TUI: autodetecta tus agentes instalados y te guía paso a paso — sin escribir un solo flag ni abrir una terminal.
+
+### Actualizaciones
+
+Disponible desde **v0.4.0**. Si usás **v0.3.0 o anterior**, descargá una vez el binario nuevo desde [Releases](https://github.com/Group-Active-IA/active-stack/releases): esas versiones todavía no tienen el comando `update`.
+
+El menú de la TUI incluye **Update stack** y ejecuta el mismo flujo que `active-stack update`. Consulta la última release, verifica el SHA256 publicado antes de sustituir únicamente el ejecutable invocado y reaplica los harnesses elegidos para cada agente. Otras copias del binario se actualizan invocándolas por separado. Guarda la selección Full/Lite/Custom y las rutas de skills gestionadas en `~/.active-stack/installation.json` después de una instalación exitosa, con snapshot antes de cada cambio de ese registro. Si se desinstala un agente o parte de sus harnesses, se invalida su selección para evitar reinstalarlos en el próximo update.
+
+En Windows, el reemplazo es asincrónico: un proceso auxiliar espera a que se cierre el ejecutable anterior para sustituirlo y continuar con la actualización del stack. El mensaje de traspaso al auxiliar todavía no confirma que terminó la actualización. Consultá `~/.active-stack/logs/update.log` para comprobar si la actualización completó o falló; el mensaje inicial también muestra esa ruta. El archivo conserva la salida y los errores de las actualizaciones anteriores.
+
+Las skills se comparan como directorios completos: una actualización de assets también se copia y un archivo eliminado upstream deja de quedar instalado. Cada reemplazo toma un snapshot primero. `ref: latest` consulta de nuevo el repositorio; un SHA fijo conserva la revisión aprobada por el catálogo hasta que una nueva versión de Active Stack cambie ese SHA. Las skills embebidas se actualizan con el binario nuevo.
+
+Los proyectos nuevos que reciben `starter add` quedan registrados para actualizar sus skills. Para un proyecto anterior, pasá `--project RUTA`. Las instalaciones anteriores al registro pueden tener skills con el mismo nombre que las del catálogo; `update --skills-only` las enumera pero las omite hasta ejecutar una vez `update --adopt-legacy-skills`, después de revisar esas carpetas. La adopción queda registrada para futuras actualizaciones. Al reaplicar una selección registrada —incluida Full—, una carpeta de skill cuya propiedad no figure en el registro de instalación bloquea la reaplicación antes de instalar; la adopción explícita permite continuar. Para reaplicar configuraciones antiguas sin una selección registrada, ejecutá `install` una vez con tu selección de modo. Los builds locales sin tag de release se conservan y no se sustituyen automáticamente.
 
 ---
 

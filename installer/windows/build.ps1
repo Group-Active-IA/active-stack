@@ -23,7 +23,12 @@ New-Item -ItemType Directory -Force -Path $distDir | Out-Null
 
 Push-Location $repoRoot
 try {
-    go build -trimpath -o $payloadExe .\cmd\active-stack
+    $tag = "dev"
+    if (Get-Command git -ErrorAction SilentlyContinue) {
+        $described = (& git describe --tags --dirty --always 2>$null)
+        if ($LASTEXITCODE -eq 0 -and $described) { $tag = $described }
+    }
+    go build -trimpath -ldflags "-X main.buildVersion=$tag" -o $payloadExe .\cmd\active-stack
     if ($LASTEXITCODE -ne 0) {
         throw "Go payload build failed."
     }
