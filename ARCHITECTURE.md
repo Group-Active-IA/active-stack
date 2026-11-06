@@ -237,8 +237,8 @@ Cada incremento será un **change OPSX** (dogfooding) en `openspec/` (ignorado p
   (`Gentleman-Programming/engram`) del `Pkg` (ver `internal/model/harness.go` y el catálogo).
 - ~~**Nombre del repo remoto en GitHub**~~ → **RESUELTO** (2026-05-30): el viejo
   `JuanCruzRobledo/jr-stack` (repo fuente original) queda **archivado como legacy**; este conserva `active-stack`.
-- ~~**Mapeo harness↔modo**~~ → **RESUELTO** (CHANGES.md C-20): Lite = sustrato,
+- ~~**Mapeo harness↔modo**~~ → **RESUELTO** ([roadmap de construcción](docs/archive/CHANGES-2026-06-04-installer-y-starters.md), C-20): Lite = sustrato,
   Full = sustrato + fundación guiada, Custom = todos. `active-orchestrator` movido a Full-only.
-- **Empaquetado de skills de terceros** → comando confirmado (`npx skills add <owner/repo> --skill <name>`);
-  falta corregir el installer (CHANGES.md **C-22**, 3 bugs en `npx.go`). Skill de Vercel = `find-skills` (plural).
-- **Custom + `permissions`** → decisión: NO desactivable (security-first); falta implementar (CHANGES.md **C-21**).
+- **Empaquetado de skills de terceros** → C-22 adoptó el clonado del repo de origen y la copia del
+  subdirectorio de la skill. Skill de Vercel = `find-skills` (plural).
+- **Custom + `permissions`** → decisión histórica de C-21, no desactivable (security-first).

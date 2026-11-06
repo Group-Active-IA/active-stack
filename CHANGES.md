@@ -1,553 +1,301 @@
-# CHANGES.md — Active Stack v2: Post-Starters
+# CHANGES — Roadmap de mejoras de Active Stack
 
-> Roadmap operativo del epic **"Active Stack v2 — post-starters"** (2026-06-04).
-> El epic anterior (installer base + starters) está archivado en
-> `docs/archive/CHANGES-2026-06-04-installer-y-starters.md` — leerlo para
-> historial de decisiones de C-01..C-32 y los changes descriptivos intermedios.
->
-> Este documento cubre los 6 changes del nuevo epic. Convención de IDs: kebab
-> descriptivo (sin `C-NN` estricto — convención establecida desde `harness-scope-model`).
-> Atomicidad: cada change implementable en una sesión, ≤ 12 tareas.
-> **Fuente de verdad del estado real: el `openspec` CLI** (`openspec list`,
-> `openspec status`). Este documento es el plan.
+> Leé este documento antes de abrir una rama. Es el plan canónico de mejoras de OPSX para Codex y Claude. El estado de cada change se consulta con OpenSpec. Esta ronda cubre **solo `propose`**, incluida la planificación de la implementación futura.
 
----
+[Vista interactiva](https://active-stack-roadmap.vercel.app/) · [Informe ejecutivo y evidencia](https://active-stack-executive-site.vercel.app/) · [Roadmap post-starters archivado](docs/archive/CHANGES-2026-11-05-post-starters.md)
 
-## Árbol de dependencias
+## Cómo trabajar en esta ronda
 
-```
-openspec-init-cleanup (XS, repo de skills)
-  — independiente, cualquier ola —
+1. **Ubicá tu ficha y leé sus referencias.** Revisá [AGENTS.md](AGENTS.md) o [CLAUDE.md](CLAUDE.md), el alcance y las dependencias. Confirmá qué código existe, qué comportamiento se observó y qué falta investigar. Los identificadores 01–10 son para coordinar. El nombre en kebab-case identifica el change en OpenSpec.
+2. **Creá una rama por change en Active Stack.** Con la rama principal actualizada, usá `git switch -c propose/<nombre-del-change>`. Si redactás dos propuestas en paralelo, usá un worktree por rama. Los archivos ignorados de OpenSpec comparten directorio cuando cambiás de rama en el mismo worktree.
+3. **Prepará los artefactos.** Consultá `openspec list --json` y usá `/opsx:propose` con el nombre de la ficha. Si el change existe, consultá `openspec status --change <nombre>` para continuar. Si el checkout todavía requiere inicialización de OpenSpec, coordiná la configuración con el equipo y usá el CLI. Completá:
+   - `proposal.md` con problema, evidencia, alcance, exclusiones y capacidades afectadas.
+   - `design.md` con el recorrido de la implementación, archivos o componentes, alternativas, decisiones, compatibilidad y riesgos.
+   - `specs/` con requisitos y escenarios verificables de éxito y de fallo.
+   - `tasks.md` con tareas futuras ordenadas, dependencias, pruebas y condiciones de aceptación. Dejá todas las tareas de implementación pendientes.
+4. **Cerrá las decisiones mientras redactás.** Llevá al grupo de comunicación cualquier cambio de stack, diseño o implementación con el ID, las opciones y los changes afectados. Incorporá lo acordado a los artefactos. Reservá `(TBD)` para excepciones no bloqueantes acordadas por el grupo. Las decisiones que cambian alcance, diseño o aceptación se resuelven antes de compartir la propuesta final.
+5. **Compartí la propuesta final cuando esté lista.** Confirmá los artefactos con `openspec status --change <nombre>`. Enviá al grupo los cuatro artefactos o un enlace con acceso para los siete, junto con ID, rama, revisión de partida y acuerdos principales. `openspec/` está ignorado por Git, por lo que un enlace a la rama solo no contiene los documentos. La revisión de los siete empieza con la entrega final de cada change y avanza independientemente de las demás.
+6. **Cerrá la revisión.** El responsable integra los comentarios, comparte la versión revisada y registra el resultado del grupo. La implementación, la ejecución de su plan de pruebas y las acciones OPSX posteriores quedan para otra ronda.
 
-opencode-orchestrator-parity (PRIORIDAD #1)
-  — independiente, cualquier ola —
+## Responsables y dependencias
 
-uninstall-subcommand
-  — independiente de los anteriores —
-          │
-          ▼
-   tui-menu-hub
-   (reestructura ScreenWelcome en hub multi-opción)
-          │
-          ├────────────────────┐
-          ▼                    ▼
-   tui-update-stack     tui-configure-models
-   (opción "Update      (opción "Configure models":
-    stack" en el menú)   model-routing claude + opencode)
+El reparto está propuesto por afinidad entre cambios. Las dependencias ordenan la **implementación futura**. La redacción se puede preparar en paralelo y los responsables acuerdan juntos los puntos compartidos.
 
-claude-agent-switch-research
-  — independiente, cualquier ola —
+| ID | Change | Responsable | Prioridad | Gobernanza | Depende de |
+|---|---|---|---|---|---|
+| 01 | [Compatibilidad del tier estricto](#change-01) | Juan Cruz | P0 | Alto | — |
+| 02 | [Medición de referencia](#change-02) | Matías | P1 | Bajo | [01](#change-01) |
+| 03 | [Roles nativos en Claude](#change-03) | Juani | P1 | Alto | [02](#change-02) |
+| 04 | [Roles nativos en Codex](#change-04) | Giuliano | P1 | Alto | [02](#change-02) |
+| 05 | [Lectura dirigida y herramientas por tarea](#change-05) | Emiliano | P1 | Medio | [03](#change-03), [04](#change-04) |
+| 06 | [Evidencia ligada a la ejecución](#change-06) | Gianfranco | P1 | Medio | [03](#change-03), [04](#change-04) |
+| 07 | [Delegación selectiva con contrato](#change-07) | Neyen | P1 | Medio | [05](#change-05), [06](#change-06) |
+| 08 | [Controles efectivos por cliente](#change-08) | Gianfranco | P2 | Alto | [06](#change-06) |
+| 09 | [Pilotos de modelos y caché](#change-09) | Matías | P2 | Medio | [07](#change-07) |
+| 10 | [Juez externo en sombra](#change-10) | Neyen | P3 | Medio | [08](#change-08), [09](#change-09) |
 
-add-design-mockups-toggle (harness `design-mockups`, origen Claude)
-          │
-          ├──► stitch-design            (idea histórica; reemplazada por flujo HTML universal)
-          ├──► design-skills-harnesses  (IMPLEMENTADO; Emil Kowalski + taste skill v1, pineadas por SHA)
-          └──► visual-verify            (IMPLEMENTADO; Playwright MCP + verify contra mockups/)
-                    └──► figma-mcp-opcional (futuro, al final)
+**Ruta al primer piloto** · 01 → 02 → (03 y 04 en paralelo) → (05 y 06 en paralelo) → 07. Después de 06 puede prepararse la verificación de 08. La implementación de 09 usa los resultados de 07, y 10 queda condicionado a 08 y 09.
 
-codex-design-mockups (adaptación Claude/Codex, en esta rama)
-  — depende de los tres changes de mockups archivados —
-          │
-          ▼
-universal-design-system (Claude/Codex/OpenCode y fundación visual por proyecto)
-  — depende de codex-design-mockups; en esta rama —
-          │
-          ▼
-visual-foundation-policy (Claude/Codex/OpenCode/Antigravity, opt-out persistente)
-  — extiende universal-design-system y active-orchestrator —
-```
+## Comportamiento objetivo
 
-> Notas de dependencia:
-> - `openspec-init-cleanup` NO toca este repo Go — vive en el `SKILL.md` del
->   skill `jr-orchestrator` (repo de skills separado). Se puede hacer en cualquier
->   ola sin coordinación con los demás.
-> - `opencode-orchestrator-parity` es trabajo de auditoría + golden test sobre
->   assets existentes; no bloquea ni es bloqueado por nada de este epic.
-> - `uninstall-subcommand` es wiring puro (el engine `internal/uninstall` ya
->   existe y está testeado desde C-12); no depende de paridad ni de cleanup.
-> - `tui-menu-hub` depende del executor headless de uninstall (`uninstall-subcommand`)
->   porque la pantalla ScreenUninstall lo invoca.
-> - `tui-update-stack` depende del menú hub (agrega una entrada al hub).
-> - `tui-configure-models` también depende del menú hub (agrega la entrada
->   "Configure models"); es hermano paralelo de `tui-update-stack` (ambos cuelgan
->   del hub y no se bloquean entre sí).
-> - `claude-agent-switch-research` es un change de investigación pura; puede
->   ejecutarse en cualquier ola, en paralelo con cualquier otro.
+- **Activación explícita.** Active Stack instala y registra `sdd-orchestrator` para Claude y Codex. En una sesión normal, el orquestador está disponible para invocarlo y permanece inactivo. Una invocación explícita inicia el rol especializado. OpenSpec mantiene el estado de los changes.
+- **Contexto global liviano.** Los `CLAUDE.md` y `AGENTS.md` globales contienen las reglas generales aplicables y, si hace falta, una referencia breve al orquestador. La migración retira el bloque global de SDD administrado por Active Stack, conserva las instrucciones y configuraciones del usuario y admite rollback.
+- **Módulos según rol y acción.** TDD, delegación y coordinación de subagentes se entregan como módulos independientes. El orquestador carga los que necesita para la acción activa. Los especialistas reciben el encargo, las reglas aplicables y el contrato de retorno. Las reglas generales obligatorias siguen disponibles en todos los roles a los que apliquen.
+- **Configuración nativa y feedback verificable.** Cada cliente usa sus mecanismos de configuración, rules, permisos y hooks según la función de cada control. El texto orienta al agente y los controles ejecutables verifican o hacen cumplir aquello que el cliente puede controlar. Los resultados de coordinación llevan un contrato estructurado de estado, hallazgos y evidencia. El resumen puede enlazar la salida original con acceso y retención definidos.
+- **Disponibilidad comprobada por superficie.** Las propuestas 03 y 04 definen las superficies soportadas y cómo se invoca el rol en cada una. Una superficie sin soporte para el rol debe informar el límite y ofrecer un camino explícito si existe. La configuración resultante mantiene la sesión normal libre del bloque global de SDD.
 
----
+**Aceptación transversal.** En cada superficie declarada, comparar una sesión normal con otra que invoque el orquestador. Verificar por separado un especialista y una acción que requiera TDD. Comprobar qué instrucciones y módulos recibe cada sesión, tanto en instalación limpia como después de actualizar una instalación anterior. Reinstalar y revertir sobre una configuración con contenido del usuario. Medir contexto y consumo por tarea aceptada con el protocolo de 02. El ahorro queda sujeto a medición. Acordar una matriz de entrega por cliente, modo de instalación y alcance de configuración. Si falta un módulo obligatorio, informar la limitación y detener la acción que lo requiere. Acordar una revisión conjunta de 03 y 04 con los mismos escenarios y criterios antes de promover la migración.
 
-## Plan óptimo de paralelización
-
-| Ola | Changes en paralelo | Bloquea a | Comentario |
-|---|---|---|---|
-| 0 | `openspec-init-cleanup`, `opencode-orchestrator-parity` | nada / nada | Independientes; `openspec-init-cleanup` es XS en repo de skills |
-| 1 | `uninstall-subcommand`, `claude-agent-switch-research` | `tui-menu-hub` / — | `uninstall-subcommand` habilita el menú; research corre en paralelo libre |
-| 2 | `tui-menu-hub` | `tui-update-stack`, `tui-configure-models` | Punto de convergencia TUI; necesita executor del uninstall (ola 1) |
-| 3 | `tui-update-stack`, `tui-configure-models` | — | Cierre del epic TUI; ambos cuelgan del hub en paralelo |
-
-**Camino crítico del epic**: `uninstall-subcommand → tui-menu-hub → tui-update-stack` (3 changes).
-Es la cadena más larga; el resto corre en paralelo o es independiente.
-
-**Máximo paralelismo útil**: 2 agentes (ola 0 y ola 1 tienen 2 changes independientes cada una).
-
----
-
-## Plan con 2 agentes
-
-| Paso | Agente A (Go / infra) | Agente B (skills / research) |
-|------|------------------------|-------------------------------|
-| Ola 0 | `opencode-orchestrator-parity` (auditoría assets + golden test) | `openspec-init-cleanup` (SKILL.md del jr-orchestrator) |
-| Ola 1 | `uninstall-subcommand` (wiring CLI Go) | `claude-agent-switch-research` (investigación) |
-| Ola 2 | `tui-menu-hub` (reestructura TUI Bubbletea) | — |
-| Ola 3 | `tui-update-stack` (port internal/update + opción menú) | `tui-configure-models` (port model-routing picker claude+opencode) |
-
----
+**Límites compartidos.** La ronda actual define propuestas. Cada responsable investiga cómo cumplir este comportamiento. Las propuestas de riesgo alto deben explicitar la revisión humana previa a cambios sobre configuración del usuario. Los pilotos comparan costo o cuota por tarea aceptada con calidad equivalente o superior. El arnés de evaluación queda fuera del binario. Un ledger firmado, un runtime nuevo o una integración permanente del juez requieren una decisión de arquitectura separada.
 
 ## Fichas de change
 
-### `opencode-orchestrator-parity` — Auditar paridad del orquestador opencode vs claude
+<a id="change-01"></a>
 
-- **Estado**: COMPLETADO.
-- **Scope**:
-  - Auditar `internal/harness/config/assets/opencode/sdd-orchestrator.md`: identificar qué secciones del
-    orquestador SDD (delegation, governance, model-routing, engram protocol,
-    session-close, etc.) existen en `internal/harness/config/assets/claude/sdd-orchestrator.md` pero faltan
-    o están degradadas en el asset de opencode.
-  - Portar el contenido faltante al asset de opencode, conservando diferencias
-    legítimas de formato entre agentes (opencode usa `task` tool nativo; claude usa Agent tool).
-  - Implementar el golden test ausente: `TestCompose_AllToggles_opencode` (hoy solo
-    existe `TestCompose_AllToggles` para claude) en
-    `internal/harness/config/compose_test.go` con testdata en `internal/harness/config/testdata/`.
-  - El golden test falla rojo si el asset de opencode diverge silenciosamente
-    en el futuro (blind spot que este change cierra).
-- **Decisiones / notas clave**:
-  - El código de `ConfigDeliveryPrimaryAgent` y `mode:primary` en opencode.json está
-    implementado y testeado; el gap era de CONTENIDO, no de mecanismo.
-  - Única divergencia justificada: delegación via `task` tool (opencode nativo) vs Agent tool (claude).
-    El `Template:` block y todo lo demás son idénticos entre variantes.
-  - Golden generado en `internal/harness/config/testdata/compose_all_toggles_opencode.golden`.
-- **Dependencias**: ninguna. Habilita: nada directo (mejora de calidad).
-- **Governance**: BAJO (auditoría) / MEDIO (edita asset en `internal/harness/config/assets/opencode/`).
-- **Leer antes**:
-  - `internal/harness/config/assets/opencode/sdd-orchestrator.md` — asset opencode (corregido).
-  - `internal/harness/config/assets/claude/sdd-orchestrator.md` — referencia canónica.
-  - `internal/harness/config/compose_test.go` — golden test modelo para claude y opencode.
-  - `internal/harness/config/testdata/compose_all_toggles_claude.golden` — golden existente de claude.
-  - `CLAUDE.md` §3 regla "NUNCA hardcodear paths de agente" y §4 governance.
+### 01 · Compatibilidad del tier estricto
 
----
+**Change** `codex-strict-compat` · **Responsable** Juan Cruz · **Cliente** Codex · **Dependencias** —
 
-### `uninstall-subcommand` — Exponer `active-stack uninstall` en la CLI
+**Problema.** El instalador genera `approval_policy = "untrusted"` para el tier estricto. Codex CLI 0.166.0 rechaza ese valor, así que una instalación o actualización puede dejar una configuración que el cliente no acepta.
 
-- **Estado**: IMPLEMENTADO (2026-06-06, rama `feat/uninstall-subcommand`). Wiring completo
-  (flags + executor exportado + dispatch + `case "uninstall"`). **Bonus fix de engine**:
-  `internal/uninstall` no manejaba `model.HarnessCommand` → `uninstall --mode lite/full`
-  crasheaba con el catálogo real (`starter-add-command` es type:command). Se agregó
-  `commandRemovalStep` + `CommandsDir`/`VariantKey` en la interfaz + `RelPathForVariant`
-  exportado de `internal/harness/command`. TDD estricto, suite completa verde. Pendiente: archive OPSX.
-- **Scope**:
-  - Nuevo `cmd/active-stack/headless/uninstall_flags.go`: tipo `ParsedUninstallFlags` +
-    función `ParseUninstallFlags(args []string)`. Flags: `--mode`, `--agent`,
-    `--custom` (lista de IDs), `--strategy targeted|restore`, `--restore-manifest`,
-    `--dry-run`, `--yes`, `--home`. Uninstall es MACHINE-scope (sin `--project`).
-  - Nuevo `cmd/active-stack/headless/uninstall_executor.go`: función `RunHeadlessUninstall`
-    que llama `uninstall.BuildPlan` (engine C-12, intacto) y lo ejecuta. Construida
-    como executor COMPARTIDO — también podrá ser invocado desde la TUI (change
-    `tui-menu-hub`).
-  - Nuevo `cmd/active-stack/uninstall_dispatch.go`: función `runUninstallDispatch` con
-    lógica flat (espeja `runStarterAdd`). Adapter `uninstallRegistryAdapter` que
-    satisface la interfaz que `uninstall.BuildPlan` espera.
-  - Nuevo `case "uninstall":` en el `switch os.Args[1]` de `cmd/active-stack/main.go`.
-  - Tests: `uninstall_flags_test.go`, `uninstall_executor_test.go`,
-    `uninstall_dispatch_test.go`. Usar fakes/stubs para el engine (nunca el entorno real).
-  - **SIN tocar `internal/uninstall`** — el engine está completo y testeado (C-12).
-  - ~200–250 LOC producción + tests proporcionados. TDD estricto activo.
-- **Decisiones / notas clave**:
-  - `RunHeadlessUninstall` debe ser una función exportada limpia (no solo usado por
-    main.go) para que `tui-menu-hub` pueda invocarla en la pantalla ScreenUninstall.
-  - El uninstall es MACHINE-scope por diseño (no hay `--project` aquí): deshace
-    harnesses del home del usuario, no de un proyecto.
-  - La operación es destructiva — el engine ya tiene snapshot+rollback mandatorio
-    (C-12, governance ALTO); el wiring es aditivo pero hereda esa governance.
-- **Dependencias**: ninguna (el engine `internal/uninstall` ya existe). Habilita:
-  `tui-menu-hub` (pantalla ScreenUninstall usa `RunHeadlessUninstall`).
-- **Governance**: **ALTO** (expone destrucción de config del usuario; la operación
-  es destructiva). Proponer y esperar review antes del apply.
-- **Leer antes**:
-  - `internal/uninstall/` — engine completo (C-12, archivado `2026-05-27-c12-uninstall`).
-  - `cmd/active-stack/headless/executor.go` + `flags.go` — modelo para el executor/flags del install (espejarlo).
-  - `cmd/active-stack/starter_add.go` + `cmd/active-stack/starter_dispatch.go` — modelo del dispatch flat para starters (espejarlo).
-  - `cmd/active-stack/main.go` — punto de entrada del switch de dispatch.
-  - `CLAUDE.md` §3 regla "NUNCA pisar config del usuario sin backup".
+El caso registrado en el informe se reproduce con `codex -c 'approval_policy="untrusted"' features list`. El cliente devuelve código 1 y señala que el valor dejó de estar soportado. El override es temporal y sirve para comprobar la compatibilidad del parser. La prueba de permisos efectivos requiere casos adicionales en un entorno aislado.
 
----
+**Qué buscar.** Reconstruí qué escribe cada tier y dónde se respalda el archivo. Reproducí el rechazo solo con un override o un perfil temporal. Trazá si `update` pasa por el instalador de permisos. Si existe una ruta que lo omite, documentá cómo se migraría y quién la ejecutaría. La selección de política debe comprobarse con el cliente real; un chequeo de presencia de claves es insuficiente.
 
-### `tui-menu-hub` — TUI con menú descriptivo multi-opción
+**Qué se implementaría.** Explicá qué garantías debe conservar el tier estricto y compará las políticas compatibles. Diseñá la migración del valor legado en instalación y actualización, con snapshot, preservación de claves y perfiles ajenos, reinstalación idempotente y recuperación ante fallo. Especificá escenarios de carga y permisos efectivos en entornos soportados.
 
-- **Estado**: PENDIENTE.
-- **Scope**:
-  - Reestructurar `internal/tui/` para convertir `ScreenWelcome` en un menú hub:
-    opciones Install / Starters / Manage backups / Uninstall / Update stack / Quit.
-  - Nueva pantalla `ScreenStarters`: lista los starters del catálogo → al confirmar,
-    llama `runStarterAdd` (binario en PATH con `$ARGUMENTS`, o invoca el executor
-    headless de starter directamente).
-  - Nueva pantalla `ScreenBackups`: lista backups existentes (`internal/backup`
-    snapshot index) → acciones restore / rename / delete.
-  - Nueva pantalla `ScreenUninstall`: formulario de opciones (modo, agente, strategy)
-    → llama `RunHeadlessUninstall` (del change `uninstall-subcommand`).
-  - La pantalla Install existente (`ScreenInstall`) se preserva sin cambios internos;
-    solo se agrega el routing desde el hub.
-  - Usar Lipgloss inline mínimo (igual que hoy). **NO portar theme cosmético del
-    legacy** (`styles/`, logo, frames, persona-marketing) — prohibido por `CLAUDE.md` §1.
-  - Tests Bubbletea con `teatest` (skill `go-testing`).
-- **Decisiones / notas clave**:
-  - Los backends de cada pantalla YA existen (`internal/backup`, `internal/uninstall`,
-    `catalog.Starters`); el trabajo es exclusivamente pantallas TUI + wiring.
-  - La entrada "Update stack" aparece en el menú pero puede mostrar "coming soon"
-    hasta que `tui-update-stack` esté terminado — el hub no bloquea.
-  - El routing entre pantallas debe ser limpio (patrón Bubbletea model/update/view);
-    no poner lógica de negocio en la TUI.
-- **Dependencias**: `uninstall-subcommand` (la pantalla ScreenUninstall invoca
-  `RunHeadlessUninstall`). Habilita: `tui-update-stack` (agrega la entrada Update
-  al hub).
-- **Governance**: BAJO (pantallas TUI) + MEDIO (wiring uninstall que toca config
-  del usuario). Implementar con checkpoints; superficiar decisiones no obvias al
-  operador.
-- **Leer antes**:
-  - `internal/tui/model.go`, `internal/tui/screen.go` — estructura actual de la TUI.
-  - `internal/tui/gate.go` — lógica de preflight y selección actual.
-  - `internal/backup/` — API de backups para la pantalla ScreenBackups.
-  - `cmd/active-stack/headless/uninstall_executor.go` — executor a invocar desde ScreenUninstall (creado en `uninstall-subcommand`).
-  - `CLAUDE.md` §1 (prohibición del theme cosmético) y skill `go-testing` (patrones teatest).
+**Qué acordar en grupo.** Qué versiones y entornos se soportan, qué operaciones debe permitir el tier y qué política compatible conserva esas garantías.
 
----
+**Aceptación futura.** Config aceptada por las versiones soportadas (TBD). Probar instalación limpia, migración, reinstalación y rollback. Verificar permisos efectivos en los entornos soportados, con casos permitidos y denegados.
 
-### `claude-agent-switch-research` — Investigar agent-switching en Claude (RESEARCH)
+**Leer antes**
 
-- **Estado**: PENDIENTE. (**Change de investigación — no produce código de producción.**)
-- **Scope**:
-  - Research profundo: ¿existe en Claude Code un mecanismo nativo de "Tab entre
-    agentes" (equivalente a `mode:primary` de opencode)? ¿Hay roadmap público o
-    feature flag conocido?
-  - Explorar workarounds vía slash-commands o campo `"agent"` en `settings.json`
-    que aproximen el UX de switching.
-  - Verificar empíricamente qué produce instalar el orquestador como subagent
-    definition (`"agent"` en settings.json) — ¿es tab-switch real o solo define
-    el agente default del proyecto?
-  - Output obligatorio: documento de veredicto (`docs/research/claude-agent-switch.md`
-    o similar) con: conclusión (posible / no posible / workaround limitado), evidencia
-    consultada, reframe de qué sí es alcanzable hoy, y recomendación de si requiere
-    un change de implementación posterior o se cierra como "no entregable documentado".
-  - Puede terminar en "no entregable, documentado" — ese también es un resultado
-    válido y valioso.
-- **Decisiones / notas clave**:
-  - La exploración previa ya confirmó que Claude Code NO tiene UI nativa de tab-switch;
-    este change profundiza y documenta formalmente ese hallazgo + busca alternativas.
-  - Lo más cercano hoy: instalar el orquestador como subagent definition + `"agent"`
-    default en settings.json (el proyecto arranca en modo orquestador, NO es tab-switch).
-  - El veredicto puede desencadenar un change de implementación posterior (si se
-    encuentra un workaround viable) o archivarse como investigación definitiva.
-- **Dependencias**: ninguna (research independiente). No bloquea ni habilita ningún
-  otro change del epic.
-- **Governance**: BAJO (research + config mínima para pruebas empíricas).
-- **Leer antes**:
-  - `assets/claude/sdd-orchestrator.md` — lo que hoy se inyecta como orquestador en Claude.
-  - `internal/agents/claude/adapter.go` — cómo el installer escribe en `settings.json` de Claude.
-  - Documentación oficial de Claude Code (slash-commands, subagent definitions, settings.json schema).
-  - `ARCHITECTURE.md` §2.1 — descripción del harness `sdd-orchestrator`.
+- [internal/harness/config/permissions/install.go](internal/harness/config/permissions/install.go)
+- [internal/harness/config/permissions/codex_test.go](internal/harness/config/permissions/codex_test.go)
+- [internal/filemerge/toml.go](internal/filemerge/toml.go)
+- [internal/verify/harness_checks.go](internal/verify/harness_checks.go)
+- [cmd/active-stack/update.go](cmd/active-stack/update.go)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#evidencia)
 
----
+<a id="change-02"></a>
 
-### `tui-update-stack` — Update rápido del stack desde la TUI y CLI
+### 02 · Medición de referencia
 
-- **Estado**: IMPLEMENTADO para v0.4.0 en `codex/update-stack` (pendiente de publicación de release y archive OPSX).
-- **Scope actualizado con el plan aprobado**:
-  - Reinstalar skills como árboles completos: detectar cambios en `SKILL.md` y
-    assets, eliminar archivos retirados upstream, tomar snapshot y activar desde
-    staging. Mantener los SHA fijados por el catálogo.
-  - Registrar por agente la selección Lite/Full/Custom tras instalar y los
-    proyectos donde se aplicó `starter add`. Las skills antiguas detectadas
-    requieren adopción explícita para evitar pisar carpetas personales con el
-    mismo nombre; una colisión sin ownership bloquea la reaplicación de la
-    selección, incluida Full. Nunca inferir el modo anterior.
-  - `active-stack update --check`, `update`, `update --skills-only` y
-    `update --project`: consultar GitHub Releases, verificar SHA256SUMS,
-    reemplazar el binario invocado con backup y reejecutar la selección con el
-    catálogo nuevo. Windows delega el reemplazo a un proceso que espera el
-    cierre del ejecutable anterior; el traspaso es asincrónico y no confirma
-    la finalización. El hub TUI ejecuta ese mismo comando.
-  - Reutilizar el pipeline de install para reinyectar configs con backup y
-    markers, y para actualizar los harnesses externos seleccionados. Al
-    desinstalar, invalidar la selección registrada para evitar reinstalación.
-  - Pruebas herméticas de refresco de skills, registro, checksum, reemplazo
-    del binario y menú TUI. No portar GGA/theme/persona del legacy.
-- **Decisiones / notas clave**:
-  - La UX ahora ofrece una entrada principal `Update stack` y flags separados
-    para comprobar o refrescar solo skills. Reemplaza la propuesta anterior
-    de tres entradas y badge dinámico en el hub.
-  - Las releases solo publican CLI Windows/Linux amd64: en otros sistemas se
-    puede sincronizar el stack y las skills, pero el binario se conserva.
-  - Un build local sin tag exacto no se sustituye automáticamente por una
-    release; evita downgrades de ramas de desarrollo.
-  - Desde v0.3.0 o anteriores hay que descargar una vez el binario nuevo:
-    esas versiones no tienen `update`. Solo se sustituye el binario invocado.
-- **Dependencias**: `tui-menu-hub` (el hub debe existir para agregar la entrada
-  Update). No habilita nada (es el cierre del epic TUI).
-- **Governance**: MEDIO (self-replace de binario + re-inyección en config de
-  agentes). Implementar con checkpoints y pruebas de regresión.
-- **Leer antes**:
-  - `internal/install/self_install.go` — patrón de reemplazo de binario en Windows.
-  - `internal/agents/` — adapters por agente para detectar qué agentes están instalados.
-  - `internal/harness/config/` — instalador de config-harnesses (para el re-sync).
-  - `tui-menu-hub` change (debe estar terminado — depende de él).
-  - `CLAUDE.md` §3 regla "SIEMPRE limpiar leftovers gentle-ai / gentle-stack / Gentleman.Dots".
+**Change** `opsx-baseline` · **Responsable** Matías · **Cliente** Ambos · **Dependencias** [01](#change-01)
 
----
+**Problema.** El informe mide el tamaño del texto, pero falta una referencia de consumo y calidad por tarea. Sin esa referencia, las mejoras posteriores no se pueden comparar.
 
-### `tui-configure-models` — Configurar model-routing desde la TUI (claude + opencode)
+**Qué buscar.** Revisá qué datos emiten los clientes por sesión y qué puede observar un arnés externo. Diferenciá telemetría del instalador de consumo del modelo. Si una métrica no está disponible, acordá cómo reportar esa limitación. La propuesta entrega un protocolo y una estructura de resultados; las corridas se planifican como tareas.
 
-- **Estado**: PENDIENTE. (Origen: el hub legacy tenía "Configure models" y el
-  operador decidió, 2026-06-06, portarlo a v2 como change nuevo — no entró en
-  `tui-menu-hub`, que ya está cerrado con 6 opciones.)
-- **Scope**:
-  - Agregar la opción **"Configure models"** al hub (`tui-menu-hub` ya existe).
-  - Pantalla de entrada `ScreenModelConfig`: menú `Configure Claude models` /
-    `Configure OpenCode models` / `Back` (espeja `screens/model_config.go` del legacy).
-  - Pantalla `ScreenClaudeModelPicker`: presets **balanced / performance / economy /
-    custom**; en modo custom, lista por fase OPSX (orchestrator, explore, propose,
-    apply, archive, default) cicleando alias **opus → sonnet → haiku** con Enter
-    (espeja `screens/claude_model_picker.go` del legacy).
-  - Pantalla equivalente para **OpenCode** (su propio set de modelos/aliases — NO
-    asumir paridad 1:1 con Claude; opencode tiene su propio catálogo de modelos).
-  - Al confirmar, **re-inyectar la tabla de model-routing en el bloque del
-    `sdd-orchestrator`** de los agentes detectados, vía el pipeline existente
-    (backup + markers idempotentes) en modo "solo config" — NO reescribir lógica
-    de inyección. El toggle `model-routing` del `sdd-orchestrator` es el destino real
-    del routing configurado ("si se chequea, aparece el routing correcto").
-  - Limpieza obligatoria al portar del legacy: eliminar leftovers
-    `gentle-ai`/`gentle-stack`/`Gentleman.Dots`/theme cosmético.
-  - Tests Bubbletea con `teatest` (skill `go-testing`): presets, ciclado de alias
-    en custom, navegación, y el wiring de re-inyección con fakes (nunca el entorno real).
-- **Decisiones / notas clave**:
-  - Los presets de Claude del legacy (balanced/performance/economy/custom) y el
-    ciclado opus→sonnet→haiku son la referencia de UX — reusarlos. Verificar que
-    los presets sigan vigentes con el model-routing actual del `sdd-orchestrator` v2.
-  - **OpenCode NO es un clon de Claude**: necesita su propio picker con su catálogo
-    de modelos. Resolver `(TBD)` qué modelos/aliases expone opencode antes del apply.
-  - El destino del routing es el harness `config` `sdd-orchestrator` (toggle
-    `model-routing`), no un archivo nuevo — pasa por el mismo install pipeline parcial
-    que usará `tui-update-stack` para el re-sync.
-- **Dependencias**: `tui-menu-hub` (el hub debe existir para agregar la entrada).
-  Hermano paralelo de `tui-update-stack` (ambos cuelgan del hub, no se bloquean).
-  No habilita nada (hoja del epic TUI).
-- **Governance**: MEDIO (re-inyección en config de agentes — toca `CLAUDE.md`/
-  `AGENTS.md` del usuario vía markers + backup). Implementar con checkpoints;
-  superficiar el diseño del re-sync al operador antes del apply.
-- **Leer antes**:
-  - Legacy `internal/tui/screens/model_config.go` — pantalla de entrada (3 opciones).
-  - Legacy `internal/tui/screens/claude_model_picker.go` — presets + custom por fase + ciclado.
-  - Legacy `internal/tui/screens/model_picker.go` y `model_config_test.go` — picker genérico + tests modelo.
-  - `internal/harness/config/` — instalador del `sdd-orchestrator` (toggle `model-routing`), destino del re-sync.
-  - `internal/agents/` — adapters por agente (detectar qué agentes reciben el routing).
-  - `tui-menu-hub` change (debe estar terminado — depende de él).
-  - `CLAUDE.md` §1 (prohibido theme cosmético) y §3 ("SIEMPRE limpiar leftovers gentle-ai…").
+**Qué se implementaría.** Definí un arnés externo, tareas reproducibles, fixtures y criterios de aceptación. Diseñá el registro de versiones, entradas con y sin caché, salidas, workers, reintentos y tiempo humano. Prepará el plan de corridas sobre la configuración compatible de 01 y explicá cómo tratar métricas ausentes.
 
----
+**Qué acordar en grupo.** Qué tareas, repeticiones, versiones, presupuesto y métricas usar. Acordá cómo distinguir consumo de API y cuota.
 
-### `openspec-init-cleanup` — Limpiar basura del `openspec init` en `jr-orchestrator`
+**Aceptación futura.** Repetir tareas comparables de exploración, cambio pequeño, cambio multiarchivo, diagnóstico y revisión. Registrar contexto, entrada fría/cacheada, salida, reintentos y tiempo humano por coordinador y worker. Separar API de cuota. Medir cuánto contexto carga una sesión normal y comparar ejecuciones equivalentes del flujo OPSX anterior y del flujo modular.
 
-- **Estado**: COMPLETADO (2026-06-06). Cleanup `rm -rf .claude/skills/openspec-*`
-  agregado al Step 1 del `SKILL.md` del `jr-orchestrator` (justo después de
-  `openspec init`), via glob future-proof. Aplicado en el repo fuente
-  (`SKILLS/jr-orchestrator`, v2.0) **y** en la copia instalada
-  (`~/.claude/skills/jr-orchestrator`, v2.1) que es la que realmente corre.
-  ⚠️ Descubierto: el repo fuente (v2.0) está DESACTUALIZADO respecto a la copia
-  instalada (v2.1, con checkpoint protocol + skill-registry) — la v2.1 nunca se
-  pusheó al repo. Reconciliar source ↔ instalado es follow-up aparte.
-- **⚠️ ARTEFACTO: SKILL `jr-orchestrator` — este change NO modifica el repo Go.**
-  El fix vive en el `SKILL.md` del skill `jr-orchestrator` (repo
-  `JuanCruzRobledo/jr-orchestrator`, archivo `SKILL.md` o equivalente de la skill).
-  No tocar `internal/` ni ningún archivo Go de este repo.
-- **Scope**:
-  - `openspec init` dropea incondicionalmente los dirs
-    `<proyecto>/.claude/skills/openspec-*` (skills redundantes — ya están globales
-    en el stack). El cleanup no ocurre hoy porque nadie lo dispara.
-  - Fix: agregar un step de cleanup en el `SKILL.md` de `jr-orchestrator`, **en el
-    Step 1** (justo después de `openspec init`), que borra todos los dirs
-    `openspec-*` conocidos bajo `.claude/skills/`:
-    ```bash
-    rm -rf .claude/skills/openspec-explore \
-           .claude/skills/openspec-init \
-           .claude/skills/openspec-onboard \
-           .claude/skills/openspec-design \
-           .claude/skills/openspec-spec \
-           .claude/skills/openspec-tasks \
-           .claude/skills/openspec-verify \
-           .claude/skills/openspec-apply-change \
-           .claude/skills/openspec-archive-change \
-           .claude/skills/openspec-propose
-    ```
-  - El comando debe ser future-proof: si `openspec init` agrega dirs `openspec-*`
-    nuevos en el futuro, el glob `rm -rf .claude/skills/openspec-*` los cubre
-    automáticamente (alternativa más robusta que listar nombres explícitos).
-  - **NO tocar** `.claude/commands/opsx/` — es el delivery de slash-commands y se
-    mantiene intacto.
-  - **NO modificar** el skill `openspec-init` — el fix es en el orquestador, no en
-    el init mismo.
-  - Tamaño: XS (~5 líneas en el SKILL.md). No requiere tests unitarios.
-- **Decisiones / notas clave**:
-  - Los dirs `openspec-*` son auto-generados y re-creables; no son archivos
-    user-authored. Borrarlos es seguro.
-  - La raíz del problema: `openspec init` siempre los genera; el orquestador debe
-    limpiar inmediatamente después (es más limpio que parchear `openspec init`).
-- **Dependencias**: ninguna (XS, independiente). No bloquea ni habilita nada del epic.
-- **Governance**: BAJO (archivos auto-generados, re-creables, no user-authored).
-  Autonomía completa — change XS que no requiere review previo.
-- **Leer antes**:
-  - `SKILL.md` del repo `JuanCruzRobledo/jr-orchestrator` — Step 1 donde se inserta
-    el cleanup (fuente a editar).
-  - `ARCHITECTURE.md` §4.2 — descripción del flujo de `jr-orchestrator` (lazy-loading).
-  - `CLAUDE.md` §1 — confirmación de que `.claude/commands/opsx/` no se toca.
+**Leer antes**
 
----
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [internal/verify/report.go](internal/verify/report.go)
+- [internal/harness/config/assets/claude/sdd-orchestrator.md](internal/harness/config/assets/claude/sdd-orchestrator.md)
+- [internal/harness/config/assets/codex/sdd-orchestrator.md](internal/harness/config/assets/codex/sdd-orchestrator.md)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#plan)
 
-### `codex-design-mockups` — Adaptar la etapa de mockups a Codex
+<a id="change-03"></a>
 
-- **Estado**: IMPLEMENTADO (2026-10-23); validado por la suite Go y una prueba sintética de mockup. Pendiente de validación con agentes ejecutándose en proyectos destino.
-- **Entregable**: `design-mockups`, `playwright`, `emil-design-eng` y `design-taste-frontend-v1` disponibles en Claude y Codex. Para cada cambio visual, ambos agentes crean HTML/CSS local, renderizan capturas móvil/escritorio, muestran capturas y archivos navegables y esperan aprobación explícita antes de `apply`. Artifact Design, Figma y Stitch son complementos opcionales. En `verify`, comparan la implementación con los mockups aprobados mediante navegador si está disponible.
-- **Origen de skills**: el proposal original de `design-skills-harnesses` eligió Emil y Taste v1 como repos independientes; Impeccable no figura en ese proposal ni en el catálogo. Agregarlo como harness requiere una decisión y evaluación separadas `(TBD)`.
-- **Governance**: BAJO (`catalog`) / MEDIO (`harness/config`). No modifica `backup`, `filemerge` ni `pipeline`.
+### 03 · Roles nativos en Claude
 
----
+**Change** `claude-native-opsx` · **Responsable** Juani · **Cliente** Claude · **Dependencias** [02](#change-02)
 
-### `universal-design-system` — Sistema visual compartido y mockups en tres agentes
+**Problema.** Las instrucciones compartidas de Claude mezclan reglas universales con el rol de coordinador. Eso dificulta saber qué contexto recibe cada especialista.
 
-- **Estado**: IMPLEMENTADO (2026-10-23); estructura revisada con el usuario. Proposal y spec local en `openspec/changes/universal-design-system/`. Suite Go completa y prueba sintética de fundación/reutilización con aprobación simulada en verde. Pendiente de validación con los tres agentes ejecutándose en proyectos destino.
-- **Entregable**: en Full, `design-mockups` se instala automáticamente para Claude, Codex y OpenCode; en Custom se puede seleccionar. El primer change visual de cada proyecto crea o releva `design-system/` y espera aprobación humana. Los cambios posteriores reutilizan su revisión para generar mockups HTML/CSS con aprobación por change. Nombre, logo e imágenes `(TBD)` usan rutas o tokens estables para reemplazo. Claude deja de requerir Artifact Design. Playwright MCP y las dos skills visuales se ofrecen a los tres agentes.
-- **Ruta OpenCode**: su sección visual va al `AGENTS.md` compartido, para que cualquier agente que implemente UI respete los gates; el orquestador SDD sigue como agente principal separado en `opencode.json`.
-- **Governance**: BAJO (`catalog`) / MEDIO (`harness/config`, `harness/external`). No modifica `backup`, `filemerge` ni `pipeline`.
+**Qué buscar.** Seguí `InstallSDD` o el punto equivalente del adapter hasta los archivos que ve Claude. Identificá alcance, precedencia y contenido efectivo en sesión y en especialistas. Investigá qué nombres y ubicaciones soporta la versión objetivo. Documentá la matriz de reglas compartidas con 04.
 
----
+**Qué se implementaría.** Registrá el orquestador nativo para invocación explícita y separá las reglas universales, la definición del rol y los módulos por acción. Planificá la migración del bloque administrado en `CLAUDE.md` y de cualquier activación automática administrada por el stack. Conservá las preferencias del usuario y el rollback.
 
-### `visual-foundation-policy` — Skill instalada y decisión visual persistente
+**Qué acordar en grupo.** Dónde se instala cada pieza, cómo se invoca el coordinador y qué reglas necesitan los especialistas. Coordiná con 04 el inventario de módulos, quién los carga y cuándo se aplican.
 
-- **Estado**: en implementación (2026-10-25). Integra la rama visual con Antigravity y la skill `active-orchestrator` de su repositorio propio.
-- **Entregable**: `design-system` embebida e instalada para Claude, Codex, OpenCode y Antigravity en Full; Custom la ofrece y la selecciona por dependencia de `design-mockups` o `active-orchestrator`. Durante la fundación se elige `system-and-mockups`, `system-only`, `off` o `deferred` y se registra en `visual_design`. La política `off` evita solicitudes rutinarias de mockup. Fundaciones anteriores agregan la sección sin rehacer fases completadas. Los cuatro agentes comparten HTML/CSS local y verificación visual opcional.
-- **Pruebas**: instalación real de la skill a rutas de los cuatro adapters, selección Custom, validación de catálogo y configuración MCP de Antigravity. Suite Go completa en verde. Una revisión sintética de los modos `off`, `deferred` y `system-and-mockups`, incluida una fundación v4 completada, detectó y permitió corregir la resolución de `deferred` y la migración del JSON a v5. La revisión previa al merge detectó y corrigió que OpenCode verificaba `design-mockups` en `opencode.json` cuando se instala en `AGENTS.md`; se agregó una prueba de regresión. La prueba con Codex CLI no pudo leer el fixture temporal por una política local de ejecución, por lo que no cuenta como validación del agente en vivo.
-- **Governance**: BAJO (`catalog`) / MEDIO (`harness/config`, `harness/external`). No modifica `backup`, `filemerge` ni `pipeline`.
+**Aceptación futura.** Una sesión normal conserva sus reglas generales. La invocación explícita activa el coordinador y sus módulos según la acción. El especialista conserva las reglas que le aplican. Probar precedencia, actualización, reinstalación y rollback con contenido del usuario.
 
----
+**Leer antes**
 
-### `add-design-mockups-toggle` — Harness `design-mockups` (etapa de diseño con aprobación humana)
+- [internal/agents/claude/adapter.go](internal/agents/claude/adapter.go)
+- [internal/harness/config/assets/claude/sdd-orchestrator.md](internal/harness/config/assets/claude/sdd-orchestrator.md)
+- [internal/catalog/harnesses.yaml](internal/catalog/harnesses.yaml)
+- [internal/install](internal/install)
+- [internal/verify](internal/verify)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#evidencia)
 
-- **Estado**: IMPLEMENTADO y ARCHIVADO (OPSX, 2026-10-08; rama `feat/design-mockups-harnesses`, pusheada,
-  PR sin abrir). **Falta validar el flujo de punta a punta** (Artifact tipo Design) con un change de UI
-  real en un proyecto destino. Nombre histórico: la primera versión era un toggle.
-- **Entregable**: harness `design-mockups` (`config`, solo `claude`, `install_modes: [full]`,
-  `depends_on: [sdd-orchestrator]`). Inyecta la sección propia `active-stack:design-mockups` en el
-  `CLAUDE.md`: etapa de diseño entre `propose` y `apply`, mockups en
-  `openspec/changes/<name>/mockups/` (Artifact tipo Design, fallback HTML estático) y gate de
-  aprobación humana antes de `apply`. Suma una línea condicional: si `emil-design-eng` o una skill
-  de taste están instaladas, se cargan (sin dependencia dura). También corrige el diagrama OPSX del
-  base claude (agrega `openspec-verify`).
-- **Decisión (D1)**: harness propio, porque los toggles del orquestador no se exponen en TUI/GUI y
-  el paso quedaba activo para todos. **Alternativa descartada**: toggle `design-mockups` dentro de
-  `sdd-orchestrator` con texto solo para `variantKey == "claude"`.
-- **Governance**: MEDIO (`harness/config`, `verify`). La escritura en el `CLAUDE.md` del usuario es de
-  impacto ALTO pero reutiliza la API existente de `backup` + `filemerge` (sin modificar esos paquetes).
-- **Deuda registrada**: los adapters no se filtran por harness en `sdd-orchestrator` ni en el plan de
-  install (p. ej. gemini podría recibir el bloque si se elige junto a claude). Este change filtra solo
-  la ruta por sección y `verify`.
-- **Mejora opcional (repos externos, no editables acá)**: que `roadmap-generator` /
-  `active-orchestrator` (Group-Active-IA) marquen `UI: sí/no` por change como pista; la pregunta en
-  runtime sigue siendo la fuente de verdad.
+<a id="change-04"></a>
 
----
+### 04 · Roles nativos en Codex
 
-### `stitch-design` — Harness hermano para opencode (FUTURO, NO implementado)
+**Change** `codex-native-opsx` · **Responsable** Giuliano · **Cliente** Codex · **Dependencias** [02](#change-02)
 
-- **Estado**: PENDIENTE. Depende de validar primero el flujo de `design-mockups` en Claude.
-- **Scope**: harness `config` para `opencode` con las herramientas MCP `stitch__*`; reutiliza la ruta
-  por sección de `internal/harness/config` (`sectionFragments`).
+**Problema.** La plantilla de Codex presupone un coordinador dedicado, pero la entrega actual como instrucciones compartidas no registra ese rol ni demuestra cómo se activa en cada superficie.
 
----
+**Qué buscar.** Seguí el adapter y la plantilla hasta la configuración efectiva. Contrastá sesión principal, roles nativos e invocación de skills en cada superficie declarada. Verificá la diferencia entre tener archivos instalados y activar el flujo en un proyecto real. Documentá la matriz de reglas compartidas con 03.
 
-### `design-skills-harnesses` — Skills de diseño como harnesses
+**Qué se implementaría.** Separá el arranque normal, el orquestador de invocación explícita, los especialistas y los módulos por acción. Planificá retirar el bloque administrado de `AGENTS.md` global preservando reglas del usuario. Documentá por superficie la invocación, el contexto por rol, la alternativa explícita y la migración reversible.
 
-- **Estado**: IMPLEMENTADO y ARCHIVADO (OPSX, 2026-10-08; rama `feat/design-mockups-harnesses`).
-- **Entregable**: dos harnesses `skill` de terceros, Full/Custom, solo Claude, `best_effort`, sin
-  `depends_on` (la relación con `design-mockups` sigue siendo blanda), pineados por commit el 2026-10-08:
-  - `emil-design-eng` — `emilkowalski/skills` (`skills/emil-design-eng`, MIT) @ `e8a175de22ae1e49370fc144c1f3bb9aeedf988d`.
-  - `design-taste-frontend-v1` — `Leonxlnx/taste-skill` (`skills/taste-skill-v1`, MIT) @ `b482f7a970abb98c4108d4a9f761e458c64cefc8`.
-- **Taste skill elegida**: `Leonxlnx/taste-skill` v1. **Descartadas**: `Leonxlnx/taste-skill` v2
-  (`skills/taste-skill`, experimental) y `senlindesign/taste-skill` (sin LICENSE, requiere Playwright
-  MCP, ejecuta JS en páginas externas).
-- **Agentes**: `agents: [claude]`, y el installer de skills ahora respeta `agents` (antes lo ignoraba).
-- **Extensión del installer**: un `ref` con SHA completo (40 hex) se baja con `init` + `fetch --depth 1`
-  + `checkout --detach`; el resto de los refs no cambia. Bump de pin manual (ver ARCHITECTURE.md §7).
-- **Conteos**: Full y Custom pasan de 16 a 18 harnesses globales; Lite sigue en 6.
-- **Governance**: BAJO (`catalog`) / MEDIO (`harness/skill`).
+**Qué acordar en grupo.** Qué superficies se van a soportar, cómo arranca el coordinador en cada una y qué fallback mantiene OPSX disponible. Alineá reglas compartidas con 03.
 
----
+**Aceptación futura.** Verificar sesión normal, invocación explícita y carga de módulos y reglas por rol. Probar migración idempotente y rollback con contenido del usuario. Validar CLI y cada superficie declarada por separado.
 
-### `visual-verify` — Verificación visual contra mockups
+**Leer antes**
 
-- **Estado**: ✅ IMPLEMENTADO y ARCHIVADO (OPSX, 2026-10-08; rama `feat/design-mockups-harnesses`).
-  Depende de `add-design-mockups-toggle`.
-- **Entregable**:
-  - Harness `playwright` (`external`, `method: mcp`, solo Claude, Full/Custom, sin `depends_on`):
-    registra Playwright MCP de Microsoft como servidor stdio en `~/.claude.json`, **pinneado**
-    (`@playwright/mcp@0.0.83`, reconfirmado el 2026-10-08). Requiere Node >= 18; no instala navegadores.
-  - Paso 7 (verificación visual) dentro del fragmento existente `design-mockups.md`, mismo marker, sin
-    sección nueva: corre en `verify` si hay mockups aprobados; con Playwright captura móvil/escritorio,
-    revisa consola y requests fallidos y compara contra `mockups/`; sin él degrada a checklist manual
-    diciéndolo explícitamente. Registra `Visual verify:` en `## UI Mockups`.
-  - **Dependencia suave**: `design-mockups` no depende de `playwright` (Full instala ambos juntos).
-  - `external.Install` ahora filtra adapters por `SupportsAgent` (mismo patrón que `config.Install`);
-    los externos sin `agents` no cambian.
-- **Conteos**: Full y Custom pasan de 18 a 19 harnesses globales; Lite sigue en 6.
-- **Deuda registrada**: (1) `collectWritePaths` (`internal/install/plan.go`) sigue agregando al snapshot
-  el path MCP de agentes no soportados (inocuo, no se escribe); (2) desinstalar un externo MCP en Claude
-  no remueve la entrada de `~/.claude.json` (limitación preexistente de todos los MCP; arreglarla toca la
-  remoción JSON cerca de `filemerge`, ALTO).
-- **Opcional futuro**: Figma MCP (ver ficha `figma-mcp`).
-- **Governance**: BAJO (`catalog`) / MEDIO (`harness/external`, fragmento).
+- [internal/agents/codex/adapter.go](internal/agents/codex/adapter.go)
+- [internal/harness/config/assets/codex/sdd-orchestrator.md](internal/harness/config/assets/codex/sdd-orchestrator.md)
+- [internal/catalog/harnesses.yaml](internal/catalog/harnesses.yaml)
+- [internal/install](internal/install)
+- [internal/verify](internal/verify)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#evidencia)
 
----
+<a id="change-05"></a>
 
-### `figma-mcp` — Figma MCP como entrada de diseños existentes (FUTURO, NO implementado)
+### 05 · Lectura dirigida y herramientas por tarea
 
-- **Estado**: PENDIENTE, **pospuesto a propósito** (no descartado). Conviene decidirlo después de probar
-  el flujo de `design-mockups` en un proyecto real: si la respuesta "ya los tengo" alcanza, quizá no
-  haga falta.
-- **Rol**: Claude Design (Artifact) **genera** mockups; Figma MCP **trae** diseños que ya existen en
-  Figma. No compiten. Hoy el camino manual es "ya los tengo" → copiar/referenciar en `mockups/`.
-- **Scope tentativo**: harness `external` solo para Claude (como `playwright`, versión pineada) + una
-  línea en el fragmento para el caso "ya los tengo con Figma". Comando de la guía (NO verificado contra
-  doc oficial): `claude plugin install figma@claude-plugins-official`. Depende de cuenta y permisos de
-  Figma; verificar antes de entrar al catálogo.
-- **Governance**: BAJO (`catalog`) / MEDIO (`harness/external`, fragmento).
+**Change** `opsx-task-context` · **Responsable** Emiliano · **Cliente** Ambos · **Dependencias** [03](#change-03), [04](#change-04)
 
----
+**Problema.** Una lectura amplia, una salida extensa o una integración innecesaria pueden consumir contexto y ocultar fallos importantes.
 
-## Tabla resumen
+**Qué buscar.** Inventariá qué se carga por defecto y qué puede resolverse por tarea. Localizá dónde aparecen instrucciones largas o resultados verbosos. Proponé fixtures que coloquen fallos al inicio, medio y final de una salida grande y comprueben la recuperación del original.
 
-| Change | Ola | Governance | Depende de | Habilita |
-|---|---|---|---|---|
-| `opencode-orchestrator-parity` | 0 (paralelo) | BAJO/MEDIO | — | — |
-| `openspec-init-cleanup` | 0 (paralelo) | BAJO | — | — | ✅ COMPLETADO |
-| `uninstall-subcommand` | 1 | **ALTO** | — | `tui-menu-hub` | ✅ IMPLEMENTADO |
-| `claude-agent-switch-research` | 1+ (libre) | BAJO | — | — |
-| `tui-menu-hub` | 2 | BAJO/MEDIO | `uninstall-subcommand` | `tui-update-stack`, `tui-configure-models` | ✅ IMPLEMENTADO (pend. archive) |
-| `tui-update-stack` | 3 | MEDIO | `tui-menu-hub` | — | ✅ IMPLEMENTADO para v0.4.0 (pend. release/archive) |
-| `tui-configure-models` | 3 | MEDIO | `tui-menu-hub` | — |
-| `add-design-mockups-toggle` | libre | MEDIO | `sdd-orchestrator` (catálogo) | `stitch-design`, `design-skills-harnesses`, `visual-verify` | ✅ IMPLEMENTADO y ARCHIVADO |
-| `stitch-design` | futuro | MEDIO | `add-design-mockups-toggle` (validar en Claude) | — | PENDIENTE |
-| `design-skills-harnesses` | libre | BAJO/MEDIO | `add-design-mockups-toggle` | — | ✅ IMPLEMENTADO y ARCHIVADO |
-| `visual-verify` | libre | MEDIO | `add-design-mockups-toggle` | `figma-mcp` (opcional) | ✅ IMPLEMENTADO y ARCHIVADO |
-| `figma-mcp` | futuro | BAJO/MEDIO | `add-design-mockups-toggle` (validar en un proyecto real) | — | PENDIENTE (pospuesto) |
+**Qué se implementaría.** Definí reglas de lectura por ruta o símbolo y un formato de salida breve que retenga los fallos relevantes. Mapeá con 03, 04 y 07 cuándo se cargan TDD, delegación y coordinación de subagentes. Diseñá cómo recuperar la salida original y qué skills o herramientas habilita cada clase de tarea. Planificá fixtures con ruido y una comparación con y sin integraciones opcionales.
 
-**Camino crítico**: `uninstall-subcommand → tui-menu-hub → {tui-update-stack ‖ tui-configure-models}` (3 changes; los dos últimos en paralelo).
+**Qué acordar en grupo.** Qué se conserva en un resumen, dónde queda el original y qué capacidad es necesaria para cada tarea. Coordiná la referencia al original con 06.
 
-**Próximo paso**: archivar `tui-menu-hub` (implementado, suite verde) y luego encarar
-en paralelo `tui-update-stack` y `tui-configure-models` (ambos cuelgan del hub).
+**Aceptación futura.** Fixtures con errores entre miles de líneas recuperan cada fallo relevante y su salida completa. Comparar contexto efectivo y aceptación con y sin cada herramienta opcional.
+
+**Leer antes**
+
+- [internal/harness/config/assets/claude/sdd-orchestrator.md](internal/harness/config/assets/claude/sdd-orchestrator.md)
+- [internal/harness/config/assets/codex/sdd-orchestrator.md](internal/harness/config/assets/codex/sdd-orchestrator.md)
+- [internal/catalog/harnesses.yaml](internal/catalog/harnesses.yaml)
+- [internal/harness/skill](internal/harness/skill)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#prioridades)
+
+<a id="change-06"></a>
+
+### 06 · Evidencia ligada a la ejecución
+
+**Change** `opsx-verifiable-evidence` · **Responsable** Gianfranco · **Cliente** Ambos · **Dependencias** [03](#change-03), [04](#change-04)
+
+**Problema.** Un resultado bien formado puede corresponder a otra revisión, a un comando insuficiente o a una ejecución inventada. Un test verde tampoco prueba por sí solo el cumplimiento de un requisito.
+
+**Qué buscar.** Revisá qué contiene hoy el reporte y qué señales corresponden a la verificación de instalación. Determiná si el nuevo contrato puede aprovechar esas señales o corresponde a un artefacto externo. Separá la estructura del recibo, su procedencia y la revisión de requisitos.
+
+**Qué se implementaría.** Definí un contrato de retorno con estado, hallazgos, requisitos cubiertos y evidencia vinculada a revisión, ruta, comando y salida. Especificá quién comprueba cada campo, qué queda sin verificar y cómo se revisa la suficiencia. Incluí evidencia vieja, inventada, truncada o insuficiente y acordá acceso, retención y redacción de datos sensibles en salidas originales.
+
+**Qué acordar en grupo.** Qué datos se consideran confiables, quién verifica su procedencia y qué evidencia mínima requiere cada aceptación. Coordiná el acceso a la salida original con 05.
+
+**Aceptación futura.** Rechazar recibos inventados o viejos, comandos insuficientes, salidas truncadas sin original y requisitos incumplidos con tests verdes. Un recibo incompleto queda sin verificar.
+
+**Leer antes**
+
+- [internal/verify/report.go](internal/verify/report.go)
+- [internal/verify/checks.go](internal/verify/checks.go)
+- [internal/verify/scenario_test.go](internal/verify/scenario_test.go)
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#evidencia)
+
+<a id="change-07"></a>
+
+### 07 · Delegación selectiva con contrato
+
+**Change** `opsx-selective-delegation` · **Responsable** Neyen · **Cliente** Ambos · **Dependencias** [05](#change-05), [06](#change-06)
+
+**Problema.** Delegar puede despejar el contexto principal, pero también sumar consumo, reintentos y solapamiento entre agentes.
+
+**Qué buscar.** Identificá qué delegación exigen hoy las plantillas y dónde se definen ownership y retorno. Diseñá casos de tarea breve, tarea verbosa y cambios que compiten por los mismos archivos. Usá una comparación controlada antes de convertir la delegación en política predeterminada.
+
+**Qué se implementaría.** Definí cuándo resolver directo y cuándo cargar el módulo de delegación y coordinación. Especificá el encargo mínimo, límites de alcance, propiedad de archivos, condiciones de paralelismo y el retorno estructurado de 06. Diseñá un piloto que compare ambas modalidades sobre las mismas tareas, usando 02, 05 y 06.
+
+**Qué acordar en grupo.** Qué señales justifican delegar, qué cambios se pueden paralelizar y qué métrica justifica adoptar el flujo.
+
+**Aceptación futura.** Comparar ejecución directa y delegada con misma tarea y aceptación. Incluir principal, workers y reintentos. Adoptar si mejora la métrica objetivo con calidad equivalente o superior.
+
+**Leer antes**
+
+- [internal/harness/config/assets/codex/sdd-orchestrator.md](internal/harness/config/assets/codex/sdd-orchestrator.md)
+- [internal/harness/config/assets/claude/sdd-orchestrator.md](internal/harness/config/assets/claude/sdd-orchestrator.md)
+- [internal/catalog/harnesses.yaml](internal/catalog/harnesses.yaml)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#prioridades)
+
+<a id="change-08"></a>
+
+### 08 · Controles efectivos por cliente
+
+**Change** `opsx-native-controls` · **Responsable** Gianfranco · **Cliente** Ambos · **Dependencias** [06](#change-06)
+
+**Problema.** Que un hook esté instalado no prueba que se ejecute, que cubra todas las rutas ni que pueda bloquear una acción antes de que ocurra.
+
+**Qué buscar.** Inventariá permisos, controles y capacidades nativas por cliente. Separá los hooks del cliente del hook de verificación interno del instalador. Rastreá qué shells y herramientas pueden evitar cada control y acordá el alcance verificable antes de diseñar la configuración.
+
+**Qué se implementaría.** Armá una matriz por cliente, superficie, herramienta y shell. Para cada regla, indicá si orienta al agente, restringe una acción mediante permisos o rules del cliente, o verifica un evento mediante un hook. Separá prevención de verificación posterior. Diseñá casos permitido, denegado, timeout, JSON inválido, handler ausente y caminos alternativos, con revisión previa de cualquier cambio sobre permisos del usuario.
+
+**Qué acordar en grupo.** Qué acciones deben bloquearse, cómo se responde si falla el control y qué superficies quedan cubiertas. Coordiná con 01 y 06.
+
+**Aceptación futura.** Probar permitido, denegado, timeout, JSON inválido, handler ausente, rutas alternativas y shells reales. Documentar límites por superficie. Revisar cambios antes de escribir configuración de usuario.
+
+**Leer antes**
+
+- [internal/harness/config/permissions/install.go](internal/harness/config/permissions/install.go)
+- [internal/harness/config/permissions/overlays.go](internal/harness/config/permissions/overlays.go)
+- [internal/verify/hook.go](internal/verify/hook.go)
+- [internal/verify/hook_test.go](internal/verify/hook_test.go)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#prioridades)
+
+<a id="change-09"></a>
+
+### 09 · Pilotos de modelos y caché
+
+**Change** `opsx-model-cache-pilots` · **Responsable** Matías · **Cliente** Ambos · **Dependencias** [07](#change-07)
+
+**Problema.** El beneficio de elegir modelo por rol y reutilizar prefijos depende de la tarea, del proveedor y de la caché observada. Todavía falta medirlo.
+
+**Qué buscar.** Localizá las políticas de enrutamiento ya expresadas en las plantillas y documentá qué knobs están disponibles en cada cliente objetivo. Tratá la selección de modelos y la estabilidad de prefijos como variables independientes. Considerá caché como reutilización de cómputo y medí por separado el contexto lógico.
+
+**Qué se implementaría.** Diseñá dos experimentos separados, uno para modelo y esfuerzo por rol y otro para prefijos y caché. Usá la referencia de 02 y el flujo de 07. Definí variantes, corridas frías y calientes, condiciones de aceptación y cómo contabilizar workers y reintentos.
+
+**Qué acordar en grupo.** Qué variantes tienen sentido, qué métricas expone cada cliente y qué resultado justificaría adoptar cada cambio. Si se propone Jev para routing, comparalo como experimento opcional frente al routing nativo y separalo del piloto de revisión de 10.
+
+**Aceptación futura.** Avanzar solo si el costo o consumo por tarea aceptada mejora con calidad comparable. Acordar umbrales y muestra (TBD). Reportar tiempo y cuota por separado.
+
+**Leer antes**
+
+- [internal/harness/config/assets/claude/sdd-orchestrator.md](internal/harness/config/assets/claude/sdd-orchestrator.md)
+- [internal/harness/config/assets/codex/sdd-orchestrator.md](internal/harness/config/assets/codex/sdd-orchestrator.md)
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#plan)
+
+<a id="change-10"></a>
+
+### 10 · Juez externo en sombra
+
+**Change** `opsx-shadow-review` · **Responsable** Neyen · **Cliente** Ambos · **Dependencias** [08](#change-08), [09](#change-09)
+
+**Problema.** Hace falta saber si un juez externo detecta problemas adicionales frente a la revisión con criterios y cuánto cuesta incorporar esa señal.
+
+**Qué buscar.** Tomá los requisitos y la evidencia acordados en 06 como referencia de evaluación. Identificá qué información podría salir del entorno y cómo minimizarla. Definí si el piloto agrega señal frente a reglas y revisión humana, y cómo terminarlo con una decisión documentada.
+
+**Qué se implementaría.** Diseñá un piloto en sombra con una muestra etiquetada, una revisión de referencia y métricas de falsos positivos, falsos negativos y costo. Evaluá Jev como candidato opcional si soporta el caso de revisión. Documentá los datos que recibiría, cómo minimizar su exposición y el criterio para cerrar, repetir o descartar el piloto. Sus resultados se analizan aparte de la aceptación del cambio.
+
+**Qué acordar en grupo.** Qué datos se pueden compartir, quién etiqueta la muestra y qué umbral justificaría seguir explorando.
+
+**Aceptación futura.** Medir falsos positivos, falsos negativos y costo adicional frente a revisión de referencia. Mantener los resultados fuera de la decisión de aceptación durante el piloto.
+
+**Leer antes**
+
+- [internal/verify/report.go](internal/verify/report.go)
+- [internal/verify/scenario_test.go](internal/verify/scenario_test.go)
+- [ARCHITECTURE.md](ARCHITECTURE.md)
+- [Evidencia y recomendaciones del informe ejecutivo](https://active-stack-executive-site.vercel.app/#plan)
+
+## Seguimiento de iniciativas anteriores
+
+El [roadmap post-starters archivado](docs/archive/CHANGES-2026-11-05-post-starters.md) conserva las fichas y decisiones de la etapa anterior. Su archivo es documental. El estado de los changes sigue en OpenSpec.
+
+- **Verificación visual pendiente.** `codex-design-mockups` figura 9/11 en OpenSpec. El roadmap anterior también registra validación con agentes reales pendiente para `universal-design-system`, aunque sus tareas locales figuran 6/6. El commit `1f493f1` incorpora la base visual persistente; la validación real se sigue por separado.
+- **Verificación del instalador pendiente.** `gui-installer-dependency-detection` figura 29/30 y `complete-page-finish-button-fix` 13/14. Son seguimientos de la etapa anterior.
+- **Pendientes históricos a conciliar.** El hub TUI ya existe en el código y conviene reconciliar su ficha histórica. La investigación `claude-agent-switch-research` aporta contexto para 03 y `tui-configure-models` sigue fuera del alcance de esta ronda. `stitch-design` y `figma-mcp` quedan como ideas históricas sujetas a priorización. Consultá sus fichas archivadas antes de retomarlas.

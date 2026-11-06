@@ -325,7 +325,7 @@ go test ./...                          # suite completa
 
 ## Estado del proyecto
 
-🟢 **Activo.** El núcleo del instalador (catálogo, modelo, adapters P0, backup/rollback, merge por markers, pipeline, verify y la TUI) está implementado y verde en CI. El roadmap interno (C-01 … C-25) está cerrado; ver [`CHANGES.md`](CHANGES.md).
+🟢 **Activo.** El núcleo del instalador (catálogo, modelo, adapters P0, backup/rollback, merge por markers, pipeline, verify y la TUI) está implementado. El [roadmap actual](CHANGES.md) reúne las propuestas de mejoras de OPSX y los seguimientos de etapas anteriores.
 
 ## Licencia
 

@@ -133,7 +133,7 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
 |---|---|
 | El blueprint del diseño (fuente de verdad) | `ARCHITECTURE.md` |
 | La metodología (etapas, governance, flujo) | `../MANUAL-METODOLOGICO.md` |
-| Roadmap de changes, deps, camino crítico | `CHANGES.md` |
+| Roadmap canónico, fichas de change y responsables | [CHANGES.md](CHANGES.md) |
 | Qué harnesses existen y de qué tipo | `internal/catalog/harnesses.yaml` |
 | Los tipos de dominio | `internal/model/harness.go` |
 | Cargar/validar el catálogo | `internal/catalog/catalog.go` |
@@ -148,4 +148,7 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
 - El orquestador SDD global (coordinación, delegación, model-routing) vive en el
   `~/.claude/CLAUDE.md` del usuario. Este proyecto NO lo duplica.
 - `openspec/` está versionado-ignorado por git (dogfooding interno).
-- Cada incremento del roadmap es un change OPSX (ver `CHANGES.md`).
+- Antes de crear una rama, leé [CHANGES.md](CHANGES.md) y la ficha del change asignado.
+  La ronda actual se limita a `propose`. Creá una rama `propose/<nombre-del-change>`,
+  acordá las decisiones en el grupo durante el armado y compartí los artefactos finales
+  para revisión de los siete integrantes. El roadmap detalla la entrega y la aceptación.
