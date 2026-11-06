@@ -30,9 +30,6 @@ dist/
 .atl/
 .engram/
 
-# OpenSpec working artifacts — we dogfood the methodology on this repo;
-# the dev-process changes/specs and generated tool commands are not part
-# of the product
-openspec/
+# Generated local agent configuration. OpenSpec artifacts are versioned.
 .claude/
 .opencode/

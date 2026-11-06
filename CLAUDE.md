@@ -152,7 +152,7 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
 
 ## 6. Notas
 
-- `openspec/` está versionado-ignorado por git (dogfooding interno).
+- `openspec/` se versiona en Git. Compartí la rama de propuesta con sus artefactos para revisión.
 - Antes de crear una rama, leé [CHANGES.md](CHANGES.md) y la ficha del change asignado.
   La ronda actual se limita a `propose`. Creá una rama `propose/<nombre-del-change>`,
   acordá las decisiones en el grupo durante el armado y compartí los artefactos finales
