@@ -56,7 +56,7 @@
 > módulo por acción, por D19.
 
 - [ ] 3.1 Verificar el reparto núcleo/módulo decidido en `design.md` — D2 contra la matriz única de módulos de 03 y 04, y registrar las divergencias si las hay (hoy, `governance` frente a `claude-native-opsx/design.md:287-288`); el reparto se ajusta, no se vuelve a decidir
-- [ ] 3.2 Declarar en el catálogo, para cada módulo, en qué acciones es obligatorio y en cuáles opcional (tabla de `design.md` — D19), y verificar que `catalog.Load()` rechaza un módulo sin acciones declaradas
+- [ ] 3.2 Declarar en el catálogo, para cada módulo, su archivo dentro de la skill (`sdd-orchestrator/modules/<id>.md`, punto *Ubicación de los módulos*) y en qué acciones es obligatorio y en cuáles opcional (tabla de `design.md` — D19), y verificar que ningún archivo de `modules/` lleve metadatos de skill y que `catalog.Load()` rechaza un módulo sin acciones declaradas
 - [ ] 3.3 Declarar la acción activa como entrada de la resolución de contexto sobre el catálogo y verificar con tests que para una misma acción, rol e instalación el conjunto de módulos es idéntico entre dos resoluciones
 - [ ] 3.4 Verificar con un test que el orden en que se declaran los módulos no altera el resultado de la resolución
 - [ ] 3.5 Redactar en el texto del núcleo la regla de módulo ausente —detener si es obligatorio, avisar y resolver directo si es opcional (`design.md` — D19)— y verificar en el arnés que `verify` sin módulo de delegación informa qué módulo falta y no se ejecuta, y que `apply` sin él avisa y resuelve directo; verificar también que las tareas del mismo pedido que no dependen del módulo se completan, que el reporte separa lo completado de lo detenido, y que la acción se retoma cuando el módulo o una superficie compatible queda disponible

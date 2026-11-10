@@ -389,7 +389,7 @@ Decision: no (no UI) — 2026-11-05. El change no agrega ni modifica pantalla, c
 
 ## Decisiones tomadas — pendientes de revisión del grupo
 
-Doce puntos. Todos están decididos acá; se comparten porque tocan alcance de otras fichas. Cada uno con la decisión, en qué se apoya, a qué fichas afecta y qué cambia si el grupo la rechaza. Se identifican por su nombre, no por un código: así nadie tiene que buscar una leyenda y no se confunden con los puntos de otra ficha.
+Trece puntos. Todos están decididos acá; se comparten porque tocan alcance de otras fichas. Cada uno con la decisión, en qué se apoya, a qué fichas afecta y qué cambia si el grupo la rechaza. Se identifican por su nombre, no por un código: así nadie tiene que buscar una leyenda y no se confunden con los puntos de otra ficha.
 
 Una decisión puede apoyarse en tres cosas, y cada una lleva su procedencia, igual que D5 exige para cualquier afirmación sobre el código:
 
@@ -407,6 +407,18 @@ Una decisión puede apoyarse en tres cosas, y cada una lleva su procedencia, igu
 | **En qué se apoya** | **documentado.** La dependencia es circular: la 03 dice que el inventario de módulos lo da la 04 (`claude-native-opsx/proposal.md:78`) y la 04 que lo da la 03 (`codex-native-opsx/proposal.md:71`). La matriz de la 04 es la única publicada con columnas para los dos clientes |
 | **Afecta a** | 03, 04, 05, 07 |
 | **Si se rechaza** | la tarea 3.1 compara contra la matriz que el grupo elija; ningún requisito cambia |
+
+### Ubicación de los módulos
+
+| | |
+|---|---|
+| **Decisión** | **Decidido por la 05 — pendiente de revisión del grupo.** Los módulos son **archivos dentro de la skill del orquestador**, en los dos clientes: `sdd-orchestrator/modules/<id>.md` (`tdd`, `delegation`, `subagents`, `engram`, `model-routing` y los de esta ficha: `lectura-dirigida`, `resumen-acotado`, `herramientas`, `reporte`). La skill los lee según la acción activa, y el catálogo declara qué acción requiere cada módulo (tarea 3.2). No son skills separadas ni entradas sueltas de catálogo. |
+| **En qué se apoya** | **Documentado.** La decisión confirmada del equipo para 03/04 activa el orquestador como skill en los dos clientes: `/sdd-orchestrator` en Claude Code y `$sdd-orchestrator` en Codex (D21). Una skill puede traer archivos de apoyo que se leen bajo demanda (https://code.claude.com/docs/en/skills, https://learn.chatgpt.com/docs/build-skills). Coincide con la G5 de la 04 (`codex-native-opsx/design.md:199`). |
+| **Supuesto** | Que los archivos de `modules/` no aparezcan como skills propias en la sesión normal. Mientras el spike de la 04 no lo confirme, cada módulo se escribe sin metadatos de skill (sin frontmatter `name`/`description`), así no hay nada que el cliente pueda listar. |
+| **Afecta a** | 03, 04, 05, 07 |
+| **Si se rechaza** | cambian la tarea 3.2 y la ruta de los módulos; ningún requisito, porque las specs hablan de "módulo de la acción" y no de su ruta |
+
+Esto deja sin efecto la G3(a) de la 03, que pega los módulos en el brief: con activación por skill, el módulo se lee desde la skill. Cuando hace falta que un especialista lo reciba, el coordinador lo incluye en el encargo, como ya prevé D21 para Explore y Plan.
 
 ### Eje de clases de tarea
 
