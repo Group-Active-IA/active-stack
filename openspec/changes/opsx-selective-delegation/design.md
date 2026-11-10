@@ -46,7 +46,7 @@ La decisión se evalúa en este orden. El primer paso que aplica la cierra.
 
 | Señal | Qué la dispara | Por qué justifica delegar |
 |---|---|---|
-| S1 salida verbosa | la tarea va a producir salida que supera el presupuesto de 05 (tests, build, logs) | el contexto principal recibe sólo el resumen acotado y el recibo |
+| S1 salida verbosa | la tarea va a producir más de 300 líneas de salida (tests, build, logs), umbral de 05 D19; supuesto a calibrar con los fixtures de salida de 02/05 | el contexto principal recibe sólo el resumen acotado y el recibo |
 | S2 exploración con conclusión | la respuesta es una conclusión (dónde está X, qué rompe Y) y no el contenido leído | el principal no necesita los archivos, sólo el hallazgo |
 | S3 trabajo paralelizable | dos o más subtareas cumplen D4 | gana tiempo de espera; el consumo se mide aparte |
 | S4 separación de rol | la acción exige que quien revisa no sea quien construyó | independencia, no ahorro; tiene prioridad |
@@ -97,6 +97,8 @@ El diff global de un árbol compartido puede atribuirle al worker cambios previo
 
 La comprobación es posterior a la escritura. Donde 08 declare un control preventivo obligatorio para escrituras fuera de alcance, se usa además de esta; si no está disponible, aplica la regla de controles obligatorios (detener sólo esa acción y explicar).
 
+**Prevención sin dueño todavía.** El inventario de 08 (`opsx-native-controls/tasks.md`, tarea 2.3) clasifica hoy sólo `.env` y git destructivo. Se le pide a 08 que sume "escritura fuera del conjunto de escritura del encargo" como candidata a "debe bloquearse". Hasta que 08 la incorpore, esta ficha la declara **no controlada preventivamente**: la única defensa es la comprobación posterior de este punto.
+
 ### D5 — Paralelismo (decisión confirmada)
 
 Hasta **dos** agentes con escritura en paralelo durante el piloto, cada uno en su propio árbol de trabajo. Se paralelizan sólo encargos que cumplen las tres condiciones:
@@ -119,6 +121,8 @@ hallazgos:     [{severidad, ruta:línea, descripción}]   # acotados según 05
 recibos:       [recibo 06]                              # uno por comando ejecutado
 pendiente:     texto breve | —
 ```
+
+**Dueño del sobre.** Esta ficha es dueña del sobre de retorno; 06 es dueña del campo `recibos`. Las fichas de roles nativos (03, 04) lo referencian en lugar de definir otro: `codex-native-opsx/design.md:216` hoy propone un retorno propio (estado, hallazgos, evidencia, módulos cargados), que se le pide alinear con este. Si el grupo necesita `módulos cargados`, se agrega acá como campo opcional.
 
 El coordinador valida en orden: (1) la partida coincide con la registrada; (2) `modificados` coincide con los cambios atribuibles de D4 y está dentro de `escritura`; (3) recibos según 06; (4) criterios de salida.
 
@@ -172,6 +176,14 @@ Hoy el toggle sólo quita la tabla. Se mueve al módulo toda obligación de dele
 
 **Resultado.** Informe de decisión con datos crudos y una de tres salidas: adoptar B como predeterminado, mantener con ajustes, o repetir con muestra mayor.
 
+**Qué recibe 09 como control A0** (`opsx-model-cache-pilots/design.md:25`), según la salida:
+
+| Salida de 07 | Configuración que recibe 09 |
+|---|---|
+| adoptar | brazo B (selectivo) en la revisión de 07 que se adoptó |
+| mantener con ajustes | la política vigente con los ajustes registrados en el informe, como revisión identificada |
+| repetir | 09 no corre su prueba de adopción; puede calibrar sobre A y B por separado, con tareas directas y delegadas estratificadas y el brazo declarado en cada corrida |
+
 ## Risks / Trade-offs
 
 - **El agente ignora la regla de D1.** Una instrucción no es un control. Mitigación: el registro permite medir la tasa de acierto contra el paso esperado de cada fixture.
@@ -222,3 +234,12 @@ Decision: no (no UI) — 2026-11-10. El change no agrega ni modifica pantalla.
 | Alinear con 02, 06 y 09 | D9 (equivalencia de brazos, medidas, costo de cohorte, calibración) |
 | Pruebas sin corroboración siguen sin verificar | D6 veredicto |
 | Separar ahorro de costo y tiempo de espera | D9 medidas |
+
+## Cambios por la auditoría complementaria del 10/11
+
+| Observación | Dónde se incorporó |
+|---|---|
+| S1 apuntaba a un "presupuesto de 05" que no existe | D1 tabla de señales y escenario de salida verbosa: más de 300 líneas (05 D19), como supuesto a calibrar |
+| Prevención de escrituras fuera de alcance sin dueño | D4 "Prevención sin dueño todavía"; tarea 0.2 |
+| Tres formatos de retorno (04, 06, 07) | D6 "Dueño del sobre" |
+| Qué configuración recibe 09 como A0 | D9 tabla "Qué recibe 09"; tarea 6.3 |

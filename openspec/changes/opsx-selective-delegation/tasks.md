@@ -6,7 +6,7 @@
 ## 0. Decisiones previas (grupo)
 
 - [ ] 0.1 Cerrar las decisiones pendientes de `design.md` (señales, métrica objetivo, toggle en `lite`, dueño de `sdd-orchestrator.md`) y volcarlas a los artefactos.
-- [ ] 0.2 Confirmar con 05 el nombre del disparador "la acción requiere coordinación de subagentes"; con 06 el texto del extracto `## Evidence Contract` y la huella del estado de trabajo que reutiliza la partida; con 08 qué escrituras fuera de alcance tienen control preventivo obligatorio.
+- [ ] 0.2 Confirmar con 05 el nombre del disparador "la acción requiere coordinación de subagentes"; con 06 el texto del extracto `## Evidence Contract` y la huella del estado de trabajo que reutiliza la partida; con 08 que sume "escritura fuera del conjunto de escritura del encargo" a su inventario de acciones a bloquear (hasta entonces queda declarada como no controlada preventivamente); con 03/04 que su retorno de especialista referencie el sobre de D6.
 
 ## 1. Inventario reproducible
 
@@ -46,4 +46,4 @@
 
 - [ ] 6.1 Informe de decisión con datos crudos, muestra, dispersión y una de tres salidas (adoptar, mantener con ajustes, repetir).
 - [ ] 6.2 Si se adopta: cambiar la política predeterminada en los assets y en la descripción del catálogo, validando con `catalog.Load()`; si no, registrar la decisión y dejar el módulo opt-in.
-- [ ] 6.3 Entregar a 09 la revisión de 07 usada como control A0 y los datos del piloto.
+- [ ] 6.3 Entregar a 09 la configuración de control A0 que corresponde a la salida de 6.1 según la tabla "Qué recibe 09" de `design.md` (D9), con su revisión identificada y los datos del piloto.
