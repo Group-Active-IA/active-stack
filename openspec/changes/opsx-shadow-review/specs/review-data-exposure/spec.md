@@ -2,32 +2,36 @@
 
 ## Purpose
 
-Define qué datos puede recibir un juez externo durante el piloto, cómo se minimizan y redactan, y qué constancia queda de lo que salió del entorno.
+Define qué datos puede recibir un juez externo durante el piloto, cómo se examinan y minimizan, y qué constancia queda de lo que salió del entorno.
 
 ## ADDED Requirements
 
 ### Requirement: Paquete por lista de inclusión
 
-El paquete que recibe el juez SHALL armarse con una lista de inclusión de clases de datos permitidas: artefactos y diff del repositorio público y, cuando el caso lo requiera, recibos y salidas acotadas redactadas según 06. Todo dato fuera de la lista MUST quedar excluido.
+El paquete que recibe el juez SHALL armarse con una lista de inclusión. En la primera ronda MUST contener sólo material público revisado y datos ficticios. Todo dato fuera de la lista MUST quedar excluido.
 
-#### Scenario: Caso con salida original
+#### Scenario: Recibo real en la primera ronda
 
-- **WHEN** un caso tiene una salida original sin redactar
-- **THEN** el paquete incluye sólo su versión redactada con ambas huellas, o nada
+- **WHEN** un caso de la primera ronda incluiría un recibo o salida real, aunque esté redactado
+- **THEN** se reemplaza por un equivalente ficticio o el caso se excluye
+
+### Requirement: Examen previo de todo el paquete
+
+Antes de cada envío, el paquete completo SHALL examinarse en busca de secretos, valores de variables de entorno, rutas del home y configuración de usuario, incluidos los diffs del repositorio público. Un positivo MUST cancelar el envío del caso.
+
+#### Scenario: Secreto sembrado en un diff público
+
+- **WHEN** un diff público del paquete contiene un secreto sembrado
+- **THEN** el examen lo detecta, el envío se cancela y el caso queda marcado para revisión manual
 
 ### Requirement: Datos privados nunca salen
 
-El paquete MUST NOT contener secretos, archivos `.env`, valores de variables de entorno, rutas del home, configuración del usuario (`settings.json`, `config.toml`), memoria de Engram ni transcripciones de sesión.
+El paquete MUST NOT contener salidas originales, archivos `.env`, configuración del usuario (`settings.json`, `config.toml`), memoria de Engram ni transcripciones de sesión.
 
-#### Scenario: Ruta del home en un recibo
+#### Scenario: Configuración de usuario en un fixture
 
-- **WHEN** un recibo contiene una ruta bajo el home del usuario
-- **THEN** la ruta se redacta antes de incluirlo y se registra la huella redactada
-
-#### Scenario: Secreto detectado al armar el paquete
-
-- **WHEN** el chequeo previo al envío detecta un patrón de secreto en el paquete
-- **THEN** el envío se cancela y el caso queda marcado para revisión manual
+- **WHEN** un fixture incluye un `settings.json` real de un integrante
+- **THEN** el paquete se rechaza y el fixture se rehace con datos ficticios
 
 ### Requirement: Registro de envío
 
@@ -38,11 +42,11 @@ Cada envío SHALL registrar caso, huella del paquete, candidato, proveedor y fec
 - **WHEN** el grupo revisa qué datos salieron
 - **THEN** el registro permite reconstruir cada paquete enviado por su huella
 
-### Requirement: Condiciones del proveedor acordadas antes de enviar
+### Requirement: Condiciones del proveedor verificadas por separado
 
-Ningún caso SHALL enviarse a un proveedor antes de que el grupo acuerde y registre las condiciones aceptables de retención y uso de datos y el proveedor las declare.
+Ningún caso SHALL enviarse a un proveedor antes de que el grupo registre como acordadas, por separado, la condición de retención y la condición de uso para entrenamiento, y el proveedor declare ambas.
 
-#### Scenario: Proveedor sin condiciones verificadas
+#### Scenario: Proveedor que declara retención pero no entrenamiento
 
-- **WHEN** las condiciones del proveedor no están registradas como acordadas
+- **WHEN** el proveedor documenta su retención y no documenta si usa los datos para entrenamiento
 - **THEN** el arnés no envía casos a ese proveedor

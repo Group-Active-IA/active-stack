@@ -1,7 +1,8 @@
 # Proposal: opsx-shadow-review
 
 > Change `opsx-shadow-review` · ficha 10 del roadmap · Responsable: Neyen · Agentes: Claude y Codex · Prioridad P3 · Gobernanza MEDIO
-> Base revisada: `1b4639b`. Depende de 08 (`opsx-native-controls`) y 09 (`opsx-model-cache-pilots`, sin rama al 10/11); toma como referencia el contrato de 06 (`opsx-verifiable-evidence`).
+> Base revisada: `1b4639b`. Depende de 08 (`opsx-native-controls`) y 09 (`opsx-model-cache-pilots`, `89f1fa5`); usa el protocolo de 02 (`240e1b2`) y toma como referencia el contrato de 06 (`opsx-verifiable-evidence`).
+> Revisión 2 (10/11/2026): incorpora la auditoría técnica del 10/11 y la decisión confirmada de alcance de la primera ronda; ver `design.md`, "Cambios por la auditoría".
 > Esta ronda es solo `propose`: todas las tareas de implementación quedan pendientes. El piloto no modifica el instalador.
 
 ## Why
@@ -19,11 +20,11 @@ La revisión de un change hoy descansa en criterios escritos (specs, escenarios,
 
 ## What Changes
 
-- **Piloto en sombra.** El juez revisa changes ya revisados por el flujo de referencia. Sus hallazgos se guardan sellados y no se muestran al coordinador, al auditor ni a la persona que acepta hasta que la decisión de aceptación está registrada.
-- **Muestra etiquetada.** Changes históricos con defecto conocido (fixes posteriores), defectos sembrados en fixtures (incluidos los casos de rechazo de 06) y changes limpios como control. Dos personas etiquetan de forma independiente.
+- **Piloto en sombra, primera ronda acotada.** Sólo casos históricos y preparados, con material público revisado y datos ficticios; sin changes vivos ni evidencia real (decisión confirmada). Los hallazgos del juez se guardan con huella en un almacén de acceso restringido a un custodio, que los abre sólo cuando el caso está cerrado definitivamente.
+- **Muestra etiquetada.** Estados previos a fixes conocidos (sin el fix ni pistas que revelen la respuesta), defectos sembrados (incluidos los casos de rechazo de 06) y controles inspeccionados o fixtures limpios. Dos personas etiquetan de forma independiente y un tercero resuelve; las etiquetas se congelan.
 - **Revisión de referencia.** La revisión con criterios del flujo: requisitos y escenarios del change, recibos de 06 y resultados de controles de 08, más la persona que acepta.
-- **Métricas.** Por hallazgo emparejado con la etiqueta: verdaderos positivos, falsos positivos, falsos negativos; señal adicional (defectos que sólo el juez encontró); costo en tokens, dinero o cuota, latencia y tiempo humano de triage.
-- **Minimización de datos.** Clasificación de qué puede salir (diff y artefactos del repo público, recibos redactados según 06) y qué nunca (secretos, `.env`, salidas sin redactar, configuración del usuario, memoria, rutas del home). Paquete de revisión con huella antes y después de redactar.
+- **Métricas.** Contra etiquetas congeladas: verdaderos positivos, falsos positivos, falsos negativos; señal adicional como cantidad de defectos mayores que sólo el juez encontró; proporción de controles con falsa alarma; costo por caso en tokens, dinero o cuota, latencia y triage. Los hallazgos sin etiqueta van a un arbitraje aparte, ciego al origen.
+- **Minimización de datos.** Lista de inclusión, examen previo de todo el paquete (diffs públicos incluidos), registro de envío y condiciones de retención y entrenamiento del proveedor verificadas por separado.
 - **Candidatos.** Al menos un juez de base y Jev como candidato opcional, sólo si cumple criterios de entrada documentados.
 - **Criterio de salida.** Cerrar, repetir o descartar según umbrales acordados, con un informe de decisión. Los resultados no entran en la aceptación de ningún change durante el piloto.
 
