@@ -1,7 +1,8 @@
 # Proposal: opsx-selective-delegation
 
 > Change `opsx-selective-delegation` · ficha 07 del roadmap · Responsable: Neyen · Agentes: Claude y Codex · Prioridad P1 · Gobernanza MEDIO
-> Base revisada: `1b4639b`. Depende de 05 (`opsx-task-context`) y 06 (`opsx-verifiable-evidence`); usa el protocolo de 02 (`opsx-baseline`). Habilita 09.
+> Base revisada: `1b4639b`. Depende de 05 (`opsx-task-context`) y 06 (`opsx-verifiable-evidence`); usa el protocolo de 02 (`opsx-baseline`, `240e1b2`). Habilita 09 (`89f1fa5`), que toma esta configuración como control.
+> Revisión 2 (10/11/2026): incorpora la auditoría técnica del 10/11 y las decisiones confirmadas del grupo; ver `design.md`, "Cambios por la auditoría".
 > Esta ronda es solo `propose`: todas las tareas de implementación quedan pendientes.
 
 ## Why
@@ -21,15 +22,16 @@ Todo sobre `main` en `1b4639b`.
 
 ## What Changes
 
-- **Decisión explícita directo/delegado.** El coordinador resuelve directo por defecto y delega sólo cuando aparece una señal declarada: salida verbosa esperada, exploración cuyo producto es una conclusión, trabajo independiente paralelizable o separación de rol exigida por la acción. Se declaran también las contraseñales que obligan a resolver directo. La regla reemplaza al conteo de archivos y cada decisión queda registrada con su señal.
-- **La regla vive en el rol; el módulo se carga sólo si se delega.** La regla de decisión (breve) forma parte de la definición del coordinador. El módulo de delegación y coordinación se carga con el mecanismo de 05 únicamente cuando la decisión es delegar.
+- **Independencia obligatoria primero.** Si la acción exige que quien revisa no sea quien construyó, la revisión va a otro agente y ninguna contraseñal lo anula. Si falta el módulo o un revisor habilitado, se detiene esa verificación y se explica.
+- **Decisión explícita directo/delegado.** Fuera de ese caso, el coordinador serializa ante conflicto de archivos, resuelve directo ante una contraseñal (tarea breve, contexto vivo, relectura completa) y delega ante una señal (salida verbosa, exploración con conclusión, trabajo paralelizable). Por defecto, directo. La regla reemplaza al conteo de archivos y cada decisión queda registrada con el paso que la cerró.
+- **La regla vive en la skill del coordinador; el módulo se carga sólo si se delega.** La regla de decisión (breve) va en la skill de invocación explícita acordada para 03/04. El módulo de delegación y coordinación se carga con el mecanismo de 05 únicamente cuando la decisión es delegar.
 - **Encargo mínimo.** Toda delegación lleva objetivo, acción OPSX, conjunto de escritura, punteros de lectura, límites, criterios de salida, contrato de retorno y tope de intentos.
-- **Propiedad de archivos.** Cada worker con escritura recibe un conjunto exclusivo de archivos. El coordinador rechaza un retorno que modifica archivos fuera de ese conjunto, comprobándolo contra el diff real.
-- **Condiciones de paralelismo.** Dos workers corren a la vez sólo si sus conjuntos de escritura son disjuntos, ninguno lee lo que el otro escribe y cada uno se verifica por separado. Si no, se serializan.
-- **Retorno estructurado.** Estado, archivos modificados, hallazgos, recibos de ejecución de 06 y próximo paso. Lo que no se puede comprobar queda *sin verificar*.
+- **Propiedad contra un punto de partida.** Cada worker con escritura trabaja en su árbol, desde una partida registrada (commit base y huella del estado de trabajo), con un conjunto exclusivo de archivos. Se le atribuye sólo lo que cambió desde esa partida —commits, preparados, sin preparar, nuevos, borrados y renombres— y se rechaza lo que caiga fuera. Antes de integrar se comprueba el resultado combinado.
+- **Paralelismo (decisión confirmada).** Hasta dos workers con escritura a la vez, cada uno en su árbol, sólo con alcances disjuntos, sin dependencias y con pruebas propias. Si no, se serializan.
+- **Retorno estructurado.** Estado, partida, archivos modificados con su tipo de cambio, hallazgos, recibos de 06 y próximo paso. Lo declarado queda *sin verificar* hasta que una fuente independiente o una re-ejecución lo corrobore (decisión confirmada para 05/06).
 - **Reintentos acotados.** Cada encargo tiene un tope; agotado, se escala a una persona. Los reintentos se cuentan en el costo.
 - **Toggle `delegation` coherente.** Sin el toggle, el bloque compuesto no conserva ninguna obligación de delegar y el coordinador declara que trabaja sin subagentes.
-- **Piloto controlado antes de adoptar.** Un arnés externo compara ejecución directa, delegación selectiva y el flujo actual sobre las mismas tareas y la misma aceptación, con el protocolo de 02, las salidas acotadas de 05 y los recibos de 06. La política predeterminada cambia sólo si el piloto lo justifica.
+- **Piloto controlado antes de adoptar.** El arnés de 02 compara ejecución directa, delegación selectiva y el flujo actual con la misma tarea, rúbrica, criterios y controles, por cliente e interfaz. Costo por tarea aceptada sobre el total de la cohorte; cuota, tokens y latencia separados; ahorro de costo y reducción de espera separados. Primero calibración; los parámetros de adopción se fijan antes de la prueba que decide.
 
 ## Capabilities
 
