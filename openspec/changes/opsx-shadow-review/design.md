@@ -31,7 +31,7 @@ El flujo OPSX revisa un change contra sus requisitos y escenarios. 06 agrega rec
 | Capa | Qué es | Para qué |
 |---|---|---|
 | Etiquetas congeladas | defectos conocidos por caso, fijados antes de correr | verdad del análisis principal |
-| Revisión de referencia | el flujo actual: requisitos + escenarios + recibos 06 + controles 08 + persona | la línea a superar |
+| Revisión de referencia | el flujo actual: requisitos + escenarios + recibos 06 + tabla de cobertura de 08 (qué acciones del caso quedan controladas y cuáles no) + persona | la línea a superar |
 | Juez | candidato en sombra | lo que se evalúa |
 
 Referencia y juez se miden **las dos** contra las etiquetas congeladas. La señal adicional es lo que el juez encuentra y la referencia no, confirmado por la etiqueta.
@@ -43,7 +43,7 @@ Referencia y juez se miden **las dos** contra las etiquetas congeladas. La seña
 | Fuente | Cómo se arma | Aporta |
 |---|---|---|
 | Histórica | commits `fix` de `main` (33 en `1b4639b`) mapeados al commit que introdujo el defecto; el caso es el estado **previo** al fix | defectos reales que el flujo dejó pasar |
-| Preparada | fixtures con defectos sembrados: casos de rechazo de 06 (recibo falso con hash correcto, mismo HEAD con diff distinto, salida truncada sin original, tests verdes sin cubrir el requisito) y defectos de lógica con ubicación conocida | verdad conocida y cobertura de clases |
+| Preparada | fixtures de la familia "Revisión de un diff sembrado" de 02 (`opsx-baseline/design.md:30`), con su rúbrica, más casos de rechazo de 06 (recibo falso con hash correcto, mismo HEAD con diff distinto, salida truncada sin original, tests verdes sin cubrir el requisito) y defectos de lógica con ubicación conocida | verdad conocida, cobertura de clases y una sola definición de falso positivo compartida con 02 |
 | Control | **controles inspeccionados**: changes revisados manualmente por los etiquetadores y declarados sin defecto conocido, y **fixtures limpios** construidos para ese fin | tasa de falsas alarmas |
 
 Que un change no tenga fixes posteriores conocidos no prueba que esté limpio, así que no alcanza para ser control: los controles históricos pasan primero por inspección. Datos de recibos y salidas en la primera ronda: ficticios.
@@ -70,7 +70,7 @@ Si en una ronda posterior se agregan changes vivos, primero hay que probar que e
 hallazgo: {severidad, ruta, rango de líneas, requisito o escenario, descripción}
 ```
 
-**Análisis principal (etiquetas congeladas).** Un hallazgo empareja si apunta al mismo archivo y rango solapado, o al mismo requisito, y describe el mismo defecto. VP, FP y FN se cuentan sólo contra etiquetas congeladas.
+**Análisis principal (etiquetas congeladas).** La regla de emparejamiento es la de la familia de revisión de 02 (dueña de la rúbrica de revisión); esta ficha no define otra. Mientras 02 no la fije, se propone: un hallazgo empareja si apunta al mismo archivo y rango solapado, o al mismo requisito, y describe el mismo defecto. VP, FP y FN se cuentan sólo contra etiquetas congeladas.
 
 **Arbitraje aparte.** Los hallazgos que no emparejan no se reclasifican dentro del análisis principal. Van a un arbitraje separado, ciego respecto del origen (el árbitro no sabe si el hallazgo vino del juez o de la referencia). Cada uno termina en una de tres categorías:
 
@@ -99,7 +99,7 @@ Se reportan aparte. Un defecto nuevo confirmado no cambia retroactivamente las m
 | Derivada real redactada | recibos y salidas reales redactados según 06 | **no** (evaluar en otra ronda) |
 | Privada | salidas originales, `settings.json`/`config.toml` del usuario, memoria de Engram, `.env`, transcripciones | nunca |
 
-**Examen previo de todo el paquete.** Aunque el repo sea público, se examina el paquete completo antes de enviarlo, diffs públicos incluidos: un commit público puede contener un secreto filtrado. El examen busca secretos, valores de variables, rutas del home y configuración de usuario; un positivo cancela el envío del caso.
+**Examen previo de todo el paquete.** Aunque el repo sea público, se examina el paquete completo antes de enviarlo, diffs públicos incluidos: un commit público puede contener un secreto filtrado. El examen usa la **lista única de patrones de valor sensibles de 05** (`opsx-task-context/design.md`, D14: `.env` y sus valores, tokens y API keys, credenciales de nube, claves SSH y `*.pem`, valores de variables de entorno, rutas del home, identificadores de cuenta), sin una lista propia. Además rechaza archivos de configuración de usuario (`settings.json`, `config.toml`), que son una clase de archivo y no un patrón de valor. Un positivo cancela el envío del caso.
 
 El paquete se arma por lista de inclusión, se registra su huella y el log de envío guarda caso, huella, candidato, proveedor y fecha.
 
@@ -109,7 +109,7 @@ El paquete se arma por lista de inclusión, se registra su huella y el log de en
 
 - **Juez base**: modelo de proveedor distinto del usado por la referencia, con prompt de revisión fijo y versionado.
 - **Juez mismo proveedor, prompt distinto** (opcional): separa "otro modelo" de "otra mirada".
-- **Jev** (opcional): entra sólo si se documenta qué es y cumple los criterios de entrada: acepta el paquete de D5 sin datos adicionales, devuelve hallazgos ubicables (D4), expone costo observable y declara retención y uso para entrenamiento. Si no, se registra el motivo y se descarta sin correr.
+- **Jev** (opcional): 09 también lo evalúa (para routing, `opsx-model-cache-pilots/design.md:33`) y ninguna ficha tiene su documentación. Se propone una sola tarea compartida con 09 que obtenga qué es, qué datos recibe y cómo se mide; las dos fichas la usan. Entra sólo si se documenta y cumple los criterios de entrada: acepta el paquete de D5 sin datos adicionales, devuelve hallazgos ubicables (D4), expone costo observable y declara retención y uso para entrenamiento. Si no, se registra el motivo y se descarta sin correr.
 
 **Calibración.** Antes de la muestra, cada candidato corre sobre un conjunto propio de calibración (fuera de la muestra) para fijar prompt, modelo y esfuerzo según el protocolo de 02 y lo que mida 09. Nada de la calibración se reutiliza en la muestra.
 
@@ -182,3 +182,12 @@ Decision: no (no UI) — 2026-11-10.
 | Retención y entrenamiento separados | D5; requisito de proveedor |
 | 02 y 09 tienen rama; calibrar candidatos | Context, D6 |
 | Unidades de señal adicional y falsas alarmas; presupuesto por caso | D4 unidades, D7 |
+
+## Cambios por la auditoría complementaria del 10/11
+
+| Observación | Dónde se incorporó |
+|---|---|
+| Clases propias en el examen de datos | D5: lista única de 05 D14; requisito "Examen previo"; tarea 3.2 |
+| Dos definiciones de falso positivo (02 y 10) | D2 casos preparados desde la familia de revisión de 02; D4 regla de emparejamiento de 02; tarea 1.2 |
+| Cobertura de 08 implícita en la referencia | D1 tabla; tarea 2.1 |
+| Jev sin dueño en 09 y 10 | D6; tarea 0.2 compartida con 09 |

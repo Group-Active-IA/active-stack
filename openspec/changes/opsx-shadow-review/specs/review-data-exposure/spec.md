@@ -17,12 +17,17 @@ El paquete que recibe el juez SHALL armarse con una lista de inclusión. En la p
 
 ### Requirement: Examen previo de todo el paquete
 
-Antes de cada envío, el paquete completo SHALL examinarse en busca de secretos, valores de variables de entorno, rutas del home y configuración de usuario, incluidos los diffs del repositorio público. Un positivo MUST cancelar el envío del caso.
+Antes de cada envío, el paquete completo SHALL examinarse con la lista única de patrones de valor sensibles definida por 05 y en busca de archivos de configuración de usuario, incluidos los diffs del repositorio público. El piloto MUST NOT usar una lista propia de patrones. Un positivo MUST cancelar el envío del caso.
 
 #### Scenario: Secreto sembrado en un diff público
 
 - **WHEN** un diff público del paquete contiene un secreto sembrado
 - **THEN** el examen lo detecta, el envío se cancela y el caso queda marcado para revisión manual
+
+#### Scenario: Patrón agregado a la lista de 05
+
+- **WHEN** 05 agrega un patrón a su lista de valores sensibles
+- **THEN** el examen previo del piloto lo aplica sin cambios en esta ficha
 
 ### Requirement: Datos privados nunca salen
 
