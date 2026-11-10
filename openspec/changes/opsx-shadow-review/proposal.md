@@ -1,0 +1,64 @@
+# Proposal: opsx-shadow-review
+
+> Change `opsx-shadow-review` · ficha 10 del roadmap · Responsable: Neyen · Agentes: Claude y Codex · Prioridad P3 · Gobernanza MEDIO
+> Base revisada: `1b4639b`. Depende de 08 (`opsx-native-controls`) y 09 (`opsx-model-cache-pilots`, sin rama al 10/11); toma como referencia el contrato de 06 (`opsx-verifiable-evidence`).
+> Esta ronda es solo `propose`: todas las tareas de implementación quedan pendientes. El piloto no modifica el instalador.
+
+## Why
+
+La revisión de un change hoy descansa en criterios escritos (specs, escenarios, recibos de 06, controles de 08) y en una persona. No sabemos si un juez externo —un modelo o servicio que revisa el mismo change sin participar del flujo— encuentra defectos que esa revisión deja pasar, cuántas falsas alarmas agrega ni cuánto cuesta. Incorporarlo sin medir tiene dos riesgos: pagar por ruido y sacar datos del entorno sin necesidad.
+
+### Evidencia
+
+- **No hay medición.** El informe ejecutivo (04/11/2026) sólo dice "juez externo solo en sombra y con criterio de salida" y "Un juez opcional en sombra puede evaluarse contra reglas", y lo califica como "un diseño de experimento razonable, sin prueba local de ahorro, precisión ni conveniencia de Jev". No define el criterio de salida, ni exposición de datos, ni falsos positivos o negativos, ni costo.
+- **Jev no está definido.** El informe lo nombra una vez sin descripción ni enlace. Esta propuesta no presupone qué es ni qué soporta.
+- **El único reporte del repo no sirve de referencia.** `internal/verify/report.go:38` marca `Ready = Failed == 0`; los `skipped` y `warning` no bloquean y un reporte sin checks queda listo. `internal/verify/scenario_test.go` sólo prueba salud de instalación. Una referencia de revisión tiene que salir de los requisitos y recibos de 06, no de `verify`.
+- **El repo es público** (`gh repo view Group-Active-IA/active-stack` → `PUBLIC`). Sus diffs ya están expuestos; lo sensible es lo que no está en el repo: salidas originales, configuración del usuario, memoria de Engram, rutas del home.
+- **Hay material para una muestra real.** `main` tiene 126 commits, 33 de ellos `fix`, y 25 changes archivados en `openspec/changes/archive/`: defectos que el flujo dejó pasar y se corrigieron después.
+- **El roadmap fija el límite.** Una integración permanente del juez requiere una decisión de arquitectura separada y el arnés de evaluación queda fuera del binario (`CHANGES.md`, Límites compartidos).
+
+## What Changes
+
+- **Piloto en sombra.** El juez revisa changes ya revisados por el flujo de referencia. Sus hallazgos se guardan sellados y no se muestran al coordinador, al auditor ni a la persona que acepta hasta que la decisión de aceptación está registrada.
+- **Muestra etiquetada.** Changes históricos con defecto conocido (fixes posteriores), defectos sembrados en fixtures (incluidos los casos de rechazo de 06) y changes limpios como control. Dos personas etiquetan de forma independiente.
+- **Revisión de referencia.** La revisión con criterios del flujo: requisitos y escenarios del change, recibos de 06 y resultados de controles de 08, más la persona que acepta.
+- **Métricas.** Por hallazgo emparejado con la etiqueta: verdaderos positivos, falsos positivos, falsos negativos; señal adicional (defectos que sólo el juez encontró); costo en tokens, dinero o cuota, latencia y tiempo humano de triage.
+- **Minimización de datos.** Clasificación de qué puede salir (diff y artefactos del repo público, recibos redactados según 06) y qué nunca (secretos, `.env`, salidas sin redactar, configuración del usuario, memoria, rutas del home). Paquete de revisión con huella antes y después de redactar.
+- **Candidatos.** Al menos un juez de base y Jev como candidato opcional, sólo si cumple criterios de entrada documentados.
+- **Criterio de salida.** Cerrar, repetir o descartar según umbrales acordados, con un informe de decisión. Los resultados no entran en la aceptación de ningún change durante el piloto.
+
+## Capabilities
+
+### New Capabilities
+
+- `shadow-review-pilot`: muestra etiquetada, revisión de referencia, ejecución en sombra con resultados sellados, métricas, candidatos y criterio de cierre.
+- `review-data-exposure`: clasificación de datos, paquete de revisión minimizado, redacción, huellas y condiciones del proveedor.
+
+### Modified Capabilities
+
+(ninguna)
+
+## Alcance
+
+- Diseño del piloto, de la muestra y del etiquetado.
+- Definición de la revisión de referencia a partir de 06 y 08.
+- Métricas, emparejamiento de hallazgos y contabilidad de costo con el protocolo de 02/09.
+- Política de datos que puede recibir el juez.
+- Criterios de entrada de candidatos, incluido Jev.
+- Criterio para cerrar, repetir o descartar.
+
+## Exclusiones
+
+- Integración permanente del juez, ledger firmado o runtime nuevo: decisión de arquitectura separada.
+- Cualquier cambio en `cmd/`, `internal/` o en la configuración que instala el binario.
+- Usar el veredicto del juez para aceptar o rechazar changes durante el piloto.
+- Routing de modelos con Jev (09): esta ficha evalúa sólo el caso de revisión.
+- Contrato de recibos (06) y controles nativos (08): se consumen.
+- Implementación y corridas: etapa posterior.
+
+## Impact
+
+- **Código del instalador**: ninguno. El arnés vive fuera del binario.
+- **Datos**: define qué sale del entorno; requiere acuerdo del grupo antes de la primera corrida.
+- **Gobernanza**: MEDIO por exposición de datos, no por riesgo sobre la configuración del usuario.
+- **Otras fichas**: consume requisitos y recibos de 06, la tabla de cobertura de 08 y la contabilidad y elección de modelos de 09.
