@@ -70,7 +70,7 @@ El agente SHALL registrar como llamada innecesaria toda relectura de un contenid
 
 ### Requirement: Lectura completa bajo condición declarada
 
-La lectura de un archivo completo SHALL estar justificada solo bajo una de estas cuatro condiciones: el archivo no supera el umbral declarado; la tarea va a reescribirlo entero; es el artefacto que la acción activa produce o edita; o una lectura acotada previa sobre ese archivo devolvió vacío. La lista MUST ser cerrada. El umbral SHALL expresarse en líneas. Una lectura completa sin condición aplicable SHALL quedar registrada como lectura no justificada.
+Leer un archivo completo SHALL estar justificado solo si: no supera el umbral; la tarea va a reescribirlo entero; es el artefacto de la acción activa; una lectura acotada previa devolvió vacío; o los rangos no alcanzan y el motivo queda declarado en el reporte. La lista MUST ser cerrada. El umbral SHALL expresarse en líneas, con 300 como valor inicial medido. Una lectura completa sin condición aplicable o sin motivo declarado SHALL quedar registrada como no justificada.
 
 #### Scenario: Archivo por debajo del umbral
 
@@ -92,9 +92,15 @@ La lectura de un archivo completo SHALL estar justificada solo bajo una de estas
 - **WHEN** una lectura acotada sobre ese archivo devolvió vacío y el agente lee el archivo completo
 - **THEN** la lectura completa se considera justificada
 
+#### Scenario: Excepción justificada porque los rangos no alcanzan
+
+- **WHEN** el agente lee por completo un archivo que supera el umbral porque ningún rango cubre lo que la tarea necesita
+- **THEN** la lectura se considera justificada si el reporte declara la ruta y el motivo
+- **AND** sin motivo declarado queda registrada como no justificada
+
 #### Scenario: Lectura completa sin condición aplicable
 
-- **WHEN** el agente lee por completo un archivo que supera el umbral y ninguna de las cuatro condiciones aplica
+- **WHEN** el agente lee por completo un archivo que supera el umbral y ninguna de las cinco condiciones aplica
 - **THEN** la lectura queda registrada como no justificada
 
 ### Requirement: Procedencia obligatoria en afirmaciones sobre el código

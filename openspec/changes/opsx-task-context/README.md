@@ -4,7 +4,7 @@
 Rama `propose/opsx-task-context` · base `1b4639b` · alcance de esta ronda: **solo propose**
 Depende de **03** y **04**. Habilita **07**. Hermana de **06**: ninguna depende de la otra.
 
-**Diez decisiones tomadas, pendientes de revisión del grupo**, en `design.md`, cada una con en qué
+**Doce decisiones tomadas, pendientes de revisión del grupo**, en `design.md`, cada una con en qué
 se apoya, qué fichas afecta y qué cambia si se rechaza. Todas están decididas acá; se comparten
 porque tocan alcance de otras fichas.
 
@@ -13,10 +13,10 @@ Ficha original: [CHANGES.md § 05](../../../CHANGES.md#change-05).
 | Archivo | Qué contesta |
 |---|---|
 | `proposal.md` | por qué hay que hacerlo, con la medición de partida |
-| `specs/` | qué tiene que hacer el sistema — 28 reglas con sus escenarios, en 5 capacidades |
-| `design.md` | cómo, y por qué así: 19 decisiones con su alternativa descartada, y los diez puntos para la revisión del grupo |
-| `tasks.md` | en qué orden y cómo se verifica cada paso — 62 tareas, todas pendientes |
-| `research-notes.md` | de dónde salió todo esto: las cuatro fuentes y los hallazgos |
+| `specs/` | qué tiene que hacer el sistema — 33 reglas con 89 escenarios, en 5 capacidades |
+| `design.md` | cómo, y por qué así: 21 decisiones con su alternativa descartada, y los doce puntos para la revisión del grupo |
+| `tasks.md` | en qué orden y cómo se verifica cada paso — 70 tareas, todas pendientes |
+| `research-notes.md` | de dónde salió todo esto: las cuatro fuentes, los hallazgos y el contraste con la documentación oficial de Claude Code y Codex |
 
 ## Reglas duras de esta ronda
 
@@ -64,6 +64,7 @@ Ficha original: [CHANGES.md § 05](../../../CHANGES.md#change-05).
 | Los requisitos y escenarios verificables | `specs/` |
 | Qué hay que hacer y en qué orden | `tasks.md` |
 | El análisis de las cuatro fuentes y los hallazgos con su evidencia | `research-notes.md` |
+| Qué dice la documentación oficial de los clientes y qué cambió por eso | `research-notes.md` § 6 |
 | Qué hay que enviar al grupo y qué se le pide a cada ficha | `tasks.md` — *Workflow follow-up* |
 | El mecanismo que esta ficha quiere seleccionar por acción | `internal/harness/config/compose.go` |
 | Dónde se congela la composición hoy (Claude y Codex) | `internal/harness/config/install.go:70` (rama `default`) |

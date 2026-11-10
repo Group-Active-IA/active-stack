@@ -8,7 +8,7 @@ Define qué skills e integraciones opcionales queda habilitado usar en cada clas
 
 ### Requirement: Herramientas habilitadas por clase de tarea
 
-El catálogo SHALL declarar, para cada clase de tarea, qué herramientas base corresponden y qué skills e integraciones opcionales quedan habilitadas, conforme a la tabla de `design.md` — D18. Las clases de tarea SHALL ser las acciones del ciclo OPSX: explore, propose, apply, verify y archive. Una integración que no figure como habilitada para la clase de tarea activa MUST NOT presentarse como disponible en esa tarea.
+El catálogo SHALL declarar, para cada clase de tarea, qué herramientas base corresponden y qué skills e integraciones opcionales quedan habilitadas, conforme a la tabla de `design.md` — D18. Las clases de tarea SHALL ser las acciones del ciclo OPSX: explore, propose, apply, verify y archive. Una integración que no figure como habilitada para la clase de tarea activa MUST NOT presentarse como disponible en esa tarea, al nivel de control que el catálogo declare para el cliente activo.
 
 #### Scenario: Acción explore
 
@@ -25,6 +25,32 @@ El catálogo SHALL declarar, para cada clase de tarea, qué herramientas base co
 
 - **WHEN** el harness `design-mockups` no está activo en el proyecto
 - **THEN** las integraciones de diseño no se ofrecen en ninguna acción
+
+### Requirement: Nivel de control declarado por cliente
+
+El catálogo SHALL declarar, por integración opcional y por cliente, en qué nivel queda no habilitada: (a) una instrucción pide no usarla; (b) su descripción no se carga en el contexto; (c) el cliente no permite invocarla, con los mecanismos que documenta cada cliente (`design.md` — D18). El nivel (a) MUST NOT presentarse como aislamiento, y un mecanismo que solo preaprueba, como `allowed-tools`, MUST NOT contarse como (c). Lo que un cliente no alcance por acción MUST declararse como límite.
+
+#### Scenario: MCP por acción en Codex
+
+- **WHEN** la tabla deshabilita una integración MCP para una acción y el cliente activo es Codex
+- **THEN** el catálogo declara el nivel (a) para ese control por acción
+- **AND** el límite queda registrado: el archivo de un rol de Codex no puede fijar `mcp_servers`
+
+#### Scenario: Acción que corre en un subagente de Claude con lista propia
+
+- **WHEN** la acción corre en un subagente de Claude cuyo archivo declara `tools` o `mcpServers` sin la integración
+- **THEN** el catálogo declara el nivel (c) para esa acción en Claude
+
+#### Scenario: Preaprobación que no restringe
+
+- **WHEN** una skill de Claude declara `allowed-tools`
+- **THEN** esa declaración no se cuenta como nivel (c) para ninguna integración
+
+#### Scenario: Uso de una integración no habilitada al nivel (a)
+
+- **WHEN** el agente invoca una integración que la acción activa no habilita y el control declarado es solo (a)
+- **THEN** la invocación queda registrada como uso fuera de clase
+- **AND** el reporte no presenta la integración como bloqueada
 
 ### Requirement: Integración opcional desactivada por defecto
 

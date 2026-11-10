@@ -199,3 +199,21 @@ tamaño. **Propuesta para el grupo:** dueño = 03+04 en conjunto; las demás esc
 | D5 (criterios de ejecución en ronda de propose) | la frase de alcance de la 02 aplicada al encabezado de `tasks.md` |
 | Guía de estilo de skills huérfana (§3.2) | inventario de cuerpos de skill en tareas 1.5–1.7; el tope queda fuera de alcance (`design.md` — D12) |
 | La 02 mide tamaño de texto, no consumo | todos los números de esta ficha etiquetados como **tamaño de texto** |
+
+## 6. Contraste con la documentación oficial de los clientes (10/11/2026)
+
+Fuente: documentación de Claude Code (`https://code.claude.com/docs/en/`) y de Codex (`https://learn.chatgpt.com/docs/`), leída el 10/11/2026 sobre `6a45233`. Algunas páginas superan el límite de lectura y se leyeron en parte (sub-agents, skills, env-vars, mcp, config-reference); lo que cae fuera de lo leído queda **no verificable**. El código fuente de Codex y el issue `openai/codex#23454` son evidencia, no documentación, y se marcan así.
+
+| Hallazgo | Fuente | Qué cambió en el propose |
+|---|---|---|
+| El cliente recorta la salida antes de que el modelo la vea: Claude, un resultado fallido de más de ~10.000 caracteres llega como cabeza y cola *"with no file path"*; Codex recorta el medio | https://code.claude.com/docs/en/tools-reference; https://learn.chatgpt.com/docs/config-file/config-reference (`tool_output_token_limit`) | captura a archivo antes de leer (D8); umbral de salidas en dos unidades, aparte del de lectura (D3, D19); resumen "parcial — sin verificar" sin captura; tareas 2.15–2.17 y 2.19 |
+| Los clientes guardan su propia copia de la salida | https://code.claude.com/docs/en/tools-reference | la garantía de redacción se acota a la copia de Active Stack; el crudo de la captura se borra (D9) |
+| Stderr llega mezclado con stdout en Claude; en Codex no está documentado | https://code.claude.com/docs/en/monitoring-usage | fixture de fallo solo por stderr, corrido en los dos clientes (D4, tarea 2.15) |
+| Los tres niveles de "no habilitada" existen, con mecanismos distintos por cliente; en Codex el archivo de un rol no fija `mcp_servers`; `allowed-tools` no restringe | https://code.claude.com/docs/en/permissions; https://code.claude.com/docs/en/skills; https://learn.chatgpt.com/docs/agent-configuration/subagents | nivel de control declarado por cliente (D18, tarea 5.9) |
+| La invocación explícita difiere: Claude `/nombre`; Codex `$nombre` en CLI e IDE, `@` en ChatGPT | https://code.claude.com/docs/en/skills; https://learn.chatgpt.com/docs/build-skills | referencia de invocación por cliente en el núcleo (D21, tarea 3.11) |
+| Explore y Plan no cargan `CLAUDE.md`; tampoco un agente con `omitClaudeMd` | https://code.claude.com/docs/en/sub-agents | las reglas obligatorias viajan en el encargo de esos especialistas (D21, tarea 3.7) |
+| Codex tiene un piso nativo de lectura (`permissions.<name>.filesystem` con `"deny"`) | https://learn.chatgpt.com/docs/config-file/config-reference | se cita como mecanismo concreto en el pedido a 01/08 (D14) |
+| Codex no documenta subagentes en la nube | https://learn.chatgpt.com/docs/agent-configuration/subagents | `verify` queda detenida en una superficie sin subagentes, como límite declarado (D19) |
+| Una lectura de Claude admite hasta 25.000 tokens y 256 KB; Read y Grep aceptan rangos | https://code.claude.com/docs/en/tools-reference | el umbral de 300 líneas de lectura se mantiene como valor inicial medido; se agrega la excepción justificada (D11, D15) |
+
+**Queda no verificable con la documentación** (y por eso se declara, no se decide): cómo combina Codex stdout y stderr; el valor por defecto de `tool_output_token_limit`; dónde persiste Codex las salidas; si un subagente de Codex lee `AGENTS.md`; si `allow_implicit_invocation: false` saca la descripción del contexto; el estado beta o estable de los perfiles de permisos de Codex; cuánto contexto pesa una herramienta MCP diferida en Claude.
