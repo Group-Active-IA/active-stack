@@ -2,19 +2,20 @@
 
 ## Purpose
 
-Define cómo el agente informa lo que encontró: el hallazgo y su procedencia primero, el relato que llevó hasta él solo si se lo piden. A diferencia de la salida de un comando, una respuesta del agente no tiene un original guardado al que referirse, así que el detalle no se conserva: se produce a pedido.
+Define cómo el agente informa lo que encontró: el resultado y su procedencia primero, el relato que llevó hasta él solo si se lo piden. A diferencia de la salida de un comando, una respuesta del agente no tiene un original guardado al que referirse, así que el detalle se produce a pedido. Lo que se evalúa es conducta del modelo: se verifica con una rúbrica aplicada sobre fixtures, corridos con el arnés fuera del binario, y no con tests de Go (`design.md` — D16 y D17).
 
 ## ADDED Requirements
 
-### Requirement: El hallazgo va primero, con su procedencia
+### Requirement: El resultado va en la primera línea, con su procedencia
 
-Cuando el agente informa un hallazgo, lo primero que entrega SHALL ser el hallazgo y su procedencia. El recorrido que llevó hasta él MUST NOT precederlo.
+Cuando el agente informa un hallazgo, la primera línea de su reporte SHALL decir el resultado con su procedencia, y la segunda SHALL decir la consecuencia o el próximo paso. El recorrido que llevó hasta el resultado MUST NOT precederlo.
 
 #### Scenario: Hallazgo en el código
 
 - **WHEN** el agente encuentra un parámetro inválido en una llamada
-- **THEN** informa primero el hallazgo con su ruta y su línea
-- **AND** no precede el hallazgo con la explicación de cómo llegó hasta él
+- **THEN** la primera línea del reporte dice el hallazgo con su ruta y su línea
+- **AND** la segunda dice la consecuencia o el próximo paso
+- **AND** ninguna línea anterior explica cómo llegó hasta él
 
 #### Scenario: Varios hallazgos
 
@@ -24,13 +25,13 @@ Cuando el agente informa un hallazgo, lo primero que entrega SHALL ser el hallaz
 
 ### Requirement: El detalle se produce a pedido
 
-El desarrollo de un hallazgo SHALL producirse cuando se lo pide, no por defecto. El agente MUST NOT conservar un desarrollo previo para entregarlo después: a diferencia de la salida de un comando, una respuesta no tiene original guardado.
+El desarrollo de un hallazgo SHALL producirse cuando se lo pide, no por defecto. La respuesta inicial MUST NOT repetir el desarrollo de pasos anteriores de la misma tarea.
 
 #### Scenario: Respuesta inicial
 
 - **WHEN** el agente informa un hallazgo sin que se le pida el desarrollo
-- **THEN** la respuesta contiene el hallazgo, su procedencia y la consecuencia
-- **AND** no contiene el recorrido completo que llevó a encontrarlo
+- **THEN** la respuesta contiene el resultado, su procedencia y la consecuencia
+- **AND** no repite el recorrido de los pasos que llevaron a encontrarlo
 
 #### Scenario: Desarrollo pedido después
 
@@ -54,7 +55,7 @@ Cuando el contenido ya está en un artefacto del proyecto, la respuesta SHALL se
 
 ### Requirement: Sin hallazgo, no hay informe
 
-Cuando el agente no encuentra nada, SHALL decirlo en una línea. El agente MUST NOT narrar la búsqueda que no encontró nada.
+Cuando el agente no encuentra nada, SHALL decirlo en una línea que nombre qué revisó. El agente MUST NOT narrar la búsqueda que no encontró nada.
 
 #### Scenario: Búsqueda sin resultado
 

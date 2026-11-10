@@ -1,9 +1,9 @@
 # Notas de investigación — ronda de propose, ficha 05
 
-> Análisis previo al propose, hecho el 2026-11-05/06 sobre `97d7f6c`. La rama ya está al día
-> con `1b4639b`, que publicó el roadmap en `CHANGES.md` sin tocar código ni assets.
-> No es un artefacto de OpenSpec: es el registro de por qué la propuesta tiene la forma
-> que tiene, y qué hallazgos hay que llevar al grupo. Referenciado desde `CLAUDE.md` §7.12.
+> Análisis previo al propose, hecho el 2026-11-05/06 sobre `97d7f6c`. El roadmap se publicó en
+> `CHANGES.md` en `bd63543` y la rama está al día con `1b4639b`; ninguno de los dos tocó código ni
+> assets. No es un artefacto de OpenSpec: es el registro de por qué la propuesta tiene la forma
+> que tiene, y qué hallazgos hay que llevar al grupo. Referenciado desde el `README.md` de este change.
 
 ## 1. Las cuatro fuentes y cómo se encadenan
 
@@ -65,7 +65,8 @@ respuestas guionadas. Corre en CI sin API keys. La ficha 08 necesita exactamente
 
 La **guía de estilo de skills con presupuesto** (estructura obligatoria activación / reglas
 duras / gates / pasos / contrato de salida; cuerpo 180–450 tokens, máx. 1.000) cae de lleno en
-el alcance de la ficha 05 y es la adopción huérfana que esta ficha puede reclamar. Ver Q5.
+el alcance de la ficha 05. Esta ficha reclama solo la medición: publica el tamaño de cada cuerpo
+de skill y declara el tope fuera de su alcance (`design.md` — D12).
 
 ### 3.3 El alcance de agentes cambió y se llevó la tesis del producto
 
@@ -115,7 +116,8 @@ diseño del kernel de reglas negativas se apoya en esa cita.
 Los problemas están escritos como fallos observables, no como soluciones disfrazadas (la 08:
 *"que un hook esté instalado no prueba que se ejecute"*). La separación *qué planificás solo* /
 *qué se cierra en grupo* existe en las 10. Nada se adopta sin medición (*"el ahorro queda sujeto
-a medición"*). *Alcance del instalador* corta el scope creep de antemano. El P0 es un hecho
+a medición"*). Los *Límites compartidos* (`CHANGES.md:49`) cortan el scope creep de antemano: un runtime nuevo
+requiere una decisión de arquitectura separada y el arnés de evaluación queda fuera del binario. El P0 es un hecho
 reproducido y versionado. El nivel de riesgo tiene consecuencia procedimental.
 
 ### 4.2 Defectos estructurales, por daño
@@ -191,9 +193,9 @@ tamaño. **Propuesta para el grupo:** dueño = 03+04 en conjunto; las demás esc
 
 | Hallazgo | Qué cambió en el propose |
 |---|---|
-| *Alcance del instalador* veda comandos de runtime + obs. #9 del brief | el resumen de salida se especifica como **contrato de formato**, no como subcomando; Q1 abierta |
+| `CHANGES.md:49` deja un runtime nuevo sujeto a decisión de arquitectura separada + obs. #9 del brief | el resumen de salida se especifica como **contrato de formato**, no como subcomando; el productor es el agente bajo instrucción (`design.md` — D8) y quién ejecuta cada regla lo fija D17 |
 | 1.500 tokens / 40 líneas = presupuestos no validados (brief) | la frontera núcleo/módulo se define **por consecuencia** (D2 de `design.md`), no por tamaño |
 | `sdd-orchestrator.md` sin dueño, 6 fichas | esta ficha escribe **requisitos** sobre el archivo, no contenido |
 | D5 (criterios de ejecución en ronda de propose) | la frase de alcance de la 02 aplicada al encabezado de `tasks.md` |
-| Guía de estilo de skills huérfana (§3.2) | inventario de cuerpos de skill en tareas 1.5–1.7; el tope como Q5 |
+| Guía de estilo de skills huérfana (§3.2) | inventario de cuerpos de skill en tareas 1.5–1.7; el tope queda fuera de alcance (`design.md` — D12) |
 | La 02 mide tamaño de texto, no consumo | todos los números de esta ficha etiquetados como **tamaño de texto** |

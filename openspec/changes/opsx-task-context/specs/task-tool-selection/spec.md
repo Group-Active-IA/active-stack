@@ -2,28 +2,33 @@
 
 ## Purpose
 
-Define qué skills e integraciones opcionales queda habilitado usar en cada clase de tarea, de modo que una integración que la tarea no necesita no cargue contexto ni amplíe la superficie disponible sin motivo.
+Define qué skills e integraciones opcionales queda habilitado usar en cada clase de tarea, de modo que una integración que la tarea no necesita no cargue contexto ni amplíe la superficie disponible sin motivo. La tabla de clase por herramienta está en `design.md` — D18 y se declara en el catálogo. En esta capacidad, "el sistema" es el agente siguiendo los módulos de instrucción más lo declarado en el catálogo, y "registrar" es declararlo en el reporte de la acción (`design.md` — D17).
 
 ## ADDED Requirements
 
-### Requirement: Herramientas habilitadas por clase de tarea (pendiente de grupo: eje de clases de tarea)
+### Requirement: Herramientas habilitadas por clase de tarea
 
-El sistema SHALL declarar, para cada clase de tarea, qué skills e integraciones quedan habilitadas. Las clases de tarea SHALL ser las acciones del ciclo OPSX: explore, propose, apply, verify y archive. Una integración que no figure como habilitada para la clase de tarea activa MUST NOT presentarse como disponible en esa tarea.
+El catálogo SHALL declarar, para cada clase de tarea, qué herramientas base corresponden y qué skills e integraciones opcionales quedan habilitadas, conforme a la tabla de `design.md` — D18. Las clases de tarea SHALL ser las acciones del ciclo OPSX: explore, propose, apply, verify y archive. Una integración que no figure como habilitada para la clase de tarea activa MUST NOT presentarse como disponible en esa tarea.
 
-#### Scenario: Tarea de exploración
+#### Scenario: Acción explore
 
-- **WHEN** la clase de tarea activa es de exploración de código
-- **THEN** las herramientas de lectura declaradas para esa clase quedan disponibles
-- **AND** las integraciones no declaradas para esa clase no se ofrecen
+- **WHEN** la acción activa es `explore`
+- **THEN** quedan disponibles la lectura dirigida, la búsqueda y Context7
+- **AND** Playwright y las skills de dominio no se ofrecen
 
-#### Scenario: Tarea sin componente visual
+#### Scenario: Acción que no toca UI
 
-- **WHEN** la clase de tarea activa no declara trabajo visual
-- **THEN** las integraciones de navegador y de captura no se ofrecen en esa tarea
+- **WHEN** la acción activa es `apply` o `verify` y no toca UI
+- **THEN** Playwright no se ofrece en esa tarea
+
+#### Scenario: Integraciones de diseño sin el harness de mockups
+
+- **WHEN** el harness `design-mockups` no está activo en el proyecto
+- **THEN** las integraciones de diseño no se ofrecen en ninguna acción
 
 ### Requirement: Integración opcional desactivada por defecto
 
-Toda integración declarada como opcional SHALL estar desactivada mientras no se la habilite explícitamente. El sistema MUST NOT activar una integración opcional por el solo hecho de estar instalada.
+Toda integración declarada como opcional SHALL estar desactivada mientras no se la habilite para la clase de tarea activa. El sistema MUST NOT activar una integración opcional por el solo hecho de estar instalada.
 
 #### Scenario: Integración opcional instalada y no habilitada
 
@@ -46,9 +51,9 @@ Cuando una integración habilitada para la clase de tarea no está disponible, e
 - **THEN** el sistema informa el límite
 - **AND** no presenta el resultado parcial como completo
 
-### Requirement: Ninguna invocación cuyo resultado ya está disponible
+### Requirement: Invocación repetida registrada
 
-El sistema SHALL evitar invocar una herramienta o integración cuando su resultado para esa misma entrada ya está disponible en la sesión. Una invocación repetida sin que haya cambiado el estado que observa MUST quedar registrada como llamada innecesaria.
+El agente SHALL registrar como llamada innecesaria toda invocación de una herramienta o integración con la misma entrada cuyo resultado ya está disponible en la sesión, sin que haya cambiado el estado que observa. La invocación repetida MUST NOT bloquearse, salvo el sondeo de una integración ya informada como no disponible, que MUST NOT repetirse en la misma tarea.
 
 #### Scenario: Integración consultada dos veces por lo mismo
 
@@ -63,7 +68,7 @@ El sistema SHALL evitar invocar una herramienta o integración cuando su resulta
 
 ### Requirement: Comparabilidad con y sin cada integración opcional
 
-El sistema SHALL permitir ejecutar una misma clase de tarea con y sin cada integración opcional, conservando la misma definición de aceptación. La diferencia observada MUST poder atribuirse a esa integración y no a un cambio de criterio.
+Una misma clase de tarea SHALL poder ejecutarse con y sin cada integración opcional, conservando la misma definición de aceptación. La diferencia observada MUST poder atribuirse a esa integración y no a un cambio de criterio.
 
 #### Scenario: Misma tarea con y sin una integración opcional
 

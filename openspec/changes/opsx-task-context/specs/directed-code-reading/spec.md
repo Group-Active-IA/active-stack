@@ -2,35 +2,40 @@
 
 ## Purpose
 
-Define cómo el agente lee código cuando necesita orientarse, acotando la lectura a la ruta, el rango o el símbolo que la tarea requiere, y exigiendo que toda afirmación sobre el código indique de dónde salió.
+Define cómo el agente lee código cuando necesita orientarse, acotando la lectura a la ruta, el rango o el símbolo que la tarea requiere en los archivos que superan el umbral, y exigiendo que toda afirmación sobre el código indique de dónde salió. En esta capacidad, "el sistema" es el agente siguiendo los módulos de instrucción más lo declarado en el catálogo, y "registrar" es declararlo en el reporte de la acción (`design.md` — D17).
 
 ## ADDED Requirements
 
-### Requirement: Lectura acotada por defecto
+### Requirement: Lectura acotada en archivos que superan el umbral
 
-Cuando el agente necesita conocer una parte del código, el sistema SHALL ofrecer lectura acotada por ruta, por rango de líneas o por símbolo. La lectura acotada MUST ser el comportamiento esperado para orientarse dentro de un archivo cuyo contenido no se conoce todavía. Una lectura por símbolo SHALL devolver el símbolo completo —de su primera a su última línea—, la declaración que lo contiene cuando esté anidado, y su procedencia; MUST NOT devolver más que eso.
+Un archivo que no supera el umbral declarado en el catálogo (300 líneas) SHALL leerse completo. Un archivo que lo supera SHALL leerse por ruta, por rango de líneas o por símbolo, salvo que aplique una de las condiciones de lectura completa. Una lectura por símbolo SHALL devolver el símbolo completo —de su primera a su última línea—, la firma o encabezado de la declaración que lo contiene cuando esté anidado, y su procedencia; MUST NOT devolver más que eso.
+
+#### Scenario: Archivo que no supera el umbral
+
+- **WHEN** el agente necesita conocer una parte de un archivo de 300 líneas o menos
+- **THEN** lo lee completo
 
 #### Scenario: Orientación dentro de un archivo extenso
 
-- **WHEN** el agente necesita ubicar una función dentro de un archivo que excede el umbral declarado
+- **WHEN** el agente necesita ubicar una función dentro de un archivo que supera el umbral declarado
 - **THEN** la lectura devuelve el símbolo completo, de su primera a su última línea, con su procedencia
 - **AND** no devuelve el archivo completo ni los símbolos vecinos
 
 #### Scenario: Símbolo anidado
 
 - **WHEN** el símbolo pedido está dentro de otra declaración
-- **THEN** la lectura devuelve el símbolo y la declaración que lo contiene
+- **THEN** la lectura devuelve el símbolo y la firma o encabezado de la declaración que lo contiene
 - **AND** no devuelve el resto del cuerpo de esa declaración
 
 #### Scenario: Búsqueda de usos de un símbolo
 
 - **WHEN** el agente necesita saber dónde se usa un símbolo
-- **THEN** la lectura devuelve las coincidencias con su ruta y su línea
+- **THEN** la búsqueda devuelve las coincidencias con su ruta y su línea
 - **AND** no requiere leer cada archivo que las contiene
 
 ### Requirement: Orientación en el repositorio sin lectura exhaustiva
 
-Cuando el agente necesita ubicar dónde vive una capacidad y no sabe todavía en qué archivos está, el sistema SHALL ofrecer una orientación acotada sobre el repositorio. Cada ruta candidata MUST venir con su tipo de coincidencia —definición, referencia o texto— y su cantidad. El agente MUST NOT recorrer el repositorio archivo por archivo para orientarse.
+Cuando el agente necesita ubicar dónde vive una capacidad y no sabe todavía en qué archivos está, SHALL orientarse con una búsqueda acotada sobre el repositorio. Cada ruta candidata MUST venir con su tipo de coincidencia —definición, referencia o texto— y su cantidad. El agente MUST NOT recorrer el repositorio archivo por archivo para orientarse.
 
 #### Scenario: Ubicar dónde vive una capacidad
 
@@ -49,9 +54,9 @@ Cuando el agente necesita ubicar dónde vive una capacidad y no sabe todavía en
 - **WHEN** el agente lee el contenido de archivos del repositorio uno por uno solo para orientarse
 - **THEN** ese recorrido queda registrado como lectura no justificada
 
-### Requirement: Ninguna relectura de contenido ya disponible
+### Requirement: Relectura de contenido ya disponible registrada
 
-El sistema SHALL evitar volver a leer un contenido que ya está disponible en la sesión. Una relectura del mismo archivo y el mismo rango, sin que haya mediado una escritura sobre ese archivo, MUST quedar registrada como llamada innecesaria.
+El agente SHALL registrar como llamada innecesaria toda relectura de un contenido que ya está disponible en la sesión: el mismo archivo y el mismo rango, sin que haya mediado una escritura sobre ese archivo. La relectura MUST NOT bloquearse.
 
 #### Scenario: Misma lectura repetida sin cambios intermedios
 
@@ -65,17 +70,22 @@ El sistema SHALL evitar volver a leer un contenido que ya está disponible en la
 
 ### Requirement: Lectura completa bajo condición declarada
 
-El sistema SHALL permitir la lectura de un archivo completo solo bajo una de estas cuatro condiciones: el archivo está por debajo del umbral declarado; la tarea va a reescribirlo entero; es el artefacto que la acción activa produce o edita; o una lectura acotada previa sobre ese archivo devolvió vacío. La lista MUST ser cerrada. El umbral SHALL expresarse en líneas. Una lectura completa sin condición aplicable SHALL quedar registrada como lectura no justificada.
+La lectura de un archivo completo SHALL estar justificada solo bajo una de estas cuatro condiciones: el archivo no supera el umbral declarado; la tarea va a reescribirlo entero; es el artefacto que la acción activa produce o edita; o una lectura acotada previa sobre ese archivo devolvió vacío. La lista MUST ser cerrada. El umbral SHALL expresarse en líneas. Una lectura completa sin condición aplicable SHALL quedar registrada como lectura no justificada.
 
 #### Scenario: Archivo por debajo del umbral
 
-- **WHEN** el archivo está por debajo del umbral declarado para lectura completa
+- **WHEN** el archivo no supera el umbral declarado para lectura completa
 - **THEN** la lectura completa se considera justificada
 
 #### Scenario: Archivo que la tarea va a reescribir entero
 
 - **WHEN** la tarea declara que va a reescribir el archivo completo
-- **THEN** la lectura completa se considera justificada aunque el archivo exceda el umbral
+- **THEN** la lectura completa se considera justificada aunque el archivo supere el umbral
+
+#### Scenario: Artefacto que la acción activa produce o edita
+
+- **WHEN** el archivo supera el umbral y es el artefacto que la acción activa produce o edita
+- **THEN** la lectura completa se considera justificada
 
 #### Scenario: Lectura acotada previa sin resultado
 
@@ -84,7 +94,7 @@ El sistema SHALL permitir la lectura de un archivo completo solo bajo una de est
 
 #### Scenario: Lectura completa sin condición aplicable
 
-- **WHEN** el agente lee por completo un archivo que excede el umbral y ninguna de las cuatro condiciones aplica
+- **WHEN** el agente lee por completo un archivo que supera el umbral y ninguna de las cuatro condiciones aplica
 - **THEN** la lectura queda registrada como no justificada
 
 ### Requirement: Procedencia obligatoria en afirmaciones sobre el código
