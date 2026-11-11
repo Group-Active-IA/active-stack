@@ -65,10 +65,15 @@ func TestMatch_MaximumMatchingStillOneToOne(t *testing.T) {
 	}
 }
 
-// F7 (M_emptymech): mecanismo vacio en clave y hallazgo no empareja.
+// F7 (M_emptymech), adaptado en la tanda 2 por DEUDA 6: un mecanismo vacio en
+// la clave ya no se acepta (error); un hallazgo con mecanismo en blanco sigue
+// sin emparejar.
 func TestMatch_EmptyMechanismOnBothSidesDoesNotMatch(t *testing.T) {
-	k := []Defect{{ID: "D", File: "a.go", StartLine: 1, EndLine: 5, Mechanism: ""}}
-	r, err := Match(k, []Finding{{ID: "F", File: "a.go", StartLine: 1, EndLine: 5, Mechanism: "  ", Disposition: DispositionRejected}})
+	blank := []Finding{{ID: "F", File: "a.go", StartLine: 1, EndLine: 5, Mechanism: "  ", Disposition: DispositionRejected}}
+	if _, err := Match([]Defect{{ID: "D", File: "a.go", StartLine: 1, EndLine: 5, Mechanism: ""}}, blank); err == nil {
+		t.Fatal("clave con mecanismo vacio: err = nil, want error (DEUDA 6)")
+	}
+	r, err := Match([]Defect{{ID: "D", File: "a.go", StartLine: 1, EndLine: 5, Mechanism: "m"}}, blank)
 	if err != nil {
 		t.Fatal(err)
 	}

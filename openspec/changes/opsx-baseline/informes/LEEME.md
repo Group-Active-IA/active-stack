@@ -9,13 +9,13 @@ Change 02 · Responsable: Giuliano · Rama: `propose/opsx-baseline` (apply en la
 | Campo | Valor |
 |---|---|
 | Fase | apply |
-| Rol activo | ninguno (tanda 1 cerrada con APROBADO del auditor) |
-| Intento | 3 de 3 (corrección de verify-2-breaker: R1 + huecos N_modeTrim, N_omOrder). Autorizado por el responsable 2026-11-11 |
-| Revisión / diff | partida `43eeb7f` + diff sin commitear: `eval/baseline/` (11 archivos, 1611 líneas con README; hashes en verify-1-auditor.md), tasks.md 1.1/1.4, design.md (nota OTEL_LOG_LEVEL) |
-| Check compartido | `go test -count=1 ./...` 29 paquetes ok (constructor apply-3, 11:09–11:10); `go test -v ./eval/baseline/...` 100 ejecuciones ok (auditor, 11:15:50); gofmt/vet limpios; validate --strict válido (11:16:04) |
-| Alcance de esta tanda | tareas 1.1 y 1.4 (lógica pura, datos sintéticos) |
+| Rol activo | ninguno (tanda 3 construida y verificada por conformidad) |
+| Intento | tanda 3, intento 1 |
+| Revisión / diff | base `5dcfc68` (tanda 1) + tanda 2 sin commitear (eval/baseline/fixture/, fixtures/ 41 archivos, review DEUDA 6), hashes en apply-t2-1-constructor.md (load_test.go real `c5b635cc`) |
+| Check compartido | tanda 2: `go test ./...` 30 paquetes ok (14:31–14:34); breaker 146 ejecuciones ok; auditor 107 PASS review+manifest y fixture enfocado ok |
+| Alcance de esta tanda | tanda 3: 2.1, 2.4, 2.5 (parte A) y 2.6, 2.7, 3.1 (parte B), un solo breaker y auditor |
 | Bloqueos | Codex CLI no instalado en esta máquina: 1.2, 2.2, 2.3 y 3.x necesitan clientes reales y quedan para otra tanda. D1 árbitro, D3, D5, plazo D6: (TBD) |
-| Siguiente acción | decidir commit de la tanda 1 con el responsable; siguiente tanda: 1.3 (fixtures) o 1.2 (requiere clientes reales) |
+| Siguiente acción | constructor parte A, luego parte B, luego breaker y auditor de la tanda 3 |
 
 ## Despachos
 | # | Fase-intento | Rol | Ejecutor | Informe |
@@ -56,5 +56,43 @@ constructor: 1 (campos obligatorios del manifiesto), 3 (formato de versión), 5 
 - Para reglas de emparejamiento, test de propiedades contra fuerza bruta con permutación desde RED.
 Destino pendiente: no hay knowledge-base/ en el repo.
 
+Tanda 1 commiteada en `5dcfc68` (sin push).
+
+| 8 | apply-t2-1 | constructor | `role-constructor` (Claude, nuevo) | `informes/apply-t2-1-constructor.md` |
+
+apply-t2-1: 1.3 + DEUDA 6 hechas; `go test ./...` 30 paquetes ok 14:31–14:34; validate válido. Cambios ajenos en el árbol (move de codex-strict-compat a archive/, borrado de revision-2026-11-11.md restaurado por el orquestador) no son del constructor.
+
+| 9 | verify-t2-1 | breaker | `role-breaker` (Sonnet, nuevo; medida de consumo) | `informes/verify-t2-1-breaker.md` |
+
+verify-t2-1 breaker: sin ALTA/MEDIA; F1–F3 BAJA a DEUDA (directorio vacío ignorado por TreeHash; fragmento de reproducción trivial; comando de huella del README en Git Bash). 146 ejecuciones de tests.
+
+| 10 | verify-t2-1 | auditor | `role-auditor` (Opus) | `informes/verify-t2-1-auditor.md` |
+
+auditor tanda 2: **APROBADO** (`informes/verify-t2-1-auditor.md`, transcripto literal). DEUDA 1: ratificar fixtures sintéticos en 3 familias frente a D1 (responsable de 02). DEUDA 2–3, 6: constructor en 2.1 (directorios vacíos/symlinks/guarda de rutas, `--text` en README, duración). DEUDA 7: R3 estricto con la rúbrica de 10.
+
+Aclaración DEUDA 4 (orquestador): la regla BAJA→DEUDA fue autorizada por el responsable el 2026-11-11 antes de despachar el breaker de la tanda 2; el constructor de la tanda 2 ya corría, pero la ronda de breaker y la auditoría se rigieron por la regla nueva.
+
+| 11 | apply-t3-A | constructor | `role-constructor` (Sonnet) | `informes/apply-t3-A-constructor.md` |
+
+apply-t3-A: 2.1, 2.4, 2.5 + DEUDA 2, F3 hechas; DEUDA 6 a medias (fixture ~104–111 s); `go test ./...` 33 paquetes ok 15:03–15:07. Las ediciones en design.md/proposal.md son del orquestador (D1 ratificado, D3, D5 con el responsable, 2026-11-11).
+
+| 12 | apply-t3-B | constructor | `role-constructor` (Sonnet) | `informes/apply-t3-B-constructor.md` |
+
+apply-t3-B: 2.6, 2.7, 3.1 + cancelación y pendiente_de_revisor; `go test ./...` ok 15:24–15:26. verify tanda 3: `informes/verify-t3-conformidad.md` (solo conformidad, por decisión del responsable).
+
 ## Informes faltantes
-Ninguno para la tanda 1. Tareas 1.2, 1.3 y grupos 2–4 sin empezar.
+Tanda 3: breaker y auditor no ejecutados por decisión del responsable (2026-11-11). Tandas 1 y 2: ninguno. Tanda 1: ninguno. Tareas 1.2, 1.3 y grupos 2–4 sin empezar.
+
+## Decisión del responsable · medidas de consumo (2026-11-11)
+Autorizado por Giuliano en la conversación ("aplica esas medidas"), vigente desde la tanda 3:
+1. **Tandas más grandes:** se agrupan varias tareas sintéticas por pasada de constructor → breaker → auditor (p.ej. 2.1 + 2.4 + 2.5).
+2. **Severidad BAJA → DEUDA:** un fallo reproducido de severidad BAJA no reabre ronda; se registra como DEUDA con responsable y se corrige en la tanda siguiente que toque ese archivo. ALTA y MEDIA siguen reabriendo ronda. El auditor sigue pudiendo bloquear.
+3. **Modelos:** constructor y breaker en Sonnet; auditor en Opus.
+4. **Contexto:** se recomienda retomar en sesión nueva desde este LEEME y los commits.
+La tanda 2 (1.3) ya estaba en curso con la configuración anterior.
+
+## Decisión del responsable · sin breaker (2026-11-11)
+Giuliano decidió en la conversación: "no uses el breaker". Desde la tanda 3 no se despacha el rol breaker; tras el constructor va directo el auditor, que recibe esta decisión y verifica por su cuenta (ataques propios incluidos). Consecuencia declarada: se pierde la ronda de ataque independiente previa a la auditoría; el informe verify-t3-breaker queda ausente por decisión humana, no por omisión. Tandas 1 y 2 conservan sus informes de breaker.
+
+## Decisión del responsable · solo apply y verify (2026-11-11)
+Giuliano: "contructor, verify y apply" / "no uses nada que se salga de eso". Desde la tanda 3 el flujo es apply (rol constructor) → verify (`/opsx:verify`). No se despachan breaker ni auditor. Consecuencia declarada: la tanda 3 no tiene veredicto APROBADO del auditor; el cierre de la tanda se apoya en la evidencia del constructor y en el resultado de `/opsx:verify`.

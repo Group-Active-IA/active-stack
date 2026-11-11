@@ -111,6 +111,14 @@ func Match(key []Defect, findings []Finding) (Result, error) {
 		if d.StartLine < 1 || d.EndLine < d.StartLine {
 			return Result{}, fmt.Errorf("clave: rango inválido %d-%d en el defecto %q", d.StartLine, d.EndLine, d.ID)
 		}
+		// DEUDA 6 (S2): un defecto sin archivo o sin mecanismo seria una
+		// omision garantizada.
+		if strings.TrimSpace(d.File) == "" {
+			return Result{}, fmt.Errorf("clave: archivo vacío en el defecto %q", d.ID)
+		}
+		if normMech(d.Mechanism) == "" {
+			return Result{}, fmt.Errorf("clave: mecanismo vacío en el defecto %q", d.ID)
+		}
 	}
 	fids := map[string]bool{}
 	for _, f := range findings {
@@ -123,6 +131,12 @@ func Match(key []Defect, findings []Finding) (Result, error) {
 		fids[f.ID] = true
 		if f.StartLine < 1 || f.EndLine < f.StartLine {
 			return Result{}, fmt.Errorf("rango inválido %d-%d en el hallazgo %q", f.StartLine, f.EndLine, f.ID)
+		}
+		// DEUDA 6 (S4): una disposicion desconocida es error, no pendiente.
+		switch f.Disposition {
+		case DispositionUndecided, DispositionRejected, DispositionRealDefect:
+		default:
+			return Result{}, fmt.Errorf("disposición desconocida %q en el hallazgo %q", f.Disposition, f.ID)
 		}
 	}
 

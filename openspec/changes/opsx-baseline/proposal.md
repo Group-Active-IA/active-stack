@@ -1,6 +1,6 @@
 # Proposal · 02 · Medición de referencia de OPSX
 
-**Estado** · Propuesta de Giuliano, revisada el 2026-11-11 con los acuerdos del grupo. Quedan pendientes el árbitro de D1, los valores de D3, D5 y el plazo de borrado de D6 ([registro de decisiones](design.md#registro-de-decisiones)).
+**Estado** · Propuesta de Giuliano, revisada el 2026-11-11 con los acuerdos del grupo. Quedan pendientes el árbitro de D1, los topes de dinero y cuota de D3, las cuentas de Codex y de API de D5 y el plazo de borrado de D6 ([registro de decisiones](design.md#registro-de-decisiones)).
 
 **Revisión de partida de la propuesta** · `1b4639b537a4d0c04dc8c25c0220732095a772d3`.
 

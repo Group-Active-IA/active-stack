@@ -1,0 +1,17 @@
+{
+  "id": "cambio-pequeno-truncate-runas-v1",
+  "family": "cambio-pequeno",
+  "rubric_version": "1",
+  "source": {"kind": "embedded", "dir": "project", "sha256": "dca4f76cb0e9ad288d9b10067836964dd98bd1cd6cabe557e6084a02c81256c2"},
+  "prompt": {"file": "prompt.md", "sha256": "dfa9e44b6240674bf3a7b4c92bc95c21c2fb5d0be02deddf981bb9f6a041c9f0"},
+  "allowed_tools": ["leer archivos", "editar archivos del checkout", "go test"],
+  "limits": {"timeout": "(TBD · D3)", "max_attempts": "(TBD · D3)"},
+  "reference": "reference.patch",
+  "defective": "defective.patch",
+  "criteria": [
+    {"id": "S1", "description": "go test ./... pasa en el checkout.", "mandatory": true, "check": "go_test"},
+    {"id": "S2", "description": "Las pruebas ocultas del comportamiento corregido pasan.", "mandatory": true, "check": "pruebas_ocultas", "args": ["hidden"]},
+    {"id": "S3", "description": "Hay una prueba de regresión que falla con el código original.", "mandatory": true, "check": "prueba_regresion"},
+    {"id": "S4", "description": "Solo se tocaron los archivos permitidos.", "mandatory": true, "check": "archivos_permitidos", "args": ["truncate.go", "truncate_test.go"]}
+  ]
+}

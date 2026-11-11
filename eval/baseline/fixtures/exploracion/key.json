@@ -1,0 +1,16 @@
+{
+  "entry": {"file": "internal/catalog/catalog.go", "symbol": "Load"},
+  "files": [
+    "internal/catalog/catalog.go",
+    "internal/catalog/harnesses.yaml",
+    "internal/model/harness.go",
+    "internal/model/starter.go"
+  ],
+  "effects": [
+    "Lee solo el YAML embebido con go:embed (harnesses.yaml); no toca disco ni red.",
+    "Parsea con yaml.v3 e infiere source.method = clone en skills que lo omiten.",
+    "Construye los índices por id de harnesses y starters.",
+    "Valida ids vacíos o duplicados, tipo, modos, source/external, depends_on, descripciones bilingües, starters y referencias de starter-only.",
+    "Ante un catálogo malformado devuelve error (falla ruidosa); no hay catálogo parcial."
+  ]
+}
