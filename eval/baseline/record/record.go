@@ -162,6 +162,10 @@ func redactValue(v any, parent string, cats *[]Category) any {
 	case map[string]any:
 		out := make(map[string]any, len(x))
 		for k, val := range x {
+			if _, redactions := RedactText(k); len(redactions) != 0 {
+				*cats = append(*cats, redactions...)
+				continue
+			}
 			if c, ok := keyCategory(k, parent); ok {
 				*cats = append(*cats, c)
 				out[k] = marker(c)

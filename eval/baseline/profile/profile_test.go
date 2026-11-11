@@ -231,6 +231,14 @@ func TestCompare_ObservedAgainstProfile(t *testing.T) {
 	if got := Compare(strict, manifest.Observed{Permissions: strict.Permissions}); got.Status != manifest.CellExecutable {
 		t.Errorf("Estricto con sus permisos: %+v, want ejecutable", got)
 	}
+	effective := strict.Permissions
+	effective.Mode = strings.Replace(effective.Mode, "on-request", "never", 1)
+	if effective.Mode == strict.Permissions.Mode {
+		t.Fatal("strict profile has no on-request policy")
+	}
+	if got := Compare(strict, manifest.Observed{Permissions: effective}); got.Status != manifest.CellIncompatible {
+		t.Errorf("Codex exec sin escalación: %+v, want incompatible", got)
+	}
 	// Opt-in de Codex.
 	if got := Compare(eq, manifest.Observed{Permissions: eq.Permissions, Settings: map[string]string{"otel.log_user_prompt": "true"}}); got.Status != manifest.CellIncompatible {
 		t.Errorf("log_user_prompt activo: %+v, want incompatible", got)

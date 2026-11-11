@@ -30,7 +30,12 @@ func cohort(id string, cl manifest.Client, ver string, ifc manifest.Interface, m
 func setup(cs ...manifest.Cohort) (manifest.Manifest, manifest.Plan) {
 	m := manifest.Manifest{ProtocolVersion: "1", Variant: "actual", Cohorts: cs}
 	var p manifest.Plan
-	for _, c := range cs {
+	for i, c := range cs {
+		if len(c.Tasks) == 0 {
+			for _, task := range []string{"t", "t1", "t2", "t3", "t4", "t5", "t6", "t7", "t8"} {
+				m.Cohorts[i].Tasks = append(m.Cohorts[i].Tasks, manifest.TaskWeight{TaskID: task, Weight: 1})
+			}
+		}
 		p.Executable = append(p.Executable, manifest.Planned{CohortID: c.ID, Interface: c.Cell.Interface, DeclaredInterface: c.Cell.Interface})
 	}
 	return m, p

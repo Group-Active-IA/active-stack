@@ -28,6 +28,7 @@ package summary
 import (
 	"fmt"
 	"math"
+	"slices"
 	"sort"
 	"strings"
 
@@ -135,6 +136,9 @@ func Compute(m manifest.Manifest, p manifest.Plan, runs []RunResult) (Report, er
 		}
 		if _, ok := exec[r.CohortID]; !ok {
 			return Report{}, fmt.Errorf("la cohorte %q no está en el plan ejecutable", r.CohortID)
+		}
+		if !slices.ContainsFunc(meta[r.CohortID].Tasks, func(task manifest.TaskWeight) bool { return task.TaskID == r.TaskID }) {
+			return Report{}, fmt.Errorf("la tarea %q no pertenece a la cohorte %q", r.TaskID, r.CohortID)
 		}
 		key := fmt.Sprintf("%s\x00%s\x00%d", r.CohortID, r.TaskID, r.Repetition)
 		if seen[key] {
