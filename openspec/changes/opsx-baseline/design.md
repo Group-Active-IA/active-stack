@@ -102,11 +102,12 @@ Regla de precedencia ante discrepancias entre fuentes del mismo cliente:
 
 Los ejemplos usan cifras ilustrativas en tokens lógicos de una corrida delegada con un worker.
 
-**Claude.** Eventos de OpenTelemetry por solicitud: principal 40.000 tokens; worker con `agent_id` propio, dos solicitudes de 12.000 y 8.000. El resultado del SDK informa 60.000. El cierre del worker informa `total_tokens` 8.000, que solo cubre su última solicitud.
+**Claude.** Eventos de OpenTelemetry por solicitud: principal 40.000 tokens; worker con `agent_id` propio, dos solicitudes de 12.000 y 8.000. En el resultado de `claude -p`/SDK, `modelUsage` (y `total_cost_usd`) incluye a los subagentes e informa 60.000; el campo `usage` del mismo resultado solo cubre al hilo principal e informa 40.000 ([seguimiento de costos](https://code.claude.com/docs/en/costs)). El cierre del worker informa `total_tokens` 8.000, que solo cubre su última solicitud.
 
 | Cálculo | Total | Error |
 |---|---|---|
-| Resultado del SDK + suma del worker | 80.000 | Doble conteo de 20.000 si el resultado ya incluye al worker |
+| `modelUsage` del resultado + suma del worker | 80.000 | Doble conteo de 20.000: `modelUsage` ya incluye al worker |
+| `usage` del resultado tomado como total | 40.000 | Subconteo de 20.000: `usage` excluye a los subagentes |
 | Principal + `total_tokens` del cierre | 48.000 | Subconteo de 12.000 |
 | Regla de precedencia | 60.000 | Principal 40.000, worker 20.000, sin atribuir 0 |
 

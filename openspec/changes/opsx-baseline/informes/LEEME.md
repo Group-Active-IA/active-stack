@@ -9,7 +9,7 @@ Change 02 · Responsable: Giuliano · Rama: `propose/opsx-baseline` (apply en la
 | Campo | Valor |
 |---|---|
 | Fase | apply |
-| Rol activo | ninguno (tanda 3 construida y verificada por conformidad) |
+| Rol activo | ninguno (tanda 4 construida y verificada por conformidad) |
 | Intento | tanda 3, intento 1 |
 | Revisión / diff | base `5dcfc68` (tanda 1) + tanda 2 sin commitear (eval/baseline/fixture/, fixtures/ 41 archivos, review DEUDA 6), hashes en apply-t2-1-constructor.md (load_test.go real `c5b635cc`) |
 | Check compartido | tanda 2: `go test ./...` 30 paquetes ok (14:31–14:34); breaker 146 ejecuciones ok; auditor 107 PASS review+manifest y fixture enfocado ok |
@@ -96,3 +96,13 @@ Giuliano decidió en la conversación: "no uses el breaker". Desde la tanda 3 no
 
 ## Decisión del responsable · solo apply y verify (2026-11-11)
 Giuliano: "contructor, verify y apply" / "no uses nada que se salga de eso". Desde la tanda 3 el flujo es apply (rol constructor) → verify (`/opsx:verify`). No se despachan breaker ni auditor. Consecuencia declarada: la tanda 3 no tiene veredicto APROBADO del auditor; el cierre de la tanda se apoya en la evidencia del constructor y en el resultado de `/opsx:verify`.
+
+
+## Tanda 4 (2026-11-11)
+Pedido del responsable: "usa la documentacion oficial de claude y codex para realizar los cambios restante". Alcance: 1.2, 2.2, 2.3 con muestras derivadas de la documentación oficial (riesgo declarado, como permite 2.2), sin corridas reales que gasten cuota. 3.2/3.3/3.4 quedan para ejecución real; 4.1 espera 03/04. Ejecutor: agente general-purpose (Sonnet) con contrato de constructor en el brief, porque los agentes `role-*` no están disponibles en esta sesión. Flujo: apply → verify (`/opsx:verify`), sin breaker ni auditor (decisión del responsable). El repo local fue reclonado desde cero antes de esta tanda; se retomó desde `origin/propose/opsx-baseline` en `3f8afd2`.
+Informe: `informes/apply-t4-constructor.md`.
+
+apply-t4: 2.2 [x]; 1.2 y 2.3 parciales. verify: `informes/verify-t4-conformidad.md`. Tareas 10/16.
+
+## Decisión del responsable · 2.2 IDE (2026-11-11)
+Giuliano eligió la opción (a): 2.2 queda cerrada con la captura del IDE como "no comprobada / no disponible" (D2), porque la documentación oficial no describe una fuente de eventos propia de las extensiones de IDE. La prueba con la extensión real se hace en 3.2. También se corrigió en design.md el ejemplo de Claude: `modelUsage`/`total_cost_usd` incluyen subagentes, `usage` solo el hilo principal.

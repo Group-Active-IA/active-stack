@@ -447,3 +447,17 @@ const (
 	VariantCurrent = "actual"
 	VariantModular = "modular"
 )
+
+// VersionAtLeast indica si version >= min con la misma comparacion numerica
+// por componentes que CheckCell. Devuelve error si alguna no es interpretable.
+func VersionAtLeast(version, min string) (bool, error) {
+	v, ok := parseVersion(version)
+	if !ok {
+		return false, fmt.Errorf("versión no interpretable: %q", version)
+	}
+	m, ok := parseVersion(min)
+	if !ok {
+		return false, fmt.Errorf("versión mínima no interpretable: %q", min)
+	}
+	return compareVersions(v, m) >= 0, nil
+}

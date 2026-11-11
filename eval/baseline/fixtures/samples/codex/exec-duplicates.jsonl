@@ -1,0 +1,8 @@
+{"type":"thread.started","thread_id":"0199a213-81c0-7800-8aa1-bbab2a035a53"}
+{"type":"thread.started","thread_id":"0199a213-81c0-7800-8aa1-bbab2a035a53"}
+{"type":"turn.started"}
+{"type":"item.started","item":{"id":"item_1","type":"command_execution","status":"in_progress","command":"bash -lc ls"}}
+{"type":"item.completed","item":{"id":"item_1","type":"command_execution","status":"completed","command":"bash -lc ls","exit_code":0}}
+{"type":"item.completed","item":{"id":"item_1","type":"command_execution","status":"completed","command":"bash -lc ls","exit_code":0}}
+{"type":"turn.completed","usage":{"input_tokens":1000,"cached_input_tokens":400,"output_tokens":100,"reasoning_output_tokens":0}}
+{"type":"turn.completed","usage":{"input_tokens":1000,"cached_input_tokens":400,"output_tokens":100,"reasoning_output_tokens":0}}
