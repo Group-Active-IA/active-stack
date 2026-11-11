@@ -2,22 +2,35 @@
 
 ## Context
 
-La revisión de partida del borrador es `1b4639b`. La rama del 01, `propose/codex-strict-compat` en `9778802`, propone un perfil Estricto de solo lectura con escalaciones bajo solicitud y verificación con el cliente real. El manifiesto de corridas deberá fijar la revisión y el perfil finalmente aceptados. Para tareas con edición, la matriz debe registrar una ruta autorizada y comprobada dentro del fixture aislado. La equivalencia de permisos se mantiene al comparar variantes dentro de cada tarea.
+La revisión de partida del borrador es `1b4639b`. El 01 define el perfil Estricto de Codex como solo lectura con aprobación para escalar cuando se puede solicitar. Por eso las tareas con edición no pueden correr bajo Estricto sin agregar aprobaciones humanas que sesgan tiempo y calidad, y en ejecución no interactiva no hay revisor. En Claude, el modo `default` también pide confirmar ediciones sin ser equivalente a solo lectura. El manifiesto de corridas cita el contrato de 01 vigente al correr y registra los permisos efectivos de cada celda.
 
-Las plantillas actuales de [Claude](../../../internal/harness/config/assets/claude/sdd-orchestrator.md) y [Codex](../../../internal/harness/config/assets/codex/sdd-orchestrator.md) incluyen asignaciones por fase y reglas de delegación. El manifiesto registra su configuración efectiva y cualquier sustitución de modelo. La revisión de partida de los fixtures será un dato independiente del commit de esta propuesta.
+Las plantillas actuales de [Claude](../../../internal/harness/config/assets/claude/sdd-orchestrator.md) y [Codex](../../../internal/harness/config/assets/codex/sdd-orchestrator.md) incluyen asignaciones por fase y reglas de delegación. Ambas traen la misma tabla de alias de modelos de Claude. El manifiesto registra el modelo efectivo por rol y cualquier sustitución. Las comparaciones se hacen dentro de cada cliente, así que no hace falta declarar equivalencia de modelos entre clientes. La revisión de partida de los fixtures es un dato independiente del commit de esta propuesta.
 
 ## Goals / Non-Goals
 
-El protocolo tiene que permitir que otra persona reconstruya una corrida y audite su aceptación y sus agregados. Los adaptadores se limitan a capturar señales de los clientes. Los cambios de comportamiento, modelos y caché se evaluarán como variantes de changes posteriores.
+El protocolo tiene que permitir que otra persona reconstruya una corrida y audite su aceptación y sus agregados. Los adaptadores se limitan a capturar señales de los clientes. Los cambios de comportamiento, modelos y caché se evaluarán como variantes de changes posteriores. La captura independiente de stdout/stderr, la redacción y la retención son de 05; las huellas y los estados de procedencia, de 06. Este change consume esos contratos y no los redefine.
 
 ## Decisions
 
 ### Recorrido propuesto
 
-1. Cargar un manifiesto versionado con la matriz, la semilla de orden, los límites y la revisión de los fixtures. Validar versiones, permisos efectivos y señales disponibles con una comprobación previa por celda.
+1. Cargar un manifiesto versionado con la matriz, las tareas y sus pesos, la composición de cada cohorte, la semilla de orden, los límites y la revisión de los fixtures. Hacer una comprobación previa por celda de versión, interfaz, permisos efectivos, señales disponibles y opt-ins de contenido desactivados. Una celda que no pasa queda incompatible antes de iniciar.
 2. Preparar un checkout descartable y un perfil de prueba, iniciar una sesión nueva y capturar los eventos, el código de salida, el diff y los tiempos. Usar un workspace sintético y credenciales de prueba según la modalidad autorizada.
-3. Evaluar con chequeos y una rúbrica común. Para criterios que requieren juicio humano, ocultar la variante cuando sea posible y registrar veredicto, criterio y evidencia. El tiempo humano suma intervención activa, como autorizaciones y correcciones, y revisión activa. El tiempo de espera y el transcurrido se reportan aparte.
-4. Normalizar las unidades y generar registros por intento, por corrida y un resumen por cohorte. Se propone JSONL para los registros y Markdown para el resumen. El arnés podría vivir en un directorio de evaluación separado del código del instalador o en un repositorio auxiliar si los permisos y la retención lo requieren. El equipo debe cerrar la ubicación y dependencias.
+3. Evaluar con chequeos y la rúbrica común. Para criterios que requieren juicio humano, ocultar la variante cuando sea posible y registrar veredicto, criterio y evidencia. El tiempo humano suma intervención activa, como autorizaciones y correcciones, y revisión activa.
+4. Normalizar las unidades y generar registros por intento, por corrida y un resumen por cohorte. Se propone JSONL para los registros y Markdown para el resumen. El arnés vive fuera del binario del instalador; la ubicación concreta y el lenguaje quedan en D6.
+
+### Matriz de cohortes
+
+- **Clientes e interfaces.** Claude Code y Codex, en terminal y en IDE desde la primera medición, con resultados separados por interfaz. Una terminal integrada del IDE que ejecuta la CLI pertenece a la cohorte de terminal. La interfaz registrada es la real, no la declarada. Las aplicaciones de escritorio quedan fuera de la primera comparación.
+- **Plataformas.** Windows y Linux son el mínimo. La matriz distingue plataformas distribuidas, declaradas y probadas, e identifica de forma explícita las combinaciones de cliente e interfaz exigidas en cada una.
+- **Métricas ausentes.** Si una señal existe en la CLI pero no en el IDE, la métrica figura como no disponible en la cohorte IDE con su motivo. La corrida se conserva para las métricas válidas.
+
+### Permisos de medición
+
+- El perfil Estricto de 01 se mide en una serie separada, con aprobaciones registradas como intervención humana.
+- Las tareas con edición corren en perfiles aislados con permisos equivalentes para la tarea. Equivalente significa que la tarea puede leer el fixture y escribir solo dentro del checkout descartable sin pedir aprobación por cada edición.
+- El manifiesto registra por cliente e interfaz el modo de permisos y los flags efectivos, comprobados con el cliente real en la comprobación previa.
+- Descontar la espera de aprobación no elimina los bloqueos, rechazos o reintentos que cambian el curso de una tarea. Una corrida bloqueada por permisos después de iniciar cuenta como corrida no aceptada.
 
 ### Tareas y calidad
 
@@ -27,59 +40,128 @@ El protocolo tiene que permitir que otra persona reconstruya una corrida y audit
 | Cambio pequeño | Corrección de un comportamiento acotado con una prueba de regresión y control de archivos tocados. |
 | Cambio multiarchivo | Cambio de contrato pequeño entre dos componentes, con compatibilidad verificada en llamadas existentes y un caso de borde. |
 | Diagnóstico de una falla sembrada | Reproducción, causa raíz y descarte de un síntoma alternativo con evidencia verificable. |
-| Revisión de un diff sembrado | Hallazgos contra defectos conocidos, registro de omisiones y falsos positivos y evidencia por hallazgo. |
+| Revisión de un diff sembrado | Hallazgos contra defectos conocidos con la regla de emparejamiento de abajo y evidencia por hallazgo. |
 
-Congelar prompt, estado inicial, herramientas permitidas, solución o clave de referencia, condiciones de tiempo y rúbrica antes de las corridas. En los cambios de código se evalúa el comportamiento observable y el alcance. Para exploración, diagnóstico y revisión se evalúan hechos y evidencia. Un criterio obligatorio incumplido da un veredicto de rechazo. Reportar calidad por criterio y tasa de aceptación junto al consumo.
+Congelar prompt, estado inicial, herramientas permitidas, solución o clave de referencia, condiciones de tiempo y rúbrica antes de las corridas. En los cambios de código se evalúa el comportamiento observable y el alcance. Para exploración, diagnóstico y revisión se evalúan hechos y evidencia. Un criterio obligatorio incumplido da un veredicto de rechazo por calidad. Reportar calidad por criterio y tasa de aceptación junto al consumo. Una afirmación del agente sin corroboración independiente queda sin verificar según el contrato de 06.
 
-### Señales candidatas
+### Rúbrica de revisión de un diff sembrado
 
-| Cliente y superficie | Fuente candidata | Comprobación pendiente |
+02 mantiene esta regla; 10 la reutiliza.
+
+- La clave de referencia lista cada defecto sembrado con identificador, archivo, rango de líneas y mecanismo de falla.
+- Un hallazgo empareja con un defecto cuando señala el mismo archivo, un rango que se solapa con el del defecto y el mismo mecanismo de falla. El revisor decide el mecanismo y registra la evidencia.
+- Cada defecto empareja con un solo hallazgo y cada hallazgo con un solo defecto. Los hallazgos repetidos sobre el mismo defecto no suman.
+- **Verdadero positivo**: hallazgo emparejado con un defecto sembrado.
+- **Omisión**: defecto sembrado sin hallazgo emparejado.
+- **Falso positivo**: hallazgo sin emparejar que el revisor rechaza.
+- Un hallazgo sin emparejar que el revisor considera un defecto real no sembrado se registra como hallazgo nuevo. Un árbitro lo adjudica por separado y no cambia los conteos del caso hasta su adjudicación.
+
+### Señales y fuentes
+
+| Cliente e interfaz | Fuente candidata | Comprobación pendiente en la versión fijada |
 |---|---|---|
-| Codex CLI | `codex exec --json` documenta uso del turno, incluida entrada cacheada y salida. App Server documenta actualizaciones de uso por hilo y queda como fuente alternativa. | Verificar el alcance del agregado con una tarea directa y otra delegada, la correlación con hilos hijos, la entrada de la primera solicitud y la disponibilidad de cuota atribuible en cada perfil. |
-| Claude Code CLI | `claude -p` entrega salida estructurada. OpenTelemetry documenta contadores de entrada, salida, lectura y escritura de caché, con una categoría de origen para principal, subagente o auxiliar. | Verificar correlación por sesión e intento en la versión fijada. La categoría subagente puede incluir hooks basados en agentes. Confirmar si se puede atribuir a un worker individual. |
-| Superficies interactivas | Herramientas de inspección de contexto, exportaciones o eventos de la superficie, si están disponibles. | Acordar con 03 y 04 cuáles requieren validación. Un resultado del CLI solo representa el CLI probado. |
+| Codex terminal | `codex exec --json` documenta uso por turno con entrada, entrada cacheada, salida y razonamiento, y eventos de inicio y fin de turno. App Server documenta uso por hilo, duraciones de algunas herramientas y solicitud y resolución de aprobaciones. La sección `[otel]` de la configuración es una fuente adicional. | Si el agregado del padre incluye a los hilos hijos, con una tarea directa y otra delegada. El código de salida se guarda como dato bruto junto a los eventos `turn.failed` y `error`; no determina el veredicto. |
+| Claude Code terminal | `claude -p` y el SDK entregan resultado estructurado con `duration_ms` y `duration_api_ms`. OpenTelemetry documenta contadores de entrada, salida, lectura y creación de caché, con categoría de origen para principal, subagente o auxiliar. | Atribución por worker solo desde la versión 2.1.310, con `agent_id`. Los agentes propios se reportan con `agent.name = "custom"`, así que el nombre no sirve para atribuir. El `total_tokens` del cierre de un subagente cubre solo su última solicitud. La categoría subagente puede incluir hooks basados en agentes. |
+| IDE de ambos clientes | Las fuentes anteriores cuando la extensión real las expone, y eventos de permisos o exportaciones de la interfaz. | Validar cada fuente en la extensión real. Lo que solo exista en la CLI figura como no disponible en IDE. |
 
-Fuentes oficiales para diseñar la captura. [Codex no interactivo](https://learn.chatgpt.com/docs/non-interactive-mode) · [Codex App Server](https://learn.chatgpt.com/docs/app-server) · [Claude Code programático](https://code.claude.com/docs/en/headless) · [Telemetría de Claude Code](https://code.claude.com/docs/en/monitoring-usage)
+Fuentes oficiales para diseñar la captura. [Codex no interactivo](https://learn.chatgpt.com/docs/non-interactive-mode) · [Codex App Server](https://learn.chatgpt.com/docs/app-server) · [Claude Code programático](https://code.claude.com/docs/en/headless) · [Agent SDK de Claude](https://code.claude.com/docs/en/agent-sdk/typescript) · [Telemetría de Claude Code](https://code.claude.com/docs/en/monitoring-usage) · [Eventos de permisos de Claude](https://code.claude.com/docs/en/hooks)
 
 ### Matriz y medidas
 
 - **Sesión normal.** Usar una sonda breve y fija en una sesión nueva sin invocar OPSX ni solicitar herramientas. Preferir la entrada de la primera solicitud o un desglose nativo. Si solo existe un total de turno, usarlo como aproximación identificada cuando se pueda comprobar que representa una única solicitud. Registrar el alcance de la señal y el inventario de instrucciones observables. Los bytes del inventario se reportan en su propia unidad. Repetir la sonda en las instalaciones actual y modular cuando ambas estén disponibles.
-- **Tareas OPSX.** Capturar primero el flujo actual compatible con 01. Al llegar 03 y 04, comparar con el flujo modular dentro de cada cliente, superficie y modalidad, con la misma revisión del fixture, rúbrica y política de modelos, herramientas y permisos cuando sean equivalentes. Alternar el orden de las variantes en la comparación y registrar la semilla. Si una diferencia de capacidad obliga a cambiar un control, identificarla en los resultados y separar la comparación.
-- **Caché y contexto.** Entrada lógica por solicitud incluye lecturas y escrituras de caché. Separar el contexto observable en una solicitud del total de tokens de entrada procesados durante la tarea. Normalizar por fuente. En Claude Code la entrada documentada excluye lecturas y escrituras y se suman al total lógico. En el agregado JSON de Codex, las lecturas cacheadas se registran como parte de la entrada, previa confirmación con la versión fijada. La entrada sin lectura cacheada se puede derivar por diferencia donde la semántica esté comprobada. Registrar el estado de caché previsto y el observado. Una sesión nueva puede reutilizar prefijos. Clasificar por evidencia y separar o estratificar las corridas cuyo estado no pueda confirmarse. El 09 diseñará el experimento específico de caché.
-- **Consumo y reintentos.** La unidad de aceptación es la corrida de una tarea. Cada repetición parte de cero y puede contener varios intentos bajo un límite preacordado. Registrar eventos por coordinador o principal, worker y consumo auxiliar o sin atribuir, con IDs de sesión, intento y rol cuando existan. Conservar snapshots acumulados y derivar deltas solo si el alcance es conocido. Un agregado que ya contiene consumo hijo se usa para reconciliar el detalle, sin sumarlo de nuevo. Registrar reintentos automáticos observables y reintentos explícitos por separado.
-- **API y cuota.** Agrupar por cliente, versión, superficie, modalidad y variante, manteniendo las mismas tareas y pesos para ambos brazos. Para API, usar costo atribuible observado o una estimación identificada con modelo, tarifas fechadas, categorías disponibles y alcance. Para suscripción, registrar unidad y ventana de cuota cuando la fuente permite atribuirla a la corrida. Los tokens se reportan también como consumo técnico. Para una cohorte completa, dividir el total de todas las corridas iniciadas, incluidas fallidas, por las aceptadas. Con cero aceptadas o cobertura incompleta, indicar que el cociente no se puede calcular. Publicar cobertura y cantidades válidas, parciales y excluidas.
+- **Tareas OPSX.** Capturar primero el flujo actual con los permisos de medición definidos arriba. Al llegar 03 y 04, comparar con el flujo modular dentro de cada cliente, interfaz y modalidad, con la misma revisión del fixture, rúbrica y política de modelos, herramientas y permisos. Alternar el orden de las variantes y registrar la semilla. Si una diferencia de capacidad obliga a cambiar un control, identificarla en los resultados y separar la comparación.
+- **Caché y contexto.** Entrada lógica por solicitud incluye lecturas y escrituras de caché. Separar el contexto observable en una solicitud del total de tokens de entrada procesados durante la tarea. En Claude Code la entrada documentada excluye lecturas y escrituras de caché y se suman al total lógico. En Codex la entrada cacheada forma parte de la entrada, previa confirmación con la versión fijada; la entrada sin caché se deriva por diferencia. Registrar el estado de caché previsto y el observado. Una sesión nueva puede reutilizar prefijos. Clasificar por evidencia y separar o estratificar las corridas cuyo estado no pueda confirmarse. El 09 diseñará el experimento específico de caché.
+- **Lecturas y herramientas.** Registrar por intento la cantidad de lecturas de archivos y de llamadas a herramientas por tipo y rol, con la fuente y su alcance. 05 usa estas métricas para evaluar la lectura dirigida.
+- **Consumo y reintentos.** Cada repetición parte de cero y puede contener varios intentos bajo un límite preacordado. Registrar eventos por coordinador o principal, worker y consumo auxiliar o sin atribuir, con IDs de sesión, intento, rol y agente cuando existan. Conservar snapshots acumulados y derivar deltas solo si el alcance es conocido. Registrar reintentos automáticos observables y reintentos explícitos por separado.
+
+### Tiempo
+
+El arnés mide el tiempo transcurrido con reloj monotónico desde el inicio de la tarea hasta su resultado. Registra aparte las esperas de aprobación observables, la intervención humana y los reintentos. En Codex, el inicio y el fin se marcan con los eventos de turno y las esperas con la solicitud y la resolución de aprobaciones de App Server. En Claude se contrasta la duración del SDK con los eventos de permisos que exponga la interfaz. Un evento de solicitud por sí solo no determina el tiempo de espera, y el tiempo de API cubre solo una parte del trabajo.
+
+Solo se calcula el tiempo sin espera de aprobación si se pueden delimitar los intervalos en que la tarea quedó efectivamente detenida. Los intervalos solapados se unen y se conserva el tiempo en que otros agentes siguieron trabajando. Si la interfaz no ofrece suficiente evidencia, el valor ajustado figura como no disponible. La instrumentación se valida introduciendo una pausa conocida en una aprobación controlada y comprobando qué métricas cambian.
+
+### Denominadores
+
+| Caso | Momento | Tratamiento |
+|---|---|---|
+| Celda incompatible | Antes de iniciar, en la comprobación previa | Fuera del denominador y sin consumo. El resumen la lista aparte con su motivo. |
+| Corrida bloqueada por permisos | Después de iniciar | Iniciada y no aceptada. Su consumo entra en el costo total de la cohorte. |
+| Rechazo por calidad | Al evaluar | Iniciada y no aceptada. Su consumo entra en el costo total de la cohorte. |
+| Timeout o fallo del cliente | Después de iniciar | Iniciada y no aceptada, con la causa registrada. |
+
+El costo por tarea aceptada es el costo total de todas las corridas iniciadas de la cohorte, incluidos fallos, bloqueos y reintentos, dividido por las tareas aceptadas. Con cero aceptadas se publica el costo total y el cociente queda sin valor. Con cobertura incompleta de consumo, el cociente queda sin valor y se publica la cobertura. Las tareas y pesos de cada cohorte vienen del manifiesto y son los mismos para ambos brazos.
+
+### Reconciliación de padre e hijos
+
+Regla de precedencia ante discrepancias entre fuentes del mismo cliente:
+
+1. El total de la corrida sale de la fuente de mayor alcance comprobado para la versión fijada, por ejemplo un agregado que se verificó que incluye a los hijos.
+2. La atribución por rol sale de la fuente más granular con IDs correlacionables: eventos por solicitud o por turno.
+3. Si el detalle suma menos que el total, la diferencia va a consumo sin atribuir y la atribución se marca parcial.
+4. Si el detalle suma más que el total, el alcance del agregado no está comprobado. La métrica se marca parcial, se registran ambas cifras y la corrida queda fuera de los indicadores que exigen cobertura completa.
+
+Los ejemplos usan cifras ilustrativas en tokens lógicos de una corrida delegada con un worker.
+
+**Claude.** Eventos de OpenTelemetry por solicitud: principal 40.000 tokens; worker con `agent_id` propio, dos solicitudes de 12.000 y 8.000. El resultado del SDK informa 60.000. El cierre del worker informa `total_tokens` 8.000, que solo cubre su última solicitud.
+
+| Cálculo | Total | Error |
+|---|---|---|
+| Resultado del SDK + suma del worker | 80.000 | Doble conteo de 20.000 si el resultado ya incluye al worker |
+| Principal + `total_tokens` del cierre | 48.000 | Subconteo de 12.000 |
+| Regla de precedencia | 60.000 | Principal 40.000, worker 20.000, sin atribuir 0 |
+
+**Codex.** Uso por turno del hilo padre 30.000 tokens; hilo hijo 18.000. El agregado del hilo padre informa 48.000 y la comprobación confirmó que incluye al hijo.
+
+| Cálculo | Total | Error |
+|---|---|---|
+| Agregado del padre + hilo hijo | 66.000 | Doble conteo de 18.000 |
+| Regla de precedencia | 48.000 | Padre 30.000, hijo 18.000, sin atribuir 0 |
+
+Si la comprobación muestra que el agregado del padre no incluye al hijo, el total es la suma de ambos hilos. Si un hilo hijo no se puede correlacionar, su consumo queda sin atribuir y la atribución se marca parcial.
+
+### API y cuota
+
+Agrupar por cliente, versión, interfaz, modalidad y variante, con las mismas tareas y pesos para ambos brazos. Para API, usar costo atribuible observado o una estimación identificada con modelo, tarifas fechadas, categorías disponibles y alcance. Para suscripción, registrar unidad y ventana de cuota cuando la fuente permite atribuirla a la corrida. Los tokens se reportan también como consumo técnico. Publicar cobertura y cantidades válidas, parciales y excluidas.
+
+### Datos sensibles
+
+La lista de datos sensibles, la captura, la redacción, el acceso y la retención son de 05. Las huellas de la evidencia y sus estados de procedencia son de 06. Como mínimo, el resultado compartido excluye correo, UUID de cuenta, identificador de usuario, rutas del host, detalle de herramientas y cuerpos de solicitudes. En corridas medidas no se activan opt-ins de contenido, como las variables `OTEL_LOG_*` de Claude Code o las opciones equivalentes de `[otel]` en Codex. La comprobación previa marca como incompatible una celda con alguno activo.
 
 ### Estructura de resultados propuesta
 
 | Registro | Campos mínimos |
 |---|---|
-| Manifiesto | Versión de protocolo y rúbrica, revisión de fixture, ID y huella de prompt, revisión de Active Stack, perfil y huella de configuración sin secretos, cliente, versión, superficie, modalidad, modelo por rol y esfuerzo observable, herramientas, semilla y límites. |
-| Corrida | ID de tarea, repetición, variante, IDs de intento, tiempos, estado de ejecución, aceptación por criterio, motivo de rechazo o bloqueo, intervención y evidencia revisable. |
-| Intento | IDs de corrida y sesión, número y causa del intento, roles y modelo observado, consumo por categoría, cuota o costo si corresponde, estado de caché observado, tiempos y alcance del agregado. |
-| Métrica y evidencia | Valor o `null`, unidad, fuente y alcance, estado observado, estimado, parcial o no disponible, y motivo cuando corresponda. Referencia a evidencia autorizada y huella para verificar integridad. |
-| Resumen | Cohorte y versión de protocolo, iniciadas, aceptadas, rechazadas y bloqueadas, cobertura de señales, dispersión por tarea, agregados separados por modalidad y comparación emparejada cuando corresponda. |
+| Manifiesto | Versión de protocolo y rúbrica, revisión de fixture, ID y huella de prompt, revisión de Active Stack, perfil y huella de configuración sin secretos, cliente, versión, sistema y plataforma, interfaz real, modalidad, modo de permisos y flags efectivos, tier, modelo por rol y esfuerzo observable, herramientas, tareas y pesos por cohorte, semilla y límites. Es la única fuente de estos datos para 07, 09 y 10. |
+| Corrida | ID de tarea, repetición, variante, IDs de intento, tiempos, estado de ejecución, aceptación por criterio, motivo de rechazo, bloqueo o incompatibilidad, intervención y evidencia revisable. |
+| Intento | IDs de corrida, sesión y agente, número y causa del intento, roles y modelo observado, consumo por categoría, lecturas y llamadas a herramientas, cuota o costo si corresponde, estado de caché observado, código de salida y eventos de error, tiempos y alcance del agregado. |
+| Métrica y evidencia | Valor o `null`, unidad, fuente y alcance, estado observado, estimado, parcial o no disponible, y motivo cuando corresponda. Referencia a evidencia autorizada con la huella definida por 06. |
+| Resumen | Cohorte y versión de protocolo, iniciadas, aceptadas, rechazadas y bloqueadas, celdas incompatibles aparte, cobertura de señales, dispersión por tarea, agregados separados por interfaz y modalidad, y comparación emparejada cuando corresponda. |
 
-### Decisiones para acordar
+### Registro de decisiones
 
-Todas las filas están **pendientes de acuerdo**. La columna de propuesta sirve como punto de partida para la discusión.
+| ID | Decisión | Estado | Acuerdo o propuesta | Fuente y fecha | Changes afectados |
+|---|---|---|---|---|---|
+| D1 | Tareas, fixtures y calidad | Pendiente | Recomendación: un fixture por familia sobre una revisión fija del repositorio de Active Stack y una rúbrica con criterios obligatorios. Falta nombrar los fixtures concretos, el revisor y el árbitro. Alternativa: un segundo fixture en las familias con mayor variabilidad. | — | 02, 03, 04, 07, 09, 10 |
+| D2 | Clientes, interfaces, plataformas y versiones | Acordada | Terminal e IDE desde la primera medición, con resultados separados. Terminal integrada que ejecuta la CLI = cohorte terminal. Métricas ausentes en IDE = no disponibles. Escritorio fuera de la primera comparación. Windows y Linux como mínimo; la matriz distingue distribuidas, declaradas y probadas. El manifiesto registra cliente, versión, sistema, interfaz real, modalidad y permisos efectivos. | Informe unificado, 2026-11-10 | 01, 02, 03, 04, 07, 09 |
+| D3 | Repeticiones, orden y presupuesto | Pendiente | Propuesta: una corrida de calibración fuera de la muestra y tres repeticiones medidas por tarea y celda, como referencia descriptiva. La muestra, la dispersión tolerable y el margen de calidad se fijan antes de usar la referencia para decidir adopción en 07 o 09. Montos de presupuesto, tope de cuota, tiempo humano, timeout, reintentos, regla de parada y tamaño de una ampliación: (TBD · pendiente de acuerdo). | — | 02, 07, 09 |
+| D4 | Métricas y cobertura mínima | Acordada | Veredicto, revisión y tiempo en toda corrida iniciada. Una señal ausente se publica como no disponible con su motivo y la corrida se conserva para las métricas válidas. Un total incompleto queda fuera de los indicadores que exigen cobertura completa. | Informe unificado, 2026-11-10 | 02, 03, 04, 05, 07, 09 |
+| D5 | API, suscripción y cuentas de prueba | Pendiente | Recomendación: cuenta aislada para medir cuota; si no hay, medir solo tokens y declarar la cuota como no disponible. Falta acordar qué cuentas se usan y quién las aporta. Cohortes de API y suscripción separadas. | — | 02, 07, 09 |
+| D6 | Ubicación del arnés | Pendiente | Acordado: el arnés es externo al binario. Recomendación: directorio de evaluación separado en el repositorio, con alternativa de repositorio auxiliar si el acceso o la retención lo requieren. Lenguaje y plazo de borrado de originales: pendientes de confirmación del responsable. | Arnés externo: CHANGES.md e informe unificado, 2026-11-10 | 02, 05, 06, 07, 09 |
+| D7 | Permisos para medir edición | Acordada | Estricto en una serie separada. Las tareas con edición usan perfiles aislados con permisos equivalentes y registran los permisos efectivos (modo y flags) por cliente e interfaz. | Informe unificado, 2026-11-10 | 01, 02, 07, 09 |
+| D8 | Denominadores y reconciliación | Acordada | Celda incompatible fuera del denominador; bloqueada por permisos y rechazo por calidad dentro del costo de la cohorte. Costo total con fallos y reintentos / tareas aceptadas; con cero aceptadas, costo total publicado y cociente sin valor. Reconciliación padre/hijos con ejemplo por cliente y regla de precedencia. | Informe unificado, 2026-11-10 | 02, 07, 09, 10 |
+| D9 | Medición del tiempo | Acordada | Reloj monotónico, esperas observables aparte, unión de intervalos solapados, ajustado no disponible si no se puede delimitar, validación con una pausa conocida. | Informe unificado, 2026-11-10 | 02, 07, 09, 10 |
+| D10 | Contratos con otras fichas | Acordada | 02 mantiene arnés, manifiesto y rúbrica, incluida la de revisión de un diff sembrado. El manifiesto es la única fuente de versión, interfaz, tier y permisos y modalidad para 07, 09 y 10. 05 mantiene la lista sensible, la captura y la política de datos; 06, huellas y estados de procedencia. Opt-ins de contenido prohibidos en corridas medidas. | Informe unificado, 2026-11-10 | 02, 05, 06, 07, 09, 10 |
 
-| ID | Decisión | Propuesta inicial y alternativa | Changes afectados |
-|---|---|---|---|
-| D1 | Tareas, fixtures y calidad | Usar un fixture por familia y una rúbrica con criterios obligatorios. Acordar los fixtures concretos, quién revisa y cómo arbitrar desacuerdos. Alternativa para ampliar cobertura, agregar un segundo fixture a las familias con mayor variabilidad. | 02, 03, 04, 07, 09 |
-| D2 | Clientes, superficies y versiones | Empezar con ambos CLI y fijar versiones, modelos y OS por celda. Usar la revisión aprobada de 01 para Codex. Acordar con 03 y 04 si se incorporan superficies interactivas y qué sonda es equivalente. | 01, 02, 03, 04 |
-| D3 | Repeticiones, orden y presupuesto | Proponer una corrida de calibración fuera de la muestra y tres repeticiones medidas por tarea y celda para una referencia descriptiva. Acordar montos, límite de cuota, tiempo humano, timeout, reintentos, regla de parada y tamaño de una ampliación antes de correr. Alternativa, aumentar la muestra de antemano si se usará para decisiones cuantitativas. | 02, 07, 09 |
-| D4 | Métricas, caché y cobertura mínima | Exigir veredicto, revisión y tiempo en toda corrida iniciada. Acordar qué cobertura de tokens, caché y atribución se exige por indicador, qué aproximación de contexto es aceptable y qué celdas se consideran comparables. Si falta una señal, publicar el motivo y conservar la corrida para las métricas válidas. | 02, 03, 04, 07, 09 |
-| D5 | API, suscripción y cuentas de prueba | Acordar qué modalidades se pueden medir, quién aporta las cuentas, el método de atribución y los topes por modalidad. Mantener cohortes separadas. Si la cuota solo existe en ventanas compartidas, registrar la limitación o acordar una cuenta aislada para medirla. | 02, 07, 09 |
-| D6 | Ubicación del arnés y tratamiento de evidencia | Proponer fixtures y resultados depurados versionados, con trazas originales locales de acceso restringido. Acordar ubicación, lenguaje, dependencias, responsables, redacción y plazo de borrado. Considerar repositorio auxiliar si facilita el acceso y la retención. | 02, 06, 07, 09 |
-
-Registrar el acuerdo, responsables, revisión y motivo en esta tabla. Cerrar los puntos que cambien alcance, diseño o aceptación antes de compartir la propuesta final para revisión de los siete.
+Las decisiones pendientes se cierran con el grupo antes de compartir la propuesta final. Al cerrarlas, registrar acuerdo, responsables, fuente y fecha en esta tabla.
 
 ## Risks / Trade-offs
 
 - **Variabilidad de modelos y cuota** → fijar versiones cuando sea posible, registrar sustituciones y separar cambios de perfil, modelo o ventana de cuota. Informar dispersión y tamaño de muestra.
-- **Métricas incompletas o mezcladas** → validar con fixtures de eventos, conservar el alcance de la fuente y publicar cobertura por variante. Un cambio en instrumentación exige identificar la versión del protocolo.
+- **Métricas incompletas o mezcladas** → validar con muestras reales de eventos de cada versión fijada. Si todavía no hay muestras reales, validar con eventos sintéticos y declarar el riesgo en los resultados. Un cambio en instrumentación exige identificar la versión del protocolo.
+- **Fuentes distintas por interfaz** → resultados separados por interfaz y métricas no disponibles marcadas, en vez de completar el IDE con datos de la CLI.
 - **Sesgo de evaluación** → congelar la rúbrica, preservar fallos y alternar el orden. Las corridas interrumpidas después de iniciar mantienen su estado, evidencia y consumo disponible.
-- **Exposición de datos** → limitar la captura a fixtures sintéticos, redactar campos sensibles y restringir acceso y retención de originales según D6.
+- **Permisos que cambian la tarea** → perfiles equivalentes para edición y Estricto en serie separada. Los bloqueos se cuentan como corridas no aceptadas.
+- **Exposición de datos** → fixtures sintéticos, lista sensible de 05, opt-ins de contenido desactivados y comprobados antes de iniciar.
 
 ## Migration Plan
 
