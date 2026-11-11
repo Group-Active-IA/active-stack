@@ -37,6 +37,8 @@ func (s BackupSource) Label() string {
 }
 
 type Manifest struct {
+	rollbackGuards map[string]*rollbackGuard
+
 	ID        string          `json:"id"`
 	CreatedAt time.Time       `json:"created_at"`
 	RootDir   string          `json:"root_dir"`
