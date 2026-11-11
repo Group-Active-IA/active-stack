@@ -1,6 +1,6 @@
 # Tasks · Medición de referencia de OPSX
 
-Las tareas que dependen de D1, D3, D5 o D6 usan los valores que el grupo acuerde antes de la entrega final ([registro de decisiones](design.md#registro-de-decisiones)). Las corridas de referencia de Codex usan el contrato de Estricto vigente de 01 para la serie separada. El protocolo puede construirse y validarse con eventos sintéticos antes de esas corridas.
+Las tareas que dependen del árbitro de D1, de D3, de D5 o del plazo de borrado de D6 usan los valores que el grupo acuerde antes de la entrega final ([registro de decisiones](design.md#registro-de-decisiones)). Las corridas de referencia de Codex usan el contrato de Estricto vigente de 01 para la serie separada. El protocolo puede construirse y validarse con eventos sintéticos antes de esas corridas.
 
 ## 1. Protocolo y fixtures
 
