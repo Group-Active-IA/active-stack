@@ -125,7 +125,7 @@ Agrupar por cliente, versión, interfaz, modalidad y variante, con las mismas ta
 
 ### Datos sensibles
 
-La lista de datos sensibles, la captura, la redacción, el acceso y la retención son de 05. Las huellas de la evidencia y sus estados de procedencia son de 06. Como mínimo, el resultado compartido excluye correo, UUID de cuenta, identificador de usuario, rutas del host, detalle de herramientas y cuerpos de solicitudes. En corridas medidas no se activan opt-ins de contenido, como las variables `OTEL_LOG_*` de Claude Code o las opciones equivalentes de `[otel]` en Codex. La comprobación previa marca como incompatible una celda con alguno activo.
+La lista de datos sensibles, la captura, la redacción, el acceso y la retención son de 05. Las huellas de la evidencia y sus estados de procedencia son de 06. Como mínimo, el resultado compartido excluye correo, UUID de cuenta, identificador de usuario, rutas del host, detalle de herramientas y cuerpos de solicitudes. En corridas medidas no se activan opt-ins de contenido, como las variables `OTEL_LOG_*` de Claude Code o las opciones equivalentes de `[otel]` en Codex. La comprobación previa marca como incompatible una celda con alguno activo. `OTEL_LOG_LEVEL` no cuenta como opt-in de contenido: solo fija la verbosidad del SDK.
 
 ### Estructura de resultados propuesta
 
