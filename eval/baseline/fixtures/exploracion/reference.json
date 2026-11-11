@@ -1,0 +1,17 @@
+{
+  "entry": {"file": "internal/catalog/catalog.go", "symbol": "Load"},
+  "files": [
+    "internal/catalog/catalog.go",
+    "internal/catalog/harnesses.yaml",
+    "internal/model/harness.go",
+    "internal/model/starter.go",
+    "internal/model/localized.go"
+  ],
+  "effects": [
+    "Lee rawCatalog, embebido con go:embed desde harnesses.yaml; no lee disco ni red.",
+    "yaml.Unmarshal en Catalog; a las skills sin source.method les asigna clone.",
+    "Arma index y starterIndex por id.",
+    "validate(): id vacío o duplicado, tipo y modos válidos, source/external, depends_on conocidos, description/long_description bilingües, validateStarters y validateStarterOnlyReferences.",
+    "Si algo falla devuelve error y ningún *Catalog."
+  ]
+}

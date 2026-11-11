@@ -1,0 +1,13 @@
+{
+  "reproduction": {"test": "TestWrapExactWidth", "observed": "Wrap(\"aa bb\", 5) = [\"aa\" \"bb\"], want [\"aa bb\"]"},
+  "root_cause": {
+    "file": "report/report.go",
+    "start_line": 14,
+    "end_line": 16,
+    "mechanism": "len(line)+1+len(w) >= width corta cuando la línea mide exactamente width; debería ser >."
+  },
+  "discarded": {
+    "file": "config/config.go",
+    "evidence": "TestParseWidth pasa y la salida de la falla muestra width 5, el valor configurado."
+  }
+}

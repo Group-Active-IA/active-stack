@@ -1,0 +1,6 @@
+{
+  "findings": [
+    {"id": "F1", "file": "internal/catalog/catalog.go", "start_line": 71, "end_line": 71, "mechanism": "id_duplicado_no_detectado", "evidence": "seen se indexa por h.Name pero se consulta con seen[h.ID]: dos harnesses con el mismo id pasan la validación."},
+    {"id": "F2", "file": "internal/catalog/catalog.go", "start_line": 114, "end_line": 117, "mechanism": "dependencia_desconocida_aceptada", "evidence": "El bucle consulta c.index[h.ID] (siempre presente) en vez de c.index[dep]: un depends_on desconocido no da error."}
+  ]
+}

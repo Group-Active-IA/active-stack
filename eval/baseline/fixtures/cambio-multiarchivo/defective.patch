@@ -1,0 +1,49 @@
+diff --git a/api/api.go b/api/api.go
+index bdb462e..bed5af9 100644
+--- a/api/api.go
++++ b/api/api.go
+@@ -5,9 +5,12 @@ import "example.com/kv/store"
+ 
+ // Describe devuelve una linea "clave: valor" para mostrar.
+ func Describe(s *store.Store, k string) string {
+-	v := s.Get(k)
+-	if v == "" {
++	v, ok := s.Get(k)
++	switch {
++	case !ok:
+ 		return k + ": (sin valor)"
++	case v == "":
++		return k + ": (vacío)"
+ 	}
+ 	return k + ": " + v
+ }
+diff --git a/store/store.go b/store/store.go
+index 235db93..7518432 100644
+--- a/store/store.go
++++ b/store/store.go
+@@ -16,7 +16,8 @@ func (s *Store) Set(k, v string) {
+ 	s.m[k] = v
+ }
+ 
+-// Get devuelve el valor de k, o "" si k no existe.
+-func (s *Store) Get(k string) string {
+-	return s.m[k]
++// Get devuelve el valor de k e indica si k existe.
++func (s *Store) Get(k string) (string, bool) {
++	v := s.m[k]
++	return v, v != ""
+ }
+diff --git a/store/store_test.go b/store/store_test.go
+index 5b19a06..871103e 100644
+--- a/store/store_test.go
++++ b/store/store_test.go
+@@ -5,7 +5,7 @@ import "testing"
+ func TestSetGet(t *testing.T) {
+ 	s := New()
+ 	s.Set("a", "1")
+-	if got := s.Get("a"); got != "1" {
+-		t.Errorf("Get(a) = %q, want %q", got, "1")
++	if got, ok := s.Get("a"); got != "1" || !ok {
++		t.Errorf("Get(a) = (%q, %v), want (%q, true)", got, ok, "1")
+ 	}
+ }
