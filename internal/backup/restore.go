@@ -1,20 +1,75 @@
 package backup
 
 import (
+	"crypto/sha256"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Group-Active-IA/active-stack/internal/filemerge"
 )
 
 type RestoreService struct{}
 
-func (s RestoreService) Restore(manifest Manifest) error {
-	if manifest.Compressed {
-		return s.restoreCompressed(manifest)
+type rollbackGuard struct {
+	expected [sha256.Size]byte
+	restored bool
+}
+
+// GuardRollback associates a live install snapshot with the bytes written by
+// the installer. A manually loaded snapshot has no live rollback guards.
+func (m *Manifest) GuardRollback(path string, expected [sha256.Size]byte) {
+	if m.rollbackGuards == nil {
+		m.rollbackGuards = make(map[string]*rollbackGuard)
 	}
-	return s.restorePlain(manifest)
+	m.rollbackGuards[filepath.Clean(path)] = &rollbackGuard{expected: expected}
+}
+
+func (s RestoreService) Restore(manifest Manifest) error {
+	entries := manifest.Entries
+	var conflicts error
+	if len(manifest.rollbackGuards) != 0 {
+		entries = make([]ManifestEntry, 0, len(manifest.Entries))
+		excluded := make(map[string]bool)
+		for path, guard := range manifest.rollbackGuards {
+			raw, err := os.ReadFile(path)
+			if !guard.restored && (err != nil || sha256.Sum256(raw) != guard.expected) {
+				conflicts = errors.Join(conflicts, fmt.Errorf("preserved %q because it changed after installation; backup at %q", path, manifest.RootDir))
+				excluded[path] = true
+			} else if guard.restored {
+				excluded[path] = true
+			}
+		}
+		for _, entry := range manifest.Entries {
+			path := filepath.Clean(entry.OriginalPath)
+			skip := excluded[path]
+			if entry.IsDir && !entry.Existed {
+				for protected := range excluded {
+					skip = skip || strings.HasPrefix(protected, path+string(filepath.Separator))
+				}
+			}
+			if !skip {
+				entries = append(entries, entry)
+			}
+		}
+	}
+	manifest.Entries = entries
+	var err error
+	if manifest.Compressed {
+		err = s.restoreCompressed(manifest)
+	} else {
+		err = s.restorePlain(manifest)
+	}
+	if err == nil {
+		for _, entry := range entries {
+			if guard := manifest.rollbackGuards[filepath.Clean(entry.OriginalPath)]; guard != nil {
+				guard.restored = true
+			}
+		}
+	}
+	return errors.Join(conflicts, err)
 }
 
 // restoreCompressed handles backups where Compressed==true.
