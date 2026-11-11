@@ -1,0 +1,18 @@
+{
+  "id": "exploracion-carga-catalogo-v1",
+  "family": "exploracion",
+  "rubric_version": "1",
+  "source": {"kind": "git", "revision": "1b4639b537a4d0c04dc8c25c0220732095a772d3", "sha256": "4c30ca614ebc0de12b4daf3442e29d925f08f4bdf1b73dfdb816f61927b7c9b0"},
+  "prompt": {"file": "prompt.md", "sha256": "c44e7853192f75cac4bbabdefc08c84a7469b24e907e644fa901bff218279aa8"},
+  "allowed_tools": ["leer archivos", "buscar en archivos"],
+  "limits": {"timeout": "(TBD · D3)", "max_attempts": "(TBD · D3)"},
+  "key": "key.json",
+  "reference": "reference.json",
+  "defective": "defective.json",
+  "criteria": [
+    {"id": "E1", "description": "El punto de entrada coincide con la clave.", "mandatory": true, "check": "respuesta_entrada"},
+    {"id": "E2", "description": "La respuesta cita todos los archivos de la clave.", "mandatory": true, "check": "respuesta_archivos"},
+    {"id": "E3", "description": "Los efectos descriptos están corroborados por la clave.", "mandatory": true, "check": "requiere_revisor"},
+    {"id": "E4", "description": "El checkout queda intacto.", "mandatory": true, "check": "checkout_intacto"}
+  ]
+}

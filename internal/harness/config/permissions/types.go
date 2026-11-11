@@ -23,4 +23,6 @@ type Result struct {
 	Changed bool
 	// Files lists the settings files that were written or updated.
 	Files []string
+	// CodexStrictWrites records the exact bytes installed for rollback checks.
+	CodexStrictWrites map[string][32]byte
 }

@@ -18,6 +18,34 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
 )
 
+func TestWindowsOptionsCodexStrictCopy(t *testing.T) {
+	for _, test := range []struct {
+		lang        i18n.Lang
+		short, long string
+	}{
+		{i18n.LangEN, "Read-only by default", "explicit approval"},
+		{i18n.LangES, "Solo lectura por defecto", "aprobación explícita"},
+	} {
+		var out bytes.Buffer
+		if err := headless.RunWindowsOptions(&fakeExecCatalog{}, []model.Agent{model.AgentCodex}, test.lang, &out); err != nil {
+			t.Fatal(err)
+		}
+		var response struct {
+			Tiers []struct {
+				Description string
+				Long        string `json:"long_description"`
+			} `json:"permission_tiers"`
+		}
+		if err := json.Unmarshal(out.Bytes(), &response); err != nil {
+			t.Fatal(err)
+		}
+		if len(response.Tiers) == 0 || !strings.Contains(response.Tiers[0].Description, test.short) ||
+			!strings.Contains(response.Tiers[0].Long, test.long) {
+			t.Errorf("%s: missing Codex Strict descriptions", test.lang)
+		}
+	}
+}
+
 func TestRunWindowsDetect_JSON(t *testing.T) {
 	homeDir := t.TempDir()
 	if err := os.MkdirAll(homeDir+"/.claude", 0o755); err != nil {
