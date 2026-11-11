@@ -1,6 +1,6 @@
 # claude-native-opsx: índice de informes
 
-Propuesta 03 del roadmap (Claude Code, riesgo ALTO pendiente de confirmar por la persona). Código base 97d7f6c, rama `claude-native-opsx`. Fase: propose cerrada por plan-reviewer; falta aprobación humana y decisiones de grupo G1-G12.
+Propuesta 03 del roadmap (Claude Code, riesgo ALTO pendiente de confirmar por la persona). Rama `claude-native-opsx` con `main` `35a89f8` integrado. Fase: propose, revisada el 2026-11-11 según el informe unificado (`revision-2026-11-11.md`): el coordinador pasa a ser la skill `/sdd-orchestrator`. Falta la revisión del plan sobre esta versión, las decisiones abiertas de design.md y la aprobación humana.
 
 | Informe | Rol | Ejecutor declarado | Intento | Veredicto |
 |---|---|---|---|---|
@@ -10,5 +10,6 @@ Propuesta 03 del roadmap (Claude Code, riesgo ALTO pendiente de confirmar por la
 | informes/propose-2-plan-reviewer.md | plan-reviewer | mismo ejecutor, reanudado | 2 | VUELVE AL PLANNER (3 M, 5 m) |
 | informes/propose-3-planner.md | planner | mismo ejecutor, reanudado | 3 | correcciones N1-N8 |
 | informes/propose-3-plan-reviewer.md | plan-reviewer | mismo ejecutor, reanudado | 3 | LISTO PARA COMPARTIR (O1 menor) |
+| revision-2026-11-11.md | orquestador | Claude, con Juani | revisión de grupo | aplicado el informe unificado; pendientes listados |
 
-Familia compartida: planner y plan-reviewer son la misma familia de modelo (Claude); la independencia es de rol y contexto, no de proveedor. Informes faltantes: ninguno para propose. Constructor, rompedor y auditor no corresponden todavía.
+Los informes `propose-*` corresponden al diseño anterior (agente de sesión con `claude --agent`, base 97d7f6c). Familia compartida: planner y plan-reviewer son la misma familia de modelo (Claude); la independencia es de rol y contexto, no de proveedor.

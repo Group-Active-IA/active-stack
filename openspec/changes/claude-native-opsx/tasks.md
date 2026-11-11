@@ -4,142 +4,130 @@
 
 - Nivel: ALTO (HIGH) con tensión ALTO vs CRITICAL abierta para la persona que aprueba
   (proposal.md, Clasificación).
-- Fase: propose. Intento: 3 (corrección de N1-N8 del plan-reviewer, intento 2). Es el último
-  intento antes de escalar a la persona: si el plan-reviewer vuelve a devolverlo, no hay cuarto
-  intento automático y se ofrecen las tres opciones del flujo (alcance nuevo aprobado, deuda
-  justificada o detener el change).
-- Rol activo: planner (correcciones del intento 3 entregadas); próximo rol: plan-reviewer, intento 3.
-- Revisión base: rama `claude-native-opsx`, base `97d7f6c` (= main remoto). Sin diff de código.
-  Los artefactos están ignorados por git (`.gitignore:36`); la revisión se ata a hashes sha256 de
-  los artefactos (los del intento 1 están en el informe del plan-reviewer).
-- Informes originales:
-  - `informes/propose-1-planner.md` (intento 1, planner).
-  - `informes/propose-1-plan-reviewer.md` (intento 1, veredicto VUELVE AL PLANNER: 1 BLOQUEANTE,
-    9 MAYOR, 6 MENOR).
-  - `informes/propose-2-planner.md` (intento 2, planner: tabla hallazgo → cambio).
-  - `informes/propose-2-plan-reviewer.md` (intento 2, veredicto VUELVE AL PLANNER, ronda corta:
-    N1-N3 MAYOR, N4-N8 MENOR).
-  - `informes/propose-3-planner.md` (intento 3, planner: tabla N → cambio y hashes).
-- Bloqueantes para construir: (1) revisión del plan intento 3; (2) decisiones de grupo G1-G12
-  (design.md); (3) aprobación humana fechada en proposal.md `## Aprobación`, incluido el nivel ALTO
-  o CRITICAL; (4) matriz acordada con la Propuesta 04; (5) resultado de 1.10 (B1) antes de dar por
-  cerrada la vía D1.
-- Pendiente humano fuera del plan: compartir los artefactos con el equipo (`openspec/` ignorado por
-  git; `AGENTS.md:150` lo declara intencional). No se tocó git ni `.gitignore`.
-- Próxima acción: plan-reviewer revisa el intento 3.
+- Fase: propose, revisión 2026-11-11 según el informe unificado de revisión OPSX
+  (`revision-2026-11-11.md`). Activación por skill `/sdd-orchestrator` acordada por el grupo.
+- Revisión base: rama `claude-native-opsx` con `main` integrado (`35a89f8`: 01 y 02 en `main`).
+- Informes de la ronda anterior (agente de sesión, base 97d7f6c): `informes/propose-1..3-*.md`.
+  Su contenido sobre `--agent`, B1 y G9 quedó superado por esta revisión.
+- Bloqueantes para construir: (1) decisiones abiertas de design.md (tabla G); (2) matriz acordada
+  con 04 (G4); (3) aprobación humana fechada en proposal.md `## Aprobación`, incluido el nivel
+  ALTO o CRITICAL; (4) resultados de 1.4, 1.10, 1.11 y 1.14 antes de cerrar los escenarios de
+  continuidad.
+- Cierre: implementar, archivar y abrir PR hacia `main` declarando qué entrega, cómo se comprueba
+  y qué queda pendiente. Revisa el responsable del change anterior (circuito del grupo: contrato,
+  evidencia, decisión).
 - Lecciones L-NNN: el repo no tiene base de lecciones (sin `kb/` ni archivos de lecciones,
-  verificado 2026-11-06). Constructor, breaker y auditor deben registrar esa ausencia.
+  verificado 2026-11-06).
 
 Reglas para toda tarea de código: TDD obligatorio. RED = test de comportamiento que falla por
 aserción (no por compilación) antes de tocar producción; GREEN mínimo; refactor con tests focales.
-Por ser ALTO: regresiones de consumidores (OpenCode, Codex, Antigravity, `design-mockups`) y un
-mutante temporal sobre cada aserción clave marcada con (M), revertido antes de entregar. Si la
-persona elige CRITICAL, toda aserción de seguridad o datos lleva (M). Guardar bajo cada tarea
-comando, timestamp, revisión y salida de RED y GREEN. Ninguna tarea se marca hecha sin esa
-evidencia. Nunca build salvo pedido explícito (regla del repo).
+Por ser ALTO: regresiones de consumidores (OpenCode, Codex, Antigravity, `design-mockups`, skills
+del catálogo) y un mutante temporal sobre cada aserción clave marcada con (M), revertido antes de
+entregar. Si la persona elige CRITICAL, toda aserción de seguridad o datos lleva (M). Guardar bajo
+cada tarea comando, timestamp, revisión y salida de RED y GREEN. Ninguna tarea se marca hecha sin
+esa evidencia. Nunca build salvo pedido explícito (regla del repo).
 
 ## 1. Verificación de suposiciones (sin código de producción)
 
 Registrar cada resultado como EVIDENCIA o SUPOSICIÓN en
 `openspec/changes/claude-native-opsx/investigacion/contexto-efectivo.md`, con versión de Claude,
-modelo, comando, timestamp y testigo usado. Scripts en `investigacion/`, nunca en `internal/`.
-Toda corrida con modelo sigue D9 (sin copiar credenciales, sólo nombres de variables, borrar el
-directorio temporal). Orden: 1.12 y 1.11 primero, porque las demás dependen de ellas.
+interfaz, plataforma, modelo, comando, timestamp y testigo usado, siguiendo el manifiesto de 02.
+Scripts en `investigacion/`, nunca en `internal/`. Toda corrida con modelo sigue D9. Orden: 1.12 y
+1.11 primero.
 
-- [ ] 1.1 Subagente definido como archivo en el directorio de agentes (no sólo `--agents` JSON): repetir el caso C de D0 con testigos únicos en `CLAUDE.md` de proyecto y global; verificar con el oráculo de 1.11 en la transcripción propia del subagente.
-- [ ] 1.2 Agentes integrados (Explore, Plan, general-purpose): mismo procedimiento; registrar si reciben `CLAUDE.md`.
-- [ ] 1.3 Frontmatter admitido por archivos de agente (nombre, descripción, tools, model, carga de skills, exclusión de delegación) y si el prompt de un agente de sesión (`--agent`) reemplaza o se suma al system prompt; resultado alimenta el requisito "Precedencia de capas".
-- [ ] 1.4 Versión mínima: identificar la primera versión de Claude Code con `--agent` y agentes de archivo (changelog oficial o prueba con versión anterior); el valor reemplaza el `(TBD)` de design.md D7.
-- [ ] 1.5 Target Project: verificar que Claude lee `<root>/.claude/agents/<id>.md` y `<root>/.claude/CLAUDE.md` en una sesión abierta en `<root>`, y cuál prevalece frente a un agente del mismo ID en `<home>/.claude/agents/`; resultado alimenta el escenario "Agente Project y Machine con el mismo ID".
-- [ ] 1.6 Origen real de las skills `openspec-*` en Claude (contradicción C2): qué crea `openspec init` 1.14.3, qué instala Active Stack y qué nombres invoca el coordinador; dejar la tabla de nombres reales.
-- [ ] 1.7 Coordinador como agente de sesión (`--agent`) lanza subagentes con la herramienta Agent: verificar que puede y que el subagente no recibe el testigo del cuerpo del coordinador (oráculo 1.11).
-- [ ] 1.8 Tipo y efecto del setting `agent` en `settings.json` (contradicción C3): verificar con una copia aislada de settings, nunca con el archivo real del usuario.
-- [ ] 1.9 Skills: qué contexto recibe una skill invocada por un especialista y si una skill puede llevar el módulo por acción (insumo de G3).
-- [ ] 1.10 (B1) En 2.1.318 y en la versión mínima: (a) si un agente de archivo aparece como tipo de subagente disponible en una sesión normal; (b) si la sesión lo delega sola ante un pedido OPSX que no lo nombra; (c) si un subagente puede usar la herramienta Agent; (d) si alguna mitigación de D1 (frontmatter, `description`, guarda en el cuerpo) evita (a) o (b). Verificación: tabla caso → resultado con transcripción. Si ninguna mitigación excluye al coordinador, marcar G9 como bloqueante y devolver al planner.
-- [ ] 1.11 (M4) Validar el oráculo de D8: con testigos conocidos en `CLAUDE.md`, cuerpo de agente de sesión y prompt de subagente, comprobar en qué entradas de la transcripción aparece cada uno (`attachment.type=instructions`, `attachment.type=prompt_snapshot` con `--system-prompt-snapshot on`, u otras), en la misma corrida que un testigo ausente a propósito. Verificación: el oráculo distingue presente de ausente para las tres capas; si no cubre alguna, se documenta el reemplazo y se ajustan los THEN.
-- [ ] 1.12 (M5) Mecanismo de autenticación con directorio de configuración temporal: verificar qué variable de entorno usa Claude Code para el directorio de configuración y qué variable acepta para la credencial; registrar sólo los nombres. Prohibido copiar archivos de credenciales. Verificación: una sesión `claude -p` en el directorio temporal responde y el directorio no contiene archivos de credenciales copiados; el directorio se borra al final.
-- [ ] 1.13 (m5) Hecho a verificar, no decisión: si `settings.json` (por ejemplo clave `env`, `apiKeyHelper`) o `~/.claude.json` pueden contener credenciales en la versión mínima y en 2.1.318, según documentación oficial y sin leer valores del usuario. Resultado al humano para la decisión ALTO vs CRITICAL en `## Aprobación`.
+- [ ] 1.1 Skill invocada con `/sdd-orchestrator` desde `~/.claude/skills/`: repetir D0 con testigos únicos en `CLAUDE.md` de proyecto y global, en `SKILL.md` y en un módulo; registrar qué ve el hilo y qué ve un subagente general lanzado después.
+- [ ] 1.2 Subagentes integrados (Explore, Plan, general-purpose): mismo procedimiento; confirmar que Explore y Plan arrancan sin `CLAUDE.md` en la versión fijada.
+- [ ] 1.3 Precedencia: cómo queda el cuerpo de la skill frente al prompt de sistema y al contenido del usuario en `CLAUDE.md`; resultado alimenta "Precedencia de capas".
+- [ ] 1.4 Versión mínima y presupuesto: primera versión de Claude Code con skills de usuario, `disable-model-invocation` y reenganche de skills tras compactar (changelog oficial o prueba). Fijar el umbral de tokens del `SKILL.md` con el contador que acuerde 02. Ambos valores reemplazan los `(TBD · tarea 1.4)` de design.md D7 y D10.
+- [ ] 1.5 Target Project: verificar que Claude lee `<root>/.claude/skills/sdd-orchestrator/` y `<root>/.claude/CLAUDE.md`, y cuál prevalece frente a una skill Machine con el mismo ID (la documentación dice "personal over project").
+- [ ] 1.6 Origen real de las skills `openspec-*` en Claude (contradicción C2): qué crea `openspec init`, qué instala Active Stack y qué nombres invoca el coordinador; dejar la tabla de nombres reales.
+- [ ] 1.7 Desde el hilo con la skill invocada, el coordinador lanza subagentes con la herramienta Agent y el subagente no recibe el testigo de `SKILL.md` (oráculo 1.11).
+- [ ] 1.8 Archivos de apoyo: el coordinador lee `modules/<x>.md` con `${CLAUDE_SKILL_DIR}` en terminal y en IDE; registrar si la ruta se resuelve en ambas interfaces.
+- [ ] 1.9 Skills con `disable-model-invocation: true` en el campo `skills` de un subagente: confirmar que no se precargan.
+- [ ] 1.10 Determinista: en una sesión normal la descripción de `sdd-orchestrator` no figura en las skills disponibles para el modelo, y un pedido OPSX sin invocar no la activa. Verificación: entrada del registro de contexto con la lista de skills, con control positivo (otra skill sin el flag sí figura).
+- [ ] 1.11 Validar el oráculo de D8: con testigos conocidos en `CLAUDE.md`, `SKILL.md`, un módulo leído y el prompt de un subagente, comprobar en qué entradas de la transcripción aparece cada uno, antes y después de `/compact`, en la misma corrida que un testigo ausente a propósito.
+- [ ] 1.12 Mecanismo de autenticación con directorio de configuración temporal: qué variable usa Claude Code para el directorio de configuración y cuál acepta para la credencial; registrar sólo los nombres. Prohibido copiar archivos de credenciales.
+- [ ] 1.13 Hecho a verificar, no decisión: si `settings.json` (por ejemplo `env`, `apiKeyHelper`) o `~/.claude.json` pueden contener credenciales, según documentación oficial y sin leer valores del usuario. Resultado al humano para ALTO vs CRITICAL.
+- [ ] 1.14 Reanudación: con la skill invocada, cerrar y reanudar con `claude --continue` y con `--resume`; registrar si el testigo del coordinador sigue en el contexto. Resultado ajusta el escenario "Reanudación".
 
 ## 2. Coordinación y decisiones de grupo
 
-- [ ] 2.1 Presentar al grupo G1-G12 de design.md con recomendación (G9 con el resultado de 1.10); registrar en design.md la opción elegida, fecha y quién decidió. Verificación: cada fila G tiene decisión o queda `(TBD grupo)` explícito, y `rg -n "depende de G" specs/` coincide con las filas abiertas.
-- [ ] 2.2 Acordar con Giuliano (Propuesta 04) la matriz de reglas: inventario de módulos, quién los carga y cuándo; publicar la matriz única (ubicación a acordar) y enlazarla desde design.md. Verificación: escenarios "Ninguna regla sin capa" y "Regla en dos capas".
-- [ ] 2.3 Acordar con Matías (Propuesta 02) qué métrica de contexto se compara antes/después y en qué revisión; dejar la referencia en la tarea 8.3.
-- [ ] 2.4 Si alguna decisión de 2.1 a 2.3, o un resultado de la sección 1, cambia specs o design, devolver al planner y repetir plan-reviewer antes de seguir.
-- [ ] 2.5 Pedir la aprobación humana en proposal.md `## Aprobación` con el resultado de 1.13 (la completa la persona, no un agente). Sin ella no empieza la sección 3.
+- [ ] 2.1 Presentar al grupo las decisiones abiertas de design.md (G1, G3, G4, G6, G7, G10-G13) con recomendación; registrar opción, fecha y quién decidió. Verificación: `rg -n "depende de G" specs/` coincide con las filas que siguen abiertas.
+- [ ] 2.2 Con Matías (04): publicar la matriz común por cliente, interfaz, rol y acción (ubicación a acordar), con la columna de Claude completa, y enlazarla desde design.md. Verificación: escenarios "Ninguna regla sin capa" y "Regla en dos capas".
+- [ ] 2.3 Con Emiliano (05): llevar al grupo la divergencia de `governance` (módulo propose vs núcleo) y recibir los textos de D17. Con Gianfranco (06) y Neyén (07): recibir el `## Evidence Contract` y el sobre de retorno; ubicarlos en `modules/delegation.md` sin redefinirlos.
+- [ ] 2.4 Con Juan Cruz (01) y Gianfranco (08): acordar un único revisor ALTO para `filemerge` y el orden de integración del arreglo de permisos de esta ficha y el de 08 D9 (G6); confirmar si alguna de las dos agrega una guarda persistente en `internal/backup` que esta ficha reutilice.
+- [ ] 2.5 Con 08: mensaje de control obligatorio ausente por superficie (D11) y G13.
+- [ ] 2.6 Si alguna decisión o un resultado de la sección 1 cambia specs o design, actualizar los artefactos y repetir la revisión del plan antes de seguir.
+- [ ] 2.7 Pedir la aprobación humana en proposal.md `## Aprobación` con el resultado de 1.13. Sin ella no empieza la sección 3.
 
 ## 3. Modelo y adapter de Claude
 
-- [ ] 3.1 RED en `internal/agents/claude/adapter_test.go`: `ConfigDelivery()` devuelve el modo nuevo de archivo de agente (D1) y `PathsFor` resuelve el directorio de agentes para Machine (`<home>/.claude/agents`) y Project (`<root>/.claude/agents`). GREEN en `internal/model/harness.go` (constante nueva, sin reordenar las existentes) y `adapter.go`. Consumidores: `internal/install/types.go`, `internal/install/plan.go` (`projectTargetAdapter`, `:556-580`, debe delegar el directorio de agentes a `PathsFor` con target Project), `internal/uninstall/types.go`, `internal/verify/adapter.go`, `cmd/active-stack/main.go` (`projectVerifyAdapter`, `:333-345`, debe delegar el directorio de agentes a `PathsFor` con target Project), `internal/harness/config/types.go`; agregar el método a interfaces y fakes. Verificación: `go test ./internal/agents/... ./internal/model/... ./internal/install/... ./cmd/active-stack/...`.
-- [ ] 3.2 Regresión: tests existentes de OpenCode (`ConfigDeliveryPrimaryAgent`), Codex y Antigravity siguen verdes sin cambiar aserciones. Verificación: `go test ./internal/agents/...`.
-- [ ] 3.3 RED en test del adapter o de `internal/system`: detección de versión de Claude con salida válida, menor que la mínima, no parseable o con error, y binario ausente; cada caso devuelve un estado distinto (compatible, insuficiente, desconocida, ausente). (M) sobre la comparación de versión.
+- [ ] 3.1 RED en `internal/agents/claude/adapter_test.go`: `ConfigDelivery()` devuelve el modo nuevo de skill administrada (D1) y el directorio de skills se resuelve para Machine (`<home>/.claude/skills`) y Project (`<root>/.claude/skills`). GREEN en `internal/model/harness.go` (constante nueva, sin reordenar las existentes) y `adapter.go`. Consumidores: `internal/install/plan.go` (`projectTargetAdapter`), `internal/verify/adapter.go`, `cmd/active-stack/main.go` (`projectVerifyAdapter`), `internal/harness/config/types.go`, `internal/uninstall/types.go`; agregar lo necesario a interfaces y fakes. Verificación: `go test ./internal/agents/... ./internal/model/... ./internal/install/... ./cmd/active-stack/...`.
+- [ ] 3.2 Regresión: tests existentes de OpenCode (`ConfigDeliveryPrimaryAgent`), Codex y Antigravity siguen verdes sin cambiar aserciones.
+- [ ] 3.3 RED: detección de versión de Claude con salida válida, menor que la mínima, no parseable o con error, y binario ausente; cada caso devuelve un estado distinto (compatible, insuficiente, desconocida, ausente). (M) sobre la comparación de versión.
 
 ## 4. Partición del asset y composición
 
-- [ ] 4.0 (m2) Antes de tocar `compose.go`: agregar goldens de `Compose` con todos los toggles para Codex y Antigravity en `internal/harness/config/testdata/` (hoy sólo existen los de Claude y OpenCode), generados desde 97d7f6c. Verificación: `go test ./internal/harness/config/...` verde y los goldens nuevos coinciden con la salida de la base.
-- [ ] 4.1 Partir `internal/harness/config/assets/claude/sdd-orchestrator.md` según la matriz acordada (2.2): contenido universal y contenido de coordinador; módulos según G3. No cambiar el texto normativo, sólo reubicarlo.
-- [ ] 4.2 RED en `internal/harness/config/compose_test.go`: la composición universal para Claude no contiene encabezados del coordinador (Role, Delegation Rules, Sub-Agent Launch Pattern, Model Assignments) ni el módulo TDD; la del coordinador sí los contiene según toggles; con `tdd` inactivo no contiene `Strict TDD Mode: enabled`; (N4) la composición legado (universal + coordinador + módulos, en el orden de hoy) es byte a byte igual al golden `compose_all_toggles_claude.golden` grabado en 97d7f6c. (M) sobre la aserción de ausencia y sobre la igualdad del legado. GREEN en `compose.go` sin cambiar la firma usada por otros agentes.
-- [ ] 4.3 Conservar el golden actual de Claude como golden de la composición legado (sin regrabarlo) y agregar goldens nuevos para universal y coordinador; verificar que los goldens de OpenCode, Codex y Antigravity no cambian (`git diff --stat` de testdata limitado a Claude).
-- [ ] 4.4 RED en `internal/harness/config/inject_test.go`: después de inyectar la sección universal, una segunda inyección no la purga (contradicción C5); GREEN registrando la sección como propia (`ownedSectionIDs` o `sectionFragments`). (M) quitando el registro.
-- [ ] 4.5 (m3) RED: con un marker `active-stack:` de apertura sin cierre en `CLAUDE.md`, install no elimina el fragmento y emite una advertencia con ruta e ID (hoy `PurgeStaleSections` lo ignora en silencio). Verificación: test focal sobre la salida de advertencias.
+- [ ] 4.0 Antes de tocar `compose.go`: agregar goldens de `Compose` con todos los toggles para Codex y Antigravity en `internal/harness/config/testdata/` (hoy sólo existen los de Claude y OpenCode), generados desde 35a89f8.
+- [ ] 4.1 Partir `internal/harness/config/assets/claude/sdd-orchestrator.md` según la matriz acordada (2.2): universal, cuerpo de `SKILL.md` y módulos. No cambiar el texto normativo, sólo reubicarlo. Ordenar el cuerpo con rol, reglas obligatorias y tabla acción → módulos primero (D10).
+- [ ] 4.2 RED en `internal/harness/config/compose_test.go`: la composición universal no contiene encabezados del coordinador ni módulos; el `SKILL.md` contiene el rol, la tabla acción → módulos y `disable-model-invocation: true`, y no contiene el texto de los módulos; cada módulo existe sólo con su toggle activo; la composición legado es byte a byte igual al golden `compose_all_toggles_claude.golden` de 35a89f8. (M) sobre la ausencia de módulos en `SKILL.md` y sobre la igualdad del legado.
+- [ ] 4.3 RED: el `SKILL.md` compuesto con los cinco toggles queda bajo el umbral de tokens de 1.4 (escenario "El SKILL.md entra en el presupuesto de reenganche"). (M) sobre el umbral.
+- [ ] 4.4 Conservar el golden actual de Claude como golden de la composición legado y agregar goldens para universal, `SKILL.md` y cada módulo; los goldens de OpenCode, Codex y Antigravity no cambian.
+- [ ] 4.5 RED en `inject_test.go`: después de inyectar la sección universal, una segunda inyección no la purga (C5); GREEN registrando la sección como propia. (M) quitando el registro.
+- [ ] 4.6 RED: con un marker `active-stack:` de apertura sin cierre en `CLAUDE.md`, install no elimina el fragmento y emite una advertencia con ruta e ID.
 
-## 5. Inyector del archivo de agente y transacción
+## 5. Inyector de la skill y transacción
 
-- [ ] 5.1 RED en un test nuevo de `internal/harness/config`: escribe `<agents>/<id>.md` con frontmatter y marca de propiedad; segunda ejecución reporta sin cambios y bytes idénticos.
-- [ ] 5.2 RED: si existe un archivo con el mismo nombre sin marca de propiedad, en Machine y en Project, devuelve error con la ruta y el archivo queda idéntico; archivos ajenos del directorio no cambian. (M) sobre la verificación de la marca.
-- [ ] 5.3 RED: fallo del snapshot (fake de `SnapshotterCreate`) deja todo sin cambios; fallo de escritura del agente después de purgar `CLAUDE.md` restaura `CLAUDE.md` byte a byte (D5 paso 6). (M) sobre la restauración.
-- [ ] 5.4 RED: permisos según G6: `CLAUDE.md` en 0600 y directorio en 0700 conservan su modo; (m4) un directorio en 0500 recibe sólo el bit de escritura del dueño (0700) y la escritura completa, preservando la reparación de 6a40f17. Si G6 es global, el test vive en `internal/filemerge/writer_test.go` y cubre los llamadores de `inject.go:125` y `primary_agent.go:83`, `:118`. (M) sobre las aserciones de modo. Saltar en Windows con motivo registrado.
-- [ ] 5.5 RED: en target Project el manifiesto de snapshot del inyector nuevo queda bajo `<home>/.active-stack/backups/`, no bajo `<root>` (D5 paso 3, contradicción C8).
+- [ ] 5.1 RED en un test nuevo de `internal/harness/config`: escribe `<skills>/sdd-orchestrator/` con `SKILL.md` (frontmatter, marca) y `modules/`; segunda ejecución reporta sin cambios y bytes idénticos. Reutiliza la preparación y el `rename` de `refreshSkillDirectory`.
+- [ ] 5.2 RED: si existe `<skills>/sdd-orchestrator/` sin marca de propiedad, en Machine y en Project, devuelve error con la ruta y todos los archivos quedan idénticos; otras skills del directorio no cambian (C9). (M) sobre la verificación de la marca.
+- [ ] 5.3 RED: en target Project con una skill Machine del mismo ID, la salida advierte la precedencia y nombra ambas rutas.
+- [ ] 5.4 RED: fallo del snapshot deja todo sin cambios; fallo al activar la skill después de purgar `CLAUDE.md` restaura `CLAUDE.md` byte a byte; si otro proceso cambió `CLAUDE.md` en el medio, el rollback no lo pisa y nombra la ruta (`GuardRollback` de 01). (M) sobre la restauración y sobre la guarda.
+- [ ] 5.5 RED: permisos según G6: `CLAUDE.md` en 0600 y directorios `~/.claude` y `~/.claude/skills` en 0700 conservan su modo; un directorio en 0500 recibe sólo el bit de escritura del dueño y la escritura completa (reparación de 6a40f17). Si G6 es global, el test vive en `internal/filemerge/writer_test.go`. (M) sobre las aserciones de modo. Saltar en Windows con motivo registrado.
+- [ ] 5.6 RED: en target Project el manifiesto de snapshot del inyector nuevo queda bajo `<home>/.active-stack/backups/`, no bajo `<root>` (C8).
 
 ## 6. Instalación, migración y update
 
-- [ ] 6.1 RED en `internal/harness/config/install_test.go`: install para Claude sobre un `CLAUDE.md` con bloque legado y texto del usuario antes y después deja snapshot con el contenido previo, sin secciones del coordinador, bloque universal una vez, archivo de agente y texto del usuario idéntico. (M) sobre la comparación byte a byte.
+- [ ] 6.1 RED en `install_test.go`: install para Claude sobre un `CLAUDE.md` con bloque legado y texto del usuario antes y después deja snapshot con el contenido previo, sin secciones del coordinador, bloque universal una vez, skill con módulos y texto del usuario idéntico. (M) sobre la comparación byte a byte.
 - [ ] 6.2 RED: `design-mockups` presente antes sigue intacta después de la migración.
 - [ ] 6.3 RED: install no escribe la clave `agent` en `settings.json` y conserva un valor previo del usuario.
-- [ ] 6.4 (M2) RED, un test por caso del requisito "Compatibilidad por versión y entorno sin Claude": (a) versión insuficiente con legado previo: no escribe agente ni purga legado y advierte; (b) versión insuficiente o desconocida sin entrega previa: escribe el bloque legado completo y advierte; (c) binario ausente: entrega por capas y advertencia de versión no comprobada (según G11); (d, N4) update en modo legado con assets nuevos reescribe el bloque legado con la composición legado y una segunda ejecución no cambia nada.
-- [ ] 6.5 RED: install con assets de testigo T1 → T2 deja sólo T2 en ambos archivos y el contenido del usuario idéntico.
-- [ ] 6.6 Wiring en `internal/install/plan.go` (`collectWritePaths` incluye el archivo de agente y el plan de backup lo cubre) con test en `internal/install`; target Project no escribe en `<home>` salvo el manifiesto. Verificación: `go test ./internal/install/...`.
-- [ ] 6.7 Aviso BREAKING en la salida de install/update para Claude y advertencia del contenido del usuario en `install --help` (textos en `internal/i18n`), con test de presencia en ambos idiomas.
-- [ ] 6.8 (M9, N6) RED: la primera migración registra la ruta del manifiesto de migración y los hashes resultantes, y crea ese manifiesto con `pinned: true` (verificable con `Prune` y límite 0 o 1 sobre el directorio: el manifiesto sobrevive); una reinstalación posterior genera su snapshot pero no reemplaza ese registro.
-- [ ] 6.9 (M7) RED en `cmd/active-stack/update_test.go` o `internal/update`: el camino `update --sync` sobre un HOME con `installation.json` que selecciona Claude y `CLAUDE.md` con bloque legado produce la migración de 6.1; con `projects` registrados que tienen bloque legado en `<root>/.claude/CLAUDE.md`, no escribe en ellos y emite una advertencia por proyecto con el comando de migración (según G10); (N5) con un HOME sin `installation.json` o sin agentes registrados y bloque legado en `CLAUDE.md`, no escribe `CLAUDE.md` y la salida, además del mensaje actual de `update.go:375-378`, nombra el cambio BREAKING de Claude y el comando `active-stack install`.
-- [ ] 6.10 (m3) RED: update con ID de coordinador nuevo crea el archivo nuevo y borra el viejo sólo si tiene marca de propiedad (según G5).
-- [ ] 6.11 (m3) RED: un archivo de agente con marca editado por el usuario se reemplaza en update, su versión editada queda en un snapshot y la salida nombra la ruta.
+- [ ] 6.4 RED, un test por caso del requisito "Compatibilidad por versión, interfaz y entorno sin Claude": versión insuficiente con legado previo; versión insuficiente o desconocida sin entrega previa; binario ausente (según G11); update en modo legado idempotente.
+- [ ] 6.5 RED: install con assets de testigo T1 → T2 deja sólo T2 en `CLAUDE.md`, `SKILL.md` y módulos, y el contenido del usuario idéntico; update con `tdd` desactivado quita `modules/tdd.md`.
+- [ ] 6.6 Wiring en `internal/install/plan.go` (`collectWritePaths` incluye el directorio de la skill y el plan de backup lo cubre) con test; target Project no escribe en `<home>` salvo el manifiesto.
+- [ ] 6.7 Aviso BREAKING en la salida de install/update para Claude con `/sdd-orchestrator`, y advertencia del contenido del usuario en `install --help` (textos en `internal/i18n`), con test de presencia en ambos idiomas.
+- [ ] 6.8 RED: la primera migración registra la ruta del manifiesto de migración y los hashes de `CLAUDE.md` y de cada archivo de la skill, y crea el manifiesto con `pinned: true`; una reinstalación posterior no reemplaza ese registro.
+- [ ] 6.9 RED en `update_test.go` o `internal/update`: `update --sync` con selección de Claude y bloque legado produce la migración de 6.1; proyectos registrados con bloque legado no se escriben y reciben advertencia (G10); HOME sin `installation.json` no escribe `CLAUDE.md` y la salida nombra el cambio BREAKING, `/sdd-orchestrator` y `active-stack install`.
+- [ ] 6.10 RED: un archivo de la skill con marca editado por el usuario se reemplaza en update, su versión editada queda en un snapshot y la salida nombra la ruta.
 
 ## 7. Verify y uninstall
 
-- [ ] 7.1 RED en `internal/verify/harness_checks_test.go`: en versión compatible falla si falta el archivo de agente, si el marker universal no aparece exactamente una vez o si queda `active-stack:sdd-orchestrator`; pasa en instalación correcta; en modo legado por versión y con versión no comprobada reporta advertencia, no fallo; la salida nombra la vía activa. No cambiar `checkPrimaryAgentConfig` de OpenCode.
-- [ ] 7.2 (M9, N6) RED en `internal/uninstall` y `cmd/active-stack/headless` (flags): uninstall Machine sin restore elimina sólo el bloque universal y el archivo con marca propia; con `--strategy restore --restore-manifest <m>` no toca `settings.json` y devuelve `CLAUDE.md` byte a byte si el hash coincide; si difiere, no escribe, guarda el contenido actual en un snapshot nuevo y termina con código no cero; con `--overwrite-edited` (nombre tentativo, flag nuevo con ayuda e i18n) restaura después de guardar ese snapshot; `--yes` solo no saltea la guarda; con un manifiesto distinto del de migración registrado la guarda se aplica igual y la salida lo advierte. (M) sobre el chequeo de hash, sobre la independencia de `--yes` y sobre el borrado condicionado a la marca.
-- [ ] 7.3 Regresión: tests de uninstall y verify de OpenCode sin cambios de aserciones. Verificación: `go test ./internal/verify/... ./internal/uninstall/...`.
-- [ ] 7.4 (N2) RED: el check nuevo del archivo de agente usa el directorio de agentes que resuelve el adaptador recibido; con `projectVerifyAdapter` (`cmd/active-stack/main.go:320-345`) revisa `<root>/.claude/agents/<id>.md`, y un archivo presente sólo en `<home>` no hace pasar el check Project. Verify ya conoce Project para `CLAUDE.md`; esta tarea no lo reimplementa. Disparador: hook de verify posterior a install (no hay subcomando `verify`).
-- [ ] 7.5 (N1) Uninstall Project fuera de alcance (decisión vigente, `cmd/active-stack/headless/uninstall_flags.go:50`). RED: la salida de install Project para Claude nombra `<root>/.claude/agents/<id>.md` y la sección universal de `<root>/.claude/CLAUDE.md` como limpieza manual; regresión: `uninstall_flags_test.go:179-182` sigue verde sin cambiar su aserción. Si el grupo elige la otra opción de G12, esta tarea vuelve al planner.
-- [ ] 7.6 (m3) RED: uninstall que falla al borrar el archivo de agente después de quitar el bloque universal restaura el bloque desde el snapshot de esa desinstalación y nombra la ruta.
+- [ ] 7.1 RED en `harness_checks_test.go`: en versión compatible falla si falta `SKILL.md`, si falta un módulo de un toggle activo, si `SKILL.md` no declara `disable-model-invocation: true`, si el marker universal no aparece exactamente una vez o si queda `active-stack:sdd-orchestrator`; pasa en instalación correcta; en modo legado y con versión no comprobada reporta advertencia; la salida nombra la vía activa. No cambiar `checkPrimaryAgentConfig` de OpenCode.
+- [ ] 7.2 RED en `internal/uninstall` y `cmd/active-stack/headless`: uninstall Machine sin restore elimina sólo el bloque universal y el directorio de la skill con marca; con `--strategy restore --restore-manifest <m>` no toca `settings.json` y devuelve `CLAUDE.md` byte a byte si el hash coincide; si difiere, no escribe, guarda el contenido actual en un snapshot nuevo y termina con código no cero; con `--overwrite-edited` (flag nuevo con ayuda e i18n) restaura después de guardar ese snapshot; `--yes` solo no saltea la guarda; con un manifiesto distinto del de migración la guarda se aplica igual y la salida lo advierte. (M) sobre el chequeo de hash, la independencia de `--yes` y el borrado condicionado a la marca.
+- [ ] 7.3 Regresión: tests de uninstall y verify de OpenCode sin cambios de aserciones; `internal/backup/restore_guard_test.go` de 01 sigue verde.
+- [ ] 7.4 RED: el check de la skill usa el directorio de skills que resuelve el adaptador recibido; con `projectVerifyAdapter` revisa `<root>/.claude/skills/sdd-orchestrator/`, y una skill presente sólo en `<home>` no hace pasar el check Project.
+- [ ] 7.5 Uninstall Project fuera de alcance (`uninstall_flags.go:50`). RED: la salida de install Project para Claude nombra `<root>/.claude/skills/sdd-orchestrator/` y la sección universal como limpieza manual; `uninstall_flags_test.go:179-182` sigue verde sin cambiar su aserción.
+- [ ] 7.6 RED: uninstall que falla al borrar el directorio de la skill después de quitar el bloque universal restaura el bloque y nombra la ruta.
 
 ## 8. Pruebas de contexto efectivo con testigo
 
-Precondiciones: 1.11 (oráculo) y 1.12 (autenticación) cerradas como EVIDENCIA. Se usa el
-directorio de configuración temporal de D9; nunca el `~/.claude` real; sin copiar credenciales;
-informes con nombres de variables, no valores; borrar el directorio al final.
+Precondiciones: 1.11 y 1.12 cerradas como EVIDENCIA. Directorio de configuración temporal de D9;
+nunca el `~/.claude` real. Cada corrida se registra con el manifiesto de 02 (cliente, versión,
+interfaz, plataforma, permisos efectivos).
 
-- [ ] 8.1 Script reproducible en `investigacion/` (o `e2e/` si el grupo lo pide; hoy `e2e/e2e_test.sh` corre en Docker sin `claude`) que instala con testigos únicos en universal, coordinador, módulos TDD y governance, y contenido del usuario; ejecuta sesión normal, `--agent <id>`, subagente lanzado por el coordinador para propose y para apply, y el caso B1: si 1.10 encontró exclusión por frontmatter, una corrida que verifica que `<id>` no figura entre los subagentes disponibles; si no, N = 20 corridas del pedido OPSX sin nombrar al coordinador con umbral 0 de 20 (escenarios de `claude-coordinator-agent`). Verificación: tabla de presencia/ausencia por oráculo de registro de contexto, con control positivo en cada corrida, que coincide con los escenarios de `claude-instruction-layers` y `claude-coordinator-agent`.
-- [ ] 8.2 Repetir 8.1 para target Project (con 7.4 en verde; la limpieza Project se hace a mano según README, no con uninstall), para precedencia (escenarios del requisito "Precedencia de capas") y, en Machine, después de update, reinstalación y restore.
-- [ ] 8.3 Comparación de contexto antes/después con la métrica acordada con la Propuesta 02 (2.3); si 02 no entregó línea base, registrar la comparación como pendiente con su dependencia, sin bloquear los criterios funcionales (G8).
+- [ ] 8.1 Script reproducible en `investigacion/` que instala con testigos únicos en universal, `SKILL.md`, cada módulo y contenido del usuario, y ejecuta: sesión normal sin invocar; pedido OPSX sin invocar; `/sdd-orchestrator` en una sesión con conversación previa; subagente de propose, de apply y de verify lanzados por el coordinador; Explore lanzado por el coordinador; intento de delegar al coordinador; módulo obligatorio borrado; `/compact` y continuación; reanudación (1.14). Verificación: tabla de presencia y ausencia por oráculo, con control positivo en cada corrida, que coincide con los escenarios de `claude-instruction-layers` y `claude-coordinator-skill`.
+- [ ] 8.2 Repetir 8.1 en terminal e IDE, en Windows y Linux (lo que no se pueda correr queda "no disponible" con motivo); para target Project (con 7.4 en verde; limpieza a mano según README); para precedencia; y en Machine después de update, reinstalación y restore.
+- [ ] 8.3 Entregar a 02 la variante modular instalable para su tarea 4.1 (comparación antes y después con el mismo protocolo). Los criterios funcionales de esta ficha no dependen de ese resultado.
 
 ## 9. Documentación (Knowledge Base Impact)
 
-- [ ] 9.1 Reescribir `ARCHITECTURE.md` (líneas 56-75), `README.md` (línea 214 y tabla), `CLAUDE.md:9` y la sección 2 del repo, y `AGENTS.md:148-149` (espejo), con la invocación `claude --agent <id>`, el límite del contenido del usuario, el orden de precedencia medido (1.3, 1.5), el modo legado por versión, la nota BREAKING, el manifiesto de migración y `--overwrite-edited` para el rollback, y la limpieza manual en target Project (N1). Verificación: los comandos documentados corren tal cual en el entorno de 8.1.
-- [ ] 9.2 Agregar la entrada del change en `CHANGES.md` con dependencias 02 y 04.
-- [ ] 9.3 (M8) Documentar en README el fallback de activación del coordinador (según G2) y verificar con el oráculo que el comando documentado carga el testigo del coordinador (escenario "El fallback documentado funciona"). Si el grupo decide instalar el fallback, agregar antes de esta tarea un RED de instalación y uno de detección en verify, y repetir plan-reviewer.
+- [ ] 9.1 Reescribir `ARCHITECTURE.md` (líneas 56-75), `README.md` (línea 214 y tabla), `CLAUDE.md:9` y la sección 2 del repo, y `AGENTS.md:148-149` (espejo), con la invocación `/sdd-orchestrator`, cómo salir del modo coordinador, el comportamiento tras compactar y reanudar, el límite del contenido del usuario, el orden de precedencia medido, el modo legado por versión, la nota BREAKING, el manifiesto de migración y `--overwrite-edited`, y la limpieza manual en target Project. Verificación: los comandos documentados corren tal cual en el entorno de 8.1.
+- [ ] 9.2 Actualizar la ficha 03 de `CHANGES.md` (skill invocable en lugar de orquestador registrado) y el responsable de 04.
 
 ## DEUDA registrada por el plan
 
-- DEUDA-1 (intento 3, N1): uninstall con target Project para la entrega de Claude (archivo de agente y sección universal en `<root>`). Hoy uninstall es Machine-only por decisión vigente (`uninstall_flags.go:50`). Asignada al primer change que necesite desinstalar en Project; mientras tanto, limpieza manual documentada (tareas 7.5 y 9.1). Si el grupo elige revertirla en G12, deja de ser deuda y entra al alcance.
+- DEUDA-1: uninstall con target Project para la entrega de Claude (directorio de la skill y sección universal en `<root>`). Hoy uninstall es Machine-only por decisión vigente (`uninstall_flags.go:50`). Asignada al primer change que necesite desinstalar en Project; mientras tanto, limpieza manual documentada (tareas 7.5 y 9.1). Si el grupo elige revertirla en G12, deja de ser deuda y entra al alcance.
 
-## 10. Integración
+## 10. Integración y cierre
 
 - [ ] 10.1 Suite completa una vez sobre la revisión entregada: `go test ./...`, `go vet ./...` y el formateo del repo; registrar comando, timestamp, revisión y veredicto.
-
-## Workflow follow-up
-
-- Plan-reviewer revisa el intento 3; hallazgos vuelven al planner sólo con decisión humana (límite de tres intentos).
-- Breaker y auditor sobre la revisión entregada; al cerrar, knowledge-base-report.md y nota del proyecto (destino pendiente: el repo no tiene `obsidian.md`).
-- Archivar sólo con APROBADO del auditor y aprobación humana registrada.
+- [ ] 10.2 Archivar el change con `openspec archive` después de la verificación y la aprobación humana registrada.
+- [ ] 10.3 Abrir el PR desde `claude-native-opsx` hacia `main` con: qué entrega (criterios C por escenario), cómo se comprueba (comandos y evidencia de 8.x y 10.1) y qué queda pendiente (DEUDA y decisiones abiertas). Revisa el responsable del change anterior.
