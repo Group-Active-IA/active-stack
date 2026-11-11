@@ -41,6 +41,29 @@ func TestInstallArgsPreserveCustomSelection(t *testing.T) {
 	}
 }
 
+func TestSyncWithoutRecordPreservesLegacyCodexPolicy(t *testing.T) {
+	home := t.TempDir()
+	config := filepath.Join(home, ".codex", "config.toml")
+	if err := os.MkdirAll(filepath.Dir(config), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	before := []byte("approval_policy = \"untrusted\"\nsandbox_mode = \"read-only\"\n")
+	if err := os.WriteFile(config, before, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := syncRecordedInstall(context.Background(), home, home, false, &out); err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains(out.Bytes(), []byte("ejecutá install")) {
+		t.Fatalf("missing reinstall instructions: %s", out.String())
+	}
+	after, err := os.ReadFile(config)
+	if err != nil || !bytes.Equal(before, after) {
+		t.Fatalf("config changed: %q (%v)", after, err)
+	}
+}
+
 func TestShouldUpdateBinaryNeverDowngrades(t *testing.T) {
 	cases := []struct {
 		current, latest string

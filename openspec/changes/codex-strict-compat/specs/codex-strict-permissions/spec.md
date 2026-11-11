@@ -20,9 +20,39 @@ Active Stack MUST configurar Codex en solo lectura con solicitudes de aprobació
 - **WHEN** una escritura de prueba requiere escalación y el revisor la rechaza
 - **THEN** el archivo de prueba queda intacto
 
+#### Scenario: Write without escalation
+
+- **WHEN** se intenta una escritura dentro del sandbox sin escalación
+- **THEN** se bloquea la escritura y el archivo testigo queda intacto
+
+#### Scenario: Escalation is approved
+
+- **WHEN** el revisor habilitado aprueba la escalación de la escritura de prueba
+- **THEN** se permite esa operación y se verifica el resultado sobre el archivo testigo
+
+#### Scenario: Client cannot request escalation
+
+- **WHEN** la superficie carece de un mecanismo para solicitar escalación
+- **THEN** se informa la limitación y el archivo testigo queda intacto
+
 ### Requirement: Recorded Strict installations migrate safely
 
 Active Stack MUST migrar la configuración legada al reinstalar o reaplicar una selección registrada de Codex en Estricto, con respaldo previo y preservación de claves y perfiles ajenos.
+
+#### Scenario: Legacy policy in an unmanaged layer
+
+- **WHEN** verify detecta la política legada en una capa ajena al instalador
+- **THEN** informa la capa y el impacto observado, preserva esa capa e indica si la política efectiva sigue sin verificar
+
+#### Scenario: Invalid TOML
+
+- **WHEN** el TOML que se va a migrar es inválido
+- **THEN** informa el diagnóstico y conserva el archivo intacto
+
+#### Scenario: Rollback would overwrite later edits
+
+- **WHEN** el archivo difiere del estado que dejó la operación que se intenta revertir
+- **THEN** conserva el archivo actual e identifica el respaldo para recuperación manual
 
 #### Scenario: Recorded update and repeat
 

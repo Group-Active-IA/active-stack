@@ -59,9 +59,11 @@ var tableES = map[string]string{
 	"mode.custom.long":  "El modo Personalizado te deja elegir exactamente qué harnesses instalar, uno por uno. No se instala nada fuera de tu selección, salvo el piso de seguridad obligatorio (los permisos), que siempre entra. Usalo cuando ya conocés tu stack y querés control total sobre qué queda y qué no. Si preferís una decisión ya tomada, Rápido o Completo son más directos.",
 
 	// tier.{estricto,balanceado,bypass}.{label,desc,long} + tier.bypass.warning.
-	"tier.estricto.label": "Estricto",
-	"tier.estricto.desc":  "El agente debe pedir permiso para cada operación. Máxima fricción, máxima seguridad.",
-	"tier.estricto.long":  "Estricto configura los permisos del agente para que pida confirmación antes de cada operación. Aplica el conjunto de reglas más restrictivo sobre el piso de seguridad: nada corre sin tu visto bueno. Es el nivel de mayor fricción y mayor seguridad. Elegilo para proyectos sensibles o si recién empezás y querés revisar todo antes de que pase; si te traba el ritmo, Balanceado afloja lo repetitivo.",
+	"tier.estricto.label":      "Estricto",
+	"tier.estricto.codex.desc": "Codex: Solo lectura por defecto",
+	"tier.estricto.codex.long": "Codex trabaja en solo lectura. Las acciones que requieren permisos adicionales necesitan aprobación explícita cuando la interfaz admite solicitarla. En las demás interfaces, esas acciones quedan bloqueadas.",
+	"tier.estricto.desc":       "El agente debe pedir permiso para cada operación. Máxima fricción, máxima seguridad.",
+	"tier.estricto.long":       "Estricto configura los permisos del agente para que pida confirmación antes de cada operación. Aplica el conjunto de reglas más restrictivo sobre el piso de seguridad: nada corre sin tu visto bueno. Es el nivel de mayor fricción y mayor seguridad. Elegilo para proyectos sensibles o si recién empezás y querés revisar todo antes de que pase; si te traba el ritmo, Balanceado afloja lo repetitivo.",
 
 	"tier.balanceado.label": "Balanceado",
 	"tier.balanceado.desc":  "Lista de permitidos curada para operaciones seguras y repetitivas. Punto de partida recomendado.",

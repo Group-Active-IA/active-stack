@@ -10,6 +10,10 @@ Active Stack escribe `approval_policy = "untrusted"` al elegir Estricto para Cod
 - Reaplicar la configuración mediante el instalador existente al actualizar una selección registrada de Codex en Estricto. Guiar la reinstalación explícita para instalaciones sin registro.
 - Ajustar la descripción de Estricto para Codex y verificar carga, permisos efectivos, preservación de preferencias y recuperación.
 
+**Descripción corta** · «Solo lectura por defecto».
+
+**Descripción larga** · «Codex trabaja en solo lectura. Las acciones que requieren permisos adicionales necesitan aprobación explícita cuando la interfaz admite solicitarla. Si la interfaz carece de ese mecanismo, la acción permanece bloqueada».
+
 ## Capabilities
 
 ### New Capabilities

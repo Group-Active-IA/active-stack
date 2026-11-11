@@ -2,10 +2,12 @@ package tui
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/model"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // anyTierCapable returns true when at least one agent in the set is tier-capable.
@@ -60,7 +62,14 @@ func (m Model) viewPermissions() string {
 		if m.Selection.Tier == tier || (m.Selection.Tier == "" && tier == model.TierBalanceado) {
 			radio = selectedStyle.Render("(•)")
 		}
-		sb.WriteString(fmt.Sprintf("%s%s %s\n", cursor, radio, tier))
+		sb.WriteString(fmt.Sprintf("%s%s %s", cursor, radio, tier))
+		if tier == model.TierEstricto && slices.Contains(m.Selection.Agents, model.AgentCodex) {
+			sb.WriteString(" — " + i18n.T("en", "tier.estricto.codex.desc"))
+			if m.Cursor == i {
+				sb.WriteString("\n    " + i18n.T("en", "tier.estricto.codex.long"))
+			}
+		}
+		sb.WriteByte('\n')
 	}
 
 	// Show bypass warning when cursor is on the bypass tier.
