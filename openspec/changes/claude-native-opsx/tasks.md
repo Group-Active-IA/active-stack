@@ -72,13 +72,16 @@ Scripts en `investigacion/`, nunca en `internal/`. Toda corrida con modelo sigue
 
 ## 4. Partición del asset y composición
 
-- [ ] 4.0 Antes de tocar `compose.go`: agregar goldens de `Compose` con todos los toggles para Codex y Antigravity en `internal/harness/config/testdata/` (hoy sólo existen los de Claude y OpenCode), generados desde 35a89f8.
+- [x] 4.0 Antes de tocar `compose.go`: agregar goldens de `Compose` con todos los toggles para Codex y Antigravity en `internal/harness/config/testdata/` (hoy sólo existen los de Claude y OpenCode), generados desde 35a89f8.
+  - Evidencia: `git diff --stat 35a89f8 HEAD -- internal/harness/config` vacío (assets y compose.go idénticos a 35a89f8). Tests `TestCompose_AllToggles_codex` y `_antigravity` + goldens `compose_all_toggles_{codex,antigravity}.golden` generados con `-update`; `go test ./internal/harness/config/` ok; agregar un byte al golden de Codex falla por aserción (`got len=18010 want len=18011`); restaurado.
 - [ ] 4.1 Partir `internal/harness/config/assets/claude/sdd-orchestrator.md` según la matriz acordada (2.2): universal, cuerpo de `SKILL.md` y módulos. No cambiar el texto normativo, sólo reubicarlo. Ordenar el cuerpo con rol, reglas obligatorias y tabla acción → módulos primero (D10).
 - [ ] 4.2 RED en `internal/harness/config/compose_test.go`: la composición universal no contiene encabezados del coordinador ni módulos; el `SKILL.md` contiene el rol, la tabla acción → módulos y `disable-model-invocation: true`, y no contiene el texto de los módulos; cada módulo existe sólo con su toggle activo; la composición legado es byte a byte igual al golden `compose_all_toggles_claude.golden` de 35a89f8. (M) sobre la ausencia de módulos en `SKILL.md` y sobre la igualdad del legado.
 - [ ] 4.3 RED: el `SKILL.md` compuesto con los cinco toggles queda bajo el umbral de tokens de 1.4 (escenario "El SKILL.md entra en el presupuesto de reenganche"). (M) sobre el umbral.
 - [ ] 4.4 Conservar el golden actual de Claude como golden de la composición legado y agregar goldens para universal, `SKILL.md` y cada módulo; los goldens de OpenCode, Codex y Antigravity no cambian.
-- [ ] 4.5 RED en `inject_test.go`: después de inyectar la sección universal, una segunda inyección no la purga (C5); GREEN registrando la sección como propia. (M) quitando el registro.
-- [ ] 4.6 RED: con un marker `active-stack:` de apertura sin cierre en `CLAUDE.md`, install no elimina el fragmento y emite una advertencia con ruta e ID.
+- [x] 4.5 RED en `inject_test.go`: después de inyectar la sección universal, una segunda inyección no la purga (C5); GREEN registrando la sección como propia. (M) quitando el registro.
+  - Evidencia: RED `go test ./internal/harness/config/ -run Universal` -> `TestInjectSection_UniversalSectionSurvivesReinjection`: `universal section was purged by the second injection`; GREEN con `UniversalSectionID` en `ownedSectionIDs` (ID tentativo `universal-rules`, design D2). (M) quitar el registro -> vuelve a fallar con el mismo mensaje; restaurado.
+- [x] 4.6 RED: con un marker `active-stack:` de apertura sin cierre en `CLAUDE.md`, install no elimina el fragmento y emite una advertencia con ruta e ID.
+  - Evidencia: RED `-run Unclosed` -> `TestInjectSection_UnclosedMarkerIsKeptAndWarned`: `want a warning naming <ruta> and ID "half-written", got []` (la parte "no elimina el fragmento" ya se cumplía: `MarkedSectionIDs` ignora marcadores sin cierre). GREEN: `InjectResult.Warnings` con ruta e ID. El llamador que imprime las advertencias queda para la sección 6.
 
 ## 5. Inyector de la skill y transacción
 
