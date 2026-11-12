@@ -28,7 +28,7 @@ Rangos de línea sobre los assets de `internal/harness/config/assets/` en `main`
 | 8 | `claude/sdd-orchestrator.md:15` | Engram persiste contexto (una línea) | universal | sí | bloque universal (toggle `engram`) | lo define 04 |
 | 9 | `claude/sdd-orchestrator.md:17-26` | Starting work, fundación | coordinador | no | `SKILL.md` | skill |
 | 10 | `claude/sdd-orchestrator.md:27-47` | Delegation rules (toggle) | módulo `delegation` | sí, en el encargo | `modules/delegation.md` | módulo `delegation` |
-| 11 | 07 D1 | Cuándo delegar (regla breve) | coordinador | no | `SKILL.md` | skill |
+| 11 | 07 D1 | Cuándo delegar (regla breve) | coordinador | no | pendiente de texto de 07 | pendiente de texto de 07 |
 | 12 | `claude/sdd-orchestrator.md:48-108` | Workflow, comandos, manejo de pedidos y tabla acción → especialista | coordinador | no | `SKILL.md` | skill |
 | 13 | `claude/sdd-orchestrator.md:109-166` | Patrón de lanzamiento y plantilla de encargo | coordinador | no (es lo que arma el encargo) | `SKILL.md` | skill |
 | 14 | `claude/sdd-orchestrator.md:167-202` | Ciclo de artefactos y comandos CLI | módulo `artifacts` (propose, apply, archive) | sí, en el encargo | `modules/artifacts.md` | lo define 04 |
@@ -60,6 +60,14 @@ Rangos de línea sobre los assets de `internal/harness/config/assets/` en `main`
 - **Model assignments (fila 17).** Módulo con toggle en Claude; en Codex se omite hasta 09.
 
 ## Reglas de la tabla
+
+- **Estructura no es regla.** El título del asset (`:1`) se elimina en las capas nuevas, como la
+  fila 4. Los encabezados de agrupación (`## Core Principles` `:11`, `## Rules` `:203`) se repiten
+  en cada capa que tenga contenido debajo, y la numeración se rehace dentro de cada capa. Los
+  markers `active-stack:` son estructura de composición y no viajan a los módulos.
+- **Tabla acción → módulos del `SKILL.md`:** propose → `artifacts`; apply → `artifacts`, `tdd`;
+  archive → `artifacts`; delegar → `delegation`, `model-assignments`; inicio y cierre de sesión
+  → `engram-opsx`. Un módulo de toggle inactivo no figura en la tabla.
 
 - Una fila, una capa. Si un bloque toca dos capas se parte en filas.
 - Ninguna regla del asset queda sin fila; ninguna aparece en dos capas.
