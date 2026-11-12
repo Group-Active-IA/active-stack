@@ -54,7 +54,7 @@ de contexto de la transcripción propia del subagente.
 
 #### Scenario: Especialista de apply recibe el módulo TDD (depende de G3, recomendación)
 - **WHEN** el coordinador delega una acción apply con el toggle `tdd` activo
-- **THEN** el contexto del especialista contiene el testigo del módulo TDD y no contiene el testigo del módulo de governance
+- **THEN** el contexto del especialista contiene el testigo del módulo TDD y no contiene el testigo del módulo `model-assignments`
 - **AND** con G3 en archivos de apoyo este escenario prueba que el coordinador pegó el módulo en el encargo (comportamiento del modelo, no del instalador) y se verifica sobre el prompt registrado del subagente
 
 #### Scenario: Explore o Plan reciben las reglas obligatorias por el encargo

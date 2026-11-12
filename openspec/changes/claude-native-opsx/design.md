@@ -178,8 +178,8 @@ Al decidir una acción, el coordinador lee sólo esos archivos y:
 - si delega, pega su contenido en el encargo del especialista (patrón actual de "Project
   Standards", `sdd-orchestrator.md:144-149`), porque el subagente no ve las skills del padre.
 
-Inventario inicial (texto existente, sólo reubicado): `tdd.md` (apply), `governance.md` (según la
-matriz, ver G4), `delegation.md` (cuando se delega: reglas de `sdd-delegation`, sobre de retorno
+Inventario inicial (texto existente, sólo reubicado, según la matriz común): `tdd.md` (apply),
+`artifacts.md` (ciclo de artefactos y comandos CLI: propose, apply, archive), `delegation.md` (cuando se delega: reglas de `sdd-delegation`, sobre de retorno
 de 07 y extracto `## Evidence Contract` de 06), `model-assignments.md` (toggle), `engram-opsx.md`
 (parte OPSX de Engram). Los textos que redacta 05 (lectura dirigida, resumen acotado, selección de
 herramientas, reporte conciso, 05 D17) entran como módulos nuevos con el mismo mecanismo. Quién
@@ -350,6 +350,7 @@ Cerradas por el grupo o por el acuerdo de 2026-11-10:
 | G2 | Cómo se invoca el coordinador | Skill `/sdd-orchestrator` con `disable-model-invocation: true`, en la sesión actual. Sin fallback instalado: con versión insuficiente rige el modo legado (D7). | Informe unificado y auditoría técnica, 2026-11-10 |
 | G5 | ID del coordinador | `sdd-orchestrator` (coincide con `h.ID`, verify, uninstall y la sintaxis acordada). | Mismo acuerdo |
 | G8 | Dependencia con 02 | 02 integrada en `main`; la comparación antes y después es su tarea 4.1 con la variante de esta ficha. Los criterios funcionales no dependen de esa medición. | `main` 35a89f8 |
+| G4 | Matriz de reglas por capa | `openspec/matriz-reglas-opsx.md`, publicada por la 03; la 04 se alinea. Governance (niveles) universal, coincidiendo con 05. | Decisión de Juani, 2026-11-12 |
 | G9 | Exposición del coordinador como subagente | Deja de aplicar: una skill con `disable-model-invocation: true` no se puede precargar en subagentes ni la invoca el modelo. Queda un escenario determinista (tarea 1.10). | Documentación de skills; auditoría complementaria |
 
 Abiertas. Las specs están escritas sobre la recomendación y cada requisito dependiente lo marca
@@ -359,7 +360,6 @@ con "(depende de Gn, recomendación)":
 |---|---|---|---|---|
 | G1 | Dónde se instala cada pieza | universal en `CLAUDE.md` + skill en `.claude/skills/` según target / todo en Project / todo en Machine | según target, como hoy, con la advertencia de colisión personal sobre proyecto | grupo |
 | G3 | Cómo llegan los módulos al especialista | archivos de apoyo pegados en el encargo / una skill por módulo / agente por especialista | archivos de apoyo (D4) | 04 |
-| G4 | Matriz de reglas por cliente, interfaz, rol y acción | ver borrador abajo | borrador abajo; `governance` diverge de 05 (abajo) | 04 (co-dueña), 05 |
 | G6 | Alcance del arreglo de permisos y guarda persistente | sólo rutas de esta ficha / arreglo global de `WriteFileAtomic` / diferir como DEUDA | global con tests, serializado con 08 D9 y un único revisor ALTO | 01, 08 |
 | G7 | Sección `design-mockups` | queda en `CLAUDE.md` / pasa a módulo | queda en este change | grupo |
 | G10 | Proyectos registrados con instalación Project V1 | advertir y migrar a pedido / migrar en `update` / ignorar | advertir con el comando de migración | grupo |
@@ -367,44 +367,14 @@ con "(depende de Gn, recomendación)":
 | G12 | Uninstall con target Project | mantener Machine-only con limpieza manual y DEUDA / agregar `--project` | sin recomendación; el plan mantiene Machine-only | grupo |
 | G13 | Limitar tipos de subagente que lanza el coordinador | no limitar / `permissions.deny` por tipo | no limitar en esta ficha; si se pide, lo implementa 08 | 08 |
 
-### Borrador de matriz de reglas (G4, co-dueña con la Propuesta 04)
+### Matriz de reglas (G4, cerrada el 2026-11-12)
 
-Una capa por fila. Cuando un bloque toca dos capas se parte en filas o lleva justificación. La
-columna "Especialista" dice si el especialista la recibe y por qué vía.
-
-| Origen | Regla o bloque | Capa propuesta | Especialista | Estado |
-|---|---|---|---|---|
-| `sdd-orchestrator.md:3` | "Bind this to the dedicated agent only" | se elimina (lo cumple la entrega) | no | propuesta |
-| `sdd-orchestrator.md:5-9` | Role: coordinador, no ejecutor | coordinador | no | propuesta |
-| `sdd-orchestrator.md:13` | CLI `openspec` dueño del estado | universal | sí (`CLAUDE.md`; repetida en encargo a Explore/Plan) | propuesta |
-| `sdd-orchestrator.md:14` | Delegar, no inflar | coordinador | no | propuesta |
-| `sdd-orchestrator.md:15` | Engram persiste contexto | universal (mínimo) | sí (`CLAUDE.md`) | (TBD grupo) |
-| `sdd-orchestrator.md:17-24` | Starting work, fundación | coordinador | no | propuesta |
-| `sdd-orchestrator.md:26-46` | Delegation rules (toggle) | módulo `delegation.md` | sí, cuando se delega (encargo) | propuesta |
-| 07 D1 | Cuándo delegar (regla breve) | coordinador (cuerpo de `SKILL.md`) | no | propuesta |
-| `sdd-orchestrator.md:48-108` | Workflow, comandos, manejo de pedidos | coordinador | no | propuesta |
-| `sdd-orchestrator.md:109-165` | Patrón de lanzamiento y brief | coordinador | no | propuesta |
-| `sdd-orchestrator.md:167-201` | Ciclo de artefactos y comandos CLI | módulo por acción (propose/apply) | sí (encargo) | (TBD 04) |
-| `sdd-orchestrator.md:205-206` | NEVER guess state; NEVER crear `openspec/` a mano | universal | sí (`CLAUDE.md`) | propuesta |
-| `sdd-orchestrator.md:207-210` | NEVER bloquear, NEVER apply/propose inline, ambigüedad, `/sdd-*` | coordinador | no (lo contradiría) | propuesta |
-| `sdd-orchestrator.md:212-226` | Model assignments (toggle) | módulo `model-assignments.md` | no | propuesta |
-| `governance.md:1-13` | Niveles de autonomía por dominio | módulo propose (03) / núcleo (05) | sí | (TBD grupo: diverge con 05) |
-| `governance.md:14-19` | Cómo aplicarlos al decidir delegación y checkpoints | coordinador | no | (TBD grupo) |
-| `engram-protocol.md:1-5` | Encabezado "ALWAYS ACTIVE" | universal | sí | (TBD grupo) |
-| `engram-protocol.md:6-12` | Wiring OPSX | módulo `engram-opsx.md` | no | propuesta |
-| `engram-protocol.md:13-59` | Guardado proactivo y búsqueda | universal | sí | (TBD grupo) |
-| `engram-protocol.md:60-92` | Cierre de sesión y recuperación tras compactación | coordinador | no | (TBD grupo) |
-| `engram-protocol.md:93-117` | Git sync de memoria | (TBD grupo) | (TBD) | abierto |
-| `compose.go:93` | Línea `Strict TDD Mode: enabled` | módulo `tdd.md` | sí, en apply | propuesta |
-| `strict-tdd.md` | Módulo TDD | módulo `tdd.md` (apply) | sí, en apply | propuesta |
-| 05 D17 | Lectura dirigida, resumen acotado, selección de herramientas, reporte conciso | módulos nuevos | según 05 D2 | pendiente de texto de 05 |
-| 06 D5 | Contrato de evidencia y extracto `## Evidence Contract` | módulo `delegation.md` y encargo con comandos | sí, si ejecuta comandos | pendiente de texto de 06 |
-| 07 D6 | Sobre de retorno | módulo `delegation.md` | sí, cuando se delega | pendiente de texto de 07 |
-| harness `permissions` | Denegaciones en settings | universal por mecanismo | sí | sin cambio |
-| sección `design-mockups` | Gates visuales | queda en `CLAUDE.md` (G7) | sí | sin cambio |
-
-Los rangos de `governance.md` y `engram-protocol.md` salen de sus encabezados (`governance.md:1`,
-`:5`, `:14`; `engram-protocol.md:1`, `:6`, `:13`, `:48`, `:60`, `:84`, `:93`).
+La matriz vive en [`openspec/matriz-reglas-opsx.md`](../../matriz-reglas-opsx.md), común a 03 y 04.
+La publicó la 03 y la 04 se alinea completando la columna Codex. Esta ficha no la duplica: la
+partición del asset (tarea 4.1) sigue esa tabla fila por fila. Decisiones tomadas al publicar:
+governance (niveles) universal, coincidiendo con 05; Engram guardar y buscar universal, wiring
+OPSX y git sync en el módulo `engram-opsx`, cierre de sesión y recuperación en el coordinador;
+ciclo de artefactos en el módulo `artifacts`.
 
 ## Contradicciones encontradas en el código
 

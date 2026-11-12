@@ -9,8 +9,7 @@
 - Revisión base: rama `claude-native-opsx` con `main` integrado (`35a89f8`: 01 y 02 en `main`).
 - Informes de la ronda anterior (agente de sesión, base 97d7f6c): `informes/propose-1..3-*.md`.
   Su contenido sobre `--agent`, B1 y G9 quedó superado por esta revisión.
-- Bloqueantes para construir: (1) decisiones abiertas de design.md (tabla G); (2) matriz acordada
-  con 04 (G4); (3) aprobación humana fechada en proposal.md `## Aprobación`, incluido el nivel
+- Bloqueantes para construir: (1) decisiones abiertas de design.md (tabla G); (2) ~~matriz con 04 (G4)~~ publicada el 2026-11-12; (3) aprobación humana fechada en proposal.md `## Aprobación`, incluido el nivel
   ALTO o CRITICAL; (4) resultados de 1.4, 1.10, 1.11 y 1.14 antes de cerrar los escenarios de
   continuidad.
 - 2026-11-12: Juani autorizó empezar el apply de las tareas no bloqueadas sin esperar la sección 2; la aprobación ALTO/CRITICAL de 2.7 sigue pendiente.
@@ -54,8 +53,8 @@ Scripts en `investigacion/`, nunca en `internal/`. Toda corrida con modelo sigue
 ## 2. Coordinación y decisiones de grupo
 
 - [ ] 2.1 Presentar al grupo las decisiones abiertas de design.md (G1, G3, G4, G6, G7, G10-G13) con recomendación; registrar opción, fecha y quién decidió. Verificación: `rg -n "depende de G" specs/` coincide con las filas que siguen abiertas.
-- [ ] 2.2 Con Matías (04): publicar la matriz común por cliente, interfaz, rol y acción (ubicación a acordar), con la columna de Claude completa, y enlazarla desde design.md. Verificación: escenarios "Ninguna regla sin capa" y "Regla en dos capas".
-- [ ] 2.3 Con Emiliano (05): llevar al grupo la divergencia de `governance` (módulo propose vs núcleo) y recibir los textos de D17. Con Gianfranco (06) y Neyén (07): recibir el `## Evidence Contract` y el sobre de retorno; ubicarlos en `modules/delegation.md` sin redefinirlos.
+- [x] 2.2 (2026-11-12: matriz publicada en `openspec/matriz-reglas-opsx.md` por la 03; la 04 se alinea completando la columna Codex) Con Matías (04): publicar la matriz común por cliente, interfaz, rol y acción (ubicación a acordar), con la columna de Claude completa, y enlazarla desde design.md. Verificación: escenarios "Ninguna regla sin capa" y "Regla en dos capas".
+- [ ] 2.3 Con Emiliano (05): divergencia de `governance` resuelta en la matriz (universal, como pide 05); recibir los textos de D17. Con Gianfranco (06) y Neyén (07): recibir el `## Evidence Contract` y el sobre de retorno; ubicarlos en `modules/delegation.md` sin redefinirlos.
 - [ ] 2.4 Con Juan Cruz (01) y Gianfranco (08): acordar un único revisor ALTO para `filemerge` y el orden de integración del arreglo de permisos de esta ficha y el de 08 D9 (G6); confirmar si alguna de las dos agrega una guarda persistente en `internal/backup` que esta ficha reutilice.
 - [ ] 2.5 Con 08: mensaje de control obligatorio ausente por superficie (D11) y G13.
 - [ ] 2.6 Si alguna decisión o un resultado de la sección 1 cambia specs o design, actualizar los artefactos y repetir la revisión del plan antes de seguir.

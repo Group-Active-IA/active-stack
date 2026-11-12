@@ -78,9 +78,9 @@ la acción solicitada y, cuando delega, MUST pasar su contenido en el encargo de
 Actor: coordinador. Disparador: pedido de una acción (explore, propose, apply, verify, archive).
 Resultado: testigo del módulo presente en el contexto del hilo o del especialista.
 
-#### Scenario: propose recibe governance y no TDD
-- **WHEN** con el coordinador invocado y `governance` y `tdd` activos, el usuario pide propose
-- **THEN** el contexto de quien ejecuta propose (hilo o especialista) contiene el testigo de governance (control positivo) y no el de TDD
+#### Scenario: propose recibe artifacts y no TDD
+- **WHEN** con el coordinador invocado y el toggle `tdd` activo, el usuario pide propose
+- **THEN** el contexto de quien ejecuta propose (hilo o especialista) contiene el testigo del módulo `artifacts` (control positivo) y no el de TDD
 
 #### Scenario: Toggle desactivado omite el módulo
 - **WHEN** el toggle `tdd` está inactivo y se instala el coordinador
