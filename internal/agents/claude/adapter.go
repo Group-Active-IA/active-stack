@@ -119,9 +119,11 @@ func (a *Adapter) PathsFor(base string, t model.InstallTarget) model.AgentPaths 
 	}
 }
 
-// ConfigDelivery returns model.ConfigDeliveryInstructions — Claude Code reads a
-// flat instructions file (~/.claude/CLAUDE.md), so config harnesses inject
-// there.
+// ConfigDelivery returns model.ConfigDeliveryManagedSkill: Claude receives a
+// minimal universal block in CLAUDE.md plus a user-invoked coordinator skill
+// (claude-native-opsx D1). Until the layered installer lands, config.Install
+// still routes this mode through the instructions-file injection (its default
+// branch), so behavior is unchanged.
 func (a *Adapter) ConfigDelivery() model.ConfigDelivery {
-	return model.ConfigDeliveryInstructions
+	return model.ConfigDeliveryManagedSkill
 }

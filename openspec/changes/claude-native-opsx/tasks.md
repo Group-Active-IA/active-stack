@@ -13,6 +13,7 @@
   con 04 (G4); (3) aprobación humana fechada en proposal.md `## Aprobación`, incluido el nivel
   ALTO o CRITICAL; (4) resultados de 1.4, 1.10, 1.11 y 1.14 antes de cerrar los escenarios de
   continuidad.
+- 2026-11-12: Juani autorizó empezar el apply de las tareas no bloqueadas sin esperar la sección 2; la aprobación ALTO/CRITICAL de 2.7 sigue pendiente.
 - Cierre: implementar, archivar y abrir PR hacia `main` declarando qué entrega, cómo se comprueba
   y qué queda pendiente. Revisa el responsable del change anterior (circuito del grupo: contrato,
   evidencia, decisión).
@@ -62,9 +63,12 @@ Scripts en `investigacion/`, nunca en `internal/`. Toda corrida con modelo sigue
 
 ## 3. Modelo y adapter de Claude
 
-- [ ] 3.1 RED en `internal/agents/claude/adapter_test.go`: `ConfigDelivery()` devuelve el modo nuevo de skill administrada (D1) y el directorio de skills se resuelve para Machine (`<home>/.claude/skills`) y Project (`<root>/.claude/skills`). GREEN en `internal/model/harness.go` (constante nueva, sin reordenar las existentes) y `adapter.go`. Consumidores: `internal/install/plan.go` (`projectTargetAdapter`), `internal/verify/adapter.go`, `cmd/active-stack/main.go` (`projectVerifyAdapter`), `internal/harness/config/types.go`, `internal/uninstall/types.go`; agregar lo necesario a interfaces y fakes. Verificación: `go test ./internal/agents/... ./internal/model/... ./internal/install/... ./cmd/active-stack/...`.
-- [ ] 3.2 Regresión: tests existentes de OpenCode (`ConfigDeliveryPrimaryAgent`), Codex y Antigravity siguen verdes sin cambiar aserciones.
-- [ ] 3.3 RED: detección de versión de Claude con salida válida, menor que la mínima, no parseable o con error, y binario ausente; cada caso devuelve un estado distinto (compatible, insuficiente, desconocida, ausente). (M) sobre la comparación de versión.
+- [x] 3.1 RED en `internal/agents/claude/adapter_test.go`: `ConfigDelivery()` devuelve el modo nuevo de skill administrada (D1) y el directorio de skills se resuelve para Machine (`<home>/.claude/skills`) y Project (`<root>/.claude/skills`). GREEN en `internal/model/harness.go` (constante nueva, sin reordenar las existentes) y `adapter.go`. Consumidores: `internal/install/plan.go` (`projectTargetAdapter`), `internal/verify/adapter.go`, `cmd/active-stack/main.go` (`projectVerifyAdapter`), `internal/harness/config/types.go`, `internal/uninstall/types.go`; agregar lo necesario a interfaces y fakes. Verificación: `go test ./internal/agents/... ./internal/model/... ./internal/install/... ./cmd/active-stack/...`.
+  - Evidencia: RED `go test ./internal/agents/claude/` -> `TestClaudeAdapter_ConfigDelivery_ManagedSkill`: `ConfigDelivery() = 0, want ConfigDeliveryManagedSkill (2)`; GREEN mismo comando ok. Los consumidores (`plan.go`, `verify`, `main.go`, `config/types.go`, `uninstall`) no necesitaron cambios: `projectTargetAdapter` embebe el adapter y las interfaces ya declaran `ConfigDelivery()`; `config.Install` rutea el modo nuevo por la rama `default` (sin cambio de comportamiento hasta la sección 6).
+- [x] 3.2 Regresión: tests existentes de OpenCode (`ConfigDeliveryPrimaryAgent`), Codex y Antigravity siguen verdes sin cambiar aserciones.
+  - Evidencia: `go test ./internal/agents/... ./internal/harness/config/... ./internal/verify/... ./internal/uninstall/...` ok sin tocar aserciones existentes (OpenCode `ConfigDeliveryPrimaryAgent`, Codex y Antigravity).
+- [x] 3.3 RED: detección de versión de Claude con salida válida, menor que la mínima, no parseable o con error, y binario ausente; cada caso devuelve un estado distinto (compatible, insuficiente, desconocida, ausente). (M) sobre la comparación de versión.
+  - Evidencia: RED `go test ./internal/agents/claude/ -run DetectVersion` -> `TestDetectVersion_States/valid_above_minimum`: `State = 0, want 1`; GREEN ok. (M) `if versionLess(got, minV)` -> `if !versionLess(minV, got)` falla `TestDetectVersion_States/equal_to_minimum`; `a[i] < b[i]` -> `a[i] > b[i]` falla 4 subcasos; restaurado. Mínima `MinVersion = "0.0.0"` con `TBD tarea 1.4`.
 
 ## 4. Partición del asset y composición
 
