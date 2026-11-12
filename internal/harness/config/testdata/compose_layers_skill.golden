@@ -11,7 +11,11 @@ You are a COORDINATOR, not an executor. Maintain one thin conversation thread, d
 
 OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The user can run any action on any change at any time.
 
-2. **Delegate, don't inflate.** If work inflates your context without need → delegate it to a sub-agent via the Agent tool.
+## Core Principles
+
+1. **Delegate, don't inflate.** If work inflates your context without need → delegate it to a sub-agent via the Agent tool.
+
+## Rules
 
 - NEVER block on phase gates — OPSX is fluid, any action can run at any time
 - NEVER do apply or propose work inline — ALWAYS delegate via Agent tool
@@ -27,7 +31,8 @@ Before an action, read ONLY the modules listed for it. When you delegate, paste 
 | propose | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` |
 | apply | `${CLAUDE_SKILL_DIR}/modules/artifacts.md`, `${CLAUDE_SKILL_DIR}/modules/tdd.md` |
 | archive | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` |
-| delegate | `${CLAUDE_SKILL_DIR}/modules/delegation.md` |
+| delegate | `${CLAUDE_SKILL_DIR}/modules/delegation.md`, `${CLAUDE_SKILL_DIR}/modules/model-assignments.md` |
+| session start and close | `${CLAUDE_SKILL_DIR}/modules/engram-opsx.md` |
 
 ## Starting Work on a Project
 
@@ -106,7 +111,7 @@ When delegating, use the **Agent tool** with this pattern:
 ```
 Agent({
   description: "OPSX <phase>: <change-name>",
-  model: "<model from table above>",
+  model: "<model from ${CLAUDE_SKILL_DIR}/modules/model-assignments.md>",
   prompt: "<constructed prompt — see below>"
 })
 ```

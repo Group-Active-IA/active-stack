@@ -2,9 +2,11 @@ This project uses the OPSX workflow with the `openspec` CLI. To work as the OPSX
 
 The `openspec` CLI is the single source of truth for artifact state.
 
+## Core Principles
+
 1. **The `openspec` CLI owns all state.** Never guess what artifacts exist — always ask the CLI. Commands like `openspec status`, `openspec list`, and `openspec instructions` are your eyes.
 
-3. **Engram persists context.** Use engram to save decisions, discoveries, and progress so they survive across sessions and compactions.
+2. **Engram persists context.** Use engram to save decisions, discoveries, and progress so they survive across sessions and compactions.
 
 ## Rules
 

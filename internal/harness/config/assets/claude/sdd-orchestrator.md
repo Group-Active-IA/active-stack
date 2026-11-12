@@ -1,4 +1,4 @@
-<!-- as:tbd/title -->
+<!-- as:drop/title -->
 # OPSX Orchestrator Instructions
 
 <!-- as:drop/dedicated-agent -->
@@ -12,7 +12,7 @@ You are a COORDINATOR, not an executor. Maintain one thin conversation thread, d
 
 OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The user can run any action on any change at any time.
 
-<!-- as:tbd/core-principles -->
+<!-- as:structure/core-principles -->
 ## Core Principles
 
 <!-- as:universal/principle-cli-owns-state -->

@@ -133,16 +133,20 @@ func TestComposeLayers_ModuleContents(t *testing.T) {
 	}
 }
 
-// tbdLines are original lines the matrix leaves without a row (no layer yet).
-var tbdLines = map[string]bool{
-	"# OPSX Orchestrator Instructions": true,
-	"## Core Principles":               true,
-}
+// droppedLines are original lines the layered delivery eliminates (matrix: the
+// asset title, like row 4).
+var droppedLines = map[string]bool{"# OPSX Orchestrator Instructions": true}
 
-var ruleLineRe = regexp.MustCompile(`^(#{1,6} |\d+\. |- NEVER |.*\bNEVER\b)`)
+// structuralHeadings group content and repeat in every layer that has content
+// below them ("Estructura no es regla").
+var structuralHeadings = map[string]bool{"## Core Principles": true, "## Rules": true}
 
-// 4.2: "Ninguna regla sin capa": every heading, NEVER line and numbered rule of
-// the original assets appears in exactly one layer (or is an explicit TBD).
+var ruleLineRe = regexp.MustCompile(`^(#{1,6} |\d+\. |.*\bNEVER\b)`)
+var numberRe = regexp.MustCompile(`^\d+\. `)
+
+// 4.2: "Ninguna regla sin capa": every heading, NEVER line and rule of the
+// original assets appears in exactly one layer, with the same count. Structural
+// headings may repeat across layers and numbering is not part of a rule.
 func TestComposeLayers_NoRuleWithoutALayerNorInTwo(t *testing.T) {
 	l := mustLayers(t, allToggles)
 	layers := map[string]string{"universal": l.Universal, "skill": config.RenderSkillMD(l.Skill)}
@@ -154,15 +158,19 @@ func TestComposeLayers_NoRuleWithoutALayerNorInTwo(t *testing.T) {
 	count := func(text, line string) int {
 		n := 0
 		for _, ln := range strings.Split(text, "\n") {
-			if ln == line {
+			if numberRe.ReplaceAllString(ln, "") == line {
 				n++
 			}
 		}
 		return n
 	}
 	seen := map[string]bool{}
-	for _, line := range strings.Split(original, "\n") {
-		if !ruleLineRe.MatchString(line) || seen[line] {
+	for _, raw := range strings.Split(original, "\n") {
+		if !ruleLineRe.MatchString(raw) {
+			continue
+		}
+		line := numberRe.ReplaceAllString(raw, "")
+		if seen[line] {
 			continue
 		}
 		seen[line] = true
@@ -173,20 +181,24 @@ func TestComposeLayers_NoRuleWithoutALayerNorInTwo(t *testing.T) {
 				in = append(in, name)
 			}
 		}
-		if tbdLines[line] {
+		switch {
+		case droppedLines[line]:
 			if total != 0 {
-				t.Errorf("TBD line %q must not be delivered yet, found in %v", line, in)
+				t.Errorf("dropped line %q must not be delivered, found in %v", line, in)
 			}
-			continue
-		}
-		want := count(original, line)
-		if total != want {
-			t.Errorf("line %q appears %d times in the original and %d in the layers %v", line, want, total, in)
-		}
-		// A line that occurs once in the original (the same heading text can
-		// legitimately occur in two source files) lives in exactly one layer.
-		if want == 1 && len(in) != 1 {
-			t.Errorf("line %q is in %d layers %v, want exactly 1", line, len(in), in)
+		case structuralHeadings[line]:
+			if total == 0 {
+				t.Errorf("structural heading %q is in no layer", line)
+			}
+		default:
+			want := count(original, line)
+			if total != want {
+				t.Errorf("line %q appears %d times in the original and %d in the layers %v", line, want, total, in)
+			}
+			// A line that occurs once in the original lives in exactly one layer.
+			if want == 1 && len(in) != 1 {
+				t.Errorf("line %q is in %d layers %v, want exactly 1", line, len(in), in)
+			}
 		}
 	}
 	// The line added by the composition lives only in the tdd module.
@@ -194,6 +206,97 @@ func TestComposeLayers_NoRuleWithoutALayerNorInTwo(t *testing.T) {
 		if has := strings.Contains(c, "Strict TDD Mode: enabled"); has != (name == "module/tdd") {
 			t.Errorf("%q: Strict TDD Mode line present=%v", name, has)
 		}
+	}
+}
+
+// Structure: grouping headings repeat per layer and numbering restarts in each.
+func TestComposeLayers_StructuralHeadingsAndNumbering(t *testing.T) {
+	l := mustLayers(t, allToggles)
+	md := config.RenderSkillMD(l.Skill)
+	if !strings.Contains(l.Universal, "## Core Principles\n\n1. **The `openspec` CLI owns all state.**") ||
+		!strings.Contains(l.Universal, "\n\n2. **Engram persists context.**") || strings.Contains(l.Universal, "3. **Engram") {
+		t.Errorf("universal must list Core Principles 1 and 2:\n%.600s", l.Universal)
+	}
+	if !strings.Contains(md, "## Core Principles\n\n1. **Delegate, don't inflate.**") || strings.Contains(md, "2. **Delegate") {
+		t.Error("SKILL.md must list Core Principles with the Delegate item as 1")
+	}
+	if !strings.Contains(md, "## Rules\n\n- NEVER block on phase gates") {
+		t.Error("SKILL.md NEVER bullets must sit under their own ## Rules")
+	}
+	if strings.Contains(l.Universal, "# OPSX Orchestrator Instructions") || strings.Contains(md, "# OPSX Orchestrator Instructions") {
+		t.Error("the asset title must be dropped")
+	}
+	// Without engram the universal keeps only item 1.
+	if u := mustLayers(t, nil).Universal; strings.Contains(u, "2. **") {
+		t.Errorf("without engram the universal has a single principle: %.400s", u)
+	}
+}
+
+func tableOf(t *testing.T, toggles []string) string {
+	t.Helper()
+	md := config.RenderSkillMD(mustLayers(t, toggles).Skill)
+	i := strings.Index(md, "## Action to Modules")
+	j := strings.Index(md, "## Starting Work on a Project")
+	if i < 0 || j < i {
+		t.Fatalf("action table not found in SKILL.md")
+	}
+	return md[i:j]
+}
+
+// Action -> modules table: fixed rows, and a module of an inactive toggle is not listed.
+func TestComposeLayers_ActionTableFollowsToggles(t *testing.T) {
+	all := tableOf(t, allToggles)
+	for _, want := range []string{
+		"| propose | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` |",
+		"| apply | `${CLAUDE_SKILL_DIR}/modules/artifacts.md`, `${CLAUDE_SKILL_DIR}/modules/tdd.md` |",
+		"| archive | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` |",
+		"| delegate | `${CLAUDE_SKILL_DIR}/modules/delegation.md`, `${CLAUDE_SKILL_DIR}/modules/model-assignments.md` |",
+		"| session start and close | `${CLAUDE_SKILL_DIR}/modules/engram-opsx.md` |",
+	} {
+		if !strings.Contains(all, want) {
+			t.Errorf("table missing row %q:\n%s", want, all)
+		}
+	}
+	none := tableOf(t, nil)
+	for _, bad := range []string{"tdd.md", "delegation.md", "model-assignments.md", "engram-opsx.md", "| delegate", "| session"} {
+		if strings.Contains(none, bad) {
+			t.Errorf("no toggles: table must not list %q:\n%s", bad, none)
+		}
+	}
+	if !strings.Contains(none, "| apply | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` |") {
+		t.Errorf("no toggles: apply keeps artifacts only:\n%s", none)
+	}
+	for toggle, absent := range map[string][]string{
+		"tdd":           {"delegation.md", "model-assignments.md", "engram-opsx.md"},
+		"delegation":    {"tdd.md", "model-assignments.md", "engram-opsx.md"},
+		"model-routing": {"tdd.md", "delegation.md", "engram-opsx.md"},
+		"engram":        {"tdd.md", "delegation.md", "model-assignments.md"},
+	} {
+		tb := tableOf(t, []string{toggle})
+		for _, bad := range absent {
+			if strings.Contains(tb, bad) {
+				t.Errorf("only %s active: table must not list %s:\n%s", toggle, bad, tb)
+			}
+		}
+	}
+	if tb := tableOf(t, []string{"model-routing"}); !strings.Contains(tb, "| delegate | `${CLAUDE_SKILL_DIR}/modules/model-assignments.md` |") {
+		t.Errorf("model-routing alone keeps a delegate row with model-assignments:\n%s", tb)
+	}
+}
+
+// The launch template points at the model-assignments module in the layered
+// coordinator only; the legacy block keeps the original text.
+func TestComposeLayers_LaunchTemplateReferencesModelAssignments(t *testing.T) {
+	md := config.RenderSkillMD(mustLayers(t, allToggles).Skill)
+	if strings.Contains(md, "<model from table above>") || !strings.Contains(md, `model: "<model from ${CLAUDE_SKILL_DIR}/modules/model-assignments.md>",`) {
+		t.Error("SKILL.md launch template must reference modules/model-assignments.md")
+	}
+	legacy, err := config.Compose(allToggles, "claude")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(legacy, `model: "<model from table above>",`) {
+		t.Error("legacy composition must keep the original launch template text")
 	}
 }
 

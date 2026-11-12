@@ -83,31 +83,70 @@ func ComposeLayers(toggles []string) (Layers, error) {
 		return Layers{}, fmt.Errorf("config compose layers: %w", err)
 	}
 
-	// Universal: matrix rows 3, 6, 8, 15, 18, 20, 22.
-	uKeys := []string{"universal/sentence-cli-source-of-truth", "universal/principle-cli-owns-state"}
-	if active["engram"] {
-		uKeys = append(uKeys, "universal/principle-engram")
-	}
-	uKeys = append(uKeys, "universal/rules")
-	if active["governance"] {
-		uKeys = append(uKeys, "universal/governance-levels")
-	}
-	if active["engram"] {
-		uKeys = append(uKeys, "universal/engram-header", "universal/engram-save-search")
-	}
-	uParts, err := pick(uKeys...)
+	// Structural headings (matrix "Reglas de la tabla"): repeated in every layer
+	// that has content below them; numbering is rebuilt inside each layer.
+	coreHeading, err := frag("structure/core-principles")
 	if err != nil {
 		return Layers{}, err
 	}
-	universal := joinBlocks(append([]string{string(intro)}, uParts...)...)
+	rulesText, err := frag("universal/rules")
+	if err != nil {
+		return Layers{}, err
+	}
+	rulesHeading, _, _ := strings.Cut(rulesText, "\n")
+
+	// Universal: matrix rows 3, 6, 8, 15, 18, 20, 22.
+	sentence, err := frag("universal/sentence-cli-source-of-truth")
+	if err != nil {
+		return Layers{}, err
+	}
+	var principles []string
+	p1, err := frag("universal/principle-cli-owns-state")
+	if err != nil {
+		return Layers{}, err
+	}
+	principles = append(principles, p1)
+	if active["engram"] {
+		p3, err := frag("universal/principle-engram")
+		if err != nil {
+			return Layers{}, err
+		}
+		principles = append(principles, p3)
+	}
+	uBlocks := []string{string(intro), sentence, renumbered(strings.TrimSpace(coreHeading), principles), rulesText}
+	if active["governance"] {
+		g, err := frag("universal/governance-levels")
+		if err != nil {
+			return Layers{}, err
+		}
+		uBlocks = append(uBlocks, g)
+	}
+	if active["engram"] {
+		e, err := pick("universal/engram-header", "universal/engram-save-search")
+		if err != nil {
+			return Layers{}, err
+		}
+		uBlocks = append(uBlocks, e...)
+	}
+	universal := joinBlocks(uBlocks...)
 
 	// Coordinator body (D10): role, mandatory rules and the action table first.
-	table := actionTable(active)
-	cKeys := []string{"coordinator/role", "coordinator/role-fluid", "coordinator/principle-delegate", "coordinator/rules"}
-	head, err := pick(cKeys...)
+	roleParts, err := pick("coordinator/role", "coordinator/role-fluid")
 	if err != nil {
 		return Layers{}, err
 	}
+	pDelegate, err := frag("coordinator/principle-delegate")
+	if err != nil {
+		return Layers{}, err
+	}
+	cRules, err := frag("coordinator/rules")
+	if err != nil {
+		return Layers{}, err
+	}
+	head := append(roleParts,
+		renumbered(strings.TrimSpace(coreHeading), []string{pDelegate}),
+		strings.TrimSpace(rulesHeading)+"\n\n"+strings.TrimSpace(cRules),
+		actionTable(active))
 	restKeys := []string{"coordinator/starting-work", "coordinator/workflow", "coordinator/launch-pattern"}
 	if active["governance"] {
 		restKeys = append(restKeys, "coordinator/governance-apply")
@@ -119,7 +158,12 @@ func ComposeLayers(toggles []string) (Layers, error) {
 	if err != nil {
 		return Layers{}, err
 	}
-	body := joinBlocks(append(append(head, table), rest...)...)
+	if active["model-routing"] {
+		for i, r := range rest {
+			rest[i] = strings.Replace(r, launchModelOld, launchModelNew, 1)
+		}
+	}
+	body := joinBlocks(append(head, rest...)...)
 
 	// Modules.
 	modules := map[string]string{}
@@ -170,29 +214,67 @@ func ComposeLayers(toggles []string) (Layers, error) {
 	}, nil
 }
 
-// actionTable is the short action -> modules table of the coordinator body. It
-// lists only modules that exist for the active toggles.
+// launchModelOld/New: the one authorized text change of the layered coordinator
+// (the "table above" no longer exists once model-assignments is a module).
+const (
+	launchModelOld = `model: "<model from table above>",`
+	launchModelNew = "model: \"<model from ${CLAUDE_SKILL_DIR}/modules/model-assignments.md>\","
+)
+
+var leadingNumberRe = regexp.MustCompile(`^\d+\. `)
+
+// renumbered returns heading + the items with their numbering rebuilt (1., 2., ...).
+func renumbered(heading string, items []string) string {
+	out := []string{heading}
+	for i, it := range items {
+		out = append(out, fmt.Sprintf("%d. ", i+1)+leadingNumberRe.ReplaceAllString(strings.TrimSpace(it), ""))
+	}
+	return strings.Join(out, "\n\n")
+}
+
+// actionTable is the action -> modules table of the coordinator body (matrix,
+// "Reglas de la tabla"). A module whose toggle is inactive is not listed, and a
+// row left without modules is dropped.
 func actionTable(active map[string]bool) string {
-	ref := func(names ...string) string {
-		var out []string
-		for _, n := range names {
-			out = append(out, fmt.Sprintf("`${CLAUDE_SKILL_DIR}/modules/%s.md`", n))
+	exists := func(n string) bool {
+		switch n {
+		case "artifacts":
+			return true
+		case "tdd":
+			return active["tdd"]
+		case "delegation":
+			return active["delegation"]
+		case "model-assignments":
+			return active["model-routing"]
+		case "engram-opsx":
+			return active["engram"]
 		}
-		return strings.Join(out, ", ")
+		return false
+	}
+	rows := []struct {
+		action  string
+		modules []string
+	}{
+		{"propose", []string{"artifacts"}},
+		{"apply", []string{"artifacts", "tdd"}},
+		{"archive", []string{"artifacts"}},
+		{"delegate", []string{"delegation", "model-assignments"}},
+		{"session start and close", []string{"engram-opsx"}},
 	}
 	var b strings.Builder
 	b.WriteString("## Action to Modules\n\n")
 	b.WriteString("Before an action, read ONLY the modules listed for it. When you delegate, paste their content into the sub-agent prompt: the sub-agent does not see this skill.\n\n")
 	b.WriteString("| Action | Modules to read |\n|--------|-----------------|\n")
-	b.WriteString("| propose | " + ref("artifacts") + " |\n")
-	apply := []string{"artifacts"}
-	if active["tdd"] {
-		apply = append(apply, "tdd")
-	}
-	b.WriteString("| apply | " + ref(apply...) + " |\n")
-	b.WriteString("| archive | " + ref("artifacts") + " |\n")
-	if active["delegation"] {
-		b.WriteString("| delegate | " + ref("delegation") + " |\n")
+	for _, r := range rows {
+		var refs []string
+		for _, m := range r.modules {
+			if exists(m) {
+				refs = append(refs, fmt.Sprintf("`${CLAUDE_SKILL_DIR}/modules/%s.md`", m))
+			}
+		}
+		if len(refs) > 0 {
+			b.WriteString("| " + r.action + " | " + strings.Join(refs, ", ") + " |\n")
+		}
 	}
 	return b.String()
 }
