@@ -47,8 +47,12 @@ func refreshSkillDirectory(skillsDir, skillID, backupDir string, populate func(s
 		if identical {
 			return Result{SkillPath: dest, AlreadyInstalled: true}, nil
 		}
-		if err := snapshotSkillDir(backupDir, skillsDir, skillID); err != nil {
-			return Result{}, err
+		// An empty backupDir means the caller already snapshotted this
+		// directory inside its own transaction manifest.
+		if backupDir != "" {
+			if err := snapshotSkillDir(backupDir, skillsDir, skillID); err != nil {
+				return Result{}, err
+			}
 		}
 	}
 
@@ -160,4 +164,12 @@ func snapshotSkillDir(backupDir, skillsDir, skillID string) error {
 		return fmt.Errorf("skill %q: snapshot: %w", skillID, err)
 	}
 	return nil
+}
+
+// RefreshManagedDirectory exposes the staged-compare-swap used for embedded and
+// cloned skills to other installers (claude-native-opsx D1). populate fills the
+// staging directory; an empty backupDir skips the internal snapshot because the
+// caller snapshots in its own manifest.
+func RefreshManagedDirectory(skillsDir, skillID, backupDir string, populate func(stage string) error) (Result, error) {
+	return refreshSkillDirectory(skillsDir, skillID, backupDir, populate)
 }
