@@ -137,6 +137,8 @@ Hasta 3 intentos en total por encargo (alineado con "tres intentos fallidos requ
 
 Hoy el toggle sólo quita la tabla. Se mueve al módulo toda obligación de delegar del texto base y se deja en la skill sólo la regla de D1. Sin el toggle: el bloque compuesto no contiene `ALWAYS delegate`, `Delegate, don't inflate` ni la tabla; el coordinador declara que trabaja sin subagentes y, cuando una acción exige S4, detiene esa verificación y lo explica. Se prueba con golden en `compose_test.go`.
 
+**Límite declarado (decisión de Neyen, 13/11).** Lo anterior vale para la entrega por capas de Claude (`ComposeLayers`) y el paquete nativo de Codex (`ComposeCodexPackage`), que leen la regla y el módulo de `assets/opsx/`. El bloque único legacy (`Compose`, usado por agentes sin capas y por `primary-agent`) conserva el texto original, incluidos "ALWAYS delegate" y la tabla 1-3 / 4+, porque 03 exige que sea idéntico byte a byte a su golden (`TestComposeLegacy_ByteIdenticalToGolden`). Cambiarlo requiere un seguimiento acordado con 03.
+
 ### D9 — Piloto
 
 **Arnés.** El de 02, externo al binario. Sin subcomando nuevo.

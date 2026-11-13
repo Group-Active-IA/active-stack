@@ -19,7 +19,7 @@ type Layers struct {
 }
 
 // coordinatorSkillDescription is the SKILL.md frontmatter description.
-const coordinatorSkillDescription = "OPSX coordinator role. Delegates real work to sub-agents and synthesizes results. Invoke it with /sdd-orchestrator."
+const coordinatorSkillDescription = "OPSX coordinator role. Decides per action whether to work directly or delegate, and synthesizes results. Invoke it with /sdd-orchestrator."
 
 // nestedMarkerRe matches the legacy nested toggle markers kept inside the
 // orchestrator asset (sdd-delegation, sdd-model-assignments); modules drop them.
@@ -135,7 +135,14 @@ func ComposeLayers(toggles []string) (Layers, error) {
 	if err != nil {
 		return Layers{}, err
 	}
-	pDelegate, err := frag("coordinator/principle-delegate")
+	// opsx-selective-delegation (07): the coordinator decides per action instead
+	// of carrying the obligation to delegate. coordinator/principle-delegate and
+	// the "ALWAYS delegate" rule are replaced by the shared delegation rule; the
+	// legacy single block (Compose) keeps the original text.
+	if roleParts[0], err = replaceOnce(roleParts[0], roleDelegateOld, roleDelegateNew); err != nil {
+		return Layers{}, err
+	}
+	rule, err := delegationRule(active["delegation"])
 	if err != nil {
 		return Layers{}, err
 	}
@@ -143,8 +150,11 @@ func ComposeLayers(toggles []string) (Layers, error) {
 	if err != nil {
 		return Layers{}, err
 	}
+	if cRules, err = replaceOnce(cRules, alwaysDelegateRule, ""); err != nil {
+		return Layers{}, err
+	}
 	head := append(roleParts,
-		renumbered(strings.TrimSpace(coreHeading), []string{pDelegate}),
+		rule,
 		strings.TrimSpace(rulesHeading)+"\n\n"+strings.TrimSpace(cRules),
 		actionTable(active))
 	restKeys := []string{"coordinator/starting-work", "coordinator/workflow", "coordinator/launch-pattern"}
@@ -163,6 +173,16 @@ func ComposeLayers(toggles []string) (Layers, error) {
 			rest[i] = strings.Replace(r, launchModelOld, launchModelNew, 1)
 		}
 	}
+	envelopeRef := "the envelope of `${CLAUDE_SKILL_DIR}/modules/delegation.md`\n"
+	if !active["delegation"] {
+		envelopeRef = "the return envelope "
+	}
+	for i, r := range rest {
+		for _, c := range layeredDelegationRewrites {
+			r = strings.Replace(r, c[0], strings.Replace(c[1], "{envelope}", envelopeRef, 1), 1)
+		}
+		rest[i] = r
+	}
 	body := joinBlocks(append(head, rest...)...)
 
 	// Modules.
@@ -173,11 +193,11 @@ func ComposeLayers(toggles []string) (Layers, error) {
 	}
 	modules["artifacts"] = joinBlocks(art)
 	if active["delegation"] {
-		d, err := frag("module/delegation")
+		d, err := delegationModule()
 		if err != nil {
 			return Layers{}, err
 		}
-		modules["delegation"] = joinBlocks(nestedMarkerRe.ReplaceAllString(d, ""))
+		modules["delegation"] = d
 	}
 	if active["model-routing"] {
 		m, err := frag("module/model-assignments")
@@ -220,6 +240,55 @@ const (
 	launchModelOld = `model: "<model from table above>",`
 	launchModelNew = "model: \"<model from ${CLAUDE_SKILL_DIR}/modules/model-assignments.md>\","
 )
+
+// Text changes of opsx-selective-delegation (07) on the layered coordinator.
+const (
+	roleDelegateOld    = "delegate real work to sub-agents via the **Agent tool**"
+	roleDelegateNew    = "decide per action whether to work directly or delegate to sub-agents via the **Agent tool**"
+	alwaysDelegateRule = "- NEVER do apply or propose work inline — ALWAYS delegate via Agent tool\n"
+)
+
+// layeredDelegationRewrites: the workflow and launch-pattern lines that assumed
+// every action is delegated, and the prose summary replaced by the envelope.
+var layeredDelegationRewrites = [][2]string{
+	{"### For each action, delegate to a sub-agent:", "### For each action, apply the delegation rule:"},
+	{"**You delegate the skill's work to a sub-agent. You don't replicate skill logic inline.**",
+		"**When you delegate, the sub-agent runs the skill. You don't replicate skill logic inline.**"},
+	{"Follow the skill's instructions completely. When done, return a summary of:\n- What was accomplished\n- Files created or changed\n- Domain skills loaded and applied\n- Any issues or blockers found\n- Recommended next action",
+		"Follow the skill's instructions completely. Do not launch sub-agents.\nWhen done, return {envelope}(status, start, modified, findings, receipts, pending) and the domain skills loaded."},
+}
+
+// replaceOnce replaces old by new and fails if old is not present exactly once,
+// so an edited asset cannot silently keep an obligation that 07 removes.
+func replaceOnce(s, old, new string) (string, error) {
+	if n := strings.Count(s, old); n != 1 {
+		return "", fmt.Errorf("config compose layers: expected one %q, found %d", strings.TrimSpace(old), n)
+	}
+	return strings.Replace(s, old, new, 1), nil
+}
+
+// delegationRule is the coordinator's delegation rule (07 D1, D8), the same
+// text for Claude and Codex.
+func delegationRule(enabled bool) (string, error) {
+	name := "assets/opsx/delegation-rule-disabled.md"
+	if enabled {
+		name = "assets/opsx/delegation-rule.md"
+	}
+	b, err := fs.ReadFile(embeddedAssets, name)
+	if err != nil {
+		return "", fmt.Errorf("config delegation rule: %w", err)
+	}
+	return joinBlocks(string(b)), nil
+}
+
+// delegationModule is the shared delegation module (07 D3-D7, D10).
+func delegationModule() (string, error) {
+	b, err := fs.ReadFile(embeddedAssets, "assets/opsx/delegation-module.md")
+	if err != nil {
+		return "", fmt.Errorf("config delegation module: %w", err)
+	}
+	return joinBlocks(string(b)), nil
+}
 
 var leadingNumberRe = regexp.MustCompile(`^\d+\. `)
 

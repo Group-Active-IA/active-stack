@@ -15,17 +15,19 @@
 
 ## 2. Semántica del toggle (TDD)
 
-- [ ] 2.1 RED: golden en `compose_test.go` y `compose_layers_test.go` que falla si el bloque (Codex) o la skill y los módulos (Claude) sin `delegation` contienen `ALWAYS delegate`, `Delegate, don't inflate` o la tabla.
-- [ ] 2.2 RED: test que falla si el bloque con `delegation` contiene el umbral "1-3 / 4+" o no contiene la regla con independencia obligatoria primero.
-- [ ] 2.3 GREEN: reemplazar `modules/delegation.md` (hoy la tabla de umbrales), condicionar `coordinator/principle-delegate` al toggle y dejar en `SKILL.md` la regla de decisión y la declaración sin subagentes. Partir del texto de `entrega-delegation.md` §2–§3. Depende de 1.1 y, para Codex, de 04.
-- [ ] 2.5 RED/GREEN: la regla de profundidad de D10 está en el módulo y un encargo de worker no incluye instrucciones de lanzar subagentes.
-- [ ] 2.4 Regresión: `go test ./internal/harness/config/... ./internal/filemerge/... ./internal/uninstall/...` sin fallos nuevos; el purge de markers sigue reconociendo `sdd-delegation`.
+- [x] 2.1 RED: golden en `compose_test.go` y `compose_layers_test.go` que falla si el bloque (Codex) o la skill y los módulos (Claude) sin `delegation` contienen `ALWAYS delegate`, `Delegate, don't inflate` o la tabla. *Hecho: `TestSelectiveDelegation_NoObligationToDelegate` (Claude por capas y paquete nativo de Codex, con y sin toggle). El bloque legacy de `Compose` queda idéntico byte a byte por el invariante 4.2 de 03; ver nota de alcance abajo.*
+- [x] 2.2 RED: test que falla si el bloque con `delegation` contiene el umbral "1-3 / 4+" o no contiene la regla con independencia obligatoria primero. *Hecho: `TestSelectiveDelegation_RuleOrderWithToggle` y `_RuleWithoutToggle`.*
+- [x] 2.3 GREEN: reemplazar `modules/delegation.md` (hoy la tabla de umbrales), condicionar `coordinator/principle-delegate` al toggle y dejar en `SKILL.md` la regla de decisión y la declaración sin subagentes. Partir del texto de `entrega-delegation.md` §2–§3. Depende de 1.1 y, para Codex, de 04. *Hecho: `assets/opsx/delegation-rule.md`, `delegation-rule-disabled.md` y `delegation-module.md`, compartidos por Claude (`compose_layers.go`) y Codex (`codex_package.go`); se elimina `assets/codex/native/delegation.md`. Goldens de capas regenerados y revisados.*
+- [x] 2.5 RED/GREEN: la regla de profundidad de D10 está en el módulo y un encargo de worker no incluye instrucciones de lanzar subagentes. *Hecho: sección Depth del módulo y plantilla de lanzamiento con "Do not launch sub-agents." (`TestSelectiveDelegation_LaunchTemplate*`).*
+- [x] 2.4 Regresión: `go test ./internal/harness/config/... ./internal/filemerge/... ./internal/uninstall/...` sin fallos nuevos; el purge de markers sigue reconociendo `sdd-delegation`. *Hecho 13/11: `internal/harness/config/selective_delegation_test.go`; RED observado entre 13:20 y 13:24 (fallos de aserción, no de compilación), GREEN y regresión sin fallos nuevos frente a la línea base 13:20:49 (3 fallos previos de Windows: symlink, permisos, migración).*
 
 ## 3. Contenido del módulo (TDD sobre texto compuesto)
 
-- [ ] 3.1 RED: test de presencia de los nueve campos del encargo, el contrato de retorno, la regla de partida y propiedad, y el tope de dos workers con escritura, en el módulo de cada cliente.
-- [ ] 3.2 GREEN: redactar regla de decisión (skill), encargo, partida, propiedad, archivos calientes, paralelismo, retorno, veredicto y reintentos (módulo).
-- [ ] 3.3 RED/GREEN: golden de paridad que compara la sección de delegación de Claude y Codex salvo la sintaxis de lanzamiento declarada.
+- [x] 3.1 RED: test de presencia de los nueve campos del encargo, el contrato de retorno, la regla de partida y propiedad, y el tope de dos workers con escritura, en el módulo de cada cliente. *Hecho: `TestSelectiveDelegation_ModuleContent`.*
+- [x] 3.2 GREEN: redactar regla de decisión (skill), encargo, partida, propiedad, archivos calientes, paralelismo, retorno, veredicto y reintentos (módulo). *Hecho: texto de `entrega-delegation.md` §2–§3 en los assets compartidos, con la regla de reejecución de 06.*
+- [x] 3.3 RED/GREEN: golden de paridad que compara la sección de delegación de Claude y Codex salvo la sintaxis de lanzamiento declarada. *Hecho por construcción (mismo asset) y probado: `TestSelectiveDelegation_ClaudeCodexParity`.*
+
+> **Nota de alcance de la sección 2 (13/11).** El bloque único legacy (`Compose`, usado por agentes sin capas y por `primary-agent`) no cambia: 03 fija que sea idéntico byte a byte a su golden (`TestComposeLegacy_ByteIdenticalToGolden`). Por eso Claude legacy y `assets/codex/sdd-orchestrator.md` conservan las obligaciones de delegar. **Decisión de Neyen (13/11): límite declarado.** No se toca el golden de 03; ver `design.md`, D8.
 
 ## 4. Batería de veredictos
 
