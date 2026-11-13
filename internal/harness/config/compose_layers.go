@@ -276,6 +276,8 @@ func actionTable(active map[string]bool) string {
 			b.WriteString("| " + r.action + " | " + strings.Join(refs, ", ") + " |\n")
 		}
 	}
+	b.WriteString("\nIf a module listed in the table is missing or empty, do not run that action: name the module and its path, tell the user to reinstall with `active-stack install`, and continue with the actions that do not depend on it.\n\n")
+	b.WriteString("NEVER delegate the coordinator role to a sub-agent or ask one to act as `sdd-orchestrator`.\n")
 	return b.String()
 }
 

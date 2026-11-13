@@ -347,3 +347,24 @@ func TestComposeLayers_UniversalTellsToReinvokeAfterCompaction(t *testing.T) {
 		t.Errorf("universal must instruct re-invoking /sdd-orchestrator after compaction:\n%.400s", u)
 	}
 }
+
+// M4 (PR #8 review): the coordinator body carries the missing-module rule and
+// the no-delegation-of-the-coordinator rule, and the legacy block does not.
+func TestComposeLayers_SkillCarriesMissingModuleAndNoDelegationRules(t *testing.T) {
+	body := mustLayers(t, allToggles).Skill.Body
+	for _, want := range []string{
+		"If a module listed in the table is missing or empty, do not run that action: name the module and its path, tell the user to reinstall with `active-stack install`, and continue with the actions that do not depend on it.",
+		"NEVER delegate the coordinator role to a sub-agent or ask one to act as `sdd-orchestrator`.",
+	} {
+		if !strings.Contains(body, want) {
+			t.Errorf("coordinator body must contain %q", want)
+		}
+	}
+	legacy, err := config.Compose(allToggles, "claude")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(legacy, "do not run that action") || strings.Contains(legacy, "NEVER delegate the coordinator role") {
+		t.Error("the legacy composition must not receive the new rules")
+	}
+}

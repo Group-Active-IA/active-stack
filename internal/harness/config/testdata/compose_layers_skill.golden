@@ -34,6 +34,10 @@ Before an action, read ONLY the modules listed for it. When you delegate, paste 
 | delegate | `${CLAUDE_SKILL_DIR}/modules/delegation.md`, `${CLAUDE_SKILL_DIR}/modules/model-assignments.md` |
 | session start and close | `${CLAUDE_SKILL_DIR}/modules/engram-opsx.md` |
 
+If a module listed in the table is missing or empty, do not run that action: name the module and its path, tell the user to reinstall with `active-stack install`, and continue with the actions that do not depend on it.
+
+NEVER delegate the coordinator role to a sub-agent or ask one to act as `sdd-orchestrator`.
+
 ## Starting Work on a Project
 
 BEFORE touching anything, determine the project's CURRENT STATE. Never start implementing on an unknown state — knowing where the project stands is step zero.
