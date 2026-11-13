@@ -99,7 +99,7 @@ El coordinador SHALL atribuir a un worker sólo los cambios entre la partida reg
 
 ### Requirement: Comprobación del resultado combinado
 
-Antes de integrar cambios de más de un encargo, el coordinador SHALL volver a comprobar el alcance sobre el resultado combinado y MUST re-ejecutar los escenarios que dependan de combinar esos cambios.
+Antes de integrar cambios de más de un encargo, el coordinador SHALL volver a comprobar el alcance sobre el resultado combinado y MUST re-ejecutar los escenarios que dependan de combinar esos cambios. Esa re-ejecución SHALL correr con captura propia de una fuente independiente (06 D3) para que sus recibos corroboren; sin esa captura MUST NOT contar como corroboración.
 
 #### Scenario: Dos encargos correctos que rompen al combinarse
 
@@ -146,12 +146,22 @@ Todo worker SHALL devolver estado (`completed`, `blocked`, `out_of_scope` o `fai
 
 ### Requirement: Declaración del worker sin corroborar
 
-Lo que el worker declara SHALL conservarse, pero MUST quedar sin verificar hasta que una fuente independiente o una re-ejecución corrobore la ejecución y el estado del código y la evidencia alcance para el requisito. El mismo contrato y la misma revisión de recibos SHALL aplicarse cuando la acción se resuelve directo y requiere evidencia.
+Lo que el worker declara SHALL conservarse, pero MUST quedar sin verificar hasta que una fuente independiente o una re-ejecución con captura propia de una fuente independiente corrobore la ejecución y el estado del código y la evidencia alcance para el requisito. El mismo contrato y la misma revisión de recibos SHALL aplicarse cuando la acción se resuelve directo y requiere evidencia.
 
 #### Scenario: Tests verdes declarados sin corroboración
 
 - **WHEN** el retorno declara que los tests pasan con recibos completos pero ninguna fuente independiente ni re-ejecución los corrobora
 - **THEN** los requisitos que dice cubrir quedan sin verificar
+
+#### Scenario: Re-ejecución del coordinador sin captura independiente
+
+- **WHEN** el coordinador re-ejecuta los tests de un retorno sin captura propia de una fuente independiente y obtiene el mismo resultado
+- **THEN** esa re-ejecución no corrobora ni contradice y los requisitos siguen sin verificar
+
+#### Scenario: Re-ejecución con captura independiente
+
+- **WHEN** la re-ejecución de integración corre con la captura del arnés sobre el mismo estado del árbol y confirma comando, código de salida y estado
+- **THEN** la procedencia de esos recibos queda corroborada y el requisito puede quedar verificado si la integridad y la suficiencia también se cumplen
 
 #### Scenario: Ejecución directa que requiere evidencia
 

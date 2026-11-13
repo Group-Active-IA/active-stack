@@ -1,12 +1,12 @@
 # Tasks: opsx-selective-delegation
 
 > Ronda `propose`: todas las tareas quedan pendientes. Gobernanza MEDIO: implementar con checkpoints.
-> Prerrequisitos de implementación: 05 y 06 aprobadas e integradas; skill de invocación explícita de 03/04 acordada; protocolo y arnés de 02 (`240e1b2`) disponibles para el grupo 5.
+> Prerrequisitos de implementación: 05 (PR #10) y 06 (PR #12) integradas en `main`; skill de invocación explícita de 03/04 ya integrada (`d5e95bd`); protocolo y arnés de 02 (`240e1b2`) disponibles para el grupo 5.
 
 ## 0. Decisiones previas (grupo)
 
 - [ ] 0.1 Cerrar las decisiones pendientes de `design.md` (señales, métrica objetivo, toggle en `lite`, dueño de `sdd-orchestrator.md`) y volcarlas a los artefactos.
-- [ ] 0.2 Confirmar con 05 el nombre del disparador "la acción requiere coordinación de subagentes"; con 06 el texto del extracto `## Evidence Contract` (06, tarea 2.4, pendiente), el módulo `evidence` (06 D5, adoptado por 07 si 03/04 lo aceptan) y la huella del estado probado que reutiliza la partida (06 D2; conjunto de archivos pendiente en su tarea 1.3), y que el campo `recibos` es de 06 (respondido en `informes/respuesta-a-06-2026-11-13.md`); con 08 que sume "escritura fuera del conjunto de escritura del encargo" a su inventario de acciones a bloquear (hasta entonces queda declarada como no controlada preventivamente); con 03/04 que su retorno de especialista referencie el sobre de D6 (03 ya lo hizo en su D12; falta 04); con el grupo, la profundidad de D10.
+- [ ] 0.2 Confirmar con 05 el nombre del disparador "la acción requiere coordinación de subagentes"; con 06 el módulo `evidence` (06 D5, adoptado por 07 si 03/04 lo aceptan; sigue sin acuerdo) y quién evalúa la suficiencia (06, Open Questions 3). Ya resuelto con 06 (`3c7d908`): texto del `## Evidence Contract`, huella de la partida, directorio ajeno y regla de reejecución, con acuse en `informes/acuse-a-06-2026-11-13.md`; con 08 que sume "escritura fuera del conjunto de escritura del encargo" a su inventario de acciones a bloquear (hasta entonces queda declarada como no controlada preventivamente); 03 y 04 ya referencian el sobre de D6 (03 D12; 04 `assets/codex/native/delegation.md` en `main`); con el grupo, la profundidad de D10.
 
 ## 1. Inventario reproducible
 
@@ -29,7 +29,7 @@
 
 ## 4. Batería de veredictos
 
-- [ ] 4.1 Fixtures de retorno: completo corroborado, completo sin corroborar, prosa libre, partida distinta, ajeno en la partida, cambio confirmado fuera de alcance, renombre fuera de alcance, archivo nuevo fuera de alcance, `modificados` incompleto, tope agotado.
+- [ ] 4.1 Fixtures de retorno: completo corroborado (reejecución con captura independiente), completo sin corroborar, reejecutado por el coordinador sin captura, prosa libre, partida distinta, ajeno en la partida, cambio confirmado fuera de alcance, renombre fuera de alcance, archivo nuevo fuera de alcance, `modificados` incompleto, tope agotado.
 - [ ] 4.2 Fixtures de decisión: verificación breve con independencia exigida, independencia exigida con `delegation` apagado, módulo ausente, contención por archivo caliente, tercer worker con escritura.
 - [ ] 4.3 Fixture de combinación: dos retornos válidos por separado que rompen un escenario al combinarse.
 - [ ] 4.4 Correr 4.1–4.3 con el flujo de Claude y el de Codex. Aceptación: mismo veredicto por fixture; diferencias de cliente declaradas como límite.

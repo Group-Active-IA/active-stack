@@ -8,11 +8,11 @@ Las fichas vecinas ya fijaron sus piezas, y esta las consume sin redefinirlas:
 
 | Pieza | Dueña | Qué toma 07 |
 |---|---|---|
-| Activación explícita del coordinador | 03 / 04 (decisión confirmada: skill invocable `/sdd-orchestrator` en Claude con `disable-model-invocation: true`, `$sdd-orchestrator` en Codex con `allow_implicit_invocation: false`). **03 integrada en `7a60089`**; 04 en PR #9 (draft) | dónde vive la regla de decisión |
+| Activación explícita del coordinador | 03 / 04 (decisión confirmada: skill invocable `/sdd-orchestrator` en Claude con `disable-model-invocation: true`, `$sdd-orchestrator` en Codex con `allow_implicit_invocation: false`). **03 integrada en `7a60089`; 04 integrada en `d5e95bd` (PR #9) y archivada** | dónde vive la regla de decisión |
 | Capas y matriz de reglas | 03 (`ComposeLayers`, `openspec/matriz-reglas-opsx.md`) | qué fragmento va a la skill y cuál al módulo; filas 10, 28 y 29 |
 | Carga de módulos por acción, módulo obligatorio ausente detiene la acción | 05 `task-context-loading` | el disparador: "la acción declara que requiere coordinación de subagentes" |
 | Salida acotada con referencia al original | 05 `bounded-command-output` | el formato de los hallazgos verbosos del worker |
-| Recibo, integridad, procedencia, suficiencia | 06 `execution-receipts` (decisión confirmada: un reporte del worker por sí solo queda sin verificar). Propuesta de 06 en `origin/propose/opsx-verifiable-evidence` `f62cf00`: recibo D2, controles D3, estados D4, módulo `evidence` D5 | el contenido del campo `recibos`, la huella de la partida y el veredicto *sin verificar* |
+| Recibo, integridad, procedencia, suficiencia | 06 `execution-receipts` (decisión confirmada: un reporte del worker por sí solo queda sin verificar). 06 archivada con alcance parcial en `origin/propose/opsx-verifiable-evidence` `3c7d908` (PR #12, abierto): recibo D2, controles D3, estados D4, módulo `evidence` D5, texto del contrato en `entrega-evidence-contract.md` | el contenido del campo `recibos`, la huella de la partida y el veredicto *sin verificar* |
 | Controles preventivos por cliente | 08 `native-controls-pilot` | la prevención de escrituras fuera de alcance donde sea obligatoria |
 | Protocolo de medición, registro por intento, costo por tarea aceptada | 02 `opsx-benchmarking` (`240e1b2`) | la contabilidad del piloto |
 | Experimentos de modelo y caché | 09 (`89f1fa5`) | usa la configuración de esta ficha como control A0 |
@@ -94,7 +94,7 @@ El diff global de un árbol compartido puede atribuirle al worker cambios previo
 1. **Partida identificada.** Antes de lanzar, el coordinador registra el commit base y una huella del estado de trabajo (cambios preparados, sin preparar y archivos nuevos) que recibe el worker. La huella es la "huella del estado probado" de 06 D2 (sha256 sobre las líneas `<sha256 del archivo>  <ruta>` ordenadas por ruta, como `TreeHash` de 02): así el estado de la partida y el campo `arbol` de los recibos se comparan con la misma definición. Un worker con escritura trabaja en su propio árbol de trabajo creado desde esa partida.
 2. **Cambios atribuibles.** Al retorno, se calcula lo que cambió entre la partida y el estado final de ese árbol, incluyendo: commits nuevos del worker, cambios preparados, cambios sin preparar, archivos nuevos sin trackear, borrados y renombres (origen y destino cuentan como rutas tocadas).
 3. **Comparación.** Toda ruta atribuible fuera de `escritura` → retorno `out_of_scope`, aunque esté confirmada en un commit y los tests pasen. Lo que ya existía en la partida no se le atribuye.
-4. **Integración.** Antes de integrar se vuelve a comprobar el alcance sobre el resultado combinado y se re-ejecutan los escenarios que dependen de combinar cambios de más de un encargo.
+4. **Integración.** Antes de integrar se vuelve a comprobar el alcance sobre el resultado combinado y se re-ejecutan los escenarios que dependen de combinar cambios de más de un encargo. Esa reejecución corre con la captura del arnés (fuente independiente de 05/06): sólo así sus recibos corroboran. Sin captura independiente, la reejecución del coordinador no corrobora ni contradice y los recibos quedan *sin verificar* (06 D3).
 
 La comprobación es posterior a la escritura. Donde 08 declare un control preventivo obligatorio para escrituras fuera de alcance, se usa además de esta; si no está disponible, aplica la regla de controles obligatorios (detener sólo esa acción y explicar).
 
@@ -123,11 +123,11 @@ recibos:       [recibo 06]                              # uno por comando ejecut
 pendiente:     texto breve | —
 ```
 
-**Dueño del sobre.** Esta ficha es dueña del sobre de retorno; 06 es dueña del campo `recibos`. Las fichas de roles nativos (03, 04) lo referencian en lugar de definir otro: `codex-native-opsx/design.md:216` hoy propone un retorno propio (estado, hallazgos, evidencia, módulos cargados), que se le pide alinear con este. Si el grupo necesita `módulos cargados`, se agrega acá como campo opcional.
+**Dueño del sobre.** Esta ficha es dueña del sobre de retorno; 06 es dueña del campo `recibos`. Las fichas de roles nativos (03, 04) lo referencian en lugar de definir otro: 03 en su D12 y 04 en `assets/codex/native/delegation.md` y su design archivado («Evidencia y retorno»), ambos en `main` `d5e95bd`. Si el grupo necesita `módulos cargados`, se agrega acá como campo opcional.
 
 El coordinador valida en orden: (1) la partida coincide con la registrada; (2) `modificados` coincide con los cambios atribuibles de D4 y está dentro de `escritura`; (3) recibos según 06; (4) criterios de salida.
 
-**Veredicto.** Lo que el worker declara se conserva, pero queda *sin verificar* hasta que una fuente independiente o una re-ejecución corrobora la ejecución y el estado del código, y la evidencia alcanza para el requisito (decisión confirmada para 05/06). Un retorno con "tests verdes" sin esa corroboración sigue sin verificar. El mismo contrato y el mismo paso de revisión de recibos aplican cuando la acción se resuelve directo y requiere evidencia.
+**Veredicto.** Lo que el worker declara se conserva, pero queda *sin verificar* hasta que una fuente independiente o una re-ejecución corrobora la ejecución y el estado del código, y la evidencia alcanza para el requisito (decisión confirmada para 05/06). Una re-ejecución cuenta sólo si tiene captura propia de una fuente independiente; la del coordinador sin esa captura no corrobora (06 D3, adoptado por 07). Un retorno con "tests verdes" sin esa corroboración sigue sin verificar. El mismo contrato y el mismo paso de revisión de recibos aplican cuando la acción se resuelve directo y requiere evidencia.
 
 ### D7 — Reintentos
 
@@ -189,7 +189,7 @@ Hoy el toggle sólo quita la tabla. Se mueve al módulo toda obligación de dele
 
 - **El agente ignora la regla de D1.** Una instrucción no es un control. Mitigación: el registro permite medir la tasa de acierto contra el paso esperado de cada fixture.
 - **La comprobación de propiedad es posterior.** Mitigación: árbol propio por worker, partida registrada, comprobación antes de integrar y controles preventivos de 08 donde sean obligatorios.
-- **Huella del estado de trabajo.** Si el worker recibe cambios sin commit, la partida depende de una huella bien definida; se reutiliza la de 06 D2 para no tener dos definiciones. El conjunto exacto de archivos y su prueba en Windows y Linux (incluido `core.autocrlf`) siguen abiertos en la tarea 1.3 de 06; hasta entonces la partida hereda ese (TBD).
+- **Huella del estado de trabajo.** Si el worker recibe cambios sin commit, la partida depende de una huella bien definida; se reutiliza la de 06 D2 para no tener dos definiciones: TreeHash sobre `git ls-files -z --cached --others --exclude-standard`, medido por 06 en Windows y en Linux sobre WSL2 con `core.autocrlf` en tres valores. Falta Linux nativo o CI (deuda de 06); la partida hereda ese límite.
 - **Seis fichas tocan `sdd-orchestrator.md`.** Mitigación: esta ficha escribe contenido de módulo y una regla breve de skill, y se integra después de 03/04.
 - **Directo por defecto puede inflar el contexto en tareas largas.** Por eso S1 y S2 existen y el piloto mide el pico de contexto del principal.
 
@@ -209,7 +209,7 @@ Decision: no (no UI) — 2026-11-10. El change no agrega ni modifica pantalla.
 |---|---|
 | Paralelismo | Hasta dos agentes con escritura en paralelo en el piloto, cada uno en su árbol; serializar dependientes o con archivos compartidos; verificar el resultado combinado antes de integrar; la revisión con independencia la hace un agente distinto del que implementó. |
 | Activación del coordinador (03/04) | Skill invocable explícitamente; la regla de D1 vive ahí. |
-| Reporte del worker (05/06) | Queda sin verificar hasta corroboración independiente o re-ejecución. |
+| Reporte del worker (05/06) | Queda sin verificar hasta corroboración independiente o re-ejecución con captura propia independiente. |
 | Controles obligatorios | Si falta, se detiene sólo la acción que depende de él, se explica y se sigue con lo demás. |
 
 ### Pendientes
@@ -256,7 +256,7 @@ La 03 se integró en `7a60089`. Esta revisión no cambia ninguna decisión de es
 | `coordinator/principle-delegate` se agrega siempre, con o sin toggle | D8 sigue vigente en capas: sin `delegation`, la skill conserva "Delegate, don't inflate" y "ALWAYS delegate". 2.1 tiene que cubrir `ComposeLayers`, no sólo `Compose` |
 | Fila `delegate` en la tabla acción → módulos (`compose_layers_skill.golden:34`) | Es el disparador de 05 para Claude. 05 (`entrega-03-04.md`) propone además `delegation` **obligatorio** en `verify` por S4: coincide con D1 paso 1 |
 | Módulo obligatorio ausente: detener sólo esa acción (03 D11 y 05) | Coincide con D1 paso 1. Se adopta el mensaje de 05: `missing module: delegation — verify stopped (surface without subagents)` |
-| Matriz filas 28 y 29: extracto de 06 y sobre de 07 "pendiente de texto" | 07 entrega el texto del sobre (D6) en `entrega-delegation.md`. El extracto de 06 queda como hueco nombrado hasta que 06 lo publique |
+| Matriz filas 28 y 29: extracto de 06 y sobre de 07 "pendiente de texto" | 07 entrega el texto del sobre (D6) en `entrega-delegation.md`. El extracto de 06 ya está redactado (ver «Cambios por el archivo de 06») |
 | Regla nueva "NEVER delegate the coordinator role to a sub-agent" (`9aad12e`) | Compatible. Se suma D10 |
 | 03: un subagente puede lanzar subagentes hasta tres niveles; la regla de profundidad es de 07 | Decisión nueva, ver D10 |
 
@@ -285,3 +285,17 @@ La 03 se integró en `7a60089`. Esta revisión no cambia ninguna decisión de es
 | Tres estados con la duda hacia *sin verificar* (D4); un recibo de un directorio ajeno sería *rechazado* (propuesta de partida, TBD) | Compatible con el veredicto de D6. Un recibo de un worker producido fuera de su worktree cae en ese caso |
 | Módulo propio `evidence`, cargado en `apply` y `verify`, con el extracto `## Evidence Contract` pegado en el encargo cuando ejecuta comandos (D5, pendiente de acuerdo con 03 y 04) | 07 lo adopta: `delegation.md` deja de reservar un hueco para el contrato y sólo indica que el extracto viaja en el encargo. Resuelve el caso de D8: sin el toggle `delegation`, la ejecución directa conserva el contrato |
 | Pregunta a 07 (06, tarea 1.8) | Respondida en `informes/respuesta-a-06-2026-11-13.md` |
+
+## Cambios por el archivo de 06 y la integración de 04 (13/11)
+
+`main` pasó a `d5e95bd` (04 integrada por PR #9 y archivada) y 06 se archivó con alcance parcial en `origin/propose/opsx-verifiable-evidence` `3c7d908` (PR #12, abierto, sin integrar). Las citas a 06 valen contra esa revisión. Ninguna decisión de 07 se revierte; se cierran tres huecos y se ajusta una regla.
+
+| Hecho | Efecto sobre 07 |
+|---|---|
+| 06 respondió a 07 (`informes/respuesta-a-07-2026-11-13.md` de 06) | Acuse en `informes/acuse-a-06-2026-11-13.md`, que cierra la tarea 1.8 de 06 por parte de 07 |
+| Regla de reejecución de 06 (D3): sólo corrobora con captura propia de una fuente independiente | **Adoptada.** D4 paso 4 y D6 veredicto: la reejecución de integración corre con la captura del arnés; sin ella los recibos quedan *sin verificar*. Fixtures 4.1: «completo corroborado» exige esa captura y se suma «reejecutado por el coordinador sin captura» |
+| Texto `## Evidence Contract` y paso de revisión (06 `entrega-evidence-contract.md` (a) y (b)) | Es el contenido de `modules/evidence.md` que `entrega-delegation.md` §3 referencia. 07 no lo copia en `delegation.md` |
+| Huella del estado probado (06 D2, `eval/evidence/state.go`) | Cierra la definición del campo `start`. Límite heredado: Linux nativo o CI pendiente en 06 |
+| Directorio ajeno = *rechazado* (propuesta de 06) | Coincide con 07: un recibo de un worker fuera de su worktree cae ahí |
+| 04 en `main`: `assets/codex/native/delegation.md` remite a la política de 07 y usa el sobre de D6 | Ya no hay retorno de especialista propio que alinear. La columna Codex del inventario pasa a la ruta nativa; la tarea 2.3 reemplaza el texto de ese archivo |
+| Siguen abiertos en 06: módulo `evidence` sin acuerdo de 03/04 (1.1), quién evalúa la suficiencia (Open Questions 3), captura real de 05 | Sin cambio: si `evidence` no se acuerda, el extracto vuelve a `delegation.md` con el límite de D8. Lo que 07 puede exigir a un worker espera la decisión de suficiencia |
