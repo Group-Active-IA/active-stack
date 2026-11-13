@@ -57,6 +57,13 @@ func TestCompare_EachCoverageVerdict(t *testing.T) {
 				t.Errorf("caracteres omitidos según la marca = %d, want 59", o.TruncatedChars)
 			}
 		}},
+		{"hook PostToolUseFailure con la forma medida (cabeza y cola cortadas a mitad de línea, cola interior)", func(t *testing.T) (clientsrc.Observed, error) {
+			return clientsrc.FromClaudePostToolUseFailure(sample(t, "claude/posttoolusefailure-real-shape.json"))
+		}, miniRef, clientsrc.Truncated, 1, func(t *testing.T, o clientsrc.Observed) {
+			if o.TruncatedChars != 40 {
+				t.Errorf("caracteres omitidos según la marca = %d, want 40", o.TruncatedChars)
+			}
+		}},
 		{"App Server completo (deltas y aggregatedOutput)", func(t *testing.T) (clientsrc.Observed, error) {
 			return clientsrc.FromCodexAppServer(lines(sample(t, "codex/appserver-complete.jsonl")))
 		}, miniRef, clientsrc.Complete, 1, nil},
@@ -100,6 +107,11 @@ func TestCompare_Rules(t *testing.T) {
 		{"solo la cabeza", "a\nb\nc\nd\n", clientsrc.Observed{Present: true, Output: "a\nb\n"}, clientsrc.Truncated},
 		{"solo la cola", "a\nb\nc\nd\n", clientsrc.Observed{Present: true, Output: "c\nd\n"}, clientsrc.Truncated},
 		{"cabeza y cola con marca del cliente", "a\nb\nc\nd\ne\n", clientsrc.Observed{Present: true, Output: "a\n... [6 characters truncated] ...\ne\n"}, clientsrc.Truncated},
+		// Forma medida en Claude Code 2.1.323: Bash conserva primero unos 30.000
+		// caracteres y después recorta el medio, así que la cola es un tramo interior.
+		{"marca entre líneas en blanco y cola interior", "aaa\nbbb\nccc\nddd\neee\n", clientsrc.Observed{Present: true, Output: "aaa\nb\n\n... [5 characters truncated] ...\n\ncc\nddd\nee"}, clientsrc.Truncated},
+		{"cola interior que no sigue a la cabeza", "aaa\nbbb\nccc\n", clientsrc.Observed{Present: true, Output: "bbb\n\n... [3 characters truncated] ...\n\naaa"}, clientsrc.NotChecked},
+		{"cola que no está en la referencia", "aaa\nbbb\nccc\n", clientsrc.Observed{Present: true, Output: "aaa\n\n... [3 characters truncated] ...\n\nzzz"}, clientsrc.NotChecked},
 		{"no presente", "a\n", clientsrc.Observed{}, clientsrc.Absent},
 		{"presente pero vacío", "a\n", clientsrc.Observed{Present: true, Output: ""}, clientsrc.Absent},
 		{"otro contenido sin marca", "a\nb\n", clientsrc.Observed{Present: true, Output: "x\ny\nz\n"}, clientsrc.NotChecked},
@@ -112,6 +124,25 @@ func TestCompare_Rules(t *testing.T) {
 				t.Errorf("Compare = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+// Medido en Claude Code 2.1.319 en Windows: el cliente agrega a stderr su propia
+// nota "Shell cwd was reset to <dir>", que no es salida del comando.
+func TestClaudePostToolUse_DropsClientCwdNote(t *testing.T) {
+	payload := []byte(`{"hook_event_name":"PostToolUse","tool_response":{"stdout":"=== RUN   TestOk\nline 02 padding\nok  \tmini\t0.100s\n","stderr":"\nShell cwd was reset to C:\\Users\\FICTICIO\\proj"}}`)
+	obs, err := clientsrc.FromClaudePostToolUse(payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := clientsrc.Compare(okRef, obs); got != clientsrc.Complete {
+		t.Errorf("cobertura = %q, want %q (salida %q)", got, clientsrc.Complete, obs.Output)
+	}
+	// stderr real del comando se conserva.
+	payload = []byte(`{"hook_event_name":"PostToolUse","tool_response":{"stdout":"a\n","stderr":"warning: x\n"}}`)
+	obs, _ = clientsrc.FromClaudePostToolUse(payload)
+	if obs.Output != "a\nwarning: x\n" {
+		t.Errorf("salida = %q, want stdout más stderr del comando", obs.Output)
 	}
 }
 

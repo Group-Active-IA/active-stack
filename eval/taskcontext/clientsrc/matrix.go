@@ -14,11 +14,12 @@ const (
 	StateTruncated   = "truncada"      // la corrida mostró recorte
 	StateUnavailable = "no disponible" // la fuente no existe en esa interfaz
 	StateNotProbed   = "no probada"    // con su motivo
+	StateReordered   = "reordenada"    // trae todas las líneas pero no conserva el orden entre stdout y stderr
 )
 
 var validStates = map[string]bool{
 	StateDistributed: true, StateDeclared: true, StateProbe: true, StateProbed: true,
-	StateTruncated: true, StateUnavailable: true, StateNotProbed: true,
+	StateTruncated: true, StateUnavailable: true, StateNotProbed: true, StateReordered: true,
 }
 
 // Entry es una fila de la matriz: una fuente en una celda cliente × interfaz × sistema.
@@ -93,38 +94,48 @@ func (m Matrix) Validate() []string {
 }
 
 // DeclaredMatrix es la matriz de D22 al 2026-11-13 (entrega-03-04.md §5 y §6).
-// Ninguna celda figura probada: la tarea 8.1 todavía no corrió.
+// Estado después de la tarea 8.1 (2026-11-13, n = 1 por celda, fixtures
+// fail-middle y stderr-only; Claude 2.1.319 en Windows y 2.1.323 en Linux,
+// Codex 0.167.1 en Windows y 0.169.0 en Linux sobre WSL2).
 func DeclaredMatrix() Matrix {
 	var es []Entry
 	add := func(e Entry) { es = append(es, e) }
 
-	const noLinux = "sin cliente nativo en WSL (entrega-03-04.md §6)"
-	for _, c := range []string{"claude", "codex"} {
-		for _, i := range []string{"cli", "ide"} {
-			add(Entry{Client: c, Interface: i, System: "linux", Source: "todas las fuentes", State: StateNotProbed, Reason: noLinux})
-		}
+	for _, sys := range []string{"windows", "linux"} {
+		// Claude Code · CLI.
+		add(Entry{Client: "claude", Interface: "cli", System: sys, Source: "tool_result de un comando fallido (stream-json)", State: StateTruncated,
+			Backing: "C1–C5 y 8.1: ~10.040 caracteres de cabeza y cola; se pierde el fallo central; sin ruta"})
+		add(Entry{Client: "claude", Interface: "cli", System: sys, Source: "hook PostToolUseFailure (error)", State: StateTruncated,
+			Backing: "8.1: ~10.000 caracteres con marca de 20.012; se pierde el fallo central"})
+		add(Entry{Client: "claude", Interface: "cli", System: sys, Source: "hook PostToolUse (stdout) en un comando exitoso", State: StateTruncated,
+			Backing: "8.1, control-negative: stdout cortado en 30.000 de 65.991 caracteres"})
+		add(Entry{Client: "claude", Interface: "cli", System: sys, Source: "persistedOutputPath del hook PostToolUse en un comando exitoso", State: StateProbed,
+			RunID: "8.1-2026-11-13-claude-cli-" + sys, Backing: "8.1, control-negative: archivo completo (65.991 B)",
+			Reason: "solo existe con exit 0: un comando fallido no deja archivo"})
+
+		// Codex · CLI.
+		add(Entry{Client: "codex", Interface: "cli", System: sys, Source: "codex exec --json: aggregated_output", State: StateProbed,
+			RunID: "8.1-2026-11-13-codex-exec-" + sys, Backing: "8.1: completa en fail-middle y stderr-only, exit 1; antes X7", CLIOnly: true})
+		add(Entry{Client: "codex", Interface: "ide", System: sys, Source: "codex exec --json: aggregated_output", State: StateUnavailable,
+			Backing: "solo existe en CLI", CLIOnly: true, Reason: "el arnés no conduce `codex exec` dentro de la extensión"})
+		add(Entry{Client: "codex", Interface: "ide", System: sys, Source: "App Server interno de la extensión", State: StateUnavailable,
+			Backing: "documentado", Reason: "el arnés no puede suscribirse a la instancia de la extensión"})
 	}
-
-	// Claude Code · Windows.
-	add(Entry{Client: "claude", Interface: "cli", System: "windows", Source: "tool_result de un comando fallido (stream-json)", State: StateTruncated,
-		Backing: "C1–C5: ~10.040 caracteres de cabeza y cola; la cola no es el final; sin ruta"})
-	add(Entry{Client: "claude", Interface: "cli", System: "windows", Source: "archivo del cliente en un comando exitoso (tool-results)", State: StateProbe,
-		Backing: "C6: solo exit 0, copia sin redactar"})
-	add(Entry{Client: "claude", Interface: "cli", System: "windows", Source: "hooks PostToolUse / PostToolUseFailure", State: StateDeclared,
-		Backing: "https://code.claude.com/docs/en/hooks; no se instalaron hooks"})
-	add(Entry{Client: "claude", Interface: "ide", System: "windows", Source: "hooks PostToolUse / PostToolUseFailure", State: StateDeclared,
-		Backing: "https://code.claude.com/docs/en/hooks (\"fires the same hook events wherever it runs\"); sin IDE operable"})
-
-	// Codex · Windows.
-	add(Entry{Client: "codex", Interface: "cli", System: "windows", Source: "codex exec --json: aggregated_output", State: StateProbe,
-		Backing: "X7", CLIOnly: true})
-	add(Entry{Client: "codex", Interface: "ide", System: "windows", Source: "codex exec --json: aggregated_output", State: StateUnavailable,
-		Backing: "solo existe en CLI", CLIOnly: true, Reason: "el arnés no conduce `codex exec` dentro de la extensión"})
 	add(Entry{Client: "codex", Interface: "cli", System: "windows", Source: "lo que recibe el modelo; historial de la sesión", State: StateTruncated,
 		Backing: "X1–X6, X8: cabeza y cola sin aviso; el historial guarda la recortada"})
-	add(Entry{Client: "codex", Interface: "cli", System: "windows", Source: "App Server: outputDelta y aggregatedOutput", State: StateDeclared,
-		Backing: "https://learn.chatgpt.com/docs/app-server"})
-	add(Entry{Client: "codex", Interface: "ide", System: "windows", Source: "App Server interno de la extensión", State: StateUnavailable,
-		Backing: "documentado", Reason: "el arnés no puede suscribirse a la instancia de la extensión"})
+	add(Entry{Client: "codex", Interface: "cli", System: "windows", Source: "App Server: outputDelta y aggregatedOutput", State: StateProbed,
+		RunID: "8.1-2026-11-13-codex-appserver-windows", Backing: "8.1: deltas y aggregatedOutput completos e idénticos en los dos fixtures"})
+	add(Entry{Client: "codex", Interface: "cli", System: "linux", Source: "App Server: outputDelta y aggregatedOutput", State: StateReordered,
+		Backing: "8.1: sin deltas; aggregatedOutput completo en fail-middle y con las líneas de stderr adelantadas en stderr-only",
+		Reason:  "no conserva el orden entre stdout y stderr; solo el arnés lo garantiza"})
+
+	// Claude Code · IDE (extensión y app de escritorio).
+	add(Entry{Client: "claude", Interface: "ide", System: "windows", Source: "hooks PostToolUse / PostToolUseFailure", State: StateDeclared,
+		Backing: "https://code.claude.com/docs/en/hooks (\"fires the same hook events wherever it runs: ... IDE extensions, the Desktop app\"); https://code.claude.com/docs/en/desktop",
+		Reason:  "no probada: la extensión y el escritorio no envían un pedido sin una persona (el link `prompt`/`q` solo lo precarga); deuda de la 05"})
+	for _, c := range []string{"claude", "codex"} {
+		add(Entry{Client: c, Interface: "ide", System: "linux", Source: "todas las fuentes", State: StateNotProbed,
+			Reason: "no hay IDE en el Ubuntu de WSL2; la CLI de Linux está medida"})
+	}
 	return Matrix{Entries: es}
 }

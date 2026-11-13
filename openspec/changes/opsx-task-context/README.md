@@ -1,7 +1,7 @@
 # Ficha 05 · `opsx-task-context` — empezá por acá
 
 **Lectura dirigida y herramientas por tarea** · Emiliano · ambos clientes · P1 · gobernanza **MEDIO**
-Rama `propose/opsx-task-context` · base `1b4639b`, con `main` integrado (`35a89f8`) · próxima ronda: **apply**
+Rama `propose/opsx-task-context` (PR #10) · con `main` integrado (`d5e95bd`, con 03 y 04) · estado: **apply hecho con alcance parcial; sin archivar.** La deuda aceptada está en `informes/deuda-aceptada-05-2026-11-13.md`
 Depende de **03** y **04**. Habilita **07**. Hermana de **06**: ninguna depende de la otra.
 
 Revisado el 2026-11-13 contra el informe unificado de revisión OPSX (11/11), la matriz común de
@@ -16,8 +16,8 @@ Ficha original: [CHANGES.md § 05](../../../CHANGES.md#change-05).
 | `proposal.md` | por qué hay que hacerlo, con la medición de partida |
 | `specs/` | qué tiene que hacer el sistema — 41 reglas con 107 escenarios, en 5 capacidades |
 | `design.md` | cómo, y por qué así: 23 decisiones con su estado y su respaldo (medido, documentado o no probado), la coordinación pendiente, los puntos de grupo y las decisiones para el grupo |
-| `entrega-03-04.md` | lo que la 05 entrega a 03 y 04: los cuatro módulos en inglés, la tabla acción → módulos, el contrato de captura por referencia, las pruebas reales del 13/11 y qué falta en código por ficha. Estado: texto listo para integrar; integración en código pendiente de la ronda de apply |
-| `tasks.md` | en qué orden y cómo se verifica cada paso — 64 tareas pendientes: 46 implementables ya y 18 bloqueadas, con el bloqueo nombrado |
+| `entrega-03-04.md` | lo que la 05 entrega a 03 y 04: los cuatro módulos en inglés, la tabla acción → módulos, el contrato de captura por referencia, las pruebas reales del 13/11 y qué falta en código por ficha. Estado: textos y tabla en código (`internal/harness/config/assets/modules/`, catálogo); la integración en la skill de Claude es deuda D05-0605 y la actualización de las copias de Codex, D05-0610 |
+| `tasks.md` | en qué orden y cómo se verifica cada paso: 64 tareas, 54 hechas y 10 en deuda aceptada, cada una con su ID |
 | `research-notes.md` | de dónde salió todo esto: las cuatro fuentes, los hallazgos y el contraste con la documentación oficial de Claude Code y Codex |
 
 ## Reglas duras de esta ronda

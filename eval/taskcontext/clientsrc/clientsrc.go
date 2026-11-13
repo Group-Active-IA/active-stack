@@ -55,13 +55,17 @@ func FromClaudePostToolUse(payload []byte) (Observed, error) {
 		return obs, nil
 	}
 	// stdout y stderr llegan separados: se concatenan y el orden entre ambos se pierde.
+	// La nota que el cliente agrega a stderr en Windows no es salida del comando.
 	obs.Present = true
-	obs.Output = ev.ToolResponse.Stdout + ev.ToolResponse.Stderr
+	obs.Output = ev.ToolResponse.Stdout + cwdNote.ReplaceAllString(ev.ToolResponse.Stderr, "")
 	obs.ExitCode = intp(0)
 	return obs, nil
 }
 
 var exitPrefix = regexp.MustCompile(`^Exit code (-?\d+)\n`)
+
+// cwdNote es la nota de Claude Code en Windows (medida en 2.1.319) al final de stderr.
+var cwdNote = regexp.MustCompile(`\n?Shell cwd was reset to [^\n]*\n?$`)
 
 // FromClaudePostToolUseFailure adapta el hook PostToolUseFailure: el campo
 // error empieza con `Exit code N` y se recorta por el medio con la marca
@@ -179,13 +183,13 @@ func Compare(reference string, obs Observed) Coverage {
 		return Complete
 	}
 	if loc := truncMarker.FindStringIndex(out); loc != nil {
-		head := out[:loc[0]]
-		tail := strings.TrimPrefix(out[loc[1]:], "\n")
-		head = strings.TrimSuffix(head, "\n") + "\n"
-		if head == "\n" {
-			head = ""
-		}
-		if strings.HasPrefix(ref, head) && strings.HasSuffix(ref, tail) {
+		// La marca va entre saltos de línea propios del cliente. La cabeza puede
+		// cortarse a mitad de línea, y la cola es un tramo de la referencia posterior a
+		// la cabeza: el sufijo, o un tramo interior cuando el cliente ya había
+		// descartado el final (Bash de Claude Code conserva unos 30.000 caracteres).
+		head := strings.TrimRight(out[:loc[0]], "\n")
+		tail := strings.TrimLeft(out[loc[1]:], "\n")
+		if strings.HasPrefix(ref, head) && strings.Contains(ref[len(head):], tail) {
 			return Truncated
 		}
 		return NotChecked

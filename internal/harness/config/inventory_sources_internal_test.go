@@ -30,9 +30,9 @@ func catalogHarness(t *testing.T, id string) model.Harness {
 	return h
 }
 
-// Tarea 1.4. Con la 03 en main, Claude entrega por ConfigDeliveryManagedSkill
-// (bloque universal en CLAUDE.md más la skill coordinadora), Codex compone por la
-// rama default de Install (instrucciones) y OpenCode por ConfigDeliveryPrimaryAgent.
+// Tarea 1.4. Con la 03 y la 04 en main, Claude y Codex entregan por
+// ConfigDeliveryManagedSkill (bloque universal en CLAUDE.md o AGENTS.md más la
+// skill coordinadora) y OpenCode por ConfigDeliveryPrimaryAgent.
 // Este test documenta la ruta vigente de cada cliente.
 func TestInstall_DeliveryRouteTodayOnMain(t *testing.T) {
 	h := catalogHarness(t, "sdd-orchestrator")
@@ -46,7 +46,7 @@ func TestInstall_DeliveryRouteTodayOnMain(t *testing.T) {
 		wantDelivery model.ConfigDelivery
 	}{
 		{"claude", claude.NewAdapter(), model.ConfigDeliveryManagedSkill},
-		{"codex", codex.NewAdapter(), model.ConfigDeliveryInstructions},
+		{"codex", codex.NewAdapter(), model.ConfigDeliveryManagedSkill},
 		{"opencode", opencode.NewAdapter(), model.ConfigDeliveryPrimaryAgent},
 	}
 	for _, tt := range tests {
@@ -69,16 +69,32 @@ func TestInstall_DeliveryRouteTodayOnMain(t *testing.T) {
 				// Capas: CLAUDE.md lleva solo el bloque universal (no el compuesto de cinco
 				// toggles) y el coordinador vive en la skill gestionada.
 				if strings.Contains(instructions, full) {
-					t.Errorf("CLAUDE.md no debe llevar el bloque completo de %d B: va en capas", len(full))
+					t.Errorf("el archivo de instrucciones de %s no debe llevar el bloque completo de %d B: va en capas", tt.name, len(full))
 				}
-				layers, err := ComposeLayers(h.Toggles)
-				if err != nil {
-					t.Fatal(err)
+				// Cada cliente compone su propio paquete: Claude con ComposeLayers (03),
+				// Codex con ComposeCodexPackage (04).
+				var universal string
+				if tt.adapter.Agent() == model.AgentCodex {
+					pkg, err := ComposeCodexPackage(h.Toggles)
+					if err != nil {
+						t.Fatal(err)
+					}
+					universal = pkg.Universal
+				} else {
+					layers, err := ComposeLayers(h.Toggles)
+					if err != nil {
+						t.Fatal(err)
+					}
+					universal = layers.Universal
 				}
-				if !strings.Contains(instructions, layers.Universal) {
-					t.Error("CLAUDE.md no contiene el bloque universal")
+				if !strings.Contains(instructions, universal) {
+					t.Errorf("el archivo de instrucciones de %s no contiene el bloque universal", tt.name)
 				}
-				skill := filepath.Join(tt.adapter.SkillsDir(home), layers.Skill.ID, "SKILL.md")
+				native, ok := tt.adapter.(interface{ SkillsDir(string) string })
+				if !ok {
+					t.Fatalf("%s entrega por skill pero su adapter no expone SkillsDir", tt.name)
+				}
+				skill := filepath.Join(native.SkillsDir(home), "sdd-orchestrator", "SKILL.md")
 				if _, err := os.Stat(skill); err != nil {
 					t.Errorf("falta la skill coordinadora %s: %v", skill, err)
 				}

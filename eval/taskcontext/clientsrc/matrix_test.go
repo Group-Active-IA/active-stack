@@ -104,7 +104,7 @@ func TestMatrix_ValidateCatchesProblems(t *testing.T) {
 	}
 }
 
-// Estado al 2026-11-13: lo medido en la ficha figura con su respaldo.
+// Estado al 2026-11-13, después de 8.1: lo medido figura con su corrida o su respaldo.
 func TestMatrix_RecordsWhatWasMeasured(t *testing.T) {
 	m := clientsrc.DeclaredMatrix()
 	find := func(client, iface, sys, source string) (clientsrc.Entry, bool) {
@@ -115,25 +115,47 @@ func TestMatrix_RecordsWhatWasMeasured(t *testing.T) {
 		}
 		return clientsrc.Entry{}, false
 	}
-	e, ok := find("codex", "cli", "windows", "aggregated_output")
-	if !ok || e.State != clientsrc.StateProbe || e.Backing != "X7" || e.Independent() {
-		t.Errorf("Codex CLI Windows aggregated_output = %+v, want sonda X7 sin independencia", e)
+	// Codex CLI: aggregated_output completo con los fixtures, en los dos sistemas.
+	for _, sys := range []string{"windows", "linux"} {
+		e, ok := find("codex", "cli", sys, "aggregated_output")
+		if !ok || e.State != clientsrc.StateProbed || !e.Independent() {
+			t.Errorf("Codex CLI %s aggregated_output = %+v, want probada con id de corrida de 8.1", sys, e)
+		}
+		e, ok = find("claude", "cli", sys, "PostToolUseFailure")
+		if !ok || e.State != clientsrc.StateTruncated {
+			t.Errorf("Claude CLI %s hook PostToolUseFailure = %+v, want truncada", sys, e)
+		}
+		e, ok = find("claude", "cli", sys, "tool_result")
+		if !ok || e.State != clientsrc.StateTruncated {
+			t.Errorf("Claude CLI %s lo que recibe el modelo = %+v, want truncada", sys, e)
+		}
 	}
-	e, ok = find("claude", "cli", "windows", "tool_result")
-	if !ok || e.State != clientsrc.StateTruncated {
-		t.Errorf("Claude CLI Windows lo que recibe el modelo = %+v, want truncada", e)
+	// App Server: completo en Windows; en Linux trae todo pero no conserva el orden.
+	e, ok := find("codex", "cli", "windows", "App Server")
+	if !ok || e.State != clientsrc.StateProbed || !e.Independent() {
+		t.Errorf("Codex App Server Windows = %+v, want probada", e)
 	}
+	e, ok = find("codex", "cli", "linux", "App Server")
+	if !ok || e.State != clientsrc.StateReordered || e.Independent() {
+		t.Errorf("Codex App Server Linux = %+v, want reordenada y no independiente", e)
+	}
+	// Claude IDE y escritorio: declarada por la documentación, no medida.
+	e, ok = find("claude", "ide", "windows", "hooks")
+	if !ok || e.State != clientsrc.StateDeclared || e.Reason == "" {
+		t.Errorf("Claude IDE Windows = %+v, want declarada con motivo", e)
+	}
+	// IDE en Linux: no hay IDE en el entorno.
 	for _, client := range []string{"claude", "codex"} {
-		for _, e := range m.Cell(client, "cli", "linux") {
-			if e.State != clientsrc.StateNotProbed {
-				t.Errorf("%s CLI Linux %q = %q, want no probada (sin cliente nativo en WSL)", client, e.Source, e.State)
+		for _, e := range m.Cell(client, "ide", "linux") {
+			if e.State == clientsrc.StateProbed {
+				t.Errorf("%s IDE Linux %q figura probada sin corrida", client, e.Source)
 			}
 		}
 	}
-	// Ninguna celda figura probada hoy: la tarea 8.1 todavía no corrió.
+	// Toda celda probada lleva un id de corrida del grupo 8.
 	for _, e := range m.Entries {
-		if e.State == clientsrc.StateProbed {
-			t.Errorf("la celda %s · %s · %s (%s) figura probada sin una corrida del grupo 8", e.Client, e.Interface, e.System, e.Source)
+		if e.State == clientsrc.StateProbed && !strings.HasPrefix(e.RunID, "8.1") {
+			t.Errorf("la celda %s · %s · %s (%s) figura probada sin una corrida de 8.1", e.Client, e.Interface, e.System, e.Source)
 		}
 	}
 }

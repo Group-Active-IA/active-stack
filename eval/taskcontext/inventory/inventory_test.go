@@ -136,6 +136,31 @@ func TestBuild_SortedBySizeDescending(t *testing.T) {
 	}
 }
 
+// Con la 04 en main, Codex también entrega por skill: en AGENTS.md queda solo el
+// bloque universal, no los cinco toggles. La nota de la fila tiene que decirlo.
+func TestBuild_OrchestratorNoteFollowsLayeredDelivery(t *testing.T) {
+	cat, tp, root := loadAll(t)
+	srcs, err := inventory.Build(root, cat, tp)
+	if err != nil {
+		t.Fatal(err)
+	}
+	const layered = "bloque universal de la entrega en capas; sección con marcadores"
+	for _, name := range []string{"Bloque sdd-orchestrator inyectado — Claude", "Bloque sdd-orchestrator inyectado — Codex"} {
+		found := false
+		for _, s := range srcs {
+			if s.Name == name {
+				found = true
+				if s.Note != layered {
+					t.Errorf("%s: nota = %q, want %q", name, s.Note, layered)
+				}
+			}
+		}
+		if !found {
+			t.Errorf("falta la fila %q", name)
+		}
+	}
+}
+
 func TestTop_ReturnsFiveLargest(t *testing.T) {
 	cat, tp, root := loadAll(t)
 	srcs, err := inventory.Build(root, cat, tp)

@@ -352,7 +352,7 @@ re-read the modules of the current action before you continue it.
 | Cliente | Forma de la ruta | Estado |
 |---|---|---|
 | Claude Code | `${CLAUDE_SKILL_DIR}/modules/<id>.md` | medido en Windows: se resuelve con barras `/` (C8); terminal Linux según la tarea 1.8 de la 03; IDE no probado |
-| Codex | `modules/<id>.md`, relativa al directorio de la skill (forma actual de la 04) | no probado: la política de shell de Windows bloqueó la lectura (X12) |
+| Codex | `modules/<id>.md`, relativa al directorio de la skill (forma actual de la 04) | medido en Windows el 13/11 (X12): con `codex exec --approve-for-me`, `$sdd-orchestrator` lee el módulo con `Get-Content` |
 
 **Por qué la regla de módulo vacío.** La 03 ya la escribió en su `SKILL.md` (commit `9aad12e`:
 *"If a module listed in the table is missing or empty, do not run that action…"*) y la 04 tiene
@@ -385,7 +385,7 @@ Por referencia; la única casa de cada parte es `design.md`.
 Windows 11; Claude Code **2.1.319** (`claude -p --output-format stream-json`, modelo haiku);
 Codex CLI **0.167.1** (`codex exec --json`); Go 1.26 en Windows y en WSL. **n = 1 por prueba.**
 La política de shell de Codex en Windows bloquea los comandos sin bypass: el bypass se usó solo
-en un directorio temporal aislado. No se versionan transcripciones, sesiones ni logs: cada fila
+en un directorio temporal aislado. *(13/11 por la tarde: `codex exec --approve-for-me` corre comandos sin bypass total; con eso se midieron X12 y 8.1.)* No se versionan transcripciones, sesiones ni logs: cada fila
 se reproduce con el comando que figura.
 
 ### Generadores
@@ -462,6 +462,7 @@ recibió el modelo en el historial de la sesión.
 | X10 | `$sdd-orchestrator` inyecta el cuerpo | `codex exec` con `$sdd-orchestrator` | el cuerpo entra al contexto; `AGENTS.md` también se ve | medido |
 | X11 | `allow_implicit_invocation: false` bloquea la invocación implícita | pedido OPSX sin `$` | la skill no se invoca | medido |
 | X12 | Codex lee los módulos | `$sdd-orchestrator` y leer `modules/artifacts.md` | la política de shell rechaza `Get-Content` y `type` (`blocked by policy`) | no probado |
+| X12b | Codex lee los módulos (13/11, por la tarde) | skill instalada con `active-stack install --agent codex` (rama de la 05 con `main` `d5e95bd`), copiada a `.agents/skills/` de un proyecto temporal; `codex exec --approve-for-me --json '$sdd-orchestrator … read modules/directed-code-reading.md … reply only with its first line'` | ejecuta `Get-Content -LiteralPath '.agents/skills/sdd-orchestrator/modules/directed-code-reading.md' -TotalCount 1` (exit 0) y responde `## Directed Code Reading` | medido (Codex 0.167.1, Windows) |
 
 ### PR #8 (03) y PR #9 (04)
 
@@ -522,7 +523,7 @@ llamadas a Claude. Los textos de módulo son los de la §2; G1 y G4 a G6 corrier
 anterior a la última iteración de `bounded-command-output`, que solo agregó la línea final
 `FAIL\t<package>`, la indentación de cada `failure:` y la regla de no escribir `ref:` sin
 original. Linux, Codex (la política de shell de Windows bloquea su shell) e IDE quedaron sin
-correr en este entorno.
+correr en este entorno. *(13/11 por la tarde: Codex y Linux ya corren; ver §5, 8.1. Las corridas de Codex de 8.6 y 8.7 son deuda D05-0806 y D05-0807.)*
 
 | Id | Tarea | Comando | n | Resultado | Veredicto |
 |---|---|---|---|---|---|
@@ -538,6 +539,24 @@ correr en este entorno.
 | G10 | 9.1 | explore «limpieza de `useEffect`» con y sin Context7, mismo prompt (sha256 `80f19766…`) y misma aceptación (`acc91.py`, sha256 `82c40bce…`) | 3 + 3 | prompt y aceptación idénticos byte a byte en los dos brazos | aceptado |
 | G11 | 9.2 | `eval/baseline` (`manifest`, `capture.ParseClaudeStream`, `summary.Compute`) por brazo | 3 + 3 | mismos prompt, rúbrica y fixture; cambian solo `variant` y la huella de configuración. Con Context7: +2 herramientas MCP, entrada de la 1.ª solicitud 40.800 contra 40.530, 519.884 contra 377.124 tokens, 2/3 aceptadas en ambos. La 02 rechaza `system/permission_denied` con `message` string (se saneó en 3 líneas; propuesta a la 02) | aceptado |
 | G12 | 9.3 | apply «renombrar `available` en `reserve`» (mismo prompt que G7) con todos los módulos y sin cada uno (toggle apagado o archivo quitado, árbol que difiere solo en ese módulo); `acc93.py` sha256 `7adb0dac…` | 2 + 8×1 | aceptado en todos salvo sin `bounded-command-output` (obligatorio: se detuvo, `missing module`). Medido sobre la integración propuesta de 6.5, pendiente de la 03 | medido, no cierra |
+
+### 8.1: cobertura por fuente con los fixtures del arnés (13/11, por la tarde)
+
+Fixtures `fail-middle` (2.1, 218.919 caracteres) y `stderr-only` (2.7, 87.706 caracteres) y, para exit 0, `control-negative` (65.991 caracteres). Cada uno se emite con un ejecutable que llama a `fixtures.ByID(...).Emit` y sale con el código del fixture. Las fuentes se comparan con `clientsrc.Compare` (3.6), ya corregido. n = 1 por celda. Linux es Ubuntu 26.04 sobre WSL2, con los clientes nativos en `~/.local`. En Windows, la shell de Codex corre con `codex exec --approve-for-me`.
+
+| Id | Cliente · interfaz · sistema | Fuente | Comando | Resultado | Veredicto |
+|---|---|---|---|---|---|
+| F1 | Codex 0.167.1 · CLI · Windows | `aggregated_output` de `codex exec --json` | `codex exec --approve-for-me --skip-git-repo-check --json "Run exactly … .\emit.exe <fixture> …"` | 218.919 y 87.706 caracteres, exit 1, el fallo presente | **completa** |
+| F2 | Codex 0.169.0 · CLI · Linux | igual | igual, con `./emit` | igual | **completa** |
+| F3 | Claude 2.1.323 · CLI · Linux | `tool_result` del modelo (`stream-json`) | `claude -p "Run exactly … ./emit <fixture> …" --output-format stream-json --verbose --model haiku --allowedTools Bash` | ~10.040 caracteres con `Exit code 1`; el fallo central se pierde | **truncada** |
+| F4 | Claude 2.1.323 · CLI · Linux | hook `PostToolUseFailure` (`error`) | mismos pedidos, con hooks en `.claude/settings.json` que vuelcan la entrada a un archivo | ~10.028 caracteres, marca `[20012 characters truncated]` entre líneas en blanco, cabeza y cola cortadas a mitad de línea; la cola es un tramo interior | **truncada** (con 3.6 corregido) |
+| F5 | Claude 2.1.323 · CLI · Linux | hook `PostToolUse` con exit 0 | `control-negative` | `stdout` cortado en 30.000; `persistedOutputPath` con 65.991 B completos | **truncada**; archivo **completo** solo con exit 0 |
+| F6 | Claude 2.1.319 · CLI · Windows | F3 a F5 | mismos pedidos con `./emit.exe` | igual que en Linux; además el cliente agrega a `stderr` la nota `Shell cwd was reset to …`, que el adaptador ahora descarta | **truncada**, igual que Linux |
+| F7 | Codex 0.167.1 · App Server · Windows | `item/commandExecution/outputDelta` y `aggregatedOutput` de `item/completed` | `codex app-server` conducido por JSON-RPC: `initialize`, `thread/start` (`approvalPolicy: never`, `sandbox: danger-full-access`, en un directorio temporal) y `turn/start` | deltas y `aggregatedOutput` completos e idénticos, exit 1 | **completa** |
+| F8 | Codex 0.169.0 · App Server · Linux | igual | igual | sin deltas; `aggregatedOutput` completo en `fail-middle`; en `stderr-only` trae todas las líneas pero la de stderr aparece en la 1.175 y no al final | **reordenada** |
+| F9 | Linux | tests 3.3 y 3.8 | `go test ./eval/taskcontext/capture/ ./eval/taskcontext/recipes/` con Go 1.26.5 | 17 pasan y 1 se omite (PowerShell) | verde |
+
+Lo que queda abierto: la extensión de VS Code y la app de escritorio de Claude Code, que según la documentación disparan los mismos hooks, y el IDE en Linux (deuda D05-0801). Registrado en `eval/taskcontext/clientsrc/matrix.go` y en `design.md` (D22).
 
 ### Sondas de Go
 
@@ -703,18 +722,18 @@ func TestZZRemedicionCodexAnnotations(t *testing.T) {
 
 | Qué | Por qué |
 |---|---|
-| Lectura real de módulos por Codex | la política de shell de Codex en Windows rechaza los comandos sin bypass (X12) |
+| ~~Lectura real de módulos por Codex~~ | **medido el 13/11 (X12b)** con `codex exec --approve-for-me` |
 | Módulo ausente y módulo vacío en Codex | mismo bloqueo: el coordinador no puede leer el directorio de la skill |
 | Si un subagente de Codex lee `AGENTS.md` | lanzar y observar subagentes necesita shell (mismo bloqueo) |
 | Descubrimiento en `%USERPROFILE%\.agents\skills` con un HOME temporal | Codex ignora `HOME` y `USERPROFILE` para esa ruta; probarlo exigía escribir en el perfil real |
 | `/skills` en Codex sin interfaz | `codex exec` no lo expone |
-| IDE y app de escritorio, en los dos clientes; Codex en la nube | sin extensión ni app operables desde la sesión de prueba; la 04 no promete escritorio ni nube (`codex-native-opsx/design.md:59-63`) |
-| Clientes en Linux | no hay `claude` ni `codex` nativos en WSL; ahí solo corrieron los tests de Go (R7) |
+| IDE y app de escritorio, en los dos clientes; Codex en la nube | la extensión y la app no envían un pedido sin una persona (el link `prompt`/`q` solo lo precarga, según la documentación oficial); la 04 no promete escritorio ni nube (`codex-native-opsx/design.md:59-63`). Deuda D05-0801 |
+| ~~Clientes en Linux~~ | **medido el 13/11 (8.1):** Claude 2.1.323 y Codex 0.169.0 nativos en Ubuntu 26.04 sobre WSL2 |
 | Claude 2.1.109 real | se simuló la versión ante el instalador (C14) |
-| Hooks `PostToolUse` y `PostToolUseFailure` de Claude como fuente | no se instalaron hooks en esta ronda |
+| ~~Hooks `PostToolUse` y `PostToolUseFailure` de Claude como fuente~~ | **medido el 13/11 (8.1)** en Windows y Linux: truncados |
 | Conteo de tokens | sin API key no hay contador oficial; las cifras son caracteres y bytes |
 | Efecto de `tool_output_token_limit` | X5 sin diferencia observable |
-| Instalación real del árbol integrado (`91fbb70`) con los dos clientes a la vez | no se corrió install ni uninstall sobre `91fbb70`; sólo tests y sondas (R15–R19). Que el paquete de Codex no trae anotaciones `<!-- as:` sí se midió (R16) |
+| ~~Instalación real del árbol integrado con los dos clientes a la vez~~ | **medido el 13/11** sobre `main` `d5e95bd` y sobre la 07 en Linux, en la revisión del PR #13: install, reinstall y uninstall cruzado sin afectar al otro cliente byte a byte. Sobre esta rama: install de Codex para X12b |
 | Módulo vacío en Claude como conducta estable | sin regla, una sola corrida válida (C13); con la regla de la 03, 2 de 2 (C15), con `Bash` y `Agent` deshabilitados: alcanza para ver que la regla se sigue, no para medir una tasa |
 | Representatividad | n = 1 por prueba (n = 2 en C15), un modelo (haiku en Claude); Codex sin modelo registrado |
 | `-race` | no corrió en ninguna plataforma (Windows sin cgo; en WSL no se pidió) |

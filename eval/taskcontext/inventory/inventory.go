@@ -276,13 +276,11 @@ func Build(root string, cat *catalog.Catalog, tp ThirdParty) ([]Source, error) {
 	}
 	for _, r := range injected {
 		t := clientTitle(r.Client)
-		orchNote := "cinco toggles; sección con marcadores"
-		if r.Client == "claude" {
-			orchNote = "bloque universal de la entrega en capas; sección con marcadores"
-		}
+		// Claude (03) y Codex (04) entregan por skill: el archivo de instrucciones
+		// lleva solo el bloque universal.
 		out = append(out,
 			Source{Name: "Bloque sdd-orchestrator inyectado — " + t, Kind: "instrucción inyectada", Bytes: r.Orchestrator,
-				Note: orchNote},
+				Note: "bloque universal de la entrega en capas; sección con marcadores"},
 			Source{Name: "Sección design-mockups inyectada — " + t, Kind: "instrucción inyectada", Bytes: r.DesignMock,
 				Note: "fragmento de 8.865 B más marcadores; solo con el harness design-mockups"},
 		)
