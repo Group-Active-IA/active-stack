@@ -12,7 +12,7 @@ Las fichas vecinas ya fijaron sus piezas, y esta las consume sin redefinirlas:
 | Capas y matriz de reglas | 03 (`ComposeLayers`, `openspec/matriz-reglas-opsx.md`) | qué fragmento va a la skill y cuál al módulo; filas 10, 28 y 29 |
 | Carga de módulos por acción, módulo obligatorio ausente detiene la acción | 05 `task-context-loading` | el disparador: "la acción declara que requiere coordinación de subagentes" |
 | Salida acotada con referencia al original | 05 `bounded-command-output` | el formato de los hallazgos verbosos del worker |
-| Recibo, integridad, procedencia, suficiencia | 06 `execution-receipts` (decisión confirmada: un reporte del worker por sí solo queda sin verificar). 06 archivada con alcance parcial en `origin/propose/opsx-verifiable-evidence` `3c7d908` (PR #12, abierto): recibo D2, controles D3, estados D4, módulo `evidence` D5, texto del contrato en `entrega-evidence-contract.md` | el contenido del campo `recibos`, la huella de la partida y el veredicto *sin verificar* |
+| Recibo, integridad, procedencia, suficiencia | 06 `execution-receipts` (decisión confirmada: un reporte del worker por sí solo queda sin verificar). 06 archivada con alcance parcial e **integrada en `main` `0005a6f` (PR #12)**; 05 integrada en `b27b8e0` (PR #10). Recibo D2, controles D3, estados D4, módulo `evidence` D5, texto del contrato en `entrega-evidence-contract.md`; forma ejecutable y casos de referencia en `eval/evidence/`. Desde `d3ab8b3`, la corroboración nombra comando, árbol y resultado observados y una captura declarada por el propio agente no es independiente (adoptado en el módulo de 07) | el contenido del campo `recibos`, la huella de la partida y el veredicto *sin verificar* |
 | Controles preventivos por cliente | 08 `native-controls-pilot` | la prevención de escrituras fuera de alcance donde sea obligatoria |
 | Protocolo de medición, registro por intento, costo por tarea aceptada | 02 `opsx-benchmarking` (`240e1b2`) | la contabilidad del piloto |
 | Experimentos de modelo y caché | 09 (`89f1fa5`) | usa la configuración de esta ficha como control A0 |
@@ -85,7 +85,7 @@ Si el módulo no está disponible: con S4 la verificación se detiene y se expli
 | retorno | contrato de D6, incluido el extracto `## Evidence Contract` de 06 cuando ejecuta comandos |
 | intentos | tope (D7) |
 
-**Archivos calientes.** `go.mod`, `go.sum`, `internal/catalog/harnesses.yaml`, `assets/*/sdd-orchestrator.md`, `CLAUDE.md`/`AGENTS.md` nunca se reparten entre workers concurrentes: los toca uno solo o el coordinador.
+**Archivos calientes.** `go.mod`, `go.sum`, `internal/catalog/harnesses.yaml`, `internal/harness/config/assets/*/sdd-orchestrator.md`, `CLAUDE.md`/`AGENTS.md` nunca se reparten entre workers concurrentes: los toca uno solo o el coordinador.
 
 ### D4 — Propiedad de archivos contra un punto de partida
 

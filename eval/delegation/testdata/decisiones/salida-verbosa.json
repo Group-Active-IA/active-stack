@@ -1,0 +1,24 @@
+{
+  "id": "salida-verbosa",
+  "descripcion": "Correr una suite con más de 300 líneas de salida: se delega.",
+  "tarea": {
+    "accion": "verify",
+    "revision_independiente": false,
+    "delegation_activo": true,
+    "modulo_disponible": true,
+    "escritura": [],
+    "encargos_abiertos": [],
+    "breve": false,
+    "depende_del_contexto_vivo": false,
+    "relee_el_resultado": false,
+    "lineas_de_salida": 2400,
+    "solo_conclusion": false,
+    "paralelizable": false
+  },
+  "esperado": {
+    "accion": "verify",
+    "paso": 4,
+    "senal": "salida verbosa",
+    "modalidad": "delegado"
+  }
+}

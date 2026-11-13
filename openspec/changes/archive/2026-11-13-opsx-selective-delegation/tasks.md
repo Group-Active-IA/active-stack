@@ -9,8 +9,8 @@
 07 se archiva con **alcance parcial** (13/11), igual que 03, 04 y 06. Lo que depende de otros
 changes, de acuerdos del grupo o de mediciones pasa a deuda aceptada y no se marca como hecho.
 
-**25 tareas: 9 entregadas y 16 pendientes (deuda aceptada).** Entregadas: 1.1, 2.1 a 2.5 y 3.1 a
-3.3. Pendientes: 0.1, 0.2, 1.2, 4.1 a 4.4, 5.1 a 5.6 y 6.1 a 6.3. El detalle por tarea, con
+**25 tareas: 12 entregadas y 13 pendientes (deuda aceptada).** Entregadas: 1.1, 2.1 a 2.5, 3.1 a
+3.3 y 4.1 a 4.3 (13/11, tras integrarse 06). Pendientes: 0.1, 0.2, 1.2, 4.4, 5.1 a 5.6 y 6.1 a 6.3. El detalle por tarea, con
 proveedor, artefacto faltante, criterio de cierre y comportamiento mientras tanto, está en
 [informes/deuda-aceptada-07-2026-11-13.md](informes/deuda-aceptada-07-2026-11-13.md). La
 verificación con comandos y salidas reales está en
@@ -48,10 +48,10 @@ verificación con comandos y salidas reales está en
 
 ## 4. Batería de veredictos
 
-- [ ] 4.1 Fixtures de retorno: completo corroborado (reejecución con captura independiente), completo sin corroborar, reejecutado por el coordinador sin captura, prosa libre, partida distinta, ajeno en la partida, cambio confirmado fuera de alcance, renombre fuera de alcance, archivo nuevo fuera de alcance, `modificados` incompleto, tope agotado.
-- [ ] 4.2 Fixtures de decisión: verificación breve con independencia exigida, independencia exigida con `delegation` apagado, módulo ausente, contención por archivo caliente, tercer worker con escritura.
-- [ ] 4.3 Fixture de combinación: dos retornos válidos por separado que rompen un escenario al combinarse.
-- [ ] 4.4 Correr 4.1–4.3 con el flujo de Claude y el de Codex. Aceptación: mismo veredicto por fixture; diferencias de cliente declaradas como límite.
+- [x] 4.1 Fixtures de retorno: completo corroborado (reejecución con captura independiente), completo sin corroborar, reejecutado por el coordinador sin captura, prosa libre, partida distinta, ajeno en la partida, cambio confirmado fuera de alcance, renombre fuera de alcance, archivo nuevo fuera de alcance, `modificados` incompleto, tope agotado. *Hecho 13/11: `eval/delegation/testdata/retornos` (13 casos, suma `sin-escritura` y `renombre-desde-fuera-de-alcance`), juzgados con `JudgeReturn`; los recibos, con `evidence.EvaluateRequirement` de 06. RED 20:31:15, GREEN 20:33:05; `informes/verificacion-4.1-4.3-2026-11-13.md`.*
+- [x] 4.2 Fixtures de decisión: verificación breve con independencia exigida, independencia exigida con `delegation` apagado, módulo ausente, contención por archivo caliente, tercer worker con escritura. *Hecho 13/11: `eval/delegation/testdata/decisiones` (9 casos, suma `archivo-caliente-patron`, que reveló que el archivo caliente `assets/*/sdd-orchestrator.md` no existía; corregido en módulo, spec y D5). `informes/verificacion-4.1-4.3-2026-11-13.md`.*
+- [x] 4.3 Fixture de combinación: dos retornos válidos por separado que rompen un escenario al combinarse. *Hecho 13/11: `eval/delegation/testdata/combinacion` (`rompe-al-combinar` más corroborado, sin captura y fuera de alcance), juzgados con `JudgeCombination`. `informes/verificacion-4.1-4.3-2026-11-13.md`.*
+- [ ] 4.4 Correr 4.1–4.3 con el flujo de Claude y el de Codex. Aceptación: mismo veredicto por fixture; diferencias de cliente declaradas como límite. *Pendiente (deuda D07-04b): conectar la copia redactada real de 05 y probar el flujo directo y el delegado en Claude y Codex.*
 
 ## 5. Piloto (depende de 02, 05 y 06)
 

@@ -121,7 +121,7 @@ Hasta dos workers con escritura SHALL ejecutarse en paralelo, cada uno en su pro
 
 ### Requirement: Archivos calientes nunca concurrentes
 
-Los archivos calientes declarados (`go.mod`, `go.sum`, `internal/catalog/harnesses.yaml`, `assets/*/sdd-orchestrator.md`, `CLAUDE.md`, `AGENTS.md`) MUST NOT asignarse a dos workers concurrentes.
+Los archivos calientes declarados (`go.mod`, `go.sum`, `internal/catalog/harnesses.yaml`, `internal/harness/config/assets/*/sdd-orchestrator.md`, `CLAUDE.md`, `AGENTS.md`) MUST NOT asignarse a dos workers concurrentes.
 
 #### Scenario: Cambios que compiten por el mismo archivo
 

@@ -1,0 +1,112 @@
+{
+  "id": "renombre-desde-fuera-de-alcance",
+  "descripcion": "El worker trae al alcance un archivo renombrado desde afuera; el origen también cuenta como tocado.",
+  "encargo": {
+    "id": "A",
+    "partida": {
+      "commit": "1111111111111111111111111111111111111111"
+    },
+    "escritura": [
+      "internal/x/**"
+    ],
+    "requisitos": [
+      "R1"
+    ],
+    "intento": 1,
+    "historial": []
+  },
+  "retorno": {
+    "status": "completed",
+    "start": {
+      "commit": "1111111111111111111111111111111111111111"
+    },
+    "modified": [
+      {
+        "ruta": "internal/x/y.go",
+        "tipo": "renamed",
+        "desde": "internal/y/y.go"
+      }
+    ],
+    "findings": [],
+    "receipts": [
+      {
+        "corrida": "r-101",
+        "arbol": {
+          "directorio": "/work/as-07-worker-a",
+          "commit": "2222222222222222222222222222222222222222"
+        },
+        "comando": "go test ./internal/x/...",
+        "resultado": {
+          "codigo_de_salida": 0,
+          "marca_de_tiempo": "2026-11-13T18:00:00Z"
+        },
+        "requisitos": [
+          "R1"
+        ],
+        "salida": {
+          "truncada": false,
+          "huella": {
+            "algorithm": "sha256",
+            "value": "7b7bf2b126155ef1a1da274bcc53d808c63bac04ea4ebd8034801321ce7a9b63"
+          },
+          "captura": {
+            "fuente": "arnés",
+            "redactor": "redactor-del-arnes (ilustrativo)",
+            "cliente": "claude-code",
+            "interfaz": "cli",
+            "sistema": "windows/amd64",
+            "version": "(ilustrativa)",
+            "codigo_de_salida": 0,
+            "cobertura": "demostrada",
+            "redacciones": {}
+          }
+        }
+      }
+    ],
+    "pending": "—"
+  },
+  "observado": {
+    "en_partida": [],
+    "final": [
+      {
+        "ruta": "internal/x/y.go",
+        "tipo": "renamed",
+        "desde": "internal/y/y.go"
+      }
+    ],
+    "criterios_cumplidos": true,
+    "evidencia": {
+      "directorio": "/work/as-07-worker-a",
+      "commit": "2222222222222222222222222222222222222222",
+      "copias": {
+        "r-101": "copias/go-test-ok.txt"
+      },
+      "vencidas": [],
+      "corroboracion": [
+        {
+          "corrida": "r-101",
+          "comando": "go test ./internal/x/...",
+          "directorio": "/work/as-07-worker-a",
+          "commit": "2222222222222222222222222222222222222222",
+          "codigo_de_salida": 0,
+          "fuente": "arnés (captura de integración)",
+          "veredicto": "reejecucion confirma"
+        }
+      ],
+      "suficiencia": [
+        {
+          "corrida": "r-101",
+          "requisito": "R1",
+          "comando": "go test ./internal/x/...",
+          "veredicto": "suficiente"
+        }
+      ],
+      "detalle_descartado_necesario": []
+    }
+  },
+  "esperado": {
+    "estado": "out_of_scope",
+    "paso": "propiedad",
+    "accion": "reintentar"
+  }
+}

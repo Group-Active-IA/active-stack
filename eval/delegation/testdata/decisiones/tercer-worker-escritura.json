@@ -1,0 +1,33 @@
+{
+  "id": "tercer-worker-escritura",
+  "descripcion": "Ya hay dos workers con escritura en curso; la tercera subtarea con escritura espera.",
+  "tarea": {
+    "accion": "apply",
+    "revision_independiente": false,
+    "delegation_activo": true,
+    "modulo_disponible": true,
+    "escritura": [
+      "internal/z/**"
+    ],
+    "encargos_abiertos": [
+      [
+        "internal/x/**"
+      ],
+      [
+        "internal/y/**"
+      ]
+    ],
+    "breve": false,
+    "depende_del_contexto_vivo": false,
+    "relee_el_resultado": false,
+    "lineas_de_salida": 0,
+    "solo_conclusion": false,
+    "paralelizable": true
+  },
+  "esperado": {
+    "accion": "apply",
+    "paso": 2,
+    "senal": "tope de dos workers con escritura",
+    "modalidad": "serializado"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "id": "prosa-libre",
+  "descripcion": "El worker devuelve sólo un resumen en texto, sin los campos del sobre.",
+  "encargo": {
+    "id": "A",
+    "partida": {
+      "commit": "1111111111111111111111111111111111111111"
+    },
+    "escritura": [
+      "internal/x/**"
+    ],
+    "requisitos": [
+      "R1"
+    ],
+    "intento": 1,
+    "historial": []
+  },
+  "retorno_texto": "Listo: cambié internal/x/x.go y los tests pasan.",
+  "observado": {
+    "en_partida": [],
+    "final": [
+      {
+        "ruta": "internal/x/x.go",
+        "tipo": "modified"
+      }
+    ],
+    "criterios_cumplidos": true,
+    "evidencia": {
+      "directorio": "/work/as-07-worker-a",
+      "commit": "2222222222222222222222222222222222222222",
+      "copias": {
+        "r-101": "copias/go-test-ok.txt"
+      },
+      "vencidas": [],
+      "corroboracion": [
+        {
+          "corrida": "r-101",
+          "comando": "go test ./internal/x/...",
+          "directorio": "/work/as-07-worker-a",
+          "commit": "2222222222222222222222222222222222222222",
+          "codigo_de_salida": 0,
+          "fuente": "arnés (captura de integración)",
+          "veredicto": "reejecucion confirma"
+        }
+      ],
+      "suficiencia": [
+        {
+          "corrida": "r-101",
+          "requisito": "R1",
+          "comando": "go test ./internal/x/...",
+          "veredicto": "suficiente"
+        }
+      ],
+      "detalle_descartado_necesario": []
+    }
+  },
+  "esperado": {
+    "estado": "sin verificar",
+    "paso": "sobre",
+    "accion": "pedir sobre o reintentar"
+  }
+}

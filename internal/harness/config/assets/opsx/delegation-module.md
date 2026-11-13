@@ -16,7 +16,8 @@ Every assignment includes:
 - attempts: at most 3
 
 Never split these across concurrent workers: `go.mod`, `go.sum`,
-`internal/catalog/harnesses.yaml`, `assets/*/sdd-orchestrator.md`, `CLAUDE.md`, `AGENTS.md`.
+`internal/catalog/harnesses.yaml`, `internal/harness/config/assets/*/sdd-orchestrator.md`,
+`CLAUDE.md`, `AGENTS.md`.
 
 ### Ownership
 A worker with a write set works in its own worktree created from the recorded start. When it
@@ -49,6 +50,8 @@ stays inside the write set; receipts, with the review step of the execution rece
 criteria. A free-text return without these fields stays unverified: ask for the envelope or retry.
 What the worker declares stays **unverified** until an independent source, or a re-run with its own
 independent capture, confirms it. "Tests green" without that is still unverified.
+Corroboration must name the command, tree and result it observed: a judgment about another
+execution is not reused, and a capture the worker declares about itself is not independent.
 
 ### Attempts
 Up to 3 attempts per assignment. Each retry gets the rejection reason and a new recorded start.

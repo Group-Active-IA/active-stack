@@ -1,6 +1,8 @@
 package config_test
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -142,6 +144,9 @@ func TestSelectiveDelegation_ModuleContent(t *testing.T) {
 		"status:", "start:", "modified:", "findings:", "receipts:", "pending:",
 		"a re-run without its own independent\ncapture does not corroborate anything",
 		"Up to 3 attempts per assignment.",
+		// 06 final (d3ab8b3): corroboration is bound to the concrete execution.
+		"Corroboration must name the command, tree and result it observed",
+		"a capture the worker declares about itself is not independent",
 	} {
 		if !strings.Contains(mod, want) {
 			t.Errorf("delegation module lacks %q", want)
@@ -200,6 +205,37 @@ func TestSelectiveDelegation_LaunchTemplateWithoutToggle(t *testing.T) {
 	for _, want := range []string{"Do not launch sub-agents.", "status, start, modified, findings, receipts, pending"} {
 		if !strings.Contains(body, want) {
 			t.Errorf("launch template without delegation lacks %q", want)
+		}
+	}
+}
+
+// Hot files (design D5) must name real paths of this repository: a pattern
+// that matches nothing protects nothing. The repository root is three levels up.
+func TestSelectiveDelegation_HotFilesExist(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("assets", "opsx", "delegation-module.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(raw)
+	const lead = "Never split these across concurrent workers:"
+	i := strings.Index(text, lead)
+	if i < 0 {
+		t.Fatalf("module without %q", lead)
+	}
+	block, _, _ := strings.Cut(text[i+len(lead):], "\n\n")
+	parts := strings.Split(block, "`")
+	var hot []string
+	for j := 1; j < len(parts); j += 2 {
+		hot = append(hot, parts[j])
+	}
+	if len(hot) == 0 {
+		t.Fatal("no hot files listed")
+	}
+	root := filepath.Join("..", "..", "..")
+	for _, h := range hot {
+		m, err := filepath.Glob(filepath.Join(root, filepath.FromSlash(h)))
+		if err != nil || len(m) == 0 {
+			t.Errorf("hot file %q matches no file in the repository", h)
 		}
 	}
 }

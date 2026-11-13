@@ -77,7 +77,7 @@ Every assignment includes:
 - attempts: at most 3
 
 Never split these across concurrent workers: `go.mod`, `go.sum`,
-`internal/catalog/harnesses.yaml`, `assets/*/sdd-orchestrator.md`, `CLAUDE.md`, `AGENTS.md`.
+`internal/catalog/harnesses.yaml`, `internal/harness/config/assets/*/sdd-orchestrator.md`, `CLAUDE.md`, `AGENTS.md`.
 
 ### Ownership
 A worker with a write set works in its own worktree created from the recorded start. When it
