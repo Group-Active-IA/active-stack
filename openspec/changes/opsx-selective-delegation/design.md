@@ -12,7 +12,7 @@ Las fichas vecinas ya fijaron sus piezas, y esta las consume sin redefinirlas:
 | Capas y matriz de reglas | 03 (`ComposeLayers`, `openspec/matriz-reglas-opsx.md`) | qué fragmento va a la skill y cuál al módulo; filas 10, 28 y 29 |
 | Carga de módulos por acción, módulo obligatorio ausente detiene la acción | 05 `task-context-loading` | el disparador: "la acción declara que requiere coordinación de subagentes" |
 | Salida acotada con referencia al original | 05 `bounded-command-output` | el formato de los hallazgos verbosos del worker |
-| Recibo, integridad, procedencia, suficiencia | 06 `execution-receipts` (decisión confirmada: un reporte del worker por sí solo queda sin verificar) | el campo `recibos` del retorno y el veredicto *sin verificar* |
+| Recibo, integridad, procedencia, suficiencia | 06 `execution-receipts` (decisión confirmada: un reporte del worker por sí solo queda sin verificar). Propuesta de 06 en `origin/propose/opsx-verifiable-evidence` `f62cf00`: recibo D2, controles D3, estados D4, módulo `evidence` D5 | el contenido del campo `recibos`, la huella de la partida y el veredicto *sin verificar* |
 | Controles preventivos por cliente | 08 `native-controls-pilot` | la prevención de escrituras fuera de alcance donde sea obligatoria |
 | Protocolo de medición, registro por intento, costo por tarea aceptada | 02 `opsx-benchmarking` (`240e1b2`) | la contabilidad del piloto |
 | Experimentos de modelo y caché | 09 (`89f1fa5`) | usa la configuración de esta ficha como control A0 |
@@ -91,7 +91,7 @@ Si el módulo no está disponible: con S4 la verificación se detiene y se expli
 
 El diff global de un árbol compartido puede atribuirle al worker cambios previos del usuario o de otro encargo. Por eso la propiedad se comprueba contra la partida de cada encargo y no contra el árbol actual:
 
-1. **Partida identificada.** Antes de lanzar, el coordinador registra el commit base y una huella del estado de trabajo (cambios preparados, sin preparar y archivos nuevos) que recibe el worker. Un worker con escritura trabaja en su propio árbol de trabajo creado desde esa partida.
+1. **Partida identificada.** Antes de lanzar, el coordinador registra el commit base y una huella del estado de trabajo (cambios preparados, sin preparar y archivos nuevos) que recibe el worker. La huella es la "huella del estado probado" de 06 D2 (sha256 sobre las líneas `<sha256 del archivo>  <ruta>` ordenadas por ruta, como `TreeHash` de 02): así el estado de la partida y el campo `arbol` de los recibos se comparan con la misma definición. Un worker con escritura trabaja en su propio árbol de trabajo creado desde esa partida.
 2. **Cambios atribuibles.** Al retorno, se calcula lo que cambió entre la partida y el estado final de ese árbol, incluyendo: commits nuevos del worker, cambios preparados, cambios sin preparar, archivos nuevos sin trackear, borrados y renombres (origen y destino cuentan como rutas tocadas).
 3. **Comparación.** Toda ruta atribuible fuera de `escritura` → retorno `out_of_scope`, aunque esté confirmada en un commit y los tests pasen. Lo que ya existía en la partida no se le atribuye.
 4. **Integración.** Antes de integrar se vuelve a comprobar el alcance sobre el resultado combinado y se re-ejecutan los escenarios que dependen de combinar cambios de más de un encargo.
@@ -189,7 +189,7 @@ Hoy el toggle sólo quita la tabla. Se mueve al módulo toda obligación de dele
 
 - **El agente ignora la regla de D1.** Una instrucción no es un control. Mitigación: el registro permite medir la tasa de acierto contra el paso esperado de cada fixture.
 - **La comprobación de propiedad es posterior.** Mitigación: árbol propio por worker, partida registrada, comprobación antes de integrar y controles preventivos de 08 donde sean obligatorios.
-- **Huella del estado de trabajo.** Si el worker recibe cambios sin commit, la partida depende de una huella bien definida; se reutiliza la de 06 (huella del estado probado) para no tener dos definiciones.
+- **Huella del estado de trabajo.** Si el worker recibe cambios sin commit, la partida depende de una huella bien definida; se reutiliza la de 06 D2 para no tener dos definiciones. El conjunto exacto de archivos y su prueba en Windows y Linux (incluido `core.autocrlf`) siguen abiertos en la tarea 1.3 de 06; hasta entonces la partida hereda ese (TBD).
 - **Seis fichas tocan `sdd-orchestrator.md`.** Mitigación: esta ficha escribe contenido de módulo y una regla breve de skill, y se integra después de 03/04.
 - **Directo por defecto puede inflar el contexto en tareas largas.** Por eso S1 y S2 existen y el piloto mide el pico de contexto del principal.
 
@@ -273,3 +273,15 @@ La 03 se integró en `7a60089`. Esta revisión no cambia ninguna decisión de es
 | Tema | Opciones | Recomendación | Afecta a |
 |---|---|---|---|
 | Profundidad de delegación | ninguna / un nivel de sólo lectura / tope de 03 (tres) | ninguna en la primera versión | 03, 04, 09 |
+
+## Cambios por la propuesta de 06 (13/11)
+
+06 publicó su propuesta corregida en `origin/propose/opsx-verifiable-evidence` (`4fe53b1`, `f62cf00`), sobre `7a60089` y citando esta ficha en `3fb24ee`. Sigue siendo propuesta: el texto del `## Evidence Contract` (06, tarea 2.4) no está escrito.
+
+| Propuesta de 06 | Efecto sobre 07 |
+|---|---|
+| Recibo de ejecución con `corrida`, `arbol`, `comando`, `resultado`, `requisitos`, `salida` (D2) | Es el contenido del campo `recibos` de D6. 07 no define ni valida sus campos: el paso 3 de la validación de D6 es el paso de revisión de 06 |
+| Huella del estado probado alineada con `TreeHash` de 02 (D2) | La partida de D4 la usa (ver D4 paso 1). Validar la partida (D6 paso 1) y el `arbol` de cada recibo es comparar dos huellas con la misma definición |
+| Tres estados con la duda hacia *sin verificar* (D4); un recibo de un directorio ajeno sería *rechazado* (propuesta de partida, TBD) | Compatible con el veredicto de D6. Un recibo de un worker producido fuera de su worktree cae en ese caso |
+| Módulo propio `evidence`, cargado en `apply` y `verify`, con el extracto `## Evidence Contract` pegado en el encargo cuando ejecuta comandos (D5, pendiente de acuerdo con 03 y 04) | 07 lo adopta: `delegation.md` deja de reservar un hueco para el contrato y sólo indica que el extracto viaja en el encargo. Resuelve el caso de D8: sin el toggle `delegation`, la ejecución directa conserva el contrato |
+| Pregunta a 07 (06, tarea 1.8) | Respondida en `informes/respuesta-a-06-2026-11-13.md` |

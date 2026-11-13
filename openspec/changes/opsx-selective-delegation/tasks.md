@@ -6,7 +6,7 @@
 ## 0. Decisiones previas (grupo)
 
 - [ ] 0.1 Cerrar las decisiones pendientes de `design.md` (señales, métrica objetivo, toggle en `lite`, dueño de `sdd-orchestrator.md`) y volcarlas a los artefactos.
-- [ ] 0.2 Confirmar con 05 el nombre del disparador "la acción requiere coordinación de subagentes"; con 06 el texto del extracto `## Evidence Contract` y la huella del estado de trabajo que reutiliza la partida; con 08 que sume "escritura fuera del conjunto de escritura del encargo" a su inventario de acciones a bloquear (hasta entonces queda declarada como no controlada preventivamente); con 03/04 que su retorno de especialista referencie el sobre de D6 (03 ya lo hizo en su D12; falta 04); con el grupo, la profundidad de D10.
+- [ ] 0.2 Confirmar con 05 el nombre del disparador "la acción requiere coordinación de subagentes"; con 06 el texto del extracto `## Evidence Contract` (06, tarea 2.4, pendiente), el módulo `evidence` (06 D5, adoptado por 07 si 03/04 lo aceptan) y la huella del estado probado que reutiliza la partida (06 D2; conjunto de archivos pendiente en su tarea 1.3), y que el campo `recibos` es de 06 (respondido en `informes/respuesta-a-06-2026-11-13.md`); con 08 que sume "escritura fuera del conjunto de escritura del encargo" a su inventario de acciones a bloquear (hasta entonces queda declarada como no controlada preventivamente); con 03/04 que su retorno de especialista referencie el sobre de D6 (03 ya lo hizo en su D12; falta 04); con el grupo, la profundidad de D10.
 
 ## 1. Inventario reproducible
 

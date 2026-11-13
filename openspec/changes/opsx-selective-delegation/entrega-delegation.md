@@ -4,6 +4,7 @@
 > `openspec/matriz-reglas-opsx.md`. El texto de los módulos va en inglés, como el resto de los
 > assets. Nada de esto está instalado: sale de `design.md` (D1–D10) y cambia si el grupo cambia
 > una decisión pendiente.
+> Actualizado el 13/11 con la propuesta de 06 (`f62cf00`): huella de la partida y módulo `evidence`.
 
 ## 1. Inventario de obligaciones de delegar (tarea 1.1, borrador)
 
@@ -64,7 +65,8 @@ Load this module only when the delegation rule decided to delegate.
 Every assignment includes:
 - goal: one verifiable sentence
 - action: explore | propose | apply | verify | archive
-- start: base commit and working-state fingerprint you hand to the worker
+- start: base commit and working-state fingerprint you hand to the worker, computed as the
+  tested-state fingerprint of `modules/evidence.md`
 - write set: exclusive paths or globs the worker may create, modify, rename or delete (empty = read-only)
 - read pointers: paths or symbols, never pasted content
 - limits: what is not touched and what is not decided
@@ -97,26 +99,30 @@ coordinator role.
     start:     base commit + declared fingerprint
     modified:  [path, kind: added | modified | deleted | renamed(from→to)]
     findings:  [{severity, path:line, description}]
-    receipts:  [one 06 receipt per command run]
+    receipts:  [one execution receipt per command run, as defined in `modules/evidence.md`]
     pending:   short text | —
 
 Validate in order: start matches the recorded one; `modified` matches the attributable changes and
-stays inside the write set; receipts; exit criteria. What the worker declares stays **unverified**
+stays inside the write set; receipts, with the review step of `modules/evidence.md`; exit criteria. What the worker declares stays **unverified**
 until an independent source or a re-run confirms it. "Tests green" without that is still unverified.
 
 ### Attempts
 Up to 3 attempts per assignment. Each retry gets the rejection reason and a new recorded start.
 When the limit is reached, escalate to the user with the history.
 
-<!-- 06: insert the `## Evidence Contract` excerpt here (matrix row 28) -->
+### Evidence
+When the assignment runs commands, paste the `## Evidence Contract` excerpt from
+`modules/evidence.md` into it. Review the returned receipts with the same step you use when you
+run the commands yourself.
 ```
 
 ## 4. Huecos que no son de 07
 
 | Hueco | Dueño | Qué bloquea |
 |---|---|---|
-| Extracto `## Evidence Contract` y forma del recibo | 06 | el campo `receipts` y la validación del paso 3 |
-| Huella del estado de trabajo | 06 | el campo `start` |
+| Texto del extracto `## Evidence Contract` y del paso de revisión | 06 (tarea 2.4, pendiente) | el contenido de `modules/evidence.md` que §3 referencia |
+| Módulo `evidence` separado de `delegation` | 06 D5, pendiente de acuerdo con 03 y 04 (tarea 1.1 de 06) | si no se acuerda, el extracto vuelve a `delegation.md` y la ejecución directa sin el toggle queda sin contrato |
+| Conjunto exacto de archivos de la huella y prueba en Windows y Linux | 06 (tarea 1.3) | el campo `start`; la definición ya está en 06 D2 |
 | Layout de Codex y su retorno de especialista (`codex-native-opsx/design.md:216`) | 04 (PR #9) | la columna Codex de §1 y la paridad (3.3) |
 | Umbral de 300 líneas | 05 D19 | el paso 4 de §2; supuesto a calibrar |
 | Bloqueo preventivo de escritura fuera de alcance | 08 | hoy sólo hay comprobación posterior |
