@@ -376,7 +376,7 @@ en `main`; es una estimación conservadora y se documenta como tal).
 
 ### Matriz de reglas (G4, cerrada el 2026-11-12)
 
-La matriz vive en [`openspec/matriz-reglas-opsx.md`](../../matriz-reglas-opsx.md), común a 03 y 04.
+La matriz vive en [`openspec/matriz-reglas-opsx.md`](../../../matriz-reglas-opsx.md), común a 03 y 04.
 La publicó la 03 y la 04 se alinea completando la columna Codex. Esta ficha no la duplica: la
 partición del asset (tarea 4.1) sigue esa tabla fila por fila. Decisiones tomadas al publicar:
 governance (niveles) universal, coincidiendo con 05; Engram guardar y buscar universal, wiring
