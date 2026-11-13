@@ -2,7 +2,7 @@
 
 ## Context
 
-**Base y fuentes (revisadas el 2026-11-13).** El código y los changes mergeados se citan contra `origin/main` `7a60089` (01, 02 y 03 integrados; 03 en el PR #8). 04 (`codex-native-opsx`) sigue sin mergear y se cita contra `origin/propose/codex-native-opsx` `9a6eb2a`. 06 se cita contra la rama `opsx-verifiable-evidence` (local, pendiente de push), D2, D3 y D9. Reparto: 08 es de Gianfranco y la revisa e integra Neyén; 06 la revisa Juan Cruz; 03 es de Juani; 04, de Matías; 05, de Emiliano; 07, de Neyén.
+**Base y fuentes (revisadas el 2026-11-13).** El código y los changes mergeados se citan contra `origin/main` `d5e95bd` (01, 02, 03 y 04 integrados; 03 en el PR #8, 04 en el PR #9; 03 y 04 están archivados en `openspec/changes/archive/2026-11-13-claude-native-opsx/` y `openspec/changes/archive/2026-11-13-codex-native-opsx/`). 06, 07 y 05 siguen en ramas de propuesta y se citan por sección y hash. Revisión consultada (2026-11-13): 04 en `main` `d5e95bd` (PR #9; `openspec/changes/archive/2026-11-13-codex-native-opsx/`, `openspec/specs/codex-opsx-delivery/spec.md:64-78` y `informes/traspaso-lifecycle-2026-11-13.md`); 06 en `origin/propose/opsx-verifiable-evidence` `3c7d908` (PR #12, ruta `openspec/changes/archive/2026-11-13-opsx-verifiable-evidence/`): D2, D3 y D9 del `design.md` y §6 de `contrato-recibo-de-ejecucion.md`; 07 en `origin/propose/opsx-selective-delegation` `4922498`: D4 del `design.md` archivado; 05 en `origin/propose/opsx-task-context` `4337e36`: D8, D14 y D18 del `design.md`. Reparto: 08 es de Gianfranco y la revisa e integra Neyén; 06 la revisa Juan Cruz; 03 es de Juani; 04, de Matías; 05, de Emiliano; 07, de Neyén.
 
 El stack hoy ofrece tres cosas distintas que conviene no mezclar:
 
@@ -115,7 +115,7 @@ El instalador ya ofrece `install --dry-run` y el planner genera un review payloa
 
 ### D9 — Preservar las entradas del usuario y no pisar un archivo ilegible
 
-**Lo que hace hoy `MergeJSONObjects`** (`internal/filemerge/json_merge.go`, `origin/main`):
+**Lo que hace hoy `MergeJSONObjects`** (`internal/filemerge/json_merge.go`, `origin/main` `d5e95bd`):
 
 - Solo los objetos se mezclan de forma recursiva (`:224-226`); **los escalares y las listas del overlay reemplazan a los del usuario** (`:229`), salvo el sentinel `__replace__` (`:180`, `:204-206`), que hace lo mismo de forma explícita. Para `permissions` eso significa que `defaultMode`, `deny` y `allow` del usuario pueden perderse (el overlay fija `defaultMode` en `overlays.go:77-83`).
 - **Un `settings.json` malformado se trata como `{}`:** si no se puede interpretar ni tras quitar comentarios y comas finales, `base = map[string]any{}` (`:10-15`, con el comentario "Malformed base is treated as {} — overlay prevalence is safe and preferable to aborting the install"). Resultado: el contenido del usuario se descarta y se escribe solo el overlay.
