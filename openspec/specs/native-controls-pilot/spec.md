@@ -1,10 +1,9 @@
-# Spec Delta
+# native-controls-pilot Specification
 
 ## Purpose
-
 Define how native client controls (permissions and hooks) are piloted and documented, how they behave when they fail, and how user configuration is written with review.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Classification of controls
 
@@ -50,7 +49,7 @@ The system SHALL be able to validate the result of an action through a native po
 
 ### Requirement: Behavior when a control fails
 
-The system SHALL apply the agreed failure policy (TBD, group decision) when a control does not respond in time, returns invalid data, or its handler does not exist, and the pilot MUST record the actual behavior of each client in those cases. The behavior documented by each client (design D6, consulted 2026-11-13) is a hypothesis to measure, not a result: in Claude Code a failing hook does not block by default and `onFailure: "block"` (Claude Code v2.1.295 or later, `command` and `http` hooks) makes it fail closed; in Codex the documentation states only that, for a local `PreToolUse` hook, unsupported or invalid output marks the hook run as failed and the tool call continues, while the error and timeout behavior of a local Codex hook is (TBD). Any behavior the documentation does not state MUST be marked (TBD) until measured.
+The system SHALL apply the agreed failure policy (TBD, group decision) when a control times out, returns invalid data, or has no handler, and the pilot MUST record each client's actual behavior. What each client documents (design D6) is a hypothesis to measure, not a result; any behavior the documentation does not state MUST be marked (TBD) until measured.
 
 #### Scenario: Timeout
 
@@ -69,7 +68,7 @@ The system SHALL apply the agreed failure policy (TBD, group decision) when a co
 
 ### Requirement: Missing mandatory or optional control
 
-When a control that an action requires is absent, the system SHALL stop only the affected action, explain which protection is missing, and allow resuming when an equivalent protection has been verified. When an optional control is absent, the system SHALL warn and continue. Which controls are mandatory is (TBD, group). This requirement MUST NOT redefine the missing-module rule of proposal 03 (design D11) or its Codex counterpart in proposal 04; it defines the content of the message and what counts as an effective protection.
+When a control that an action requires is absent, the system SHALL stop only that action, name the missing protection, and allow resuming once an equivalent protection is verified. An absent optional control SHALL produce a warning. Which controls are mandatory is (TBD, group). This does not redefine the missing-module rules of proposals 03 and 04; it defines the message and what counts as effective protection.
 
 #### Scenario: Mandatory control present
 
