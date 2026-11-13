@@ -111,8 +111,18 @@ func SetSkillInstallFn(fn func(
 // SetConfigInstallFn replaces configInstallFn for testing.
 func SetConfigInstallFn(fn func(h model.Harness, adapters interface{}, homeDir string) error) (restore func()) {
 	old := configInstallFn
-	configInstallFn = func(h model.Harness, adapters []cfginstaller.AgentAdapter, homeDir string) (cfginstaller.Result, error) {
+	configInstallFn = func(h model.Harness, adapters []cfginstaller.AgentAdapter, homeDir string, _ cfginstaller.InstallOptions) (cfginstaller.Result, error) {
 		return cfginstaller.Result{}, fn(h, adapters, homeDir)
+	}
+	return func() { configInstallFn = old }
+}
+
+// SetConfigInstallWithFn replaces configInstallFn with a version that sees the
+// install options and returns a Result (warnings, modes).
+func SetConfigInstallWithFn(fn func(h model.Harness, homeDir string, opts cfginstaller.InstallOptions) (cfginstaller.Result, error)) (restore func()) {
+	old := configInstallFn
+	configInstallFn = func(h model.Harness, _ []cfginstaller.AgentAdapter, homeDir string, opts cfginstaller.InstallOptions) (cfginstaller.Result, error) {
+		return fn(h, homeDir, opts)
 	}
 	return func() { configInstallFn = old }
 }

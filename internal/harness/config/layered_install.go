@@ -43,7 +43,10 @@ type LayeredResult struct {
 	ManifestDir         string
 	SkillChanged        bool
 	InstructionsChanged bool
-	Warnings            []string
+	// MigratedLegacy is true when the instructions file held the legacy
+	// sdd-orchestrator section that this run removed.
+	MigratedLegacy bool
+	Warnings       []string
 }
 
 // dirModes records the mode of each existing directory and, when it lacks the
@@ -120,6 +123,13 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 		}
 	}
 
+	// Nothing to do: same skill files and same CLAUDE.md. No snapshot, no write.
+	if skillExisted && skillMatches(skillDest, in.Skill) {
+		if want, werr := expectedInstructions(in); werr == nil && want == readFileOrEmpty(in.InstructionsPath) {
+			return res, nil
+		}
+	}
+
 	// Step 3: one snapshot of CLAUDE.md and the skill directory, always under
 	// <HomeDir>/.active-stack/backups (also for a Project target, C8).
 	paths := []string{in.InstructionsPath}
@@ -158,6 +168,9 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 		return res, fmt.Errorf("layered install: activate skill: %w", err)
 	}
 	res.SkillChanged = sr.Changed
+	if skillExisted && sr.Changed {
+		res.Warnings = append(res.Warnings, fmt.Sprintf("skill %q was replaced; the previous version (including any edits) is saved in %s", skillDest, snapDir))
+	}
 	skillHashes, err := fileHashes(skillDest)
 	if err != nil {
 		return res, rollbackLayered(fmt.Errorf("layered install: hash skill files: %w", err), manifest, skillDest, skillHashes, nil, in.InstructionsPath)
@@ -172,13 +185,14 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 				return err
 			}
 		}
-		content := readFileOrEmpty(in.InstructionsPath)
-		res.Warnings = append(res.Warnings, unclosedMarkerWarnings(in.InstructionsPath, content)...)
-		for _, id := range []string{"sdd-orchestrator", "sdd-delegation", "sdd-model-assignments"} {
-			content = filemerge.InjectMarkdownSection(content, id, "")
+		original := readFileOrEmpty(in.InstructionsPath)
+		res.Warnings = append(res.Warnings, unclosedMarkerWarnings(in.InstructionsPath, original)...)
+		for _, id := range filemerge.MarkedSectionIDs(original) {
+			if id == "sdd-orchestrator" {
+				res.MigratedLegacy = true
+			}
 		}
-		content = PurgeStaleSections(content)
-		content = filemerge.InjectMarkdownSection(content, UniversalSectionID, in.UniversalContent)
+		content, _ := expectedInstructions(in)
 		wr, err := filemerge.WriteFileAtomic(in.InstructionsPath, []byte(content), fileModeOr(in.InstructionsPath, 0o644))
 		if err != nil {
 			return fmt.Errorf("write %q: %w", in.InstructionsPath, err)
@@ -199,6 +213,48 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 		return res, rollbackLayered(fmt.Errorf("layered install: update instructions: %w", err), manifest, skillDest, skillHashes, guard, in.InstructionsPath)
 	}
 	return res, nil
+}
+
+// expectedInstructions is the CLAUDE.md content after the layered install:
+// legacy coordinator sections purged, stale sections purged, universal block in.
+func expectedInstructions(in LayeredInstall) (string, error) {
+	content := readFileOrEmpty(in.InstructionsPath)
+	for _, id := range []string{"sdd-orchestrator", "sdd-delegation", "sdd-model-assignments"} {
+		content = filemerge.InjectMarkdownSection(content, id, "")
+	}
+	content = PurgeStaleSections(content)
+	return filemerge.InjectMarkdownSection(content, UniversalSectionID, in.UniversalContent), nil
+}
+
+// skillMatches reports whether the skill directory holds exactly the files
+// InjectManagedSkill would write.
+func skillMatches(dest string, spec SkillSpec) bool {
+	want := map[string]string{"SKILL.md": RenderSkillMD(spec)}
+	for n, c := range spec.Modules {
+		want[filepath.ToSlash(filepath.Join("modules", n+".md"))] = c
+	}
+	got := map[string]string{}
+	err := filepath.WalkDir(dest, func(p string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		b, err := os.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		rel, _ := filepath.Rel(dest, p)
+		got[filepath.ToSlash(rel)] = string(b)
+		return nil
+	})
+	if err != nil || len(got) != len(want) {
+		return false
+	}
+	for k, v := range want {
+		if got[k] != v {
+			return false
+		}
+	}
+	return true
 }
 
 func fileHashes(root string) (map[string][sha256.Size]byte, error) {

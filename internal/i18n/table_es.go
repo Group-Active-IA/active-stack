@@ -74,6 +74,13 @@ var tableES = map[string]string{
 	"tier.bypass.long":    "Bypass le da al agente autonomía total para actuar sin preguntar. El piso de seguridad de denegación sigue bloqueando las operaciones más peligrosas—esa capa no se desactiva—pero todo lo demás corre sin supervisión. Elegilo solo cuando confiás plenamente en el flujo y la fricción te frena más de lo que te protege. Usalo con precaución: es el nivel de menor control.",
 	"tier.bypass.warning": "Bypass: modo autónomo — el piso de seguridad sigue aplicando",
 
+	// claude-native-opsx: avisos de la entrega por capas de Claude.
+	"claude.breaking.notice":           "BREAKING (Claude): el coordinador OPSX ya no vive en CLAUDE.md. Ahora es una skill que invocás con /sdd-orchestrator; las sesiones normales sólo conservan las reglas universales. Después de compactar la conversación, volvé a invocar /sdd-orchestrator. Tu contenido propio de CLAUDE.md se conservó.",
+	"install.help.claude_user_content": "Nota sobre Claude: lo que escribas en tu propio CLAUDE.md llega a todas las sesiones y subagentes; Active Stack no lo puede filtrar. El instalador sólo administra sus secciones marcadas.",
+	"update.breaking.nosync":           "Claude: esta instalación no tiene registro de selección, así que no se modificó CLAUDE.md. Cambio BREAKING: el coordinador OPSX ahora es la skill /sdd-orchestrator. Ejecutá `active-stack install` una vez con tu modo actual para migrar.",
+	"update.project.legacy":            "El proyecto %s todavía tiene el bloque legado del coordinador en %s; no se reescribió. Migralo con: active-stack starter add <starter> --project %s",
+	"install.project.manual_cleanup":   "Instalación de proyecto de Claude: para quitarla a mano, borrá %s y la sección active-stack:universal-rules de %s (el uninstall de proyecto todavía no está soportado).",
+
 	// strategy.{targeted,restore}.{label,desc,long} — uninstall strategies.
 	"strategy.targeted.label": "Dirigida",
 	"strategy.targeted.desc":  "Revierte cada harness instalado de forma individual.",
