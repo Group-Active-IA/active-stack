@@ -1,6 +1,6 @@
 # Entrega de 06 a 03/04/07: texto del `## Evidence Contract`
 
-> Borrador para la ronda `apply`, sobre `origin/main` `7a60089`. Llena la fila 28 de
+> Borrador para la ronda `apply`, sobre `origin/main` `d5e95bd`. Llena la fila 28 de
 > `openspec/matriz-reglas-opsx.md` y el contenido de `modules/evidence.md`, que
 > `entrega-delegation.md` de 07 (`origin/propose/opsx-selective-delegation`, revisión consultada
 > en `design.md`) ya referencia en sus secciones «Return envelope» y «Evidence». El texto
@@ -122,7 +122,8 @@ Resumen de los ocho cambios de `design.md` D5 (los aplican sus dueños; **no se 
 | Tabla acción → módulos | `apply` → `artifacts`, `tdd`; no hay fila `verify` | `apply` → `artifacts`, `tdd`, `evidence`; `verify` → `evidence` (más `delegation` si exige revisor independiente); delegar → `delegation`, `model-assignments` |
 | Regla "módulo solo con toggle activo" | sin excepciones | excepción: `evidence` es obligatorio sin toggle propio (su ausencia detiene la acción, D11 de 03) |
 | 03 D4 / D12 / tarea 2.3 (archivados en `main`) | el extracto vive en `delegation.md` | vive en `evidence.md`; requiere un seguimiento de 03 sobre `main` |
-| 04 `design.md`, «Matriz común de reglas», filas 28 y `verify` | ajuste coordinado pendiente | se cierra con la fila nueva |
+| 04 `openspec/changes/archive/2026-11-13-codex-native-opsx/design.md:33` y `:43` (`main`) | ajuste coordinado pendiente | se cierra con la fila nueva; 04 está archivada: seguimiento de Matías sobre `main` |
+| 04 `assets/codex/native/SKILL.md`, sección «Partial evidence requirements» (`main`) | requisitos parciales inline de D2–D4 de `f62cf00`, sin `modules/evidence.md` | se alinea o se reemplaza por el módulo cuando exista |
 
 **Si el grupo no acepta el módulo**, el texto (a) y (b) se pega igual dentro de `delegation.md` como
 prevé la fila 28 actual, y queda un límite declarado: con el toggle `delegation` apagado la

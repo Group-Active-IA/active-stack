@@ -138,7 +138,7 @@ The fingerprint SHALL be the sha256 of the exact bytes of the redacted copy, wit
 #### Scenario: Platform matrix
 
 - **WHEN** the matrix is published
-- **THEN** it lists each platform as distributed (`release.yml:71-76`), declared (`CLAUDE.md:21`) and tested separately, and Windows and Linux are tested
+- **THEN** it lists each platform as distributed (`release.yml:71-76`), declared (`CLAUDE.md:13`) and tested separately, and Windows and Linux are tested
 
 ### Requirement: Status and default to unverified
 
@@ -199,7 +199,7 @@ Client hooks (proposal 08) MAY be used as a corroboration source, but they SHALL
 
 ### Requirement: Parity between Claude and Codex
 
-The Claude and Codex assets SHALL produce the same contract and the same verdicts over the same set of test execution receipts, in direct and delegated execution. Codex `verify` with a reviewer different from the builder is covered by proposal 04 (`specs/codex-opsx-delivery/spec.md`, requirement "Verify con independencia obligatoria", and `internal/harness/config/assets/codex/native/SKILL.md`, on `origin/propose/codex-native-opsx`, pull request pending); this capability does not add that action.
+The Claude and Codex assets SHALL produce the same contract and the same verdicts over the same set of test execution receipts, in direct and delegated execution. Codex `verify` with a reviewer different from the builder is covered by proposal 04 (`specs/codex-opsx-delivery/spec.md`, requirement "Verify con independencia obligatoria", and `internal/harness/config/assets/codex/native/SKILL.md`, on `origin/main`, pull request #9, merged); this capability does not add that action.
 
 #### Scenario: Stable composition
 

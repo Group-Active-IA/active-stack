@@ -4,15 +4,14 @@
 
 El stack instala el orquestador como texto: se compone desde `internal/harness/config/assets/<agente>/sdd-orchestrator.md` con los toggles `tdd`, `engram`, `model-routing`, `delegation` y `governance`, y se inyecta en `CLAUDE.md` o `AGENTS.md` con markers idempotentes. El instalador no corre mientras el agente trabaja. Por eso el contrato de evidencia es, en esta etapa, **instrucciones más comprobaciones que ejecuta el coordinador con comandos de shell**. No hay forma de impedir una violación sin controles nativos, que son trabajo de la propuesta 08.
 
-**Base y fuentes (revisadas el 2026-11-13).** El código y 03 se citan contra `origin/main` `7a60089` (02 y 03 mergeados; PR #8 de 03). **03 mergeada en `main`, 04 pendiente.** 03 (`claude-native-opsx`) está archivado en `openspec/changes/archive/2026-11-13-claude-native-opsx/` y su matriz en `openspec/matriz-reglas-opsx.md`, ambos en `origin/main`. Las propuestas todavía no mergeadas se citan contra la rama donde está su trabajo:
+**Base y fuentes (revisadas el 2026-11-13).** El código, 03 y 04 se citan contra `origin/main` `d5e95bd` (02, 03 y 04 mergeados; PR #8 de 03 y PR #9 de 04). **03 y 04 están en `main`.** 03 (`claude-native-opsx`) está archivado en `openspec/changes/archive/2026-11-13-claude-native-opsx/` y su matriz en `openspec/matriz-reglas-opsx.md`, ambos en `origin/main`. 04 está archivado en `openspec/changes/archive/2026-11-13-codex-native-opsx/` y sus assets en `internal/harness/config/assets/codex/native/` (`main`). Las propuestas todavía no mergeadas (05 y 07) se citan contra la rama donde está su trabajo:
 
 | Change | Rama | Revisión consultada |
 |---|---|---|
-| 04 `codex-native-opsx` | `origin/propose/codex-native-opsx` (también existe `origin/feat/codex-native-opsx`) | `91fbb70` |
-| 05 `opsx-task-context` | `origin/propose/opsx-task-context` | `325aebc` |
+| 05 `opsx-task-context` | `origin/propose/opsx-task-context` | `4337e36` |
 | 07 `opsx-selective-delegation` | `origin/propose/opsx-selective-delegation` | `762e3de` |
 
-Las citas a 04, 05 y 07 son **de sección** (D9, D20, D22, D6, nombre de requisito) y valen contra esa revisión; la tabla es la única que nombra el commit. Solo las citas a `origin/main` `7a60089` llevan número de línea.
+Las citas a 05 y 07 son **de sección** (D9, D20, D22, D6, nombre de requisito) y valen contra esa revisión; la tabla es la única que nombra el commit. Las citas a `origin/main` `d5e95bd` (incluidas 03 y 04 archivadas) llevan número de línea, re-verificadas el 2026-11-13.
 
 El roadmap apunta a un orquestador de invocación explícita, con módulos independientes (TDD, delegación y coordinación) que se cargan según el rol y la acción. Esta propuesta escribe el contrato para ese modelo. Los puntos que dependen de 03, 04 y 05 están marcados (TBD).
 
@@ -21,7 +20,7 @@ El roadmap apunta a un orquestador de invocación explícita, con módulos indep
 | Término | Dueño | Qué es |
 |---|---|---|
 | **recibo de ejecución** | 06 (este change) | Registro de **una ejecución de un comando** (D2): evidencia de que algo se corrió, sobre qué estado y con qué resultado. |
-| **registro de instalación** | 04 | Registro de qué archivos instaló y es dueño el instalador, usado por `update` y por el retiro (04, `design.md`, sección «Evidencia y retorno»). No es evidencia de comandos y no se rige por este contrato. |
+| **registro de instalación** | 04 | Registro de qué archivos instaló y es dueño el instalador, usado por `update` y por el retiro (04, `openspec/changes/archive/2026-11-13-codex-native-opsx/design.md`, sección «Evidencia y retorno»). No es evidencia de comandos y no se rige por este contrato. |
 
 Esta propuesta dice siempre "recibo de ejecución". Donde 03, 04 y 07 escriben "recibo" o `recibos` (por ejemplo el campo `recibos` del sobre de 07) se refieren al recibo de ejecución.
 
@@ -46,7 +45,7 @@ Esta propuesta dice siempre "recibo de ejecución". Donde 03, 04 y 07 escriben "
 
 ### D1 — No se reutiliza `internal/verify`
 
-`internal/verify` es el reporte de health checks posteriores a la instalación. En `internal/verify/report.go` (`origin/main` `7a60089`), `BuildReport` (`:23`) agrega `CheckResult` con estados `passed`, `failed`, `skipped` y `warning`, y fija `report.Ready = report.Failed == 0` (`:38`); los `skipped`, los `warning` y la ausencia total de checks no bloquean. La semántica que pide esta propuesta es la opuesta (lo incompleto no se da por bueno). Mezclar ambas ocultaría la diferencia, y el caso observado el 02/11 (0 checks, ✓) muestra el riesgo. El contrato se define aparte.
+`internal/verify` es el reporte de health checks posteriores a la instalación. En `internal/verify/report.go` (`origin/main` `d5e95bd`), `BuildReport` (`:23`) agrega `CheckResult` con estados `passed`, `failed`, `skipped` y `warning`, y fija `report.Ready = report.Failed == 0` (`:38`); los `skipped`, los `warning` y la ausencia total de checks no bloquean. La semántica que pide esta propuesta es la opuesta (lo incompleto no se da por bueno). Mezclar ambas ocultaría la diferencia, y el caso observado el 02/11 (0 checks, ✓) muestra el riesgo. El contrato se define aparte.
 
 *Alternativa descartada:* extender `Report` con recibos de ejecución. Mezcla salud de instalación con evidencia de tareas y comparte un estado que se comporta al revés.
 
@@ -65,7 +64,7 @@ Cada recibo de ejecución describe **una** ejecución de **un** comando. Si un r
 
 **Persistencia (lo acordado).** Se persiste solo la copia redactada, con una huella, y el registro de captura. No existe una copia con secretos de la que el recibo de ejecución dependa. El **registro de captura** es el de 05 D9: fuente (`arnés`, `cliente:<fuente>` o `agente`), redactor, cliente, interfaz, sistema, versión, código de salida, cobertura previa al truncamiento y conteo de redacciones por categoría. 06 lo referencia y no agrega campos. El mecanismo de captura independiente por interfaz lo define 05 (matriz D22, ver D3). Ubicación, acceso y vencimiento: **propuestos por 05 (D9), 06 propone aceptar; pendiente de confirmación** (ver "Respuesta de 06 a 05"). Esta propuesta no fija una ruta propia.
 
-**Huella del archivo (definición).** Es el **sha256 de los bytes exactos** del archivo redactado, sin conversión de fines de línea ni filtros, y el campo **nombra el algoritmo**: `{algoritmo: "sha256", valor: "<hex>"}`. Así lo hacen 02 (`eval/baseline/record/record.go:48-51`, `Fingerprint{Algorithm, Value}`; su comentario `:7` remite a 06) y 05, que define el formato de huella de la referencia: `sha256:<hex>`, con el algoritmo nombrado y los bytes sin normalizar fines de línea (05, D9 y requisito «Copia recuperable por referencia estable»). 06 acepta ese formato; `{algoritmo, valor}` (02) y `sha256:<hex>` (05) son equivalentes y 06 no cambia su definición. Bytes iguales dan el mismo valor en Windows y en Linux; bytes distintos, incluidos LF frente a CRLF, dan valores distintos. Eso exige que la captura escriba los bytes sin traducir fines de línea.
+**Huella del archivo (definición).** Es el **sha256 de los bytes exactos** del archivo redactado, sin conversión de fines de línea ni filtros, y el campo **nombra el algoritmo**: `{algoritmo: "sha256", valor: "<hex>"}`. Así lo hacen 02 (`eval/baseline/record/record.go:42-45`, `Fingerprint{Algorithm, Value}`; su comentario `:7` remite a 06) y 05, que define el formato de huella de la referencia: `sha256:<hex>`, con el algoritmo nombrado y los bytes sin normalizar fines de línea (05, D9 y requisito «Copia recuperable por referencia estable»). 06 acepta ese formato; `{algoritmo, valor}` (02) y `sha256:<hex>` (05) son equivalentes y 06 no cambia su definición. Bytes iguales dan el mismo valor en Windows y en Linux; bytes distintos, incluidos LF frente a CRLF, dan valores distintos. Eso exige que la captura escriba los bytes sin traducir fines de línea.
 
 *No se usa `git hash-object` como definición.* Hashea un blob de Git (cabecera `blob <tamaño>\0` más contenido, SHA-1 por defecto) y no un digest del archivo: el valor no se puede recomputar con `sha256sum` ni con `Get-FileHash`, y depende de filtros (`--no-filters`) y del formato de objeto del repositorio.
 
@@ -76,7 +75,7 @@ Cada recibo de ejecución describe **una** ejecución de **un** comando. Si un r
 | Columna | Qué significa | Fuente | Estado hoy |
 |---|---|---|---|
 | *distribuida* | el instalador publica binario | `.github/workflows/release.yml:71-76` (`GOOS=windows` `:71-73`, `GOOS=linux` `:74-76`, ambos `amd64`) | Windows amd64, Linux amd64 |
-| *declarada* | la documentación dice que se soporta | `CLAUDE.md:21` ("Windows, macOS, Linux, WSL y Termux") | las cinco |
+| *declarada* | la documentación dice que se soporta | `CLAUDE.md:13` ("Windows, macOS, Linux, WSL y Termux") | las cinco |
 | *probada* | este contrato se ejecutó en ella | tarea 1.3 y 4.5 | Windows (Git Bash y PowerShell) y Linux **en WSL2** (huella de bytes y del estado probado, `informes/medicion-huella-2026-11-13.md`); Linux nativo o CI: (TBD) |
 
 Para cerrar esta propuesta, Windows y Linux deben figurar como *probadas*; hoy lo están en la medición de la tarea 1.3, con el Linux de WSL2. macOS, WSL y Termux figuran como *declaradas*; no hay binario publicado para macOS en `release.yml` y no se promete aquí que estén probadas (TBD).
@@ -125,8 +124,8 @@ El contrato es texto. **Se carga cuando la acción requiere evidencia**, tanto s
 **Estado actual en 03 y 04 (citado, no modificado).**
 
 - La matriz común (`openspec/matriz-reglas-opsx.md:48`, fila 28, `origin/main`) ubica el contrato en la capa "módulo `delegation` y encargo", especialista "sí, si ejecuta comandos", con "pendiente de texto de 06" en Claude y Codex. El inventario de módulos de 03 coloca el extracto `## Evidence Contract` en `delegation.md` (`design.md` archivado, D4, `:181-183`) y D12 (`:342`) lo incluye "en `delegation.md` y en el encargo de acciones que ejecutan comandos, también cuando la acción corre en el hilo".
-- El problema: la matriz fija que "un módulo existe sólo con su toggle activo" (`:74`) y `delegation` es un toggle. Con el toggle apagado, la ejecución directa quedaría sin contrato, aunque 03 (D12 `:342`), 04 (`design.md`, «Matriz común de reglas»; requisito «Evidencia directa y delegada») y 07 (`design.md` D6, veredicto) piden el mismo paso de revisión en ejecución directa.
-- 04 ya marca la fila como "ajuste coordinado pendiente" (`design.md` de 04, «Matriz común de reglas», fila 28) y carga el contrato en `apply` y `verify` (misma sección).
+- El problema: la matriz fija que "un módulo existe sólo con su toggle activo" (`:74`) y `delegation` es un toggle. Con el toggle apagado, la ejecución directa quedaría sin contrato, aunque 03 (D12 `:342`), 04 (`openspec/changes/archive/2026-11-13-codex-native-opsx/design.md`, «Matriz común de reglas», fila 28 `:33`; requisito «Evidencia directa y delegada») y 07 (`design.md` D6, veredicto) piden el mismo paso de revisión en ejecución directa.
+- 04 ya marca la fila como "ajuste coordinado pendiente" (`design.md` archivado de 04, `:33`) y carga el contrato en `apply` y `verify` (misma sección, `:42-43`).
 
 **Propuesta.** Un módulo propio `evidence` con el contrato y el paso de revisión de recibos. Se carga en las acciones `apply` y `verify`. Cuando se delega una acción que ejecuta comandos, el coordinador pega **además** un extracto (`## Evidence Contract`) en el encargo, igual que hoy pega `## Project Standards (auto-resolved)`. El worker devuelve los recibos de ejecución en el campo `recibos` del sobre de 07 (D6) y el coordinador los revisa con el mismo paso.
 
@@ -138,15 +137,15 @@ El contrato es texto. **Se carga cuando la acción requiere evidencia**, tanto s
 | # | Dónde (rama) | Cambio |
 |---|---|---|
 | 1 | `openspec/matriz-reglas-opsx.md:48`, fila 28 (`origin/main`) | Capa: "módulo `delegation` y encargo" → "módulo `evidence`". Especialista: "sí, si ejecuta comandos" → "sí, extracto `## Evidence Contract` pegado en el encargo cuando ejecuta comandos". Claude: → `modules/evidence.md`. Codex: → módulo `evidence`. |
-| 2 | Misma matriz, "Tabla acción → módulos" (`:68-70`) | `apply` → `artifacts`, `tdd`, **`evidence`**. Agregar `verify` → **`evidence`** (más `delegation` cuando exige revisor independiente, como ya figura en 04, «Matriz común de reglas», fila `verify`). `delegar` → `delegation`, `model-assignments` y se aclara que el extracto de `evidence` se pega solo si el encargo ejecuta comandos. Hoy la tabla no tiene fila `verify`. |
+| 2 | Misma matriz, "Tabla acción → módulos" (`:68-70`) | `apply` → `artifacts`, `tdd`, **`evidence`**. Agregar `verify` → **`evidence`** (más `delegation` cuando exige revisor independiente, como ya figura en 04, `design.md` archivado `:43`). `delegar` → `delegation`, `model-assignments` y se aclara que el extracto de `evidence` se pega solo si el encargo ejecuta comandos. Hoy la tabla no tiene fila `verify`. |
 | 3 | Misma matriz, regla `:74` ("un módulo existe sólo con su toggle activo") | Excepción para `evidence`: módulo obligatorio sin toggle propio (opción recomendada, porque su ausencia detiene la acción, D11 de 03). Alternativa: toggle `evidence` activo por defecto (TBD). |
 | 4 | 03 `design.md` archivado, D4 (`:181-183`) | Quitar "extracto `## Evidence Contract` de 06" de `delegation.md`; agregar `evidence.md` al inventario inicial. |
 | 5 | 03 `design.md` archivado, D12 (`:342`) | "Se incluye en `delegation.md` y en el encargo…" → "se incluye en `evidence.md` y en el encargo de acciones que ejecutan comandos, también cuando la acción corre en el hilo". |
 | 6 | 03 `tasks.md` archivado, tarea 2.3 (`:59`) | "ubicarlos en `modules/delegation.md`" → ubicar el `## Evidence Contract` en `modules/evidence.md` y el sobre de 07 en `modules/delegation.md`. Nota: 03 está archivado y mergeado en `main`; cambiar la fila 28 requiere un seguimiento de 03 (Juani) sobre `main`, y 03 sigue esperando el texto de 06 (su tarea 2.3). |
-| 7 | 04 `design.md`, «Matriz común de reglas», fila 28 | Cerrar el "ajuste coordinado pendiente" con el texto de la fila 28 nueva. |
-| 8 | 04 `design.md`, «Matriz común de reglas», fila `verify` | `verify` → "módulo `evidence`, y `delegation` cuando exige revisor independiente". |
+| 7 | 04 `openspec/changes/archive/2026-11-13-codex-native-opsx/design.md:33` (`main`) | Cerrar el "ajuste coordinado pendiente" con el texto de la fila 28 nueva. 04 está archivada en `main`: requiere un seguimiento de Matías sobre `main`, como 03. |
+| 8 | 04 `openspec/changes/archive/2026-11-13-codex-native-opsx/design.md:43` (`main`) | `verify` → "módulo `evidence`, y `delegation` cuando exige revisor independiente". |
 
-`native/SKILL.md` de 04 (párrafo de evidencia) ya exige cargar el contrato en ejecución directa y delegada, y 07 (`entrega-delegation.md`, sección «Evidence») ya contempla el extracto en el encargo: no necesitan cambio de fondo.
+`assets/codex/native/SKILL.md` de 04 (`main`, párrafo de evidencia y sección «Partial evidence requirements») ya exige cargar el contrato en ejecución directa y delegada, y 07 (`entrega-delegation.md`, sección «Evidence») ya contempla el extracto en el encargo: no necesitan cambio de fondo.
 
 **Estado: PROPUESTA.** Pendiente de acuerdo con **03 (Juani)** y **04 (Matías)**; 07 (Neyen) y 05 (Emiliano) se informan porque dependen de dónde vive el texto. Hasta entonces 06 solo redacta el contenido (tarea 2.4) y no edita archivos de 03 ni de 04.
 
@@ -160,7 +159,7 @@ Si el módulo requerido no está disponible en una sesión, el coordinador infor
 
 ### D6 — Sobre de retorno y qué se guarda
 
-**Sobre.** 07 es dueña del sobre de retorno (07, D6): `estado`, `partida`, `modificados`, `hallazgos`, `recibos`, `pendiente`. 06 define solo el **contenido** del campo `recibos`: una lista de recibos de ejecución, uno por comando ejecutado. Esta propuesta no define un sobre propio ni atribuye el recibo de ejecución a una sección de retorno de 04 (04 ya referencia el sobre de 07 y no crea otro: `design.md` de 04, «Evidencia y retorno»). Si hacen falta otros campos, se piden a 07. 07 valida los recibos "según 06" como tercer paso (D6, validación) y pide el mismo paso de revisión cuando la acción es directa (D6); coincide con D5.
+**Sobre.** 07 es dueña del sobre de retorno (07, D6): `estado`, `partida`, `modificados`, `hallazgos`, `recibos`, `pendiente`. 06 define solo el **contenido** del campo `recibos`: una lista de recibos de ejecución, uno por comando ejecutado. Esta propuesta no define un sobre propio ni atribuye el recibo de ejecución a una sección de retorno de 04 (04 ya referencia el sobre de 07 y no crea otro: `design.md` archivado de 04, «Evidencia y retorno»). Si hacen falta otros campos, se piden a 07. 07 valida los recibos "según 06" como tercer paso (D6, validación) y pide el mismo paso de revisión cuando la acción es directa (D6); coincide con D5.
 
 **Qué se guarda.** Se persiste solo la copia redactada (D2). 05 (D9 de `opsx-task-context`) redacta al capturar y es dueña del formato de la referencia. Ubicación y acceso: **propuestos por 05 (D9); 06 propone aceptar; pendiente de confirmación** ("Respuesta de 06 a 05"). Vencimiento: 05 propone archivo del change más siete días (D9), que 05 declara **supuesto sin medición**; 06 lo acepta como provisorio, solo exige que la referencia informe el vencimiento y no lo adopta como firme. Si la copia vence, la referencia informa que ya no está disponible y el recibo queda *sin verificar* (D4, TBD sobre "vencida").
 
@@ -168,18 +167,20 @@ Si el módulo requerido no está disponible en una sesión, el coordinador infor
 
 ### D7 — Paridad entre agentes
 
-Los cambios en los assets de Claude y de Codex se prueban con golden files de composición. Hoy en `internal/harness/config/compose_test.go` (`origin/main` `7a60089`) existen `TestCompose_AllToggles` (Claude, `:41`), `TestCompose_AllToggles_opencode` (`:65`), `TestCompose_ClaudeDiagramIncludesVerify` (`:255`), y los golden `TestCompose_AllToggles_codex` (`:274`) y `_antigravity` (`:275`) vía `assertComposeGolden`, además de `TestCompose_VariantCodex` (`:213`), que busca la palabra "Codex". El golden de Codex que cubre el asset legado ya existe; falta el que cubra el contrato de evidencia. Con 03 y 04 la composición cambia (capas y módulos: `ComposeLayers`, `ComposeCodexPackage`), así que el lugar exacto de las pruebas se reconfirma en 3.1 contra la rama integrada. La batería de recibos de ejecución de prueba se aplica a ambos agentes, en ejecución directa y delegada, y los veredictos tienen que coincidir.
+Los cambios en los assets de Claude y de Codex se prueban con golden files de composición. Hoy en `internal/harness/config/compose_test.go` (`origin/main` `d5e95bd`) existen `TestCompose_AllToggles` (Claude, `:41`), `TestCompose_AllToggles_opencode` (`:65`), `TestCompose_ClaudeDiagramIncludesVerify` (`:255`), y los golden `TestCompose_AllToggles_codex` (`:274`) y `_antigravity` (`:275`) vía `assertComposeGolden`, además de `TestCompose_VariantCodex` (`:213`), que busca la palabra "Codex". El golden de Codex que cubre el asset legado ya existe; falta el que cubra el contrato de evidencia. Con 03 y 04 la composición cambia (capas y módulos: `ComposeLayers`, `ComposeCodexPackage`), así que el lugar exacto de las pruebas se reconfirma en 3.1 contra la rama integrada. La batería de recibos de ejecución de prueba se aplica a ambos agentes, en ejecución directa y delegada, y los veredictos tienen que coincidir.
 
-### D8 — `verify` en Codex: cubierto por 04 (PR pendiente)
+### D8 — `verify` en Codex: cubierto por 04 (en `main`)
 
-En `origin/main` `7a60089`, el asset legado de Codex no lista `verify` (`internal/harness/config/assets/codex/sdd-orchestrator.md:38-50`, el flujo, y `:85-92`, la tabla de acciones), mientras el de Claude sí lo incluye (`.../claude/sdd-orchestrator.md:71`, `openspec-verify`).
+En `origin/main` `d5e95bd`, el asset legado de Codex no lista `verify` (`internal/harness/config/assets/codex/sdd-orchestrator.md:38-50`, el flujo, y `:85-92`, la tabla de acciones), mientras el de Claude sí lo incluye (`.../claude/sdd-orchestrator.md:71`, `openspec-verify`).
 
-**04 lo cubre**, con PR todavía pendiente de merge (04):
+**04 lo cubre**, en `main` (PR #9) y archivada en `openspec/changes/archive/2026-11-13-codex-native-opsx/`:
 
-- **Spec:** `specs/codex-opsx-delivery/spec.md` de 04, requisito "Verify con independencia obligatoria": la acción `verify` revisa recibos y cumplimiento y, cuando se requiere independencia, el revisor es distinto del constructor, incluso en una verificación breve (escenario «Verificación breve»); sin revisor habilitado se detiene esa verificación (escenario «Delegación desactivada o revisor ausente»).
-- **SKILL:** `internal/harness/config/assets/codex/native/SKILL.md` de 04: el párrafo de `verify` (carga la skill instalada), el del revisor (debe ser distinto del constructor cuando verify requiere independencia) y el de evidencia (las acciones que requieren evidencia cargan el contrato en ejecución directa y delegada; sin contrato corregido o captura independiente, el resultado queda sin verificar y la acción se detiene).
+- **Spec:** `openspec/specs/codex-opsx-delivery/spec.md` (`main`), requisito "Verify con independencia obligatoria": la acción `verify` revisa recibos y cumplimiento y, cuando se requiere independencia, el revisor es distinto del constructor, incluso en una verificación breve (escenario «Verificación breve»); sin revisor habilitado se detiene esa verificación (escenario «Delegación desactivada o revisor ausente»).
+- **SKILL:** `internal/harness/config/assets/codex/native/SKILL.md` (`main`): el párrafo de `verify` (carga la skill instalada), el del revisor (debe ser distinto del constructor cuando verify requiere independencia) y el de evidencia (las acciones que requieren evidencia cargan el contrato en ejecución directa y delegada; sin contrato corregido o captura independiente, el resultado queda sin verificar y la acción se detiene).
 
-06 no agrega la acción ni decide quién revisa: consume ese paso para revisar los recibos de ejecución y evaluar la suficiencia (D3). Hasta que el PR de 04 esté en `main`, la paridad de Codex (D7) se prueba solo en lo que no depende de `verify` y la suficiencia en Codex queda *sin verificar* (TBD, 04). Nota: 04 declara que "el texto actual de 06 aún requiere correcciones para cumplir el informe unificado" (`design.md` de 04, «Evidencia y retorno») y que el recibo de 06 "en `f3f005e` aún requiere corrección" (misma `design.md`, tabla de condiciones, P4; cita un borrador viejo de 06). Esta ronda las incorpora; el informe `informes/respuesta-a-04-y-05-2026-11-13.md` las contesta punto por punto.
+06 no agrega la acción ni decide quién revisa: consume ese paso para revisar los recibos de ejecución y evaluar la suficiencia (D3). Con 04 en `main`, la paridad de Codex (D7) puede probarse también sobre `verify`; la suficiencia en Codex sigue *sin verificar* hasta que se acuerde el módulo `evidence` y se entregue el contrato completo (TBD, 03 y 04).
+
+**Lo que 04 ya consume de 06.** `assets/codex/native/SKILL.md`, sección «Partial evidence requirements», y `action-table.md` (`apply` y `verify` cargan `bounded-command-output`) consumen D2–D4 de 06 en `f62cf00` como requisitos parciales inline: integridad, procedencia y suficiencia separadas, estado exacto incluidos preparados, sin preparar y nuevos, sha256 de bytes sin normalizar LF/CRLF, detalle descartado → sin verificar, y detener solo la acción afectada. 04 declara que **no** entrega `modules/evidence.md`, un extracto final, un esquema ejecutable ni un validador, y que no inventa el mecanismo de huella del árbol. Esa huella ya no queda pendiente en 06: propuesta de 06 = TreeHash sobre `git ls-files` (`eval/evidence/state.go`, D2; medido en Windows y WSL2). Al entregarse `modules/evidence.md`, esa sección debe alinearse o reemplazarse: seguimiento de Matías (04) sobre `main`. El informe `informes/respuesta-a-04-y-05-2026-11-13.md` contesta punto por punto lo que 04 pedía antes de archivarse.
 
 ### D9 — Hooks: complemento, no registro
 

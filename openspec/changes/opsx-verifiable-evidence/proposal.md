@@ -1,22 +1,22 @@
 # Proposal: opsx-verifiable-evidence
 
 > Change `opsx-verifiable-evidence` · ficha 06 del roadmap · Responsable: Gianfranco · Agentes: Claude y Codex · Prioridad P1 · Gobernanza MEDIO
-> Base revisada: `7a60089` (`origin/main`, con 02 y 03 mergeados; PR #8). Depende de 03 (`claude-native-opsx`, **mergeada en `main`**, citada contra `main`) y 04 (`codex-native-opsx`, **pendiente**, citada por sección contra la revisión consultada de `design.md`). Habilita 07 y 08.
+> Base revisada: `d5e95bd` (`origin/main`, con 02, 03 y 04 mergeados; PR #8 y PR #9). Depende de 03 (`claude-native-opsx`, **mergeada en `main`**, citada contra `main`) y 04 (`codex-native-opsx`, **mergeada en `main` y archivada**, citada contra `main`). Habilita 07 y 08.
 > Esta ronda es solo `propose`: todas las tareas de implementación quedan pendientes.
 
 ## Why
 
-El orquestador delega a sub-agentes el trabajo que ensucia el contexto, incluidas las pruebas y los builds. Lo que el sub-agente devuelve llega como texto libre. En los assets revisados (`internal/harness/config/assets/claude|codex/sdd-orchestrator.md`, `origin/main` `7a60089`) no hay un contrato de retorno que permita comprobar que un "los tests pasan" corresponde a una ejecución real, sobre el estado actual del código y con un comando que cubra lo pedido. Un resultado bien formado puede venir de otro estado del árbol, de un comando insuficiente o de una ejecución inventada. Y un test verde tampoco prueba por sí solo que se cumpla un requisito.
+El orquestador delega a sub-agentes el trabajo que ensucia el contexto, incluidas las pruebas y los builds. Lo que el sub-agente devuelve llega como texto libre. En los assets revisados (`internal/harness/config/assets/claude|codex/sdd-orchestrator.md`, `origin/main` `d5e95bd`) no hay un contrato de retorno que permita comprobar que un "los tests pasan" corresponde a una ejecución real, sobre el estado actual del código y con un comando que cubra lo pedido. Un resultado bien formado puede venir de otro estado del árbol, de un comando insuficiente o de una ejecución inventada. Y un test verde tampoco prueba por sí solo que se cumpla un requisito.
 
 Las propuestas 07 (delegar con contrato) y 08 (controles nativos) dependen de ese contrato. Sin él, delegar equivale a confiar en el texto del worker.
 
 ### Evidencia
 
-- **El único "reporte" que existe hoy es el de salud de la instalación y no sirve como contrato.** En `internal/verify/report.go` (`origin/main`, `7a60089`), `BuildReport` marca `Ready = (Failed == 0)`. Los checks `skipped` y los `warning` no bloquean. Un reporte con cero checks queda `Ready` y emite "Installation verified. You're ready to start building.".
+- **El único "reporte" que existe hoy es el de salud de la instalación y no sirve como contrato.** En `internal/verify/report.go` (`origin/main`, `d5e95bd`), `BuildReport` marca `Ready = (Failed == 0)`. Los checks `skipped` y los `warning` no bloquean. Un reporte con cero checks queda `Ready` y emite "Installation verified. You're ready to start building.".
 - **Caso observado el 02/11/2026** en una instalación de v0.4.0 (Windows, modo `lite`, agente `claude`): el paso `verify-hook` terminó con ✓ y el resumen dijo "0 passed, 0 failed". No se ejecutó ninguna comprobación y `~/.claude/settings.json` no tenía ningún hook. No se investigó por qué la lista de checks quedó vacía (queda como tarea en 1.5).
 - **La ficha 06 del roadmap** fija los casos de rechazo: recibos inventados o viejos, comandos insuficientes, salidas truncadas sin original y requisitos incumplidos con tests verdes.
 - **El asset de Codex** declara en su tercera línea "Do NOT apply it to executor agents" y su flujo lista `explore, propose, apply, archive` sin `verify`. El asset de Claude sí incluye `openspec-verify`. Un contrato escrito solo ahí no llega a los ejecutores de Codex.
-- **`openspec/` ya se versiona en Git** (desde `1b4639b`, vigente en `7a60089`). Todo lo que se guarde dentro de un change viaja al repositorio del equipo, salidas originales incluidas.
+- **`openspec/` ya se versiona en Git** (desde `1b4639b`, vigente en `d5e95bd`). Todo lo que se guarde dentro de un change viaja al repositorio del equipo, salidas originales incluidas.
 
 ## What Changes
 
@@ -28,9 +28,9 @@ Las propuestas 07 (delegar con contrato) y 08 (controles nativos) dependen de es
 - **Sobre de retorno:** 07 es dueña del sobre (`opsx-selective-delegation` D6). 06 define solo el campo `recibos` (una lista de recibos de ejecución, uno por comando).
 - Se persiste solo la **copia redactada** de la salida. Ubicación, acceso y vencimiento: propuestos por 05 (D9), 06 propone aceptar; pendiente de confirmación. Esta propuesta no fija una ruta propia. La política de redacción, el registro de captura y la huella `sha256:<hex>` son de 05 (design D6).
 - **Huella:** sha256 de los bytes, con el algoritmo nombrado en el campo (como 02 y 05); no `git hash-object`. El estado probado con cambios sin confirmar se alinea con `TreeHash(dir)` de `eval/baseline/fixture/load.go`; el índice temporal de Git queda como alternativa a evaluar (design D2).
-- Plataformas: Windows y Linux son el mínimo. La matriz distingue plataformas **distribuidas** (`release.yml:71-76`), **declaradas** (`CLAUDE.md:21`) y **probadas** (design D2).
+- Plataformas: Windows y Linux son el mínimo. La matriz distingue plataformas **distribuidas** (`release.yml:71-76`), **declaradas** (`CLAUDE.md:13`) y **probadas** (design D2).
 - Los hooks complementan la evidencia pero no son un registro exhaustivo de ejecuciones (design D9).
-- `verify` en Codex está **cubierto por 04** (spec `codex-opsx-delivery` y `native/SKILL.md` en `origin/propose/codex-native-opsx`; PR pendiente, design D8). Ya no es una pregunta abierta de 06.
+- `verify` en Codex está **cubierto por 04** (spec `codex-opsx-delivery` y `native/SKILL.md` en `origin/main`, PR #9; design D8). Ya no es una pregunta abierta de 06.
 
 ## Capabilities
 
@@ -57,8 +57,8 @@ Las propuestas 07 (delegar con contrato) y 08 (controles nativos) dependen de es
 - Reutilizar o modificar `internal/verify` (ver design D1).
 - Lectura dirigida, acotado, redacción y retención de salidas (propuesta 05, design D9). Aquí solo se exige que el recibo de ejecución referencie la copia redactada con una huella y un registro de captura.
 - Cuándo delegar y cuándo ejecutar directo (07), y el sobre de retorno (07; 06 solo define `recibos`). Controles previos y posteriores en el cliente (08).
-- Agregar la acción `verify` al flujo de Codex: es de 04 (cubierto, PR pendiente).
-- OpenCode y Antigravity: el alcance a Claude y Codex lo fija el roadmap (`CHANGES.md:3` y `:182`, `origin/main` `7a60089`), no esta propuesta.
+- Agregar la acción `verify` al flujo de Codex: es de 04 (cubierto, en `main`).
+- OpenCode y Antigravity: el alcance a Claude y Codex lo fija el roadmap (`CHANGES.md:3` y `:182`, `origin/main` `d5e95bd`), no esta propuesta.
 - Implementación: `apply`, pruebas de implementación, `verify` y `archive` son de una etapa posterior.
 
 ## Impact
