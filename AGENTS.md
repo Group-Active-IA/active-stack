@@ -79,7 +79,7 @@ legada y su diagnóstico. El modo compartido `ConfigDeliveryManagedSkill` selecc
 el instalador, verify y retiro por cliente; no intercambia paquetes entre Claude
 y Codex. Antigravity y OpenCode conservan su estrategia de entrega.
 La aceptación funcional de CLI/IDE Windows/Linux y los contratos de 03/05/06 se
-registran en `openspec/changes/codex-native-opsx/`.
+registran en `openspec/changes/archive/2026-11-13-codex-native-opsx/`.
 
 Los toggles del `sdd-orchestrator` **no se exponen en la TUI ni en la GUI** (salen
 literales del catálogo); los harnesses sí. Por eso las capacidades opt-in se

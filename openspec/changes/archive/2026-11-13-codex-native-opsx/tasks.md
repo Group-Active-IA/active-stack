@@ -8,7 +8,7 @@ Esta lista sigue exclusivamente trabajo propio de 04. Matías pidió separar com
 
 La deuda externa se gestiona fuera de este checklist en [registro de deuda](informes/deudas-aceptadas-05-06-07-2026-11-13.md): D04-0501/0601–0604/0701–0702, D04-0201, D04-0301, D04-010308, D04-BASE01 y D04-REV01. Cada fila conserva proveedor, origen, disparador y criterio de cierre; Matías integra lo que corresponda cuando llegue el insumo. No se marca como implementado lo que no se hizo.
 
-Alcance Machine y escritura ALTA ya aprobados. Las pruebas usan perfiles aislados; aplicar safety net y TDD antes de producción. No ejecutar build sin pedido explícito. La entrega funcional completa aún no está acreditada: las acciones con requisitos obligatorios ausentes se detienen y quedan sin verificar. No se archiva automáticamente ni se cierra el PR antes de su disposición y merge.
+Alcance Machine y escritura ALTA ya aprobados. Las pruebas usan perfiles aislados; aplicar safety net y TDD antes de producción. No ejecutar build sin pedido explícito. La entrega funcional completa aún no está acreditada: las acciones con requisitos obligatorios ausentes se detienen y quedan sin verificar. Las tres tareas propias pendientes pasan a `## DEUDA aceptada` y el change se archiva antes del merge (13/11).
 
 ## Trabajo propio del alcance vigente
 
@@ -43,10 +43,12 @@ Alcance Machine y escritura ALTA ya aprobados. Las pruebas usan perfiles aislado
 | 2.1, 2.2 | [Composición](informes/apply-composition-2026-11-13.md), [diagnóstico Project](informes/avance-paralelo-04-2026-11-13.md). |
 | 4.1, 4.4a, 4.5 | Informes de integración, módulos, revisiones independientes y [correcciones de revisión](informes/correcciones-revision-pr9-2026-11-13.md). Suite final: 2081 eventos aprobados, 6 fallidos conocidos y 3 omitidos; vet/race aprobados. Suite global no verde. |
 
-## Trabajo propio que sigue pendiente
+## DEUDA aceptada
 
-- **1.2:** obtener y registrar las sondas P2; el [plan de clientes](informes/plan-aceptacion-clientes-04.md) está preparado, no ejecutado por completo.
-- **2.4:** entregar especialistas y sus rutas/encargos; no hay prueba de roles funcionales que permita darla por hecha.
-- **4.2:** ejecutar la matriz con clientes reales sobre el paquete final. La sonda macOS solo acredita descubrimiento; Linux de Juani acredita instalador. No sustituyen CLI/IDE Windows/Linux.
+Tareas propias que quedan abiertas al archivar, con su motivo, en un solo lugar. Se aceptan como deuda de Matías el 2026-11-13 para cerrar el circuito (implementar, archivar, PR), igual que la 03. La revisión de Juani (responsable de 03) sobre `bdec06c` en Linux está en la PR #9.
 
-No se asignó ese trabajo propio a terceros sin acuerdo ni se lo ocultó como deuda externa. Las partes realmente condicionadas a otros changes se retoman desde sus IDs de deuda, no como duplicados abiertos del checklist.
+- 1.2: sondas P2 de Codex CLI y extensión IDE en Windows/Linux sin ejecutar; el [plan de clientes](informes/plan-aceptacion-clientes-04.md) está preparado. Responsable: Matías.
+- 2.4: especialistas y encargo propios de Codex sin entregar; dependen de 1.2 y de D04-0601/D04-0701. Responsable: Matías.
+- 4.2: aceptación con Codex real en CLI e IDE Windows/Linux sin ejecutar. La sonda macOS acredita descubrimiento y la revisión de Juani en Linux acredita el instalador (install conjunto con Claude, reinstalación y uninstall de cada cliente sin afectar al otro). Responsable: Matías.
+
+La deuda externa sigue en el [registro de deuda](informes/deudas-aceptadas-05-06-07-2026-11-13.md) con sus IDs.

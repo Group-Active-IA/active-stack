@@ -246,7 +246,7 @@ encuentra ediciones posteriores informa el conflicto y la ubicación del respald
 Project conserva su entrega anterior. Si el proyecto todavía contiene coordinación
 legada, esa fuente debe tratarse explícitamente al evaluar una sesión normal.
 Los resultados de CLI y extensión IDE en Windows/Linux se registran por separado
-en el [change 04](openspec/changes/codex-native-opsx/). Las acciones que requieren
+en el [change 04](openspec/changes/archive/2026-11-13-codex-native-opsx/). Las acciones que requieren
 captura y evidencia corroborada esperan los contratos de 05/06; una protección o
 módulo obligatorio ausente detiene la acción afectada.
 
