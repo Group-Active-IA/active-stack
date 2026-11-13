@@ -100,7 +100,7 @@ Los tres resultados se informan por separado. Integridad aprobada no implica pro
 
 ### D4 — Tres estados, con la duda hacia "sin verificar"
 
-El texto de **rechazado** es el de la ficha 06 del roadmap (`CHANGES.md:192`, "Aceptación futura"): *rechazar recibos inventados o viejos, comandos insuficientes, salidas truncadas sin original y requisitos incumplidos con tests verdes. Un recibo incompleto queda sin verificar.*
+El texto de **rechazado** es el de la ficha 06 del roadmap (`CHANGES.md:194`, "Aceptación futura"): *rechazar recibos inventados o viejos, comandos insuficientes, salidas truncadas sin original y requisitos incumplidos con tests verdes. Un recibo incompleto queda sin verificar.*
 
 - **Verificado:** integridad, procedencia (corroborada por fuente independiente o reejecución) y suficiencia aprobadas para cada requisito declarado, y existe al menos un recibo de ejecución para él. **Una ejecución sin recibos nunca queda verificada.**
 - **Rechazado**, los cinco casos de la ficha:
