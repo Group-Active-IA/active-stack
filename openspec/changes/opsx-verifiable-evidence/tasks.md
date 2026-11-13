@@ -52,7 +52,7 @@
 - [ ] 4.8 Caso de `apply` directo: el coordinador ejecuta las pruebas sin delegar (con `delegation` apagado), se producen recibos de ejecución y pasan por el mismo paso de revisión que en la delegación. *Pendiente: requiere los assets (sección 3) y el módulo `evidence` acordado en 1.1.*
 - [ ] 4.9 Caso de `git status`: tras una corrida con salida voluminosa, ninguna salida completa aparece en `git status` (ni sin trackear). *Pendiente: requiere la captura de 05; ningún dato de fixture lo prueba.*
 - [ ] 4.10 Correr la misma batería con el flujo de Claude y con el de Codex, en ejecución directa y delegada, y comparar los veredictos.
-- [ ] 4.11 Suite Go completa en verde. Confirmar con `git diff --stat` que no se tocaron `backup`, `filemerge` ni `pipeline`.
+- [x] 4.11 Suite Go completa en verde. Confirmar con `git diff --stat` que no se tocaron `backup`, `filemerge` ni `pipeline`. *Hecho: `go build ./...` y `go vet ./...` con exit 0; `go test ./...` con 39 paquetes ok y exit 0 (salidas en `C:\Proyectos\informes-opsx-opsx-verifiable-evidence\go-build.txt`, `go-vet.txt`, `go-test-all.txt`); `git diff --stat origin/main` no toca `internal/backup`, `internal/filemerge` ni `internal/pipeline` (solo se agregan archivos en `eval/evidence/` y en este change).*
 - [x] 4.12 Caso de detalle descartado por la redacción: verificar un requisito exige un detalle que la redacción de 05 descartó; el recibo queda *sin verificar* y el fixture comprueba que no se persiste el crudo para evitarlo (requisito de 05 "Un detalle redactado no alcanza para verificar"). *Hecho: `detalle-redactado`.*
 
 ## 5. Integración con otras propuestas
