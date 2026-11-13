@@ -60,7 +60,7 @@ Autor: planner. Confianza indicada en cada punto.
    - migración idempotente;
    - rollback con contenido del usuario;
    - update con y sin recibo.
-   
+
    Además agregué propiedad de archivos, desinstalación y no regresión de otros agentes.
 8. **Tensión con la instrucción del schema (media).** El schema pide resolver antes de las tareas las preguntas que cambian el plan. El brief prohíbe decidir los puntos de grupo. Los dejé como G1–G11 bloqueantes de `apply` (no como Open Questions), y las tareas que dependen de ellos están condicionadas. Lo tiene que juzgar el plan-reviewer.
 
