@@ -1,0 +1,1 @@
+{"type":"item.completed","item":{"id":"item_1","type":"command_execution","command":"go test -v ./mini/","aggregated_output":"\u001b[31m=== RUN   TestMini\u001b[0m (colores y recodificación: no relacionable con la referencia)\n","exit_code":1,"status":"failed"}}

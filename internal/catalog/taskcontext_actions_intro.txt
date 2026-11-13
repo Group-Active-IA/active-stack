@@ -1,0 +1,7 @@
+## Action to Modules
+
+Before the first tool call of an action, read the modules listed for it. Read every mandatory
+module. Read an optional module when its condition applies;
+an optional module with no condition always applies. When you delegate, paste the modules the
+specialist needs into the assignment: the specialist does not see this skill.
+

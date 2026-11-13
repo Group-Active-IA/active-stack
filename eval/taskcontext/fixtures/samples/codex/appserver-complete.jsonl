@@ -1,0 +1,3 @@
+{"method":"item/commandExecution/outputDelta","params":{"threadId":"thr_FICTICIO","turnId":"turn_1","itemId":"item_1","delta":"=== RUN   TestMini\nline 02 padding\nline 03 padding\n"}}
+{"method":"item/commandExecution/outputDelta","params":{"threadId":"thr_FICTICIO","turnId":"turn_1","itemId":"item_1","delta":"--- FAIL: TestMini (0.00s)\nline 05 padding\nFAIL\tmini\t0.100s\n"}}
+{"method":"item/completed","params":{"threadId":"thr_FICTICIO","turnId":"turn_1","item":{"type":"commandExecution","id":"item_1","command":"go test -v ./mini/","aggregatedOutput":"=== RUN   TestMini\nline 02 padding\nline 03 padding\n--- FAIL: TestMini (0.00s)\nline 05 padding\nFAIL\tmini\t0.100s\n","exitCode":1,"status":"failed"}}}

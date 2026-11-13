@@ -1,0 +1,1 @@
+{"hook_event_name":"PostToolUseFailure","tool_name":"Bash","tool_input":{"command":"go test -v ./mini/"},"tool_use_id":"toolu_FICTICIO_0001","error":"Exit code 1\n=== RUN   TestMini\nline 02 padding\n... [59 characters truncated] ...\nFAIL\tmini\t0.100s\n","is_interrupt":false}

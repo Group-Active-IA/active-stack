@@ -1,0 +1,20 @@
+### Missing or empty modules
+
+A module file that does not exist, or that exists with no text (zero bytes or only
+whitespace), is missing.
+
+- Missing mandatory module: stop only the action that needs it and write
+  `missing module: <id> — <action> stopped`. Finish the parts of the request that do not need
+  it and report them apart from the stopped action. Resume when the module is available or a
+  surface that delivers it is used, and write `resumed: <action> — <module | surface> available`.
+- Missing optional module: write `missing optional module: <id> — continuing without it` and
+  resolve the action directly. Without `delegation`, do not delegate, even where other rules of
+  this skill say to delegate.
+- On a surface without subagents, `verify` stops: write
+  `missing module: delegation — verify stopped (surface without subagents)`.
+- Never replace a missing module with your own version of its rules.
+
+### After compaction or resume
+
+Compaction removes this skill and its modules from your context. Invoke the skill again and
+re-read the modules of the current action before you continue it.
