@@ -86,6 +86,11 @@ The coordinator SHALL evaluate integrity, provenance and sufficiency separately 
 - **WHEN** a worker fabricates an execution receipt whose fingerprint matches a stored copy it also fabricated
 - **THEN** integrity passes, and the status is "unverified" without corroboration, or "rejected" if an independent source or a re-execution contradicts it
 
+#### Scenario: Re-execution without independent capture
+
+- **WHEN** the only corroboration is a re-execution by the coordinator without its own capture from an independent source
+- **THEN** it does not corroborate (and does not contradict): the execution receipt stays "unverified", and a re-execution that has its own independent capture (proposal 05) does count
+
 #### Scenario: Stale state
 
 - **WHEN** corroboration shows the execution ran on a state of the tree different from the current one

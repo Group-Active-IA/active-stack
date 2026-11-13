@@ -1,7 +1,7 @@
 # Proposal: opsx-verifiable-evidence
 
 > Change `opsx-verifiable-evidence` · ficha 06 del roadmap · Responsable: Gianfranco · Agentes: Claude y Codex · Prioridad P1 · Gobernanza MEDIO
-> Base revisada: `7a60089` (`origin/main`, con 02 y 03 mergeados; PR #8). Depende de 03 (`claude-native-opsx`, **mergeada en `main`**, citada contra `main`) y 04 (`codex-native-opsx`, **pendiente**, citada contra `origin/propose/codex-native-opsx` `91fbb70`). Habilita 07 y 08.
+> Base revisada: `7a60089` (`origin/main`, con 02 y 03 mergeados; PR #8). Depende de 03 (`claude-native-opsx`, **mergeada en `main`**, citada contra `main`) y 04 (`codex-native-opsx`, **pendiente**, citada por sección contra la revisión consultada de `design.md`). Habilita 07 y 08.
 > Esta ronda es solo `propose`: todas las tareas de implementación quedan pendientes.
 
 ## Why
@@ -67,6 +67,7 @@ Las propuestas 07 (delegar con contrato) y 08 (controles nativos) dependen de es
   - El módulo `evidence` (propuesta, design D5) en los assets de Claude y de Codex, según el mecanismo de módulos de 03 y 04; el asset legado `internal/harness/config/assets/claude|codex/sdd-orchestrator.md` solo si el grupo no adopta la separación.
   - `internal/harness/config/compose_test.go` (golden de composición; hoy existen `TestCompose_AllToggles` para Claude y `_opencode`, `TestCompose_ClaudeDiagramIncludesVerify`, los golden `_codex` y `_antigravity`, y `TestCompose_VariantCodex`, que comprueba que aparezca la palabra "Codex").
   - Eventualmente `internal/catalog/harnesses.yaml` si el grupo elige un harness propio (BAJO).
+- **Código nuevo fuera del binario:** `eval/evidence/` (Go, solo biblioteca estándar más `eval/baseline/record` y `eval/baseline/fixture` de 02; no lo importa ningún `cmd/` ni `internal/`). Ejecuta el contrato sobre fixtures, no es el verificador del producto. `CLAUDE.md` no clasifica `eval/`: propuesta de 06, pendiente de confirmación, MEDIO. Se avisa a Juan Cruz (01) y a Giuliano (02) (design D10).
 - **No se tocan** `backup`, `filemerge` ni `pipeline` (ALTO). Si el diseño final obliga a tocarlos, la propuesta vuelve a revisión.
 - **Gobernanza:** `harness/config` es MEDIO (implementar con checkpoints).
 - **Otras propuestas:** modifica lo que reciben los roles de 03 y 04 y fija lo que 07 puede exigir y 08 puede validar.
