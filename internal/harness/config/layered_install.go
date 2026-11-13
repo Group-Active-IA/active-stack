@@ -106,20 +106,20 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 	skillExisted := false
 	if info, err := os.Lstat(skillDest); err == nil {
 		if !info.IsDir() {
-			return res, fmt.Errorf("layered install: %q exists and is not a directory; left untouched", skillDest)
+			return res, fmt.Errorf("layered install: \"%s\" exists and is not a directory; left untouched", skillDest)
 		}
 		raw, rerr := os.ReadFile(filepath.Join(skillDest, "SKILL.md"))
 		if rerr != nil || !hasOwnerMark(string(raw)) {
-			return res, fmt.Errorf("layered install: %q exists without the %s ownership mark; refusing to overwrite it", skillDest, SkillOwnerKey)
+			return res, fmt.Errorf("layered install: \"%s\" exists without the %s ownership mark; refusing to overwrite it", skillDest, SkillOwnerKey)
 		}
 		skillExisted = true
 	} else if !os.IsNotExist(err) {
-		return res, fmt.Errorf("layered install: inspect %q: %w", skillDest, err)
+		return res, fmt.Errorf("layered install: inspect \"%s\": %w", skillDest, err)
 	}
 	if in.ShadowSkillsDir != "" {
 		shadow := filepath.Join(in.ShadowSkillsDir, in.Skill.ID)
 		if _, err := os.Lstat(shadow); err == nil {
-			res.Warnings = append(res.Warnings, fmt.Sprintf("personal skill %q takes precedence over the project skill %q (personal over project)", shadow, skillDest))
+			res.Warnings = append(res.Warnings, fmt.Sprintf("personal skill %q takes precedence over the project skill \"%s\" (personal over project)", shadow, skillDest))
 		}
 	}
 
@@ -143,7 +143,7 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 			return nil
 		})
 		if err != nil {
-			return res, fmt.Errorf("layered install: walk %q for backup: %w", skillDest, err)
+			return res, fmt.Errorf("layered install: walk \"%s\" for backup: %w", skillDest, err)
 		}
 	} else {
 		paths = append(paths, skillDest)
@@ -169,7 +169,7 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 	}
 	res.SkillChanged = sr.Changed
 	if skillExisted && sr.Changed {
-		res.Warnings = append(res.Warnings, fmt.Sprintf("skill %q was replaced; the previous version (including any edits) is saved in %s", skillDest, snapDir))
+		res.Warnings = append(res.Warnings, fmt.Sprintf("skill \"%s\" was replaced; the previous version (including any edits) is saved in %s", skillDest, snapDir))
 	}
 	skillHashes, err := fileHashes(skillDest)
 	if err != nil {
@@ -195,7 +195,7 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 		content, _ := expectedInstructions(in)
 		wr, err := filemerge.WriteFileAtomic(in.InstructionsPath, []byte(content), fileModeOr(in.InstructionsPath, 0o644))
 		if err != nil {
-			return fmt.Errorf("write %q: %w", in.InstructionsPath, err)
+			return fmt.Errorf("write \"%s\": %w", in.InstructionsPath, err)
 		}
 		written = true
 		mdHash = sha256.Sum256([]byte(content))
@@ -284,12 +284,12 @@ func rollbackLayered(cause error, m backup.Manifest, skillDest string, skillHash
 		raw, err := os.ReadFile(p)
 		if err != nil || sha256.Sum256(raw) != want {
 			skillIntact = false
-			conflicts = errors.Join(conflicts, fmt.Errorf("preserved %q because it changed after installation; backup at %q", p, m.RootDir))
+			conflicts = errors.Join(conflicts, fmt.Errorf("preserved \"%s\" because it changed after installation; backup at \"%s\"", p, m.RootDir))
 		}
 	}
 	if skillIntact {
 		if err := os.RemoveAll(skillDest); err != nil {
-			conflicts = errors.Join(conflicts, fmt.Errorf("remove %q during rollback: %w", skillDest, err))
+			conflicts = errors.Join(conflicts, fmt.Errorf("remove \"%s\" during rollback: %w", skillDest, err))
 		}
 	}
 	if mdGuard != nil {

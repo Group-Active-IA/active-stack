@@ -150,7 +150,7 @@ func checkManagedSkillConfig(h model.Harness, adapter Adapter, homeDir string) [
 	readInstr := func() (string, error) {
 		data, err := os.ReadFile(instrPath)
 		if err != nil {
-			return "", fmt.Errorf("read instructions file %q: %w", instrPath, err)
+			return "", fmt.Errorf("read instructions file \"%s\": %w", instrPath, err)
 		}
 		return string(data), nil
 	}
@@ -167,7 +167,7 @@ func checkManagedSkillConfig(h model.Harness, adapter Adapter, homeDir string) [
 						return err
 					}
 					if n := strings.Count(content, legacyMarker); n != 1 {
-						return fmt.Errorf("marker %q appears %d times in %q, want exactly once", legacyMarker, n, instrPath)
+						return fmt.Errorf("marker %q appears %d times in \"%s\", want exactly once", legacyMarker, n, instrPath)
 					}
 					return nil
 				},
@@ -190,15 +190,15 @@ func checkManagedSkillConfig(h model.Harness, adapter Adapter, homeDir string) [
 			Run: func(_ context.Context) error {
 				skillMD, err := os.ReadFile(filepath.Join(skillDir, "SKILL.md"))
 				if err != nil {
-					return fmt.Errorf("SKILL.md not found at %q: %w", filepath.Join(skillDir, "SKILL.md"), err)
+					return fmt.Errorf("SKILL.md not found at \"%s\": %w", filepath.Join(skillDir, "SKILL.md"), err)
 				}
 				if !strings.Contains(string(skillMD), "disable-model-invocation: true") {
-					return fmt.Errorf("SKILL.md at %q does not declare disable-model-invocation: true", skillDir)
+					return fmt.Errorf("SKILL.md at \"%s\" does not declare disable-model-invocation: true", skillDir)
 				}
 				for _, module := range config.ExpectedModules(h.Toggles) {
 					p := filepath.Join(skillDir, "modules", module+".md")
 					if _, err := os.Stat(p); err != nil {
-						return fmt.Errorf("module %q missing at %q", module, p)
+						return fmt.Errorf("module %q missing at \"%s\"", module, p)
 					}
 				}
 				content, err := readInstr()
@@ -207,10 +207,10 @@ func checkManagedSkillConfig(h model.Harness, adapter Adapter, homeDir string) [
 				}
 				universal := "<!-- active-stack:" + config.UniversalSectionID + " -->"
 				if n := strings.Count(content, universal); n != 1 {
-					return fmt.Errorf("marker %q appears %d times in %q, want exactly once", universal, n, instrPath)
+					return fmt.Errorf("marker %q appears %d times in \"%s\", want exactly once", universal, n, instrPath)
 				}
 				if legacy := "<!-- active-stack:" + h.ID + " -->"; strings.Contains(content, legacy) {
-					return fmt.Errorf("legacy marker %q still present in %q", legacy, instrPath)
+					return fmt.Errorf("legacy marker %q still present in \"%s\"", legacy, instrPath)
 				}
 				return nil
 			},

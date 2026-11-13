@@ -188,7 +188,7 @@ func (s *markerRemovalStep) removeLayered(a AgentAdapter) error {
 	path := a.InstructionsPath(s.homeDir)
 	original, readErr := os.ReadFile(path)
 	if readErr != nil && !os.IsNotExist(readErr) {
-		return fmt.Errorf("read instructions file %q: %w", path, readErr)
+		return fmt.Errorf("read instructions file \"%s\": %w", path, readErr)
 	}
 	if readErr == nil {
 		updated := string(original)
@@ -202,7 +202,7 @@ func (s *markerRemovalStep) removeLayered(a AgentAdapter) error {
 				mode = info.Mode().Perm()
 			}
 			if _, err := filemerge.WriteFileAtomic(path, []byte(updated), mode); err != nil {
-				return fmt.Errorf("write %q: %w", path, err)
+				return fmt.Errorf("write \"%s\": %w", path, err)
 			}
 		}
 	}
@@ -214,10 +214,10 @@ func (s *markerRemovalStep) removeLayered(a AgentAdapter) error {
 	if err := skillRemovalFn(skillDir); err != nil {
 		if readErr == nil {
 			if _, werr := filemerge.WriteFileAtomic(path, original, 0o644); werr != nil {
-				return fmt.Errorf("remove skill dir %q: %w; additionally the block could not be restored in %q: %v", skillDir, err, path, werr)
+				return fmt.Errorf("remove skill dir \"%s\": %w; additionally the block could not be restored in \"%s\": %v", skillDir, err, path, werr)
 			}
 		}
-		return fmt.Errorf("remove skill dir %q: %w; the universal block was restored in %q", skillDir, err, path)
+		return fmt.Errorf("remove skill dir \"%s\": %w; the universal block was restored in \"%s\"", skillDir, err, path)
 	}
 	return nil
 }
@@ -414,7 +414,7 @@ func (s *restoreStep) guardEdited(m backup.Manifest) error {
 			continue
 		}
 		if filepath.Clean(rec.ManifestDir) != filepath.Clean(m.RootDir) {
-			s.warn(fmt.Sprintf("warning: %q is not the registered migration manifest (%q); the hash guard still applies", m.RootDir, rec.ManifestDir))
+			s.warn(fmt.Sprintf("warning: \"%s\" is not the registered migration manifest (\"%s\"); the hash guard still applies", m.RootDir, rec.ManifestDir))
 		}
 		expected := map[string]string{filepath.Clean(rec.InstructionsPath): rec.InstructionsSHA256}
 		for p, h := range rec.SkillFiles {

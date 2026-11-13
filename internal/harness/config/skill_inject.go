@@ -104,21 +104,21 @@ func InjectManagedSkill(skillsDir string, spec SkillSpec, opts SkillInjectOption
 
 	if info, err := os.Lstat(dest); err == nil {
 		if !info.IsDir() {
-			return SkillInjectResult{}, fmt.Errorf("managed skill %q: %q exists and is not a directory; left untouched", spec.ID, dest)
+			return SkillInjectResult{}, fmt.Errorf("managed skill %q: \"%s\" exists and is not a directory; left untouched", spec.ID, dest)
 		}
 		raw, rerr := os.ReadFile(filepath.Join(dest, "SKILL.md"))
 		if rerr != nil || !hasOwnerMark(string(raw)) {
-			return SkillInjectResult{}, fmt.Errorf("managed skill %q: %q exists without the %s ownership mark; refusing to overwrite it", spec.ID, dest, SkillOwnerKey)
+			return SkillInjectResult{}, fmt.Errorf("managed skill %q: \"%s\" exists without the %s ownership mark; refusing to overwrite it", spec.ID, dest, SkillOwnerKey)
 		}
 	} else if !os.IsNotExist(err) {
-		return SkillInjectResult{}, fmt.Errorf("managed skill %q: inspect %q: %w", spec.ID, dest, err)
+		return SkillInjectResult{}, fmt.Errorf("managed skill %q: inspect \"%s\": %w", spec.ID, dest, err)
 	}
 
 	var warnings []string
 	if opts.ShadowSkillsDir != "" {
 		shadow := filepath.Join(opts.ShadowSkillsDir, spec.ID)
 		if _, err := os.Lstat(shadow); err == nil {
-			warnings = append(warnings, fmt.Sprintf("personal skill %q takes precedence over the project skill %q (personal over project)", shadow, dest))
+			warnings = append(warnings, fmt.Sprintf("personal skill %q takes precedence over the project skill \"%s\" (personal over project)", shadow, dest))
 		}
 	}
 

@@ -154,8 +154,10 @@ func snapshotContent(t *testing.T, home, path string) string {
 		if _, err := backup.ExtractArchive(filepath.Join(root, d.Name(), backup.ArchiveFilename), tmp); err != nil {
 			continue
 		}
-		rel := strings.TrimPrefix(filepath.ToSlash(path), "/")
-		if b, err := os.ReadFile(filepath.Join(tmp, "files", filepath.FromSlash(rel))); err == nil {
+		// Same stripping as backup/snapshot.go: drop the volume ("C:") and the leading separator.
+		rel := strings.TrimPrefix(path, filepath.VolumeName(path))
+		rel = strings.TrimPrefix(rel, string(filepath.Separator))
+		if b, err := os.ReadFile(filepath.Join(tmp, "files", rel)); err == nil {
 			return string(b)
 		}
 	}
