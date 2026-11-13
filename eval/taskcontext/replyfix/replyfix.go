@@ -62,8 +62,8 @@ func Cases() []Case {
 		{
 			ID: "already-in-artifact", Kind: InArtifact,
 			ArtifactText: "El único número del contrato es cuándo se resume, no cuánto: una salida de más de 300 líneas o de más de 10.000 caracteres, lo que ocurra primero, se entrega como resumen más referencia.",
-			Artifact:     "openspec/changes/opsx-task-context/design.md",
-			ResultFirst: "The summary threshold is already decided: openspec/changes/opsx-task-context/design.md#D3\n" +
+			Artifact:     "openspec/changes/archive/2026-11-13-opsx-task-context/design.md",
+			ResultFirst: "The summary threshold is already decided: openspec/changes/archive/2026-11-13-opsx-task-context/design.md#D3\n" +
 				"Next: read section D3 instead of restating it here.\n",
 		},
 	}

@@ -15,7 +15,7 @@ import (
 
 var update = flag.Bool("update", false, "regenera los golden y los documentos generados de docs/")
 
-const entregaRel = "openspec/changes/opsx-task-context/entrega-03-04.md"
+const entregaRel = "openspec/changes/archive/2026-11-13-opsx-task-context/entrega-03-04.md"
 
 func repoRoot(t *testing.T) string {
 	t.Helper()

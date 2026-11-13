@@ -50,7 +50,7 @@ solo cambia el orden. Quien lee solo la primera línea de la segunda respuesta n
 |---|---|
 | `multiple-findings` | lista de tres hallazgos, cada uno con `path:line`, antes de cualquier explicación; después solo el próximo paso |
 | `no-finding` | una sola línea: no hay hallazgo y qué se revisó |
-| `already-in-artifact` | señala `openspec/changes/opsx-task-context/design.md#D3` en lugar de copiar el párrafo |
+| `already-in-artifact` | señala `openspec/changes/archive/2026-11-13-opsx-task-context/design.md#D3` en lugar de copiar el párrafo |
 
 ## Qué no cubre
 
