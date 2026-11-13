@@ -71,8 +71,8 @@ type Env struct {
 // ejecución concreta: qué comando corrió, en qué árbol y con qué resultado. El id de corrida solo
 // no basta: sin esos datos, cambiar el comando del recibo conservando el id reutilizaría el juicio.
 //
-// Source es la fuente independiente. Vacía, o igual a la fuente de la captura del recibo (el
-// agente o el arnés que lo escribió), no es independiente y el registro no cuenta.
+// Source identifica la fuente observada por el revisor, con cobertura comprobada cuando aplica.
+// El mismo arnés puede capturar y corroborar. Una fuente vacía o del agente no cuenta.
 type CorroborationRecord struct {
 	Run      string
 	Command  string
@@ -227,7 +227,7 @@ func evaluateReceipt(r Receipt, req string, env Env) Verdict {
 func corroborationOf(r Receipt, env Env) string {
 	got := provNone
 	for _, c := range env.Corroboration {
-		if c.Run != r.Run || !independent(c, r) {
+		if c.Run != r.Run || !independent(c) {
 			continue
 		}
 		switch c.Verdict {
@@ -243,8 +243,9 @@ func corroborationOf(r Receipt, env Env) string {
 	return got
 }
 
-func independent(c CorroborationRecord, r Receipt) bool {
-	return c.Source != "" && (r.Output.Capture == nil || c.Source != r.Output.Capture.Source)
+func independent(c CorroborationRecord) bool {
+	source := strings.TrimSpace(c.Source)
+	return source != "" && !strings.EqualFold(source, "agente")
 }
 
 func describes(c CorroborationRecord, r Receipt) bool {

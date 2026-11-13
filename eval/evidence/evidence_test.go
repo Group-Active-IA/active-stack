@@ -286,3 +286,25 @@ func TestEvaluateRequirement_AgentDeclaredCaptureWithoutIndependentCorroboration
 		}
 	})
 }
+
+func TestEvaluateRequirement_IndependenceIsRelativeToAgent(t *testing.T) {
+	for _, tc := range []struct {
+		name, capture, observed string
+		want                    Status
+	}{
+		{"trusted harness also captured the copy", "arnés", "arnés", Verified},
+		{"agent spelling variant", "agente", " AGENTE ", Unverified},
+		{"agent observation even when harness captured", "arnés", "agente", Unverified},
+		{"blank observation source", "arnés", " ", Unverified},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			c := loadValid(t)
+			c.Receipts[0].Output.Capture.Source = tc.capture
+			c.Env.Corroboration[0].Source = tc.observed
+			got := EvaluateRequirement(c.Requirement, c.Receipts, c.Env)
+			if got.Status != tc.want || got.Integrity != intPass {
+				t.Fatalf("want %q with intact copy, got %+v", tc.want, got)
+			}
+		})
+	}
+}
