@@ -1,7 +1,24 @@
 # Tasks: opsx-selective-delegation
 
-> Ronda `propose`: todas las tareas quedan pendientes. Gobernanza MEDIO: implementar con checkpoints.
+> Estado al archivar: ver «Alcance de 07 al archivar y deuda aceptada» (9 entregadas, 16 en deuda). Gobernanza MEDIO: implementar con checkpoints.
 > Prerrequisitos de implementación: 05 (PR #10) y 06 (PR #12) integradas en `main`; skill de invocación explícita de 03/04 ya integrada (`d5e95bd`); protocolo y arnés de 02 (`240e1b2`) disponibles para el grupo 5.
+
+
+## Alcance de 07 al archivar y deuda aceptada
+
+07 se archiva con **alcance parcial** (13/11), igual que 03, 04 y 06. Lo que depende de otros
+changes, de acuerdos del grupo o de mediciones pasa a deuda aceptada y no se marca como hecho.
+
+**25 tareas: 9 entregadas y 16 pendientes (deuda aceptada).** Entregadas: 1.1, 2.1 a 2.5 y 3.1 a
+3.3. Pendientes: 0.1, 0.2, 1.2, 4.1 a 4.4, 5.1 a 5.6 y 6.1 a 6.3. El detalle por tarea, con
+proveedor, artefacto faltante, criterio de cierre y comportamiento mientras tanto, está en
+[informes/deuda-aceptada-07-2026-11-13.md](informes/deuda-aceptada-07-2026-11-13.md). La
+verificación con comandos y salidas reales está en
+[informes/verificacion-07-2026-11-13.md](informes/verificacion-07-2026-11-13.md).
+
+- **Suite Go completa: no está en verde.** Las 6 pruebas que fallan, fallan igual en `main` limpio (D07-BASE).
+- **Política predeterminada sin adoptar.** Falta el piloto (D07-05); la spec sincronizada no es un acuerdo del grupo.
+- **Límite legacy** (D8, D07-LEG).
 
 ## 0. Decisiones previas (grupo)
 
