@@ -324,3 +324,16 @@ func TestComposeLayers_Goldens(t *testing.T) {
 		}
 	}
 }
+
+// skillTokenBudget is the 4000-token threshold Juani fixed on 2026-11-13 for the
+// composed SKILL.md (design D10). 02 left no token counter in main, so tokens
+// are estimated as bytes/4.
+const skillTokenBudget = 4000
+
+// 4.3: the SKILL.md composed with the five toggles fits the re-attachment budget.
+func TestComposeLayers_SkillMDFitsReattachBudget(t *testing.T) {
+	md := config.RenderSkillMD(mustLayers(t, allToggles).Skill)
+	if tokens := (len(md) + 3) / 4; tokens > skillTokenBudget {
+		t.Errorf("SKILL.md is ~%d tokens (%d bytes), budget %d", tokens, len(md), skillTokenBudget)
+	}
+}

@@ -123,6 +123,12 @@ func InjectManagedSkill(skillsDir string, spec SkillSpec, opts SkillInjectOption
 	if opts.ExternalSnapshot {
 		backupDir = ""
 	}
+	// The skill directory keeps its previous mode (0755 when new): staging dirs
+	// are created 0700.
+	destMode := os.FileMode(0o755)
+	if info, err := os.Stat(dest); err == nil {
+		destMode = info.Mode().Perm()
+	}
 	res, err := skill.RefreshManagedDirectory(skillsDir, spec.ID, backupDir, func(stage string) error {
 		if err := os.WriteFile(filepath.Join(stage, "SKILL.md"), []byte(RenderSkillMD(spec)), 0o644); err != nil {
 			return err
@@ -142,6 +148,9 @@ func InjectManagedSkill(skillsDir string, spec SkillSpec, opts SkillInjectOption
 	})
 	if err != nil {
 		return SkillInjectResult{}, err
+	}
+	if !res.AlreadyInstalled {
+		_ = os.Chmod(res.SkillPath, destMode)
 	}
 	return SkillInjectResult{Path: res.SkillPath, Changed: !res.AlreadyInstalled, Warnings: warnings}, nil
 }

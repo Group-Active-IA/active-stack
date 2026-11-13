@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -268,5 +269,69 @@ func TestInstallLayered_FailureAfterPurgeRestoresInstructions(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(e.skills, "sdd-orchestrator")); err == nil {
 		t.Error("new skill dir must be removed by the rollback")
+	}
+}
+
+func modeOf(t *testing.T, p string) os.FileMode {
+	t.Helper()
+	info, err := os.Stat(p)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return info.Mode().Perm()
+}
+
+// 5.5 (G6, small scope): CLAUDE.md, ~/.claude and ~/.claude/skills keep their mode.
+func TestInstallLayered_PreservesModes(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX permission bits are not meaningful on Windows")
+	}
+	e := newLayeredEnv(t)
+	claudeDir := filepath.Dir(e.md)
+	if err := os.MkdirAll(e.skills, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	for p, m := range map[string]os.FileMode{e.md: 0o600, e.skills: 0o700, claudeDir: 0o700} {
+		if err := os.Chmod(p, m); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := InstallLayered(e.install()); err != nil {
+		t.Fatalf("InstallLayered: %v", err)
+	}
+	for p, want := range map[string]os.FileMode{e.md: 0o600, e.skills: 0o700, claudeDir: 0o700} {
+		if got := modeOf(t, p); got != want {
+			t.Errorf("%s mode = %o, want %o", p, got, want)
+		}
+	}
+}
+
+// 5.5: a directory left read-only by an old installer (0500) only gains the
+// owner write bit and the full write succeeds.
+func TestInstallLayered_ReadOnlyDirsGetOnlyOwnerWrite(t *testing.T) {
+	if runtime.GOOS == "windows" || os.Geteuid() == 0 {
+		t.Skip("needs POSIX permissions enforced for a non-root user")
+	}
+	e := newLayeredEnv(t)
+	claudeDir := filepath.Dir(e.md)
+	if err := os.MkdirAll(e.skills, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, d := range []string{e.skills, claudeDir} {
+		if err := os.Chmod(d, 0o500); err != nil {
+			t.Fatal(err)
+		}
+	}
+	t.Cleanup(func() { _ = os.Chmod(claudeDir, 0o700); _ = os.Chmod(e.skills, 0o700) })
+	if _, err := InstallLayered(e.install()); err != nil {
+		t.Fatalf("InstallLayered on read-only dirs: %v", err)
+	}
+	if !strings.Contains(readStr(t, e.md), UniversalSectionID) {
+		t.Error("CLAUDE.md was not written")
+	}
+	for _, d := range []string{e.skills, claudeDir} {
+		if got := modeOf(t, d); got != 0o700 {
+			t.Errorf("%s mode = %o, want 700 (only the owner write bit added)", d, got)
+		}
 	}
 }

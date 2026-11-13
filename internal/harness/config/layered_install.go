@@ -46,6 +46,43 @@ type LayeredResult struct {
 	Warnings            []string
 }
 
+// dirModes records the mode of each existing directory and, when it lacks the
+// owner write bit (left 0500 by an old installer), adds only that bit so the
+// write can proceed. The returned func puts every directory back to its recorded
+// mode (plus the owner write bit), undoing the 0755 that WriteFileAtomic forces.
+// Scope is G6 (small): only the directories of this install.
+func dirModes(dirs ...string) func() {
+	type rec struct {
+		dir  string
+		mode os.FileMode
+	}
+	var recs []rec
+	for _, d := range dirs {
+		info, err := os.Stat(d)
+		if err != nil || !info.IsDir() {
+			continue
+		}
+		m := info.Mode().Perm() | 0o200
+		if m != info.Mode().Perm() {
+			_ = os.Chmod(d, m)
+		}
+		recs = append(recs, rec{d, m})
+	}
+	return func() {
+		for _, r := range recs {
+			_ = os.Chmod(r.dir, r.mode)
+		}
+	}
+}
+
+// fileModeOr returns the mode of an existing file, or def when it does not exist.
+func fileModeOr(path string, def os.FileMode) os.FileMode {
+	if info, err := os.Stat(path); err == nil {
+		return info.Mode().Perm()
+	}
+	return def
+}
+
 // InstallLayered runs D5 steps 2-6: ownership/collision check, one snapshot
 // manifest under <HomeDir>/.active-stack/backups, skill directory swap, then the
 // CLAUDE.md edit (legacy coordinator sections purged, universal block injected).
@@ -55,6 +92,9 @@ type LayeredResult struct {
 func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 	var res LayeredResult
 	skillDest := filepath.Join(in.SkillsDir, in.Skill.ID)
+
+	restoreModes := dirModes(filepath.Dir(in.InstructionsPath), in.SkillsDir)
+	defer restoreModes()
 
 	// Step 2: collision / precedence checks, before any write.
 	if err := validateSkillSpec(in.Skill); err != nil {
@@ -139,7 +179,7 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 		}
 		content = PurgeStaleSections(content)
 		content = filemerge.InjectMarkdownSection(content, UniversalSectionID, in.UniversalContent)
-		wr, err := filemerge.WriteFileAtomic(in.InstructionsPath, []byte(content), 0o644)
+		wr, err := filemerge.WriteFileAtomic(in.InstructionsPath, []byte(content), fileModeOr(in.InstructionsPath, 0o644))
 		if err != nil {
 			return fmt.Errorf("write %q: %w", in.InstructionsPath, err)
 		}
