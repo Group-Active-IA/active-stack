@@ -7,6 +7,7 @@ import (
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	"github.com/Group-Active-IA/active-stack/internal/harness/command"
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
@@ -84,11 +85,15 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 	}
 
 	// 5. Collect all paths that Apply steps will touch; build the snapshot step.
+	snapshotPaths, err := collectUninstallPaths(adapters, opts.HomeDir, selected)
+	if err != nil {
+		return empty, fmt.Errorf("uninstall: collect snapshot paths: %w", err)
+	}
 	snapshotDir := filepath.Join(opts.HomeDir, ".active-stack", "backups", "uninstall")
 	prepareSteps := []pipeline.Step{
 		&snapshotStep{
 			id:         "uninstall-snapshot",
-			paths:      collectUninstallPaths(adapters, opts.HomeDir, selected),
+			paths:      snapshotPaths,
 			snapDir:    snapshotDir,
 			snapCreate: snapshotCreate,
 		},
@@ -156,7 +161,7 @@ func filterByAgents(harnesses []model.Harness, agents []model.Agent) []model.Har
 
 // collectUninstallPaths enumerates the filesystem paths that the Apply steps
 // will touch, so the snapshot in Prepare captures exactly those paths.
-func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []model.Harness) []string {
+func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []model.Harness) ([]string, error) {
 	seen := make(map[string]struct{})
 	var paths []string
 
@@ -179,8 +184,17 @@ func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []
 				}
 			} else {
 				for _, a := range adapters {
+					if h.ID == "sdd-orchestrator" && a.Agent() == model.AgentCodex && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+						owned, err := config.ManagedSkillOwnedPaths(a, homeDir, h.ID)
+						if err != nil {
+							return nil, err
+						}
+						for _, path := range owned {
+							add(path)
+						}
+					}
 					add(a.InstructionsPath(homeDir))
-					if h.ID == "sdd-orchestrator" && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+					if h.ID == "sdd-orchestrator" && a.Agent() == model.AgentClaude && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
 						dir := filepath.Join(a.SkillsDir(homeDir), h.ID)
 						_ = filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
 							if err == nil {
@@ -225,7 +239,7 @@ func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []
 		}
 	}
 
-	return paths
+	return paths, nil
 }
 
 // buildUninstallStep constructs the correct pipeline.Step for a single harness.

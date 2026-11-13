@@ -23,23 +23,23 @@ Rangos de línea sobre los assets de `internal/harness/config/assets/` en `main`
 | 3 | nuevo | Arranque breve: existe el coordinador y cómo invocarlo | universal | no | bloque universal con `/sdd-orchestrator` | marker `sdd-orchestrator` |
 | 4 | `claude/sdd-orchestrator.md:3` | "Bind this to the dedicated agent only" | se elimina (lo cumple la entrega) | no | no se entrega | no se entrega |
 | 5 | `claude/sdd-orchestrator.md:5-9` (sin la última oración de `:7`) | Role: coordinador, no ejecutor | coordinador | no | cuerpo de `SKILL.md` | skill `sdd-orchestrator` |
-| 6 | `claude/sdd-orchestrator.md:13` y `:7` (última oración) | CLI `openspec` dueño del estado | universal | sí | bloque universal; encargo a Explore/Plan | lo define 04 |
+| 6 | `claude/sdd-orchestrator.md:13` y `:7` (última oración) | CLI `openspec` dueño del estado | universal | sí | bloque universal; encargo a Explore/Plan | bloque universal; encargo con reglas aplicables |
 | 7 | `claude/sdd-orchestrator.md:14` | Delegar, no inflar el contexto | coordinador | no | `SKILL.md` | skill |
-| 8 | `claude/sdd-orchestrator.md:15` | Engram persiste contexto (una línea) | universal | sí | bloque universal (toggle `engram`) | lo define 04 |
+| 8 | `claude/sdd-orchestrator.md:15` | Engram persiste contexto (una línea) | universal | sí | bloque universal (toggle `engram`) | bloque universal (toggle engram) |
 | 9 | `claude/sdd-orchestrator.md:17-26` | Starting work, fundación | coordinador | no | `SKILL.md` | skill |
 | 10 | `claude/sdd-orchestrator.md:27-47` | Delegation rules (toggle) | módulo `delegation` | sí, en el encargo | `modules/delegation.md` | módulo `delegation` |
 | 11 | 07 D1 | Cuándo delegar (regla breve) | coordinador | no | pendiente de texto de 07 | pendiente de texto de 07 |
 | 12 | `claude/sdd-orchestrator.md:48-108` | Workflow, comandos, manejo de pedidos y tabla acción → especialista | coordinador | no | `SKILL.md` | skill |
 | 13 | `claude/sdd-orchestrator.md:109-166` | Patrón de lanzamiento y plantilla de encargo | coordinador | no (es lo que arma el encargo) | `SKILL.md` | skill |
-| 14 | `claude/sdd-orchestrator.md:167-202` | Ciclo de artefactos y comandos CLI | módulo `artifacts` (propose, apply, archive) | sí, en el encargo | `modules/artifacts.md` | lo define 04 |
-| 15 | `claude/sdd-orchestrator.md:203-206` | NEVER adivinar estado; NEVER crear `openspec/` a mano | universal | sí | bloque universal | lo define 04 |
+| 14 | `claude/sdd-orchestrator.md:167-202` | Ciclo de artefactos y comandos CLI | módulo `artifacts` (propose, apply, archive) | sí, en el encargo | `modules/artifacts.md` | modules/artifacts.md |
+| 15 | `claude/sdd-orchestrator.md:203-206` | NEVER adivinar estado; NEVER crear `openspec/` a mano | universal | sí | bloque universal | bloque universal |
 | 16 | `claude/sdd-orchestrator.md:207-210` | NEVER bloquear, NEVER apply/propose inline, ambigüedad, `/sdd-*` | coordinador | no (lo contradiría) | `SKILL.md` | skill |
 | 17 | `claude/sdd-orchestrator.md:212-226` | Model assignments (toggle) | módulo `model-assignments` | no | `modules/model-assignments.md` | se omite hasta 09 |
-| 18 | `governance.md:1-13` | Niveles de autonomía por dominio | universal (toggle `governance`) | sí | bloque universal | lo define 04 |
+| 18 | `governance.md:1-13` | Niveles de autonomía por dominio | universal (toggle `governance`) | sí | bloque universal | bloque universal (toggle governance) |
 | 19 | `governance.md:14-fin` | Cómo aplicarlos a delegación y checkpoints | coordinador | no | `SKILL.md` (toggle `governance`) | skill |
-| 20 | `engram-protocol.md:1-5` | Encabezado "ALWAYS ACTIVE" | universal | sí | bloque universal (toggle `engram`) | lo define 04 |
+| 20 | `engram-protocol.md:1-5` | Encabezado "ALWAYS ACTIVE" | universal | sí | bloque universal (toggle `engram`) | bloque universal (toggle engram) |
 | 21 | `engram-protocol.md:6-12` | Wiring OPSX | módulo `engram-opsx` | no | `modules/engram-opsx.md` | módulo |
-| 22 | `engram-protocol.md:13-59` | Guardado proactivo y búsqueda | universal | sí | bloque universal (toggle `engram`) | lo define 04 |
+| 22 | `engram-protocol.md:13-59` | Guardado proactivo y búsqueda | universal | sí | bloque universal (toggle `engram`) | bloque universal (toggle engram) |
 | 23 | `engram-protocol.md:60-92` | Cierre de sesión y recuperación tras compactación | coordinador | no | `SKILL.md` (toggle `engram`) | skill |
 | 24 | `engram-protocol.md:93-fin` | Git sync de la memoria | módulo `engram-opsx` | no | `modules/engram-opsx.md` | módulo |
 | 25 | `compose.go:93` | Línea `Strict TDD Mode: enabled` | módulo `tdd` | sí, en apply | `modules/tdd.md` | módulo `tdd` |
@@ -72,3 +72,37 @@ Rangos de línea sobre los assets de `internal/harness/config/assets/` en `main`
 - Una fila, una capa. Si un bloque toca dos capas se parte en filas.
 - Ninguna regla del asset queda sin fila; ninguna aparece en dos capas.
 - Un módulo existe sólo con su toggle activo.
+
+## Aporte del 04 · 13 de noviembre de 2026
+
+La columna Codex se completó desde el compositor y las pruebas del change 04. Las
+filas y la columna Claude se conservan como referencia de la matriz publicada
+en `ed37113`. Esta actualización no incorpora la implementación del 03.
+
+La fila 28 mantiene pendiente el texto del 06. En Codex, el contrato debe cargarse
+cuando la acción exige evidencia, incluso en ejecución directa. La captura y el
+esquema corregido se integrarán desde 05/06. La ubicación final en un módulo se
+revisa con sus responsables.
+
+El enum compartido `ConfigDeliveryManagedSkill` conserva el valor 2. Al combinar
+las entregas, instalación, verificación y retiro deben seleccionar el recorrido
+del cliente. La coincidencia del enum no vuelve intercambiables el instalador de
+Claude y el de Codex. La prueba conjunta de ambas ramas queda pendiente de esa
+reconciliación, con independencia del orden en que se integren sus PR.
+
+## Integración de main tras PR #8 · 13 de noviembre de 2026
+
+El PR #8 se integró en main `7a600895` desde la entrega Claude `01f944c`.
+La rama de 04 incorpora esa base mediante merge y concilia el enum único, la
+interfaz opcional de rutas y el despacho por agente en install, verify y uninstall.
+Claude mantiene sus opciones de versión, capas, Project y shadowing; Codex Machine
+mantiene su inventario, snapshot persistente y guardas de escritura. Codex Project
+conserva la entrega legada y su aviso. Los markers son propios de cada cliente:
+`universal-rules` para Claude y `sdd-orchestrator` para Codex.
+
+Las pruebas aisladas de instalación en ambos órdenes, reaplicación, actualización,
+verificación y retiro se registran en el informe de integración de 04. No son
+aceptación de CLI/IDE real ni sustituyen la revisión humana de 03/04. La fila 28 y
+la evidencia directa de 06 siguen pendientes de su contrato corregido. Este
+apartado actualiza el estado técnico; conserva el aporte y pendientes históricos
+anteriores como tales.
