@@ -137,7 +137,7 @@ grupo (contrato, evidencia, decisión).
 - Decisiones: G1, G3, G7, G10, G11 y G13 con la opción recomendada en design.md; G12 queda Machine-only con limpieza manual y DEUDA-1; G6 con alcance chico (sólo las rutas de esta ficha, sin tocar `internal/filemerge` global ni el código de 01/08). Detalle en design.md, "Decisiones".
 - Umbral de reenganche del `SKILL.md`: 4000 tokens.
 - Alcance aprobado: tareas 3 a 7 y 9 de tasks.md. Siguen fuera de esta aprobación: la sección 1 y la 8 (las corre Juani con Claude real), la 10 y el push.
-- Pendiente declarado: los textos de 05, 06 y 07 (tarea 2.3); `MinVersion` sigue en 0.0.0 hasta que Juani lo fije con pruebas reales.
+- Pendiente declarado: los textos de 05, 06 y 07 (tarea 2.3); `MinVersion` quedó fijada en 2.1.110 (Juani, con pruebas reales en 2.1.318; commit `841ef99`).
 
 ## Knowledge Base Impact
 

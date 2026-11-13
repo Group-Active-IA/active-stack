@@ -4,7 +4,7 @@
 
 - Nivel: ALTO (HIGH) con tensión ALTO vs CRITICAL abierta para la persona que aprueba
   (proposal.md, Clasificación).
-- Fase: propose, revisión 2026-11-11 según el informe unificado de revisión OPSX
+- Fase: implementado y archivado el 2026-11-13 (PR #8); revisión de diseño 2026-11-11 según el informe unificado de revisión OPSX
   (`revision-2026-11-11.md`). Activación por skill `/sdd-orchestrator` acordada por el grupo.
 - Revisión base: rama `claude-native-opsx` con `main` integrado (`35a89f8`: 01 y 02 en `main`).
 - Informes de la ronda anterior (agente de sesión, base 97d7f6c): `informes/propose-1..3-*.md`.
@@ -31,7 +31,7 @@ esa evidencia. Nunca build salvo pedido explícito (regla del repo).
 ## 1. Verificación de suposiciones (sin código de producción)
 
 Registrar cada resultado como EVIDENCIA o SUPOSICIÓN en
-`openspec/changes/claude-native-opsx/investigacion/contexto-efectivo.md`, con versión de Claude,
+`openspec/changes/archive/2026-11-13-claude-native-opsx/investigacion/pruebas-claude-real.md`, con versión de Claude,
 interfaz, plataforma, modelo, comando, timestamp y testigo usado, siguiendo el manifiesto de 02.
 Scripts en `investigacion/`, nunca en `internal/`. Toda corrida con modelo sigue D9. Orden: 1.12 y
 1.11 primero.
@@ -170,5 +170,23 @@ interfaz, plataforma, permisos efectivos).
 ## 10. Integración y cierre
 
 - [x] 10.1 Suite completa una vez sobre la revisión entregada: `go test ./...`, `go vet ./...` y el formateo del repo; registrar comando, timestamp, revisión y veredicto. (2026-11-13, rev 4341660: `go test ./...` 5 FAIL preexistentes de la base, iguales en 35a89f8/ded396b; `go vet ./...` ok; `gofmt -l .` sin archivos nuevos)
-- [ ] 10.2 Archivar el change con `openspec archive` después de la verificación y la aprobación humana registrada.
-- [ ] 10.3 Abrir el PR desde `claude-native-opsx` hacia `main` con: qué entrega (criterios C por escenario), cómo se comprueba (comandos y evidencia de 8.x y 10.1) y qué queda pendiente (DEUDA y decisiones abiertas). Revisa el responsable del change anterior.
+- [x] 10.2 Archivar el change con `openspec archive` después de la verificación y la aprobación humana registrada. (Evidencia: `openspec/changes/archive/2026-11-13-claude-native-opsx/`, commit `e8534bc`, PR #8)
+- [x] 10.3 Abrir el PR desde `claude-native-opsx` hacia `main` con: qué entrega (criterios C por escenario), cómo se comprueba (comandos y evidencia de 8.x y 10.1) y qué queda pendiente (DEUDA y decisiones abiertas). Revisa el responsable del change anterior. (Evidencia: PR #8 `Group-Active-IA/active-stack#8`, rama `claude-native-opsx`, commit `ed37113`)
+
+## DEUDA aceptada
+
+Tareas que quedan abiertas al archivar, con su motivo, en un solo lugar (revisión del PR #8, M5).
+
+- 1.1: hecho en target Project; la prueba global no se hizo (no se escribe en `~/.claude` real).
+- 1.2: queda sólo la documentación oficial; no se midió con Claude real.
+- 1.3: precedencia del cuerpo de la skill frente al prompt de sistema y a `CLAUDE.md`: no medida.
+- 1.5: Project leído (pruebas 1-6); la precedencia frente a una skill Machine con el mismo ID se apoya en la documentación oficial y en el aviso 5.3.
+- 1.6: origen real de las skills `openspec-*` (contradicción C2): sin tabla de nombres reales.
+- 1.9: skills con `disable-model-invocation: true` en el campo `skills` de un subagente: sólo documentación oficial.
+- 1.12: mecanismo de autenticación con directorio de configuración temporal: sin resolver.
+- 1.13: nivel ALTO fijado sin el resultado; deuda aceptada.
+- 2.3: textos de 05, 06 y 07 (D17, `## Evidence Contract` y sobre de retorno) todavía no recibidos.
+- 2.6: condicionada a los resultados de la sección 1 y a 2.3, que siguen abiertos.
+- 8.1: queda el script reproducible y los casos de propose, apply, verify y Explore lanzados por el coordinador; la prueba real fue parcial (ver `investigacion/pruebas-claude-real.md`).
+- 8.2: IDE y Windows sin entorno ("no disponible"); Machine probado con install, reinstalación, uninstall y restore en home temporal.
+- 8.3: la variante modular instalable para la tarea 4.1 de 02 queda como deuda para 02.

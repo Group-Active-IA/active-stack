@@ -46,3 +46,11 @@ No disponible, con motivo:
 Observaciones fuera de esta ficha: en `--mode custom` el resumen de verify dice 0 chequeos; con el
 binario de `35a89f8` sale igual (preexistente). El aviso BREAKING se muestra con la etiqueta
 "degraded, best-effort" porque viaja por el canal de eventos degradados del pipeline.
+
+## Alcance de la prueba
+
+La prueba real se hizo con `claude -p`, modelo haiku y un `SKILL.md` escrito a mano con testigos,
+no con el generado por el instalador. La prueba de punta a punta del instalador (sección anterior)
+verificó los archivos escritos, no el contexto efectivo de Claude sobre ellos. `--continue` no se
+probó: sólo `--resume`.
+

@@ -1,6 +1,6 @@
 # claude-native-opsx: índice de informes
 
-Propuesta 03 del roadmap (Claude Code, riesgo ALTO pendiente de confirmar por la persona). Rama `claude-native-opsx` con `main` `35a89f8` integrado. Fase: propose, revisada el 2026-11-11 según el informe unificado (`revision-2026-11-11.md`): el coordinador pasa a ser la skill `/sdd-orchestrator`. Falta la revisión del plan sobre esta versión, las decisiones abiertas de design.md y la aprobación humana.
+Propuesta 03 del roadmap (Claude Code, nivel ALTO fijado por Juani el 2026-11-13; ver `proposal.md`, `## Aprobación`). Rama `claude-native-opsx` con `main` `35a89f8` integrado. Implementada y archivada el 2026-11-13 (PR #8); el coordinador es la skill `/sdd-orchestrator` (informe unificado `revision-2026-11-11.md`). Las tareas abiertas y su motivo están en `tasks.md`, sección `## DEUDA aceptada`.
 
 | Informe | Rol | Ejecutor declarado | Intento | Veredicto |
 |---|---|---|---|---|

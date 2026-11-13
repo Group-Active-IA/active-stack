@@ -107,6 +107,8 @@ El caso registrado en el informe se reproduce con `codex -c 'approval_policy="un
 
 **Change** `claude-native-opsx` · **Responsable** Juani · **Cliente** Claude · **Dependencias** [02](#change-02)
 
+**BREAKING.** El coordinador deja de vivir en `CLAUDE.md` y pasa a la skill `/sdd-orchestrator`, que se invoca a mano; reinstalar migra el bloque administrado.
+
 **Problema.** Las instrucciones compartidas de Claude mezclan reglas universales con el rol de coordinador. Eso dificulta saber qué contexto recibe cada especialista.
 
 **Qué buscar.** Seguí `InstallSDD` o el punto equivalente del adapter hasta los archivos que ve Claude. Identificá alcance, precedencia y contenido efectivo en sesión y en especialistas. Investigá qué nombres y ubicaciones soporta la versión objetivo. Documentá la matriz de reglas compartidas con 04.

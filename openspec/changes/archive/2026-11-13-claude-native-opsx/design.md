@@ -444,6 +444,6 @@ ciclo de artefactos en el módulo `artifacts`.
 
 ## Open Questions
 
-- Si la reanudación con `--resume` conserva la skill invocada (tarea 1.14).
+- (Resuelta 2026-11-13) La reanudación con `--resume` conserva la skill invocada (tarea 1.14, `investigacion/pruebas-claude-real.md`). `--continue` no se probó.
 - (Resuelta 2026-11-13) El cuerpo de `SKILL.md` no se reengancha tras compactar; no hay módulos que conservar (D10).
-- Ubicación de la matriz común con 04 (archivo en `openspec/` o sección de `CHANGES.md`).
+- (Resuelta 2026-11-12) La matriz común con 04 se publicó en `openspec/matriz-reglas-opsx.md`.
