@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -52,9 +53,19 @@ func (a Availability) Message() string {
 }
 
 // Store es la ubicación y la retención de las copias redactadas.
+//
+// La raíz se ancla en el primer uso que la encuentra: si después se la sustituye
+// (otro directorio con el mismo nombre, o un symlink a otro store), el store no
+// lee, escribe ni borra debajo de ella. El índice además registra la raíz que lo
+// escribió, para que otra instancia con la misma configuración tampoco adopte el
+// índice de otro store. Un alias elegido al configurar el cache, antes de la
+// primera captura, no es una sustitución.
 type Store struct {
 	Root string
 	Now  func() time.Time
+
+	anchorMu sync.Mutex
+	anchor   os.FileInfo
 }
 
 type indexEntry struct {
@@ -63,6 +74,9 @@ type indexEntry struct {
 }
 
 type index struct {
+	// Root es la raíz configurada del store que escribió el índice (vacía en
+	// índices anteriores a la marca, que se aceptan y se marcan al guardar).
+	Root     string                `json:"root,omitempty"`
 	Runs     map[string]indexEntry `json:"runs"`
 	Archived map[string]time.Time  `json:"archived"`
 }
@@ -113,6 +127,9 @@ func (s *Store) safeRunDir(change, runID string) (string, error) {
 	if err := checkIdentity(change, runID); err != nil {
 		return "", err
 	}
+	if err := s.checkRoot(); err != nil {
+		return "", err
+	}
 	dir := s.RunDir(change, runID)
 	rel, err := filepath.Rel(s.Root, dir)
 	if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) {
@@ -133,12 +150,56 @@ func (s *Store) safeRunDir(change, runID string) (string, error) {
 	return dir, nil
 }
 
+// checkRoot ancla la raíz en su primer uso y después exige que siga siendo el
+// mismo directorio (os.SameFile tras resolver la ruta configurada). Una raíz que
+// no existe no tiene nada que leer ni borrar: se suelta el ancla y se vuelve a
+// anclar cuando se cree.
+func (s *Store) checkRoot() error {
+	fi, err := os.Stat(s.Root)
+	s.anchorMu.Lock()
+	defer s.anchorMu.Unlock()
+	if os.IsNotExist(err) {
+		s.anchor = nil
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if !fi.IsDir() {
+		return fmt.Errorf("capture: la raíz %s no es un directorio", s.Root)
+	}
+	if s.anchor == nil {
+		s.anchor = fi
+		return nil
+	}
+	if !os.SameFile(s.anchor, fi) {
+		return fmt.Errorf("capture: la raíz %s fue sustituida después de anclarla: no se lee, escribe ni borra debajo de ella", s.Root)
+	}
+	return nil
+}
+
+// rootID es la raíz configurada, absoluta y limpia, tal como se marca en el índice.
+func (s *Store) rootID() string {
+	if abs, err := filepath.Abs(s.Root); err == nil {
+		return abs
+	}
+	return filepath.Clean(s.Root)
+}
+
 func (s *Store) indexPath() string { return filepath.Join(s.Root, "index.json") }
 
-func (s *Store) load() index {
+// load lee el índice de la raíz anclada. Un índice marcado por otra raíz es el
+// de otro store: se rechaza en vez de adoptarlo.
+func (s *Store) load() (index, error) {
 	idx := index{Runs: map[string]indexEntry{}, Archived: map[string]time.Time{}}
+	if err := s.checkRoot(); err != nil {
+		return idx, err
+	}
 	if data, err := os.ReadFile(s.indexPath()); err == nil {
 		_ = json.Unmarshal(data, &idx)
+		if idx.Root != "" && idx.Root != s.rootID() {
+			return index{}, fmt.Errorf("capture: el índice en %s es del store con raíz %s, no de este (%s)", s.Root, idx.Root, s.rootID())
+		}
 		if idx.Runs == nil {
 			idx.Runs = map[string]indexEntry{}
 		}
@@ -146,13 +207,17 @@ func (s *Store) load() index {
 			idx.Archived = map[string]time.Time{}
 		}
 	}
-	return idx
+	return idx, nil
 }
 
 func (s *Store) save(idx index) error {
 	if err := os.MkdirAll(s.Root, 0o700); err != nil {
 		return err
 	}
+	if err := s.checkRoot(); err != nil {
+		return err
+	}
+	idx.Root = s.rootID()
 	data, err := json.MarshalIndent(idx, "", "  ")
 	if err != nil {
 		return err
@@ -178,10 +243,15 @@ func (s *Store) Save(change, runID string, rec Record, copy []byte) (string, err
 	if err != nil {
 		return "", err
 	}
+	// El índice se valida antes de escribir la corrida: si es de otro store, no
+	// se deja nada debajo de esa raíz.
+	idx, err := s.load()
+	if err != nil {
+		return "", err
+	}
 	if err := writeRun(dir, rec, copy); err != nil {
 		return "", err
 	}
-	idx := s.load()
 	idx.Runs[key(change, runID)] = indexEntry{CapturedAt: s.Now()}
 	if err := s.save(idx); err != nil {
 		return "", err
@@ -191,14 +261,20 @@ func (s *Store) Save(change, runID string, rec Record, copy []byte) (string, err
 
 // MarkArchived registra que el change se archivó ahora: desde ahí corren los siete días.
 func (s *Store) MarkArchived(change string) error {
-	idx := s.load()
+	idx, err := s.load()
+	if err != nil {
+		return err
+	}
 	idx.Archived[change] = s.Now()
 	return s.save(idx)
 }
 
 // Purge borra las corridas vencidas y deja constancia de desde cuándo.
 func (s *Store) Purge() ([]string, error) {
-	idx := s.load()
+	idx, err := s.load()
+	if err != nil {
+		return nil, err
+	}
 	var removed []string
 	var bad []error
 	now := s.Now()
@@ -216,6 +292,10 @@ func (s *Store) Purge() ([]string, error) {
 		exp, ok := idx.expiry(unfolder(change), e)
 		if !ok || now.Before(exp) {
 			continue
+		}
+		// La raíz se vuelve a comprobar justo antes de cada borrado.
+		if err := s.checkRoot(); err != nil {
+			return removed, err
 		}
 		if err := os.RemoveAll(dir); err != nil {
 			return removed, err
@@ -250,7 +330,11 @@ func (s *Store) Lookup(change, runID string) Availability {
 	if checkIdentity(change, runID) != nil {
 		return Availability{State: NeverCaptured}
 	}
-	idx := s.load()
+	// Con una raíz sustituida o un índice ajeno no hay registro propio que informar.
+	idx, err := s.load()
+	if err != nil {
+		return Availability{State: NeverCaptured}
+	}
 	e, ok := idx.Runs[key(change, runID)]
 	if !ok {
 		return Availability{State: NeverCaptured}

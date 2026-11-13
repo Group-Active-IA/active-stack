@@ -125,16 +125,41 @@ func errAmbiguous(source string, ids []string) error {
 	return fmt.Errorf("clientsrc: %s: la entrada trae más de un comando (%s); pasar los eventos de uno solo", source, strings.Join(ids, ", "))
 }
 
+// errConflict: el mismo comando trae más de un final y no son copias idénticas.
+func errConflict(source, id string) error {
+	if id == "" {
+		return fmt.Errorf("clientsrc: %s: más de un final de comando sin identidad; no se puede decir si son uno o varios", source)
+	}
+	return fmt.Errorf("clientsrc: %s: el comando %s trae finales contradictorios (comando, salida o código distintos)", source, id)
+}
+
+// final es lo que afirma el final de un comando. Un final repetido solo se
+// tolera si es una copia idéntica (replay); si difiere, la entrada es ambigua.
+type final struct {
+	command, output string
+	exit            *int
+}
+
+func (a final) same(b final) bool {
+	if a.command != b.command || a.output != b.output || (a.exit == nil) != (b.exit == nil) {
+		return false
+	}
+	return a.exit == nil || *a.exit == *b.exit
+}
+
 // FromCodexAppServer adapta las notificaciones del App Server:
 // item/commandExecution/outputDelta (en orden) y el item final con
 // aggregatedOutput y exitCode, ambos opcionales. Salida y código se correlacionan
-// por itemId: la entrada debe ser de un solo comando, y si trae más de uno se
-// rechaza en vez de mezclar o descartar en silencio.
+// por la identidad completa threadId/turnId/itemId: la entrada debe ser de un
+// solo comando, y se rechaza en vez de mezclar o descartar en silencio si trae
+// más de una identidad (el mismo itemId en otro thread o turn es otro comando),
+// más de un final sin identidad, o finales del mismo comando que no son copias
+// idénticas.
 func FromCodexAppServer(lines [][]byte) (Observed, error) {
 	obs := Observed{Source: "cliente:app-server"}
 	var deltas strings.Builder
-	var aggregated string
 	var ids []string
+	var done *final
 	seen := func(id string) {
 		for _, s := range ids {
 			if s == id {
@@ -147,11 +172,14 @@ func FromCodexAppServer(lines [][]byte) (Observed, error) {
 		var ev struct {
 			Method string `json:"method"`
 			Params struct {
-				ItemID string `json:"itemId"`
-				Delta  string `json:"delta"`
-				Item   struct {
+				ThreadID string `json:"threadId"`
+				TurnID   string `json:"turnId"`
+				ItemID   string `json:"itemId"`
+				Delta    string `json:"delta"`
+				Item     struct {
 					ID               string `json:"id"`
 					Type             string `json:"type"`
+					Command          string `json:"command"`
 					AggregatedOutput string `json:"aggregatedOutput"`
 					ExitCode         *int   `json:"exitCode"`
 				} `json:"item"`
@@ -160,20 +188,38 @@ func FromCodexAppServer(lines [][]byte) (Observed, error) {
 		if err := json.Unmarshal(line, &ev); err != nil {
 			return obs, fmt.Errorf("clientsrc: App Server: %w", err)
 		}
+		scope := func(item string) string {
+			if ev.Params.ThreadID == "" && ev.Params.TurnID == "" {
+				return item
+			}
+			return ev.Params.ThreadID + "/" + ev.Params.TurnID + "/" + item
+		}
 		switch ev.Method {
 		case "item/commandExecution/outputDelta":
-			seen(ev.Params.ItemID)
+			seen(scope(ev.Params.ItemID))
 			deltas.WriteString(ev.Params.Delta)
 		case "item/completed":
-			if ev.Params.Item.Type == "commandExecution" {
-				seen(ev.Params.Item.ID)
-				aggregated = ev.Params.Item.AggregatedOutput
-				obs.ExitCode = ev.Params.Item.ExitCode
+			if ev.Params.Item.Type != "commandExecution" {
+				continue
 			}
+			id := scope(ev.Params.Item.ID)
+			seen(id)
+			if len(ids) > 1 {
+				return Observed{Source: obs.Source}, errAmbiguous("App Server", ids)
+			}
+			f := final{ev.Params.Item.Command, ev.Params.Item.AggregatedOutput, ev.Params.Item.ExitCode}
+			if done != nil && (ev.Params.Item.ID == "" || !done.same(f)) {
+				return Observed{Source: obs.Source}, errConflict("App Server", id)
+			}
+			done = &f
 		}
 	}
 	if len(ids) > 1 {
 		return Observed{Source: obs.Source}, errAmbiguous("App Server", ids)
+	}
+	var aggregated string
+	if done != nil {
+		aggregated, obs.ExitCode = done.output, done.exit
 	}
 	switch {
 	case aggregated != "":
@@ -187,16 +233,19 @@ func FromCodexAppServer(lines [][]byte) (Observed, error) {
 // FromCodexExecJSON adapta `codex exec --json`: el item command_execution con
 // aggregated_output y exit_code. Medido en X7 (Codex 0.167.1, Windows): trae la
 // salida completa. La entrada debe tener un solo command_execution: con ids
-// distintos, o con más de uno sin id, devuelve error en vez de quedarse con el último.
+// distintos, con más de uno sin id, o con finales del mismo id que no son copias
+// idénticas, devuelve error en vez de quedarse con el último.
 func FromCodexExecJSON(lines [][]byte) (Observed, error) {
 	obs := Observed{Source: "cliente:exec-json"}
 	var ids []string
+	var done *final
 	for _, line := range lines {
 		var ev struct {
 			Type string `json:"type"`
 			Item struct {
 				ID               string `json:"id"`
 				Type             string `json:"type"`
+				Command          string `json:"command"`
 				AggregatedOutput string `json:"aggregated_output"`
 				ExitCode         *int   `json:"exit_code"`
 			} `json:"item"`
@@ -210,6 +259,11 @@ func FromCodexExecJSON(lines [][]byte) (Observed, error) {
 		if len(ids) > 0 && (ev.Item.ID == "" || ev.Item.ID != ids[0]) {
 			return Observed{Source: obs.Source}, errAmbiguous("exec --json", append(ids, ev.Item.ID))
 		}
+		f := final{ev.Item.Command, ev.Item.AggregatedOutput, ev.Item.ExitCode}
+		if done != nil && !done.same(f) {
+			return Observed{Source: obs.Source}, errConflict("exec --json", ev.Item.ID)
+		}
+		done = &f
 		if len(ids) == 0 {
 			ids = append(ids, ev.Item.ID)
 		}

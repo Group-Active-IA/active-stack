@@ -463,7 +463,9 @@ type Corroboration struct {
 //     cliente con cobertura demostrada y su registro es el de su copia;
 //   - sin verificar: el resto (captura del agente, cobertura no demostrada,
 //     registro que no es de esa copia, o captura de otro comando que el de la
-//     referencia: la igualdad de salida no vincula la ejecución). Una huella coincidente sola no alcanza.
+//     referencia: la igualdad de salida no vincula la ejecución; ni comando con
+//     datos redactados: la igualdad del texto redactado no prueba la misma
+//     ejecución). Una huella coincidente sola no alcanza.
 func Corroborate(tc *catalog.TaskContext, tool, text string, ev Evidence) Corroboration {
 	text = normalizeText(text)
 	p := parse(text)
@@ -518,7 +520,16 @@ func Corroborate(tc *catalog.TaskContext, tool, text string, ev Evidence) Corrob
 // ejecución o una re-ejecución del mismo comando, que lleva otro id de corrida
 // y otra ruta). Ambos se comparan redactados, porque el capturador persiste el
 // comando redactado. Sin comando en alguno de los dos no hay vínculo: no
+// corrobora.
+//
+// Si la redacción quitó algo de cualquiera de los dos (o ya traen la marca),
+// la igualdad del texto redactado no prueba la misma ejecución: lo que se
+// borró (credencial, cuenta, ruta de usuario) es justo lo que puede cambiar el
+// recurso bajo prueba. Sin material seguro que pruebe la equivalencia, no
 // corrobora. Devuelve el motivo, o "" si corresponde.
+// redactMark es el prefijo de las marcas del redactor (`[REDACTED:<regla>]`).
+const redactMark = "[REDACTED:"
+
 func commandBinding(refCmd, recCmd string) string {
 	if strings.TrimSpace(refCmd) == "" {
 		return "la referencia no declara el comando: la captura independiente no se puede vincular a la ejecución afirmada"
@@ -530,10 +541,13 @@ func commandBinding(refCmd, recCmd string) string {
 	if err != nil {
 		return "no se pudo armar el redactor para comparar comandos: " + err.Error()
 	}
-	want, _ := r.RedactText(strings.TrimSpace(refCmd))
-	got, _ := r.RedactText(strings.TrimSpace(recCmd))
+	want, wantHits := r.RedactText(strings.TrimSpace(refCmd))
+	got, gotHits := r.RedactText(strings.TrimSpace(recCmd))
 	if want != got {
 		return fmt.Sprintf("el comando de la captura independiente (%s) no es el de la ejecución afirmada (%s): no corrobora", got, want)
+	}
+	if len(wantHits) > 0 || len(gotHits) > 0 || strings.Contains(want, redactMark) {
+		return fmt.Sprintf("el comando (%s) tiene datos redactados: la igualdad del texto redactado no prueba que sea la misma ejecución, no corrobora", got)
 	}
 	return ""
 }

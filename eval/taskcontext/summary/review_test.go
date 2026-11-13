@@ -55,7 +55,10 @@ func TestReviewUnrelatedRunCannotCorroborateReportedRun(t *testing.T) {
 		})
 	}
 
-	t.Run("comandos con secreto se comparan redactados", func(t *testing.T) {
+	// Segunda revisión: la igualdad tras redactar no prueba la misma ejecución
+	// (la redacción borra justo lo que distingue credencial o cuenta). Antes este
+	// caso daba verificado; ahora queda sin verificar.
+	t.Run("comando con secreto redactado no se da por vinculado", func(t *testing.T) {
 		const secret = "Bearer FICTICIO0123456789abcdefghij"
 		withSecret := strings.Replace(text, "cmd="+f.Command, "cmd="+f.Command+" -H "+secret, 1)
 		rec := base
@@ -69,8 +72,8 @@ func TestReviewUnrelatedRunCannotCorroborateReportedRun(t *testing.T) {
 		}
 		rec.Command, _ = r.RedactText(f.Command + " -H " + secret) // lo que persiste el capturador
 		got := corroborate(t, f, withSecret, summary.Evidence{Copy: []byte(copy), Independent: &summary.Independent{Record: rec, Copy: []byte(copy)}})
-		if got.State != summary.StateVerified {
-			t.Errorf("estado = %s (%v), want verificado", got.State, got.Reasons)
+		if got.State != summary.StateUnverified {
+			t.Errorf("estado = %s (%v), want sin verificar", got.State, got.Reasons)
 		}
 	})
 }
