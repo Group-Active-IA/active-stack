@@ -6,18 +6,19 @@
 ## 0. Decisiones previas (grupo)
 
 - [ ] 0.1 Cerrar las decisiones pendientes de `design.md` (señales, métrica objetivo, toggle en `lite`, dueño de `sdd-orchestrator.md`) y volcarlas a los artefactos.
-- [ ] 0.2 Confirmar con 05 el nombre del disparador "la acción requiere coordinación de subagentes"; con 06 el texto del extracto `## Evidence Contract` y la huella del estado de trabajo que reutiliza la partida; con 08 que sume "escritura fuera del conjunto de escritura del encargo" a su inventario de acciones a bloquear (hasta entonces queda declarada como no controlada preventivamente); con 03/04 que su retorno de especialista referencie el sobre de D6.
+- [ ] 0.2 Confirmar con 05 el nombre del disparador "la acción requiere coordinación de subagentes"; con 06 el texto del extracto `## Evidence Contract` y la huella del estado de trabajo que reutiliza la partida; con 08 que sume "escritura fuera del conjunto de escritura del encargo" a su inventario de acciones a bloquear (hasta entonces queda declarada como no controlada preventivamente); con 03/04 que su retorno de especialista referencie el sobre de D6 (03 ya lo hizo en su D12; falta 04); con el grupo, la profundidad de D10.
 
 ## 1. Inventario reproducible
 
-- [ ] 1.1 Listar con `Compose` cada obligación de delegar dentro y fuera de los markers `sdd-delegation`, para Claude y Codex, con y sin el toggle. Aceptación: tabla con línea, texto y si sobrevive al toggle.
+- [ ] 1.1 Listar con `Compose` (Codex y legacy) y `ComposeLayers` (Claude, capas de 03) cada obligación de delegar dentro y fuera de los markers `sdd-delegation`, con y sin el toggle. Aceptación: tabla con línea, texto, capa y si sobrevive al toggle. Borrador sobre goldens en `entrega-delegation.md` §1; falta confirmarlo componiendo sin el toggle.
 - [ ] 1.2 Documentar por cliente, versión e interfaz cómo se lanza, espera y cierra un worker y qué consumo expone por worker. Aceptación: matriz con fuente y versión probada; lo no observado se marca SUPOSICIÓN.
 
 ## 2. Semántica del toggle (TDD)
 
-- [ ] 2.1 RED: golden en `compose_test.go` que falla si el bloque sin `delegation` contiene `ALWAYS delegate`, `Delegate, don't inflate` o la tabla, para Claude y Codex.
+- [ ] 2.1 RED: golden en `compose_test.go` y `compose_layers_test.go` que falla si el bloque (Codex) o la skill y los módulos (Claude) sin `delegation` contienen `ALWAYS delegate`, `Delegate, don't inflate` o la tabla.
 - [ ] 2.2 RED: test que falla si el bloque con `delegation` contiene el umbral "1-3 / 4+" o no contiene la regla con independencia obligatoria primero.
-- [ ] 2.3 GREEN: mover las obligaciones al módulo y dejar en la skill la regla de decisión y la declaración sin subagentes. Depende de 1.1 y de la skill de 03/04.
+- [ ] 2.3 GREEN: reemplazar `modules/delegation.md` (hoy la tabla de umbrales), condicionar `coordinator/principle-delegate` al toggle y dejar en `SKILL.md` la regla de decisión y la declaración sin subagentes. Partir del texto de `entrega-delegation.md` §2–§3. Depende de 1.1 y, para Codex, de 04.
+- [ ] 2.5 RED/GREEN: la regla de profundidad de D10 está en el módulo y un encargo de worker no incluye instrucciones de lanzar subagentes.
 - [ ] 2.4 Regresión: `go test ./internal/harness/config/... ./internal/filemerge/... ./internal/uninstall/...` sin fallos nuevos; el purge de markers sigue reconociendo `sdd-delegation`.
 
 ## 3. Contenido del módulo (TDD sobre texto compuesto)

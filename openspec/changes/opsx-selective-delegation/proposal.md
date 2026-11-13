@@ -3,6 +3,7 @@
 > Change `opsx-selective-delegation` · ficha 07 del roadmap · Responsable: Neyen · Agentes: Claude y Codex · Prioridad P1 · Gobernanza MEDIO
 > Base revisada: `1b4639b`. Depende de 05 (`opsx-task-context`) y 06 (`opsx-verifiable-evidence`); usa el protocolo de 02 (`opsx-baseline`, `240e1b2`). Habilita 09 (`89f1fa5`), que toma esta configuración como control.
 > Revisión 2 (10/11/2026): incorpora la auditoría técnica del 10/11 y las decisiones confirmadas del grupo; ver `design.md`, "Cambios por la auditoría".
+> Revisión 3 (13/11/2026): actualizada sobre `7a60089` (03 `claude-native-opsx` integrada y archivada). La evidencia de Claude pasa a citar la composición por capas; ver `design.md`, "Cambios por la integración de 03", y el borrador de texto en `entrega-delegation.md`.
 > Esta ronda es solo `propose`: todas las tareas de implementación quedan pendientes.
 
 ## Why
@@ -11,7 +12,15 @@ Las plantillas del orquestador convierten la delegación en una obligación, no 
 
 ### Evidencia
 
-Todo sobre `main` en `1b4639b`.
+Revisión 3, sobre `main` en `7a60089`. Desde la 03, Claude ya no recibe un bloque único: `ComposeLayers` (`internal/harness/config/compose_layers.go`) reparte el asset en bloque universal, `SKILL.md` del coordinador y `modules/`. El texto sólo se reubica y no se reescribe, así que las obligaciones de delegar siguen ahí:
+
+- **La skill sigue obligando a delegar.** `testdata/compose_layers_skill.golden`: `:3` (descripción, "Delegates real work to sub-agents"), `:10` ("delegate real work to sub-agents"), `:16` ("Delegate, don't inflate"), `:21` ("NEVER do apply or propose work inline — ALWAYS delegate via Agent tool"), `:100` ("For each action, delegate to a sub-agent") y `:109`. En el asset son los fragmentos `coordinator/role` (`:7-10`), `coordinator/principle-delegate` (`:20-21`), `coordinator/workflow` (`:109`) y `coordinator/rules` (`:223`).
+- **El módulo `delegation` es la tabla de umbrales tal cual.** `testdata/compose_layers_module_delegation.golden` reproduce "1-3 archivos inline / 4+ delegar" sin cambios. La tabla acción → módulos de la skill lo carga en la fila `delegate` (`compose_layers_skill.golden:34`), junto con `model-assignments`.
+- **Apagar el toggle sigue sin apagar la obligación.** `compose_layers.go` agrega `principle-delegate` siempre y sólo condiciona a `active["delegation"]` el módulo. Sin el toggle desaparece la tabla, pero quedan "Delegate, don't inflate" y "ALWAYS delegate" en la skill. En Codex (sin cambios desde `1b4639b`, PR #9 en draft) siguen `assets/codex/sdd-orchestrator.md:14`, `:20` y `:85`, con la tabla entre los markers `:17-36`.
+- **El sobre de retorno está reservado pero vacío.** `openspec/matriz-reglas-opsx.md` fila 29 ("07 D6, sobre de retorno → módulo `delegation`, pendiente de texto de 07") y fila 28 (extracto de 06, pendiente). El diseño archivado de 03 (D12) dice que `delegation.md` incluye el sobre de 07 tal cual, y su D4 pone la regla breve de D1 en el cuerpo de `SKILL.md`. Claude `:166` sigue pidiendo "a summary of" en prosa.
+- **Nueva regla de 03 que esta ficha hereda.** "NEVER delegate the coordinator role to a sub-agent" (`compose_layers_skill.golden:39`, `9aad12e`). El diseño archivado de 03 deja a 07 la regla de profundidad: "un subagente puede lanzar subagentes hasta tres niveles; la regla 'no delegar más abajo' es del módulo de delegación (07)".
+
+Lo que sigue se escribió sobre `1b4639b` y vale sin cambios para Codex; para Claude, las líneas equivalentes son las de arriba.
 
 - **La delegación es incondicional en Claude.** `internal/harness/config/assets/claude/sdd-orchestrator.md:7` ("You are a COORDINATOR, not an executor… delegate real work"), `:14` ("Delegate, don't inflate"), `:98` ("For each action, delegate to a sub-agent") y `:208` ("NEVER do apply or propose work inline — ALWAYS delegate via Agent tool").
 - **El umbral es un conteo fijo de archivos.** La tabla `## Delegation Rules` (Claude `:26-46`, Codex `:17-36`) decide por "1-3 archivos inline / 4+ delegar". El informe ejecutivo registra el mismo hallazgo ("La delegación actual usa un umbral fijo de archivos", Codex `:25`).

@@ -8,7 +8,8 @@ Las fichas vecinas ya fijaron sus piezas, y esta las consume sin redefinirlas:
 
 | Pieza | Dueña | Qué toma 07 |
 |---|---|---|
-| Activación explícita del coordinador | 03 / 04 (decisión confirmada: skill invocable `/sdd-orchestrator` en Claude con `disable-model-invocation: true`, `$sdd-orchestrator` en Codex con `allow_implicit_invocation: false`) | dónde vive la regla de decisión |
+| Activación explícita del coordinador | 03 / 04 (decisión confirmada: skill invocable `/sdd-orchestrator` en Claude con `disable-model-invocation: true`, `$sdd-orchestrator` en Codex con `allow_implicit_invocation: false`). **03 integrada en `7a60089`**; 04 en PR #9 (draft) | dónde vive la regla de decisión |
+| Capas y matriz de reglas | 03 (`ComposeLayers`, `openspec/matriz-reglas-opsx.md`) | qué fragmento va a la skill y cuál al módulo; filas 10, 28 y 29 |
 | Carga de módulos por acción, módulo obligatorio ausente detiene la acción | 05 `task-context-loading` | el disparador: "la acción declara que requiere coordinación de subagentes" |
 | Salida acotada con referencia al original | 05 `bounded-command-output` | el formato de los hallazgos verbosos del worker |
 | Recibo, integridad, procedencia, suficiencia | 06 `execution-receipts` (decisión confirmada: un reporte del worker por sí solo queda sin verificar) | el campo `recibos` del retorno y el veredicto *sin verificar* |
@@ -243,3 +244,32 @@ Decision: no (no UI) — 2026-11-10. El change no agrega ni modifica pantalla.
 | Prevención de escrituras fuera de alcance sin dueño | D4 "Prevención sin dueño todavía"; tarea 0.2 |
 | Tres formatos de retorno (04, 06, 07) | D6 "Dueño del sobre" |
 | Qué configuración recibe 09 como A0 | D9 tabla "Qué recibe 09"; tarea 6.3 |
+
+## Cambios por la integración de 03 (13/11)
+
+La 03 se integró en `7a60089`. Esta revisión no cambia ninguna decisión de esta ficha: ajusta dónde cae cada una en las capas que ya existen.
+
+| Hecho en `main` | Efecto sobre 07 |
+|---|---|
+| `ComposeLayers` reparte el asset de Claude en universal, `SKILL.md` y `modules/` sin reescribir el texto | D2 ya tiene dónde ir: la regla de D1 va al cuerpo de `SKILL.md` (03 D4) y el resto a `modules/delegation.md`. Lo que falta es el **texto**; la mecánica de carga está hecha |
+| `modules/delegation.md` es hoy la tabla de umbrales tal cual (`compose_layers_module_delegation.golden`) | La tarea 2.3 **reemplaza** ese módulo; no lo crea. El golden del módulo cambia y es el RED natural de 3.1 |
+| `coordinator/principle-delegate` se agrega siempre, con o sin toggle | D8 sigue vigente en capas: sin `delegation`, la skill conserva "Delegate, don't inflate" y "ALWAYS delegate". 2.1 tiene que cubrir `ComposeLayers`, no sólo `Compose` |
+| Fila `delegate` en la tabla acción → módulos (`compose_layers_skill.golden:34`) | Es el disparador de 05 para Claude. 05 (`entrega-03-04.md`) propone además `delegation` **obligatorio** en `verify` por S4: coincide con D1 paso 1 |
+| Módulo obligatorio ausente: detener sólo esa acción (03 D11 y 05) | Coincide con D1 paso 1. Se adopta el mensaje de 05: `missing module: delegation — verify stopped (surface without subagents)` |
+| Matriz filas 28 y 29: extracto de 06 y sobre de 07 "pendiente de texto" | 07 entrega el texto del sobre (D6) en `entrega-delegation.md`. El extracto de 06 queda como hueco nombrado hasta que 06 lo publique |
+| Regla nueva "NEVER delegate the coordinator role to a sub-agent" (`9aad12e`) | Compatible. Se suma D10 |
+| 03: un subagente puede lanzar subagentes hasta tres niveles; la regla de profundidad es de 07 | Decisión nueva, ver D10 |
+
+### D10 — Profundidad de delegación
+
+**Propuesta:** un worker no delega. Sólo el coordinador lanza workers, y el tope de dos workers con escritura (D5) se cuenta sobre el coordinador.
+
+**Por qué.** La propiedad de archivos (D4), la contabilidad (D9) y el tope de reintentos (D7) suponen que el coordinador ve a cada worker. Un sub-worker lanzado por un worker no tiene partida registrada ni encargo validado, y su consumo no aparece en el registro del principal.
+
+**Alternativa.** Permitir un nivel más sólo para workers de sólo lectura (exploración dentro de un apply). Se deja como variante a medir si el piloto muestra que el worker relee demasiado.
+
+**Pendiente de grupo.** Se agrega a la tabla de pendientes.
+
+| Tema | Opciones | Recomendación | Afecta a |
+|---|---|---|---|
+| Profundidad de delegación | ninguna / un nivel de sólo lectura / tope de 03 (tres) | ninguna en la primera versión | 03, 04, 09 |
