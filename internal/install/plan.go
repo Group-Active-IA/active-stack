@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
+	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
 	"github.com/Group-Active-IA/active-stack/internal/harness/external"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
@@ -307,6 +309,24 @@ func collectWritePaths(adapters []AgentAdapter, effectiveBase string, target mod
 		case model.HarnessConfig:
 			for _, a := range adapters {
 				addFile(resolvedInstructionsPath(a, effectiveBase, target))
+				if h.ID == "sdd-orchestrator" && a.Agent() == model.AgentClaude && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+					addManagedSkillPaths(filepath.Join(resolvedSkillsDir(a, effectiveBase, target), h.ID), addFile, addDir)
+				}
+				if target == model.Machine && h.ID == "sdd-orchestrator" && a.Agent() == model.AgentCodex && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+					paths, err := cfginstaller.ManagedSkillOperationPaths(h, a, effectiveBase)
+					if err == nil {
+						root := filepath.Join(a.SkillsDir(effectiveBase), h.ID)
+						for _, path := range paths {
+							addFile(path)
+							relative, relErr := filepath.Rel(root, path)
+							if relErr == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+								for dir := filepath.Dir(path); dir != filepath.Dir(root); dir = filepath.Dir(dir) {
+									addDir(dir)
+								}
+							}
+						}
+					}
+				}
 			}
 		case model.HarnessSkill:
 			for _, a := range adapters {
@@ -534,10 +554,20 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 				tier:     tier,
 			}, nil
 		}
+		realHome := resolveSnapshotHomeDir(opts)
+		shadow := make(map[model.Agent]string, len(adapters))
+		for _, a := range adapters {
+			shadow[a.Agent()] = a.SkillsDir(realHome)
+		}
 		return &configStep{
-			h:        h,
-			adapters: stepAdapters,
-			homeDir:  effectiveBase,
+			h:          h,
+			adapters:   stepAdapters,
+			homeDir:    effectiveBase,
+			realHome:   realHome,
+			target:     opts.Target,
+			shadow:     shadow,
+			onProgress: opts.OnProgress,
+			lang:       opts.Lang,
 		}, nil
 
 	case model.HarnessCommand:
@@ -556,6 +586,15 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 type projectTargetAdapter struct {
 	AgentAdapter
 	base string
+}
+
+func (a projectTargetAdapter) InstallTarget() model.InstallTarget { return model.Project }
+
+func (a projectTargetAdapter) ConfigDelivery() model.ConfigDelivery {
+	if a.Agent() == model.AgentCodex {
+		return model.ConfigDeliveryInstructions
+	}
+	return a.AgentAdapter.ConfigDelivery()
 }
 
 func (a projectTargetAdapter) paths() model.AgentPaths {
@@ -596,4 +635,27 @@ func (s *verifyStep) Run() error { return s.fn() }
 // skillRunner is the interface required by skill.NewInstaller.
 type skillRunner interface {
 	Run(ctx context.Context, args []string) error
+}
+
+// addManagedSkillPaths registers the managed skill directory for the snapshot:
+// its files and directories when it exists (so a rollback can restore them), a
+// directory hint when it does not (so a rollback removes what the install created).
+func addManagedSkillPaths(dir string, addFile, addDir func(string)) {
+	info, err := os.Stat(dir)
+	if err != nil || !info.IsDir() {
+		addDir(dir)
+		return
+	}
+	addDir(dir)
+	_ = filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
+		if err != nil || p == dir {
+			return nil
+		}
+		if d.IsDir() {
+			addDir(p)
+		} else {
+			addFile(p)
+		}
+		return nil
+	})
 }

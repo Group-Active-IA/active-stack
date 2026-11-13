@@ -1,0 +1,6 @@
+{
+  "findings": [
+    {"id": "F1", "file": "internal/catalog/catalog.go", "start_line": 71, "end_line": 71, "mechanism": "id_duplicado_no_detectado", "evidence": "seen se llena con h.Name y se consulta con h.ID."},
+    {"id": "F2", "file": "internal/catalog/catalog.go", "start_line": 37, "end_line": 37, "mechanism": "comentario_engañoso", "evidence": "El comentario cambió de redacción."}
+  ]
+}

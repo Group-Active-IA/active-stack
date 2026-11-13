@@ -4,7 +4,7 @@
 
 Las [plantillas de Claude](../../../internal/harness/config/assets/claude/sdd-orchestrator.md) y [Codex](../../../internal/harness/config/assets/codex/sdd-orchestrator.md) contienen asignaciones por fase. Claude además describe el paso de un alias al delegar y una sustitución si falta acceso. La tabla expresa intención de routing. La selección efectiva de cada cliente y superficie se verifica en el arnés.
 
-El protocolo de 02 aporta fixtures, rúbricas, estructura de resultados y reglas de atribución. El flujo de 07 aporta la política de delegación y el contrato de retorno. Fijar las revisiones aprobadas de ambos antes de correr el 09. El control se vuelve a medir sobre 07 para evitar atribuir al piloto cambios de flujo ocurridos desde la referencia inicial de 02.
+El protocolo de 02 aporta fixtures, rúbricas, estructura de resultados y reglas de atribución. El flujo de 07 aporta la política de delegación y el contrato de retorno. Fijar las revisiones aprobadas de ambos antes de corridas confirmatorias. La preparación y calibración offline por brazo puede avanzar con pins explícitos y dependencias pendientes, sin adoptar resultados. El control se vuelve a medir sobre 07 para evitar atribuir al piloto cambios de flujo ocurridos desde la referencia inicial de 02.
 
 ## Goals / Non-Goals
 
@@ -84,3 +84,22 @@ Versionar variantes y resultados en el arnés externo, junto con el manifiesto d
 ## UI Mockups
 
 Decision: no (no UI)
+
+
+## Entrega incremental offline · 2026-11-13
+
+Se incorpora main `d5e95bd81d3bbab2d54a39d1c07d1256954b5384` y se implementa `eval/modelcache`, consumidor de APIs públicas del 02, sin reescribir otros cambios. El resultado permite preparar/calibrar por brazo aunque 02 no tenga referencia estable y 07 no entregue A0/resultados. No permite experimentos confirmatorios ni adopción: esas acciones requieren acuerdos D1–D5 y evaluación independiente todavía no integrada.
+
+El CLI lee JSON y archivos designados localmente; no llama proveedores, instala perfiles ni configura routing. Todos los ejemplos son sintéticos y no fijan modelos, esfuerzos, tamaño muestral, presupuesto ni umbrales reales. `null` mantiene un parámetro pendiente; cero observado tiene valor propio.
+
+El layout conserva rutas, hashes de bytes y orden explícito. `repo-source` no prueba el payload de un cliente ni que una skill se haya leído. `materialized-prompt` es una declaración del dataset, no una certificación independiente. El piloto B implementado sólo reordena el mismo conjunto de archivos/bytes y exige una referencia declarada de revisión semántica; no valida reescrituras generales.
+
+El reporte separa piloto, brazo, cohorte, condición asignada de caché, modalidad, basis y unidades. Conserva fallos/reintentos y preparación identificada una sola vez. Los agregados incluyen workers sólo según alcance explícito; los fragmentos incompletos no producen costos normalizados completos. Una preparación ambigua entre frío/caliente queda visible una vez y no habilita ratios condicionales. Una campaña ocupa un Dataset; repeticiones duplicadas dentro de brazo/cohorte/tarea/condición se rechazan, pero reintentos son eventos del intento.
+
+La señal de caché debe atribuirse al prefijo designado; un contador global, una sesión nueva o latencia no lo demuestran. Se conservan misses/lecturas parciales genuinos y contaminación. Los contrastes de caché comparan la misma condición asignada; contaminación fría, aislamiento faltante o atribución desconocida vuelven la conclusión inconclusa sin eliminar su costo. La ventana caliente y la carga real del cliente requieren calibración externa.
+
+El cálculo condicional exige controles/pares íntegros, objetivo explícito, cobertura, criterios de calidad y umbrales declarados. Una regresión obligatoria lo rechaza. `candidate_for_review` no es inferencia verificada ni autorización de adopción; `adoption.status` permanece `unavailable`, sin confiar en booleanos de procedencia introducidos por el propio dataset.
+
+El reporte conserva pins02/07, fixture/rúbrica, layouts y fuentes declaradas. Su SHA256 identifica la serialización JSON tipada modelcache/v1; no es un TreeHash06, recibo, comprobación de ejecución ni prueba de suficiencia. Los contratos/implementaciones de 05/06/07 fuera de main no se incorporan automáticamente.
+
+Design mockups: Decision: no (no UI).

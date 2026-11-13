@@ -85,3 +85,40 @@ Cada piloto SHALL recomendar adoptar, repetir o descartar por cohorte con base e
 
 - **WHEN** el efecto o la evidencia no bastan para aplicar el criterio acordado
 - **THEN** el reporte identifica el resultado como inconcluso y registra qué falta para repetirlo
+
+### Requirement: Consumidor offline de calibración separado de confirmación
+
+El consumidor offline SHALL permitir preparar brazos con decisiones pendientes sin inventar valores y SHALL mantener no disponible la adopción mientras no exista integración independiente de los contratos y resultados externos requeridos. Un Dataset SHALL representar una sola campaña.
+
+#### Scenario: Decisiones pendientes y datos sintéticos
+- **WHEN** el operador entrega un manifiesto de calibración con decisiones `null`
+- **THEN** el CLI valida y reporta los datos disponibles, marca el contraste inconcluso y mantiene la adopción no disponible
+
+#### Scenario: Identidad de fuentes sin certificación de ejecución
+- **WHEN** se congelan archivos designados y se produce un reporte
+- **THEN** se conservan bytes SHA256, orden, scope, pins de 02/07, fixtures/rúbrica, IDs de fuentes y huella del Dataset tipado
+- **AND** ninguna de esas huellas acredita ejecución, carga del cliente, independencia o suficiencia de un recibo 06
+
+### Requirement: Cobertura íntegra de costos y condiciones
+
+El consumidor SHALL conservar todos los intentos iniciados, fallos, reintentos y preparación imputable una sola vez, SHALL distinguir desconocido de cero y SHALL separar condiciones asignadas, modalidades, basis y unidades antes de concluir sobre una cohorte.
+
+#### Scenario: Agregado con workers incluidos
+- **WHEN** el agregado declara incluir workers y también se entregan sus detalles
+- **THEN** el total usa el agregado sin volver a sumar los workers y conserva la cobertura de detalle por separado
+
+#### Scenario: Fragmento sin captura o preparación ambigua
+- **WHEN** falta un costo o la preparación de un bloque no puede asignarse a una única condición fría/caliente
+- **THEN** se conservan intentos y costos disponibles, la preparación se carga una vez y los ratios afectados permanecen incompletos
+
+#### Scenario: Caché no confirmable
+- **WHEN** la atribución es global o desconocida, falta aislamiento frío o existe contaminación fría
+- **THEN** el cálculo de efecto permanece inconcluso y conserva costos y señales observadas
+
+#### Scenario: Miss genuino y lectura parcial caliente
+- **WHEN** dos brazos comparten condición caliente y existe señal atribuida al prefijo, uno con miss y otro con lectura parcial
+- **THEN** ambos permanecen en el contraste asignado sin excluir el miss para favorecer la variante
+
+#### Scenario: Control distinto del manifiesto o repetición duplicada
+- **WHEN** las celdas observadas difieren del manifiesto congelado o una misma repetición aparece fragmentada por basis o unidad
+- **THEN** el contraste se invalida o el Dataset se rechaza respectivamente, sin presentar el subconjunto como comparación completa

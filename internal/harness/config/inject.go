@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	"github.com/Group-Active-IA/active-stack/internal/filemerge"
@@ -35,6 +36,7 @@ var ownedSectionIDs = map[string]bool{
 	"sdd-orchestrator":      true,
 	"sdd-delegation":        true,
 	"sdd-model-assignments": true,
+	UniversalSectionID:      true,
 }
 
 // isOwnedSection reports whether id is a section this installer manages: either
@@ -71,12 +73,20 @@ func PurgeStaleSections(content string) string {
 	return content
 }
 
+// UniversalSectionID is the section ID of the minimal universal-rules block
+// that Claude keeps in its instructions file under the layered delivery
+// (claude-native-opsx D2). ID tentative (design.md D2).
+const UniversalSectionID = "universal-rules"
+
 // InjectResult describes the outcome of a single file injection.
 type InjectResult struct {
 	// Changed is true when the file was written (new content differs from existing).
 	Changed bool
 	// Created is true when the file was created (did not exist before injection).
 	Created bool
+	// Warnings lists non-fatal findings, e.g. an unclosed active-stack: marker
+	// that the injector left untouched.
+	Warnings []string
 }
 
 // Inject writes the composed content into the sdd-orchestrator section of the
@@ -113,6 +123,8 @@ func InjectSection(path, sectionID, content, snapshotDir string) (InjectResult, 
 	// Read current content.
 	existing := readFileOrEmpty(path)
 
+	warnings := unclosedMarkerWarnings(path, existing)
+
 	// Purge stale sections from older installer layouts BEFORE injecting, so a
 	// re-install does not accumulate orphaned, duplicated blocks. The backup
 	// above already snapshotted the pre-purge state.
@@ -128,9 +140,33 @@ func InjectSection(path, sectionID, content, snapshotDir string) (InjectResult, 
 	}
 
 	return InjectResult{
-		Changed: wr.Changed,
-		Created: wr.Created,
+		Changed:  wr.Changed,
+		Created:  wr.Created,
+		Warnings: warnings,
 	}, nil
+}
+
+var openMarkerRe = regexp.MustCompile(`<!-- active-stack:(\S+) -->`)
+
+// unclosedMarkerWarnings reports every active-stack: opening marker in content
+// that has no well-formed closing marker. Such fragments are never purged or
+// rewritten (MarkedSectionIDs ignores them), so the user is told instead.
+func unclosedMarkerWarnings(path, content string) []string {
+	wellFormed := make(map[string]bool)
+	for _, id := range filemerge.MarkedSectionIDs(content) {
+		wellFormed[id] = true
+	}
+	var out []string
+	seen := make(map[string]bool)
+	for _, m := range openMarkerRe.FindAllStringSubmatch(content, -1) {
+		id := m[1]
+		if wellFormed[id] || seen[id] {
+			continue
+		}
+		seen[id] = true
+		out = append(out, fmt.Sprintf("%s: opening marker active-stack:%s has no closing marker; left untouched", path, id))
+	}
+	return out
 }
 
 // readFileOrEmpty reads a file's content, returning an empty string if the

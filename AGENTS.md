@@ -70,8 +70,16 @@ Detalle real en `internal/model/harness.go`. Tipos clave:
 
 **El harness `sdd-orchestrator` es clave**: es de tipo `config` y se compone a
 partir de **toggles modulares** (`tdd`, `engram`, `model-routing`, `delegation`,
-`governance`). El resultado es el bloque de instrucciones del orquestador que se
-inyecta en `CLAUDE.md`/`AGENTS.md` del proyecto destino.
+`governance`). Claude entrega la skill explícita `/sdd-orchestrator` con módulos
+por acción y bloque universal en `CLAUDE.md` (`universal-rules`), con el fallback
+por versión definido en 03. Codex Machine entrega una skill administrada `$sdd-orchestrator`
+de invocación explícita en la sesión actual y un bloque universal en `AGENTS.md`.
+Los módulos se componen por acción dentro de la skill. Project conserva la entrega
+legada y su diagnóstico. El modo compartido `ConfigDeliveryManagedSkill` selecciona
+el instalador, verify y retiro por cliente; no intercambia paquetes entre Claude
+y Codex. Antigravity y OpenCode conservan su estrategia de entrega.
+La aceptación funcional de CLI/IDE Windows/Linux y los contratos de 03/05/06 se
+registran en `openspec/changes/archive/2026-11-13-codex-native-opsx/`.
 
 Los toggles del `sdd-orchestrator` **no se exponen en la TUI ni en la GUI** (salen
 literales del catálogo); los harnesses sí. Por eso las capacidades opt-in se
@@ -145,8 +153,10 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
 
 ## 6. Notas
 
-- El orquestador SDD global (coordinación, delegación, model-routing) vive en el
-  `~/.claude/CLAUDE.md` del usuario. Este proyecto NO lo duplica.
+- En Claude, el orquestador SDD (coordinación, delegación, model-routing) se entrega como
+  la skill `/sdd-orchestrator` más un bloque universal en `CLAUDE.md`. Este proyecto NO
+  los duplica; el detalle está en `internal/harness/config/assets/` y en
+  `openspec/matriz-reglas-opsx.md`.
 - `openspec/` se versiona en Git. Compartí la rama de propuesta con sus artefactos para revisión.
 - Antes de crear una rama, leé [CHANGES.md](CHANGES.md) y la ficha del change asignado.
   La ronda actual se limita a `propose`. Creá una rama `propose/<nombre-del-change>`,

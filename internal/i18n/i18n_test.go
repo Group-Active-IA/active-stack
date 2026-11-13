@@ -191,3 +191,20 @@ func writeConfig(t *testing.T, home, content string) {
 		t.Fatalf("write config.json: %v", err)
 	}
 }
+
+// claude-native-opsx 6.7: the BREAKING notice and the CLAUDE.md warning exist in both languages.
+func TestClaudeLayeredNoticesInBothLanguages(t *testing.T) {
+	for _, lang := range []i18n.Lang{i18n.LangEN, i18n.LangES} {
+		notice := i18n.T(lang, "claude.breaking.notice")
+		if !strings.Contains(notice, "BREAKING") || !strings.Contains(notice, "/sdd-orchestrator") {
+			t.Errorf("%s: breaking notice missing BREAKING or /sdd-orchestrator: %q", lang, notice)
+		}
+		if help := i18n.T(lang, "install.help.claude_user_content"); help == "install.help.claude_user_content" || !strings.Contains(help, "CLAUDE.md") {
+			t.Errorf("%s: install help warning missing: %q", lang, help)
+		}
+		nosync := i18n.T(lang, "update.breaking.nosync")
+		if !strings.Contains(nosync, "BREAKING") || !strings.Contains(nosync, "/sdd-orchestrator") || !strings.Contains(nosync, "active-stack install") {
+			t.Errorf("%s: update notice incomplete: %q", lang, nosync)
+		}
+	}
+}

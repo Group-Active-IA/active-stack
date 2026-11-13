@@ -40,11 +40,11 @@ var tableEN = map[string]string{
 	"windows.dryrun.listed":  "Dry-run step listed.",
 
 	// component.fallback.* — component-description fallbacks.
-	"component.fallback.security":     "Basic protection for safer setup. This is always installed.",
-	"component.fallback.external":     "Downloads and configures an external tool.",
-	"component.fallback.config":       "Applies recommended configuration.",
-	"component.fallback.skill":        "Adds guided workflow helpers.",
-	"component.fallback.generic_fmt":  "Installs %s.",
+	"component.fallback.security":    "Basic protection for safer setup. This is always installed.",
+	"component.fallback.external":    "Downloads and configures an external tool.",
+	"component.fallback.config":      "Applies recommended configuration.",
+	"component.fallback.skill":       "Adds guided workflow helpers.",
+	"component.fallback.generic_fmt": "Installs %s.",
 
 	// mode.{lite,full,custom}.{label,desc,long} — install-mode options.
 	"mode.lite.label": "Quick",
@@ -60,9 +60,11 @@ var tableEN = map[string]string{
 	"mode.custom.long":  "Custom mode lets you hand-pick exactly which harnesses to install, one by one. Nothing outside your selection gets installed, except the mandatory security floor (permissions), which always ships. Use it when you already know your stack and want full control over what stays and what doesn't. If you'd rather have the decision made for you, Quick or Complete are more direct.",
 
 	// tier.{estricto,balanceado,bypass}.{label,desc,long} + tier.bypass.warning.
-	"tier.estricto.label": "Strict",
-	"tier.estricto.desc":  "Agent must ask for every operation. Highest friction, highest security.",
-	"tier.estricto.long":  "Strict configures the agent's permissions to ask for confirmation before every operation. It applies the most restrictive rule set on top of the security floor: nothing runs without your sign-off. It is the highest-friction, highest-security level. Choose it for sensitive projects or when you're starting out and want to review everything before it happens; if it slows you down, Balanced loosens the repetitive parts.",
+	"tier.estricto.label":      "Strict",
+	"tier.estricto.codex.desc": "Codex: Read-only by default",
+	"tier.estricto.codex.long": "Codex runs in read-only mode. Actions that require additional permissions need explicit approval when the interface supports requests. Otherwise, those actions remain blocked.",
+	"tier.estricto.desc":       "Agent must ask for every operation. Highest friction, highest security.",
+	"tier.estricto.long":       "Strict configures the agent's permissions to ask for confirmation before every operation. It applies the most restrictive rule set on top of the security floor: nothing runs without your sign-off. It is the highest-friction, highest-security level. Choose it for sensitive projects or when you're starting out and want to review everything before it happens; if it slows you down, Balanced loosens the repetitive parts.",
 
 	"tier.balanceado.label": "Balanced",
 	"tier.balanceado.desc":  "Curated allow-list for safe, repetitive operations. Recommended starting point.",
@@ -72,6 +74,14 @@ var tableEN = map[string]string{
 	"tier.bypass.desc":    "Full autonomy opt-in. The security floor deny-list still applies.",
 	"tier.bypass.long":    "Bypass grants the agent full autonomy to act without asking. The security floor deny-list still blocks the most dangerous operations—that layer never turns off—but everything else runs unattended. Choose it only when you fully trust the flow and friction is holding you back more than protecting you. Use it with caution: it is the lowest-control level.",
 	"tier.bypass.warning": "Bypass: autonomous mode — the security floor still applies",
+
+	// claude-native-opsx: layered Claude delivery notices.
+	"claude.breaking.notice":           "BREAKING (Claude): the OPSX coordinator no longer lives in CLAUDE.md. It is now a skill you invoke with /sdd-orchestrator; normal sessions keep only the universal rules. After compacting the conversation, invoke /sdd-orchestrator again. Your own CLAUDE.md content was preserved.",
+	"install.help.claude_user_content": "Claude note: whatever you write in your own CLAUDE.md reaches every session and subagent; Active Stack cannot filter it. The installer only manages its marked sections.",
+	"update.breaking.nosync":           "Claude: this install has no selection record, so CLAUDE.md was not modified. BREAKING change: the OPSX coordinator is now the /sdd-orchestrator skill. Run `active-stack install` once with your current mode to migrate.",
+	"update.project.legacy":            "Project %s still has the legacy coordinator block in %s; it was not rewritten. Migrate it with: active-stack starter add <starter> --project %s",
+	"install.project.manual_cleanup":   "Claude project install: to remove it manually, delete %s and the active-stack:universal-rules section of %s (project uninstall is not supported yet).",
+	"uninstall.flag.overwrite_edited":  "with --strategy restore, restore CLAUDE.md and skill files even if they were edited after the migration (their current content is saved first; --yes does not imply this)",
 
 	// strategy.{targeted,restore}.{label,desc,long} — uninstall strategies.
 	"strategy.targeted.label": "Targeted",

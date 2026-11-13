@@ -1,0 +1,19 @@
+{
+  "id": "diagnostico-wrap-ancho-exacto-v1",
+  "family": "diagnostico",
+  "rubric_version": "1",
+  "source": {"kind": "embedded", "dir": "project", "sha256": "b548289ffe6ff00f4308854d235f86f7c100587d8493987abc05d5d65ab1a1ba"},
+  "prompt": {"file": "prompt.md", "sha256": "d5e7d53e0d69cd6094d875d7fd049ae5a8a1ce64f088ce05be5eeb3038b88dd8"},
+  "allowed_tools": ["leer archivos", "buscar en archivos", "go test"],
+  "limits": {"timeout": "(TBD · D3)", "max_attempts": "(TBD · D3)"},
+  "key": "key.json",
+  "reference": "reference.json",
+  "defective": "defective.json",
+  "criteria": [
+    {"id": "G1", "description": "La prueba citada falla en el checkout y su salida contiene el fragmento citado.", "mandatory": true, "check": "diag_reproduccion"},
+    {"id": "G2", "description": "La causa raíz señala el archivo de la clave con un rango que se solapa.", "mandatory": true, "check": "diag_causa_raiz"},
+    {"id": "G3", "description": "Se descarta el síntoma alternativo de la clave con evidencia.", "mandatory": true, "check": "diag_descarte"},
+    {"id": "G4", "description": "El mecanismo y la evidencia están corroborados por la clave.", "mandatory": true, "check": "requiere_revisor"},
+    {"id": "G5", "description": "El checkout queda intacto.", "mandatory": true, "check": "checkout_intacto"}
+  ]
+}

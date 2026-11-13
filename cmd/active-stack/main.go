@@ -338,6 +338,16 @@ type projectVerifyAdapter struct {
 func (a projectVerifyAdapter) paths() model.AgentPaths {
 	return a.Adapter.PathsFor(a.base, model.Project)
 }
+
+// The managed Codex skill delivery is machine-scoped. Project installs keep
+// their existing instruction delivery until their migration is supported.
+func (a projectVerifyAdapter) ConfigDelivery() model.ConfigDelivery {
+	if a.Adapter.Agent() == model.AgentCodex && a.Adapter.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+		return model.ConfigDeliveryInstructions
+	}
+	return a.Adapter.ConfigDelivery()
+}
+
 func (a projectVerifyAdapter) SkillsDir(string) string        { return a.paths().SkillsDir }
 func (a projectVerifyAdapter) InstructionsPath(string) string { return a.paths().InstructionsPath }
 func (a projectVerifyAdapter) SettingsPath(string) string     { return a.paths().SettingsPath }

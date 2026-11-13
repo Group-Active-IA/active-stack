@@ -180,3 +180,5 @@ func TestInstall_PrimaryAgent_NoSettingsPath(t *testing.T) {
 		t.Errorf("empty-path primary adapter should write nothing, got %v", result.Files)
 	}
 }
+
+func (a opencodeAdapter) SkillsDir(string) string { return "" }

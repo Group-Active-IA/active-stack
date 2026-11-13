@@ -86,6 +86,8 @@ const (
 	// agent.<id> with mode:primary), so the host TUI exposes it as a tab-able
 	// agent instead of folding it into the shared instructions.
 	ConfigDeliveryPrimaryAgent
+	// ConfigDeliveryManagedSkill installs an explicitly invoked skill package.
+	ConfigDeliveryManagedSkill
 )
 
 // Source locates a skill harness in a git repository.

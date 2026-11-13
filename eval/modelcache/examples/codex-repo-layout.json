@@ -1,0 +1,11 @@
+{
+  "source_scope": "repo-source",
+  "paths": [
+    "internal/harness/config/assets/codex/native/SKILL.md",
+    "internal/harness/config/assets/codex/native/action-table.md",
+    "internal/harness/config/assets/codex/native/modules/task-tool-selection.md",
+    "internal/harness/config/assets/codex/native/modules/directed-code-reading.md",
+    "internal/harness/config/assets/codex/native/modules/bounded-command-output.md",
+    "internal/harness/config/assets/codex/native/modules/concise-agent-reporting.md"
+  ]
+}

@@ -59,9 +59,11 @@ var tableES = map[string]string{
 	"mode.custom.long":  "El modo Personalizado te deja elegir exactamente qué harnesses instalar, uno por uno. No se instala nada fuera de tu selección, salvo el piso de seguridad obligatorio (los permisos), que siempre entra. Usalo cuando ya conocés tu stack y querés control total sobre qué queda y qué no. Si preferís una decisión ya tomada, Rápido o Completo son más directos.",
 
 	// tier.{estricto,balanceado,bypass}.{label,desc,long} + tier.bypass.warning.
-	"tier.estricto.label": "Estricto",
-	"tier.estricto.desc":  "El agente debe pedir permiso para cada operación. Máxima fricción, máxima seguridad.",
-	"tier.estricto.long":  "Estricto configura los permisos del agente para que pida confirmación antes de cada operación. Aplica el conjunto de reglas más restrictivo sobre el piso de seguridad: nada corre sin tu visto bueno. Es el nivel de mayor fricción y mayor seguridad. Elegilo para proyectos sensibles o si recién empezás y querés revisar todo antes de que pase; si te traba el ritmo, Balanceado afloja lo repetitivo.",
+	"tier.estricto.label":      "Estricto",
+	"tier.estricto.codex.desc": "Codex: Solo lectura por defecto",
+	"tier.estricto.codex.long": "Codex trabaja en solo lectura. Las acciones que requieren permisos adicionales necesitan aprobación explícita cuando la interfaz admite solicitarla. En las demás interfaces, esas acciones quedan bloqueadas.",
+	"tier.estricto.desc":       "El agente debe pedir permiso para cada operación. Máxima fricción, máxima seguridad.",
+	"tier.estricto.long":       "Estricto configura los permisos del agente para que pida confirmación antes de cada operación. Aplica el conjunto de reglas más restrictivo sobre el piso de seguridad: nada corre sin tu visto bueno. Es el nivel de mayor fricción y mayor seguridad. Elegilo para proyectos sensibles o si recién empezás y querés revisar todo antes de que pase; si te traba el ritmo, Balanceado afloja lo repetitivo.",
 
 	"tier.balanceado.label": "Balanceado",
 	"tier.balanceado.desc":  "Lista de permitidos curada para operaciones seguras y repetitivas. Punto de partida recomendado.",
@@ -71,6 +73,14 @@ var tableES = map[string]string{
 	"tier.bypass.desc":    "Autonomía total opcional. El piso de seguridad de denegación sigue aplicando.",
 	"tier.bypass.long":    "Bypass le da al agente autonomía total para actuar sin preguntar. El piso de seguridad de denegación sigue bloqueando las operaciones más peligrosas—esa capa no se desactiva—pero todo lo demás corre sin supervisión. Elegilo solo cuando confiás plenamente en el flujo y la fricción te frena más de lo que te protege. Usalo con precaución: es el nivel de menor control.",
 	"tier.bypass.warning": "Bypass: modo autónomo — el piso de seguridad sigue aplicando",
+
+	// claude-native-opsx: avisos de la entrega por capas de Claude.
+	"claude.breaking.notice":           "BREAKING (Claude): el coordinador OPSX ya no vive en CLAUDE.md. Ahora es una skill que invocás con /sdd-orchestrator; las sesiones normales sólo conservan las reglas universales. Después de compactar la conversación, volvé a invocar /sdd-orchestrator. Tu contenido propio de CLAUDE.md se conservó.",
+	"install.help.claude_user_content": "Nota sobre Claude: lo que escribas en tu propio CLAUDE.md llega a todas las sesiones y subagentes; Active Stack no lo puede filtrar. El instalador sólo administra sus secciones marcadas.",
+	"update.breaking.nosync":           "Claude: esta instalación no tiene registro de selección, así que no se modificó CLAUDE.md. Cambio BREAKING: el coordinador OPSX ahora es la skill /sdd-orchestrator. Ejecutá `active-stack install` una vez con tu modo actual para migrar.",
+	"update.project.legacy":            "El proyecto %s todavía tiene el bloque legado del coordinador en %s; no se reescribió. Migralo con: active-stack starter add <starter> --project %s",
+	"install.project.manual_cleanup":   "Instalación de proyecto de Claude: para quitarla a mano, borrá %s y la sección active-stack:universal-rules de %s (el uninstall de proyecto todavía no está soportado).",
+	"uninstall.flag.overwrite_edited":  "con --strategy restore, restaura CLAUDE.md y los archivos de la skill aunque se hayan editado después de la migración (antes guarda su contenido actual; --yes no lo implica)",
 
 	// strategy.{targeted,restore}.{label,desc,long} — uninstall strategies.
 	"strategy.targeted.label": "Dirigida",

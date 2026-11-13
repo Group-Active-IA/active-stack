@@ -1,0 +1,13 @@
+{
+  "reproduction": {"test": "TestWrapExactWidth", "observed": "Wrap(\"aa bb\", 5) = [\"aa\" \"bb\"], want [\"aa bb\"]"},
+  "root_cause": {
+    "file": "config/config.go",
+    "start_line": 25,
+    "end_line": 27,
+    "mechanism": "Parse no descuenta el salto de línea del ancho."
+  },
+  "discarded": {
+    "file": "report/report.go",
+    "evidence": "TestWrapShortWidth pasa."
+  }
+}
