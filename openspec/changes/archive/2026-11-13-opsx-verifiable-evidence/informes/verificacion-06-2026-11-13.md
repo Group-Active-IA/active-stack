@@ -59,3 +59,34 @@ Huella del estado probado: `TestStateFingerprint_RealWorktree` (limpio, modifica
 - **Assets de Claude y de Codex** (sección 3): no existen; el contrato no está cargado en ningún orquestador y por eso no hay prueba de `apply` directo ni delegado (4.8, 4.10).
 - **Suite Go completa:** exit 1 por los 4 paquetes de 04 descritos arriba; no está verificada en verde ni en Windows ni en Linux.
 - **Acuerdos del grupo:** nada de lo marcado «propuesta de 06, pendiente de confirmación» fue confirmado (módulo `evidence`, quién evalúa la suficiencia, directorio ajeno, reejecución con captura independiente, TreeHash, D9 y D14 de 05).
+
+## 4. Correcciones de la revisión del PR #12
+
+**Vínculo entre los juicios y la ejecución concreta.** `eval/evidence/judge.go` consultaba la corroboración y la suficiencia solo por id de corrida: con `valido.json`, cambiar `Command` a `echo no-test` conservando la corrida seguía dando «verificado». Ahora:
+
+- La corroboración (`CorroborationRecord`) identifica comando, directorio, commit, huella del estado y código de salida, y una fuente. Si confirma pero describe otra ejecución que la del recibo, el recibo queda **rechazado** (la fuente independiente vio otra cosa). Si no hay registro independiente para esa ejecución, queda **sin verificar**. Un registro sin fuente, o cuya fuente es la de la captura del recibo (el agente), no es independiente y no cuenta.
+- El juicio de suficiencia (`SufficiencyRecord`) corresponde a corrida, requisito y comando; si alguno difiere, no aplica y la suficiencia queda «no evaluable» (sin verificar).
+- Los 22 fixtures migraron a ese formato (listas en lugar de mapas por id) y siguen con el mismo veredicto.
+- Regresiones nuevas en `eval/evidence/evidence_test.go`: recibo original verde como control; cambio de comando con la misma corrida (rechazado, y sin verificar si falta la corroboración); cambio de directorio, commit, huella y resultado; suficiencia por requisito; captura declarada por el agente sin corroboración independiente (sin registro, registro de la misma fuente y registro de otra corrida).
+
+**Validación estricta de OpenSpec.** Los seis requisitos de más de 500 caracteres de `execution-receipts` se acortaron (el detalle pasó a escenarios nuevos; los escenarios existentes se mantienen) en el delta archivado y en `openspec/specs/execution-receipts/spec.md`, que quedan sincronizados salvo los encabezados propios de cada formato. El change ya está archivado: para validar el delta se copió temporalmente a `openspec/changes/opsx-verifiable-evidence/` y se borró la copia.
+
+Resultados de `v11-*.txt` (en `C:\Proyectos\informes-opsx-opsx-verifiable-evidence\`), corridos sobre el commit `ddbe71371a5d54481bde63393901828e4b6cf04a` (árbol limpio salvo este informe y `tasks.md`), en Windows:
+
+| Comando | Resultado real | Salida |
+|---|---|---|
+| `go build ./...` | exit 0 | `v11-go-build.txt` |
+| `go vet ./...` | exit 0 | `v11-go-vet.txt` |
+| `go test -count=1 -v ./eval/evidence` | `ok`, PASS, exit 0 | `v11-go-test-evidence.txt` |
+| `openspec validate opsx-verifiable-evidence --type change --strict` (delta, OpenSpec 2.0.0) | «Change 'opsx-verifiable-evidence' is valid», exit 0 | `v11-validate-change.txt` |
+| `openspec validate execution-receipts --type spec --strict` (spec final, OpenSpec 2.0.0) | «Specification 'execution-receipts' is valid», exit 0 | `v11-validate-spec.txt` |
+
+El delta se validó copiando la carpeta archivada a `openspec/changes/opsx-verifiable-evidence/` y borrando la copia después. Se comprobó que los nueve requisitos de la spec final y del delta archivado son idénticos (solo difieren los encabezados).
+
+Antes del ajuste, la spec final devolvía exit 1 en modo estricto con 6 advertencias de requisitos largos. La CLI instalada aquí es 2.0.0 y la revisión usó 1.16.0; el resultado en 1.16.0 no se repitió.
+
+## 5. Lo que sigue pendiente
+
+El fixture `detalle-redactado` prueba el veredicto sobre una copia **ya redactada**. La recuperación y el vencimiento de la copia real del 05, y la carga efectiva del contrato en Claude y Codex para ejecución directa y delegada, siguen **pendientes**.
+
+**Límite:** un recibo capturado solo por el arnés necesita un registro de otra fuente independiente para quedar verificado; el evaluador no cuenta como independiente a la fuente de la propia captura. A confirmar con 05 D22.

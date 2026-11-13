@@ -11,7 +11,8 @@
 - **Suite Go completa: no está en verde** (4 paquetes de 04 fallan también en `main` limpio en Windows; Linux y CI sin comprobar). Ver 4.11 y D06-0411.
 - **Spec `execution-receipts`:** al archivar se sincroniza a `openspec/specs/execution-receipts/spec.md`, pero las decisiones marcadas «propuesta de 06, pendiente de confirmación» **siguen siéndolo**: no son acuerdos del grupo.
 - Medido solo en Windows y en Linux sobre WSL2; Linux nativo o CI, macOS y Termux pendientes (D06-PLAT).
-- El PR no está abierto ni la rama pusheada con el change archivado (D06-0605).
+- El PR #12 está abierto y en revisión como entrega parcial del contrato y del evaluador offline (D06-0605); la rama `propose/opsx-verifiable-evidence` está pusheada.
+- **Alcance del fixture de redacción:** `detalle-redactado` prueba el veredicto sobre una copia **ya redactada**. La recuperación y el vencimiento de la copia real del 05, y la carga efectiva del contrato en Claude y Codex para ejecución directa y delegada, siguen **pendientes**.
 
 ## 1. Antes de empezar: acuerdos y confirmaciones (MEDIO)
 
