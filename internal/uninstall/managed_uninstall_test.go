@@ -3,6 +3,7 @@ package uninstall_test
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -336,5 +337,38 @@ func TestManagedUninstall_RestoreFailsClosedOnUnreadableMigrationRecord(t *testi
 	}
 	if !exists(m.skill) {
 		t.Error("the skill dir must stay when the restore is refused")
+	}
+}
+
+// C1 (PR #8 review): uninstall keeps the modes of ~/.claude and CLAUDE.md, like
+// install does (G6), on the success path and on the path that puts the block back.
+func TestManagedUninstall_KeepsDirAndFileModes(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("POSIX permission bits are not meaningful on Windows")
+	}
+	for _, name := range []string{"success", "skill removal failure"} {
+		t.Run(name, func(t *testing.T) {
+			m := migrate(t)
+			dir := filepath.Dir(m.md)
+			if err := os.Chmod(m.md, 0o600); err != nil {
+				t.Fatal(err)
+			}
+			if err := os.Chmod(dir, 0o700); err != nil {
+				t.Fatal(err)
+			}
+			if name != "success" {
+				defer uninstall.SetSkillRemovalFn(func(string) error { return os.ErrPermission })()
+			}
+			_ = runApply(plan(t, m, uninstall.Intent{Strategy: uninstall.StrategyTargeted}, uninstall.Options{}))
+			for p, want := range map[string]os.FileMode{dir: 0o700, m.md: 0o600} {
+				info, err := os.Stat(p)
+				if err != nil {
+					t.Fatal(err)
+				}
+				if got := info.Mode().Perm(); got != want {
+					t.Errorf("%s: mode %o, want %o", p, got, want)
+				}
+			}
+		})
 	}
 }

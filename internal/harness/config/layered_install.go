@@ -49,12 +49,13 @@ type LayeredResult struct {
 	Warnings       []string
 }
 
-// dirModes records the mode of each existing directory and, when it lacks the
+// PreserveDirModes records the mode of each existing directory and, when it lacks the
 // owner write bit (left 0500 by an old installer), adds only that bit so the
 // write can proceed. The returned func puts every directory back to its recorded
 // mode (plus the owner write bit), undoing the 0755 that WriteFileAtomic forces.
-// Scope is G6 (small): only the directories of this install.
-func dirModes(dirs ...string) func() {
+// Scope is G6 (small): only the directories of this install. Install and
+// uninstall share it.
+func PreserveDirModes(dirs ...string) func() {
 	type rec struct {
 		dir  string
 		mode os.FileMode
@@ -78,8 +79,8 @@ func dirModes(dirs ...string) func() {
 	}
 }
 
-// fileModeOr returns the mode of an existing file, or def when it does not exist.
-func fileModeOr(path string, def os.FileMode) os.FileMode {
+// FileModeOr returns the mode of an existing file, or def when it does not exist.
+func FileModeOr(path string, def os.FileMode) os.FileMode {
 	if info, err := os.Stat(path); err == nil {
 		return info.Mode().Perm()
 	}
@@ -96,7 +97,7 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 	var res LayeredResult
 	skillDest := filepath.Join(in.SkillsDir, in.Skill.ID)
 
-	restoreModes := dirModes(filepath.Dir(in.InstructionsPath), in.SkillsDir)
+	restoreModes := PreserveDirModes(filepath.Dir(in.InstructionsPath), in.SkillsDir)
 	defer restoreModes()
 
 	// Step 2: collision / precedence checks, before any write.
@@ -193,7 +194,7 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 			}
 		}
 		content, _ := expectedInstructions(in)
-		wr, err := filemerge.WriteFileAtomic(in.InstructionsPath, []byte(content), fileModeOr(in.InstructionsPath, 0o644))
+		wr, err := filemerge.WriteFileAtomic(in.InstructionsPath, []byte(content), FileModeOr(in.InstructionsPath, 0o644))
 		if err != nil {
 			return fmt.Errorf("write \"%s\": %w", in.InstructionsPath, err)
 		}

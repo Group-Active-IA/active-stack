@@ -190,6 +190,9 @@ func (s *markerRemovalStep) removeLayered(a AgentAdapter) error {
 	if readErr != nil && !os.IsNotExist(readErr) {
 		return fmt.Errorf("read instructions file \"%s\": %w", path, readErr)
 	}
+	// WriteFileAtomic forces 0755 on the directory: put ~/.claude back as found.
+	defer config.PreserveDirModes(filepath.Dir(path))()
+	origMode := config.FileModeOr(path, 0o644)
 	if readErr == nil {
 		updated := string(original)
 		for _, id := range []string{config.UniversalSectionID, s.h.ID} {
@@ -197,11 +200,7 @@ func (s *markerRemovalStep) removeLayered(a AgentAdapter) error {
 		}
 		updated = config.PurgeStaleSections(updated)
 		if updated != string(original) {
-			mode := os.FileMode(0o644)
-			if info, err := os.Stat(path); err == nil {
-				mode = info.Mode().Perm()
-			}
-			if _, err := filemerge.WriteFileAtomic(path, []byte(updated), mode); err != nil {
+			if _, err := filemerge.WriteFileAtomic(path, []byte(updated), origMode); err != nil {
 				return fmt.Errorf("write \"%s\": %w", path, err)
 			}
 		}
@@ -213,7 +212,7 @@ func (s *markerRemovalStep) removeLayered(a AgentAdapter) error {
 	}
 	if err := skillRemovalFn(skillDir); err != nil {
 		if readErr == nil {
-			if _, werr := filemerge.WriteFileAtomic(path, original, 0o644); werr != nil {
+			if _, werr := filemerge.WriteFileAtomic(path, original, origMode); werr != nil {
 				return fmt.Errorf("remove skill dir \"%s\": %w; additionally the block could not be restored in \"%s\": %v", skillDir, err, path, werr)
 			}
 		}
