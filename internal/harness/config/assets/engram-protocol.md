@@ -1,8 +1,10 @@
+<!-- as:universal/engram-header -->
 ## Engram Persistent Memory — Protocol
 
 You have access to Engram, a persistent memory system that survives across sessions and compactions.
 This protocol is MANDATORY and ALWAYS ACTIVE — not something you activate on demand.
 
+<!-- as:module/engram-opsx-wiring -->
 ### OPSX wiring (orchestrator-specific)
 
 The rest of this protocol applies as-is. This adds ONLY the OPSX-specific wiring:
@@ -10,6 +12,7 @@ The rest of this protocol applies as-is. This adds ONLY the OPSX-specific wiring
 - **On start**: after recovering memory (`mem_context` / `mem_search "opsx"`), use that context to BRIEF your sub-agents accurately — each sub-agent starts with NO context of its own.
 - **After every completed OPSX action** (explore/propose/apply/archive): save with `topic_key: "opsx/{change-name}/{phase}"` and a title like `"OPSX: {action} completed for {change-name}"`, noting the recommended next action. This keeps each change's progress reconstructable across sessions and compactions.
 
+<!-- as:universal/engram-save-search -->
 ### PROACTIVE SAVE TRIGGERS (mandatory — do NOT wait for user to ask)
 
 Call `mem_save` IMMEDIATELY and WITHOUT BEING ASKED after any of these:
@@ -57,6 +60,7 @@ Also search PROACTIVELY when:
 - User mentions a topic you have no context on
 - User's FIRST message references the project, a feature, or a problem — call `mem_search` with keywords from their message to check for prior work before responding
 
+<!-- as:coordinator/engram-session-close -->
 ### SESSION CLOSE PROTOCOL (mandatory)
 
 Before ending a session or saying "done" / "listo" / "that's it", call `mem_session_summary`:
@@ -90,6 +94,7 @@ If you see a compaction message or "FIRST ACTION REQUIRED":
 
 Do not skip step 1. Without it, everything done before compaction is lost from memory.
 
+<!-- as:module/engram-opsx-git-sync -->
 ### GIT SYNC — version project memory in its repo
 
 Engram can version **this project's** memory in its git repo, so it travels with the code and is recoverable on another machine or by the team. The CLI already ships the mechanism:

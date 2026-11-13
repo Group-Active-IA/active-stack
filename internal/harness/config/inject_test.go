@@ -226,3 +226,59 @@ func TestInject_ContentOutsideMarkersPreserved(t *testing.T) {
 		t.Error("header before the injected block must be preserved")
 	}
 }
+
+// TestInjectSection_UniversalSectionSurvivesReinjection (claude-native-opsx 4.5,
+// C5): a registered universal section must not be purged by the next install.
+func TestInjectSection_UniversalSectionSurvivesReinjection(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "CLAUDE.md")
+	snap := filepath.Join(dir, "backups")
+	if err := os.WriteFile(target, []byte("# Mine\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	if _, err := config.InjectSection(target, config.UniversalSectionID, "UNIVERSAL-WITNESS\n", snap); err != nil {
+		t.Fatalf("inject universal: %v", err)
+	}
+	// A second injection of a different section runs PurgeStaleSections.
+	if _, err := config.InjectSection(target, "design-mockups", "MOCKUPS\n", snap); err != nil {
+		t.Fatalf("second inject: %v", err)
+	}
+
+	got, _ := os.ReadFile(target)
+	if !strings.Contains(string(got), "<!-- active-stack:"+config.UniversalSectionID+" -->") ||
+		!strings.Contains(string(got), "UNIVERSAL-WITNESS") {
+		t.Errorf("universal section was purged by the second injection:\n%s", got)
+	}
+}
+
+// TestInjectSection_UnclosedMarkerIsKeptAndWarned (4.6): an opening marker with
+// no closing marker is not removed and the result names the path and the ID.
+func TestInjectSection_UnclosedMarkerIsKeptAndWarned(t *testing.T) {
+	dir := t.TempDir()
+	target := filepath.Join(dir, "CLAUDE.md")
+	snap := filepath.Join(dir, "backups")
+	existing := "# Mine\n\n<!-- active-stack:half-written -->\nuser text after a broken marker\n"
+	if err := os.WriteFile(target, []byte(existing), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	res, err := config.InjectSection(target, config.UniversalSectionID, "UNIVERSAL\n", snap)
+	if err != nil {
+		t.Fatalf("inject: %v", err)
+	}
+
+	got, _ := os.ReadFile(target)
+	if !strings.Contains(string(got), "<!-- active-stack:half-written -->\nuser text after a broken marker\n") {
+		t.Errorf("unclosed fragment must be kept intact:\n%s", got)
+	}
+	found := false
+	for _, w := range res.Warnings {
+		if strings.Contains(w, target) && strings.Contains(w, "half-written") {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("want a warning naming %q and ID %q, got %q", target, "half-written", res.Warnings)
+	}
+}

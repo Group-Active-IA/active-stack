@@ -1,0 +1,12 @@
+## Model Assignments
+
+Read this table at session start (or before first delegation), cache it for the session, and pass the mapped alias in every Agent tool call via the `model` parameter. If a phase is missing, use the `default` row. If you do not have access to the assigned model (for example, no Opus access), substitute `sonnet` and continue.
+
+| Phase | Default Model | Reason |
+|-------|---------------|--------|
+| orchestrator | opus | Coordinates, makes decisions |
+| explore | sonnet | Reads code, thinking partner |
+| propose | opus | Architectural decisions |
+| apply | sonnet | Implementation |
+| archive | haiku | File operations |
+| default | sonnet | General delegation |

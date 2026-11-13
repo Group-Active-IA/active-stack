@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/fs"
 
+	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
 	perminstaller "github.com/Group-Active-IA/active-stack/internal/harness/config/permissions"
@@ -111,8 +112,18 @@ func SetSkillInstallFn(fn func(
 // SetConfigInstallFn replaces configInstallFn for testing.
 func SetConfigInstallFn(fn func(h model.Harness, adapters interface{}, homeDir string) error) (restore func()) {
 	old := configInstallFn
-	configInstallFn = func(h model.Harness, adapters []cfginstaller.AgentAdapter, homeDir string) (cfginstaller.Result, error) {
+	configInstallFn = func(h model.Harness, adapters []cfginstaller.AgentAdapter, homeDir string, _ cfginstaller.InstallOptions) (cfginstaller.Result, error) {
 		return cfginstaller.Result{}, fn(h, adapters, homeDir)
+	}
+	return func() { configInstallFn = old }
+}
+
+// SetConfigInstallWithFn replaces configInstallFn with a version that sees the
+// install options and returns a Result (warnings, modes).
+func SetConfigInstallWithFn(fn func(h model.Harness, homeDir string, opts cfginstaller.InstallOptions) (cfginstaller.Result, error)) (restore func()) {
+	old := configInstallFn
+	configInstallFn = func(h model.Harness, _ []cfginstaller.AgentAdapter, homeDir string, opts cfginstaller.InstallOptions) (cfginstaller.Result, error) {
+		return fn(h, homeDir, opts)
 	}
 	return func() { configInstallFn = old }
 }
@@ -194,4 +205,12 @@ func SetSnapshotHomeDirFn(fn func() (string, error)) (restore func()) {
 	old := snapshotHomeDirFn
 	snapshotHomeDirFn = fn
 	return func() { snapshotHomeDirFn = old }
+}
+
+// SetClaudeDetectFn replaces the Claude Code version detector used by the
+// config step, so tests do not depend on the claude binary of the machine.
+func SetClaudeDetectFn(fn func() claude.VersionCheck) (restore func()) {
+	old := claudeDetectFn
+	claudeDetectFn = fn
+	return func() { claudeDetectFn = old }
 }

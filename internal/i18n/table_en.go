@@ -75,6 +75,14 @@ var tableEN = map[string]string{
 	"tier.bypass.long":    "Bypass grants the agent full autonomy to act without asking. The security floor deny-list still blocks the most dangerous operations—that layer never turns off—but everything else runs unattended. Choose it only when you fully trust the flow and friction is holding you back more than protecting you. Use it with caution: it is the lowest-control level.",
 	"tier.bypass.warning": "Bypass: autonomous mode — the security floor still applies",
 
+	// claude-native-opsx: layered Claude delivery notices.
+	"claude.breaking.notice":           "BREAKING (Claude): the OPSX coordinator no longer lives in CLAUDE.md. It is now a skill you invoke with /sdd-orchestrator; normal sessions keep only the universal rules. After compacting the conversation, invoke /sdd-orchestrator again. Your own CLAUDE.md content was preserved.",
+	"install.help.claude_user_content": "Claude note: whatever you write in your own CLAUDE.md reaches every session and subagent; Active Stack cannot filter it. The installer only manages its marked sections.",
+	"update.breaking.nosync":           "Claude: this install has no selection record, so CLAUDE.md was not modified. BREAKING change: the OPSX coordinator is now the /sdd-orchestrator skill. Run `active-stack install` once with your current mode to migrate.",
+	"update.project.legacy":            "Project %s still has the legacy coordinator block in %s; it was not rewritten. Migrate it with: active-stack starter add <starter> --project %s",
+	"install.project.manual_cleanup":   "Claude project install: to remove it manually, delete %s and the active-stack:universal-rules section of %s (project uninstall is not supported yet).",
+	"uninstall.flag.overwrite_edited":  "with --strategy restore, restore CLAUDE.md and skill files even if they were edited after the migration (their current content is saved first; --yes does not imply this)",
+
 	// strategy.{targeted,restore}.{label,desc,long} — uninstall strategies.
 	"strategy.targeted.label": "Targeted",
 	"strategy.targeted.desc":  "Reverse each installed harness individually.",
