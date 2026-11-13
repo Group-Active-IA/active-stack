@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
 	"github.com/Group-Active-IA/active-stack/internal/backup"
@@ -190,18 +191,17 @@ var configInstallFn = func(
 var claudeDetectFn = claude.Detect
 
 type configStep struct {
-	h        model.Harness
-	adapters []AgentAdapter
-	homeDir  string
-	manifest *backup.Manifest
-	// Layered Claude delivery (claude-native-opsx): the real home (backups and
-	// migration record), the target, the Machine skills dirs that could shadow a
-	// Project skill, and the output channel and language for notices.
-	realHome   string
-	target     model.InstallTarget
-	shadow     map[model.Agent]string
-	onProgress pipeline.ProgressFunc
-	lang       i18n.Lang
+	h              model.Harness
+	adapters       []AgentAdapter
+	homeDir        string
+	manifest       *backup.Manifest
+	managedWrites  map[string]cfginstaller.ManagedWriteState
+	managedParents map[string]os.FileInfo
+	realHome       string
+	target         model.InstallTarget
+	shadow         map[model.Agent]string
+	onProgress     pipeline.ProgressFunc
+	lang           i18n.Lang
 }
 
 func (s *configStep) ID() string                     { return "config:" + s.h.ID }
@@ -209,24 +209,44 @@ func (s *configStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *configStep) Run() error {
 	cfg := toConfigAdapters(s.adapters)
-	res, err := configInstallFn(s.h, cfg, s.homeDir, cfginstaller.InstallOptions{
-		Home: s.realHome, Target: s.target, ShadowSkillsDir: s.shadow, DetectVersion: claudeDetectFn,
-	})
-	if err != nil {
-		return err
+	s.managedParents = map[string]os.FileInfo{}
+	if s.manifest != nil {
+		for _, entry := range s.manifest.Entries {
+			s.rememberManagedParents(entry.OriginalPath)
+		}
 	}
-	s.report(res)
-	return nil
+	result, err := configInstallFn(s.h, cfg, s.homeDir, cfginstaller.InstallOptions{Home: s.realHome, Target: s.target, ShadowSkillsDir: s.shadow, DetectVersion: claudeDetectFn})
+	s.managedWrites = result.ManagedWrites
+	for path := range s.managedWrites {
+		s.rememberManagedParents(path)
+	}
+	if s.manifest != nil {
+		for path, state := range result.ManagedWrites {
+			if state.Exists {
+				s.manifest.GuardRollback(path, state.Hash)
+			} else {
+				s.manifest.GuardRollbackAbsent(path)
+			}
+		}
+	}
+	if err == nil {
+		s.report(result)
+	}
+	return err
 }
 
 // report surfaces the installer warnings and, for the layered Claude delivery,
 // the BREAKING notice (and the manual cleanup hint for a Project target).
 func (s *configStep) report(res cfginstaller.Result) {
 	for _, w := range res.Warnings {
-		s.notice("warning: " + w)
+		if strings.HasPrefix(w, "Codex Project uses legacy coordinator instructions ") {
+			fmt.Fprintln(os.Stderr, w)
+		} else {
+			s.notice("warning: " + w)
+		}
 	}
 	for _, a := range s.adapters {
-		if res.Modes[a.Agent()] != "skill" {
+		if a.Agent() != model.AgentClaude || res.Modes[a.Agent()] != "skill" {
 			continue
 		}
 		s.notice(i18n.T(s.lang, "claude.breaking.notice"))
@@ -256,7 +276,71 @@ func (s *configStep) Rollback() error {
 	if s.manifest == nil {
 		return nil
 	}
+	for path := range s.managedWrites {
+		for dir := filepath.Dir(path); dir != s.homeDir && dir != filepath.Dir(dir); dir = filepath.Dir(dir) {
+			previous, ok := s.managedParents[dir]
+			if !ok {
+				continue
+			}
+			current, err := os.Lstat(dir)
+			if err != nil || !current.IsDir() || !os.SameFile(previous, current) {
+				s.manifest.GuardRollback(path, [32]byte{})
+				break
+			}
+		}
+	}
+	// A shared snapshot can contain a newly created skills directory. Protect
+	// unrecorded files before legacy restore considers deleting that directory.
+	known := map[string]bool{}
+	for _, entry := range s.manifest.Entries {
+		if !entry.IsDir {
+			known[filepath.Clean(entry.OriginalPath)] = true
+		}
+	}
+	for path := range s.managedWrites {
+		known[filepath.Clean(path)] = true
+	}
+	for _, entry := range s.manifest.Entries {
+		if !entry.IsDir || entry.Existed {
+			continue
+		}
+		directory := filepath.Clean(entry.OriginalPath)
+		relevant := false
+		for path := range s.managedWrites {
+			relative, err := filepath.Rel(directory, path)
+			if err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+				relevant = true
+				break
+			}
+		}
+		if !relevant {
+			continue
+		}
+		err := filepath.WalkDir(directory, func(path string, info fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && !known[filepath.Clean(path)] {
+				s.manifest.GuardRollback(path, [32]byte{})
+			}
+			return nil
+		})
+		if err != nil && !os.IsNotExist(err) {
+			s.manifest.GuardRollback(directory, [32]byte{})
+		}
+	}
 	return restoreFn(*s.manifest)
+}
+
+func (s *configStep) rememberManagedParents(path string) {
+	for dir := filepath.Dir(path); dir != s.homeDir && dir != filepath.Dir(dir); dir = filepath.Dir(dir) {
+		if _, ok := s.managedParents[dir]; ok {
+			continue
+		}
+		if info, err := os.Lstat(dir); err == nil {
+			s.managedParents[dir] = info
+		}
+	}
 }
 
 // ─────────────────────────────────────────────────────────────────
