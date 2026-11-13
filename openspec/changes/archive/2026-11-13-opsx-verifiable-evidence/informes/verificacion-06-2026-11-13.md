@@ -71,7 +71,7 @@ Huella del estado probado: `TestStateFingerprint_RealWorktree` (limpio, modifica
 
 **Validación estricta de OpenSpec.** Los seis requisitos de más de 500 caracteres de `execution-receipts` se acortaron (el detalle pasó a escenarios nuevos; los escenarios existentes se mantienen) en el delta archivado y en `openspec/specs/execution-receipts/spec.md`, que quedan sincronizados salvo los encabezados propios de cada formato. El change ya está archivado: para validar el delta se copió temporalmente a `openspec/changes/opsx-verifiable-evidence/` y se borró la copia.
 
-Resultados de `v11-*.txt` (en `C:\Proyectos\informes-opsx-opsx-verifiable-evidence\`), corridos sobre el commit `ddbe71371a5d54481bde63393901828e4b6cf04a` (árbol limpio salvo este informe y `tasks.md`), en Windows:
+Resultados de `v11-*.txt` (en `C:\Proyectos\informes-opsxinformes-opsx-opsx-verifiable-evidence6-opsx-verifiable-evidence\`), corridos sobre el commit `ddbe71371a5d54481bde63393901828e4b6cf04a` (árbol limpio salvo este informe y `tasks.md`), en Windows:
 
 | Comando | Resultado real | Salida |
 |---|---|---|
