@@ -10,8 +10,8 @@
 
 ## 1. Inventario reproducible
 
-- [ ] 1.1 Listar con `Compose` (Codex y legacy) y `ComposeLayers` (Claude, capas de 03) cada obligación de delegar dentro y fuera de los markers `sdd-delegation`, con y sin el toggle. Aceptación: tabla con línea, texto, capa y si sobrevive al toggle. Borrador sobre goldens en `entrega-delegation.md` §1; falta confirmarlo componiendo sin el toggle.
-- [ ] 1.2 Documentar por cliente, versión e interfaz cómo se lanza, espera y cierra un worker y qué consumo expone por worker. Aceptación: matriz con fuente y versión probada; lo no observado se marca SUPOSICIÓN.
+- [x] 1.1 Listar con `Compose` (Codex y legacy) y `ComposeLayers` (Claude, capas de 03) cada obligación de delegar dentro y fuera de los markers `sdd-delegation`, con y sin el toggle. Aceptación: tabla con línea, texto, capa y si sobrevive al toggle. Borrador sobre goldens en `entrega-delegation.md` §1; falta confirmarlo componiendo sin el toggle. *Hecho 13/11: `informes/inventario-1.1-1.2-2026-11-13.md` §1.1, compuesto con y sin el toggle. Hallazgo: el límite legacy de D8 también alcanza a Claude < 2.1.110 o sin versión detectable y a Codex en instalación de proyecto.*
+- [ ] 1.2 Documentar por cliente, versión e interfaz cómo se lanza, espera y cierra un worker y qué consumo expone por worker. Aceptación: matriz con fuente y versión probada; lo no observado se marca SUPOSICIÓN. *Parcial 13/11: matriz en `informes/inventario-1.1-1.2-2026-11-13.md` §1.2. Falta una corrida observada de Claude (consumo por worker) y Codex completo (no instalado; depende de P2/C05/C06 de 04).*
 
 ## 2. Semántica del toggle (TDD)
 
