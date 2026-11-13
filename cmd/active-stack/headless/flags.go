@@ -6,6 +6,7 @@ package headless
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -100,6 +101,29 @@ type ParsedFlags struct {
 	Lang i18n.Lang
 }
 
+// installFlagOutput is where flag errors and --help are written (stderr; tests swap it).
+var installFlagOutput io.Writer = os.Stderr
+
+// langFromArgs reads --lang/-lang from raw args before flag parsing, so usage
+// text can already be localized. Anything unparseable falls back to the default.
+func langFromArgs(args []string) i18n.Lang {
+	for i, a := range args {
+		v := ""
+		switch {
+		case (a == "--lang" || a == "-lang") && i+1 < len(args):
+			v = args[i+1]
+		case strings.HasPrefix(a, "--lang="):
+			v = strings.TrimPrefix(a, "--lang=")
+		}
+		if v != "" {
+			if l, err := i18n.Parse(v); err == nil {
+				return l
+			}
+		}
+	}
+	return i18n.Default
+}
+
 // ParseInstallFlags parses the raw argument list for the "install" sub-command.
 //
 // Rules (from design D4):
@@ -114,7 +138,14 @@ type ParsedFlags struct {
 func ParseInstallFlags(args []string) (ParsedFlags, error) {
 	fs := flag.NewFlagSet("install", flag.ContinueOnError)
 	// Suppress the default output so callers control stderr.
-	fs.SetOutput(os.Stderr)
+	fs.SetOutput(installFlagOutput)
+	// claude-native-opsx 6.7: --help warns that the user's own CLAUDE.md content
+	// reaches every session and subagent (language from --lang when given).
+	fs.Usage = func() {
+		fmt.Fprintf(fs.Output(), "Usage of install:\n")
+		fs.PrintDefaults()
+		fmt.Fprintf(fs.Output(), "\n%s\n", i18n.T(langFromArgs(args), "install.help.claude_user_content"))
+	}
 
 	var (
 		headless          bool

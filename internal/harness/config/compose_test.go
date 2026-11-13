@@ -267,3 +267,30 @@ func TestCompose_ClaudeDiagramIncludesVerify(t *testing.T) {
 		t.Errorf("verify must sit between apply and archive: apply=%d verify=%d archive=%d", apply, verify, archive)
 	}
 }
+
+// TestCompose_AllToggles_codex and _antigravity pin the current output of the
+// non-Claude variants before compose.go is split (claude-native-opsx 4.0). They
+// were generated from the state at 35a89f8 and must not change with the split.
+func TestCompose_AllToggles_codex(t *testing.T)       { assertComposeGolden(t, "codex") }
+func TestCompose_AllToggles_antigravity(t *testing.T) { assertComposeGolden(t, "antigravity") }
+
+func assertComposeGolden(t *testing.T, variant string) {
+	t.Helper()
+	toggles := []string{"delegation", "model-routing", "engram", "tdd", "governance"}
+	got, err := config.Compose(toggles, variant)
+	if err != nil {
+		t.Fatalf("Compose error: %v", err)
+	}
+	if got == "" {
+		t.Fatal("Compose returned empty string")
+	}
+	name := "compose_all_toggles_" + variant
+	if *update {
+		writeGolden(t, name, got)
+		t.Logf("updated golden %s", name)
+		return
+	}
+	if want := loadGolden(t, name); got != want {
+		t.Errorf("Compose(%s) does not match golden.\ngot len=%d want len=%d", variant, len(got), len(want))
+	}
+}

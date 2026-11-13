@@ -1,0 +1,19 @@
+## Delegation Rules
+
+Core principle: **does this inflate my context without need?** If yes → delegate. If no → do it inline.
+
+| Action | Inline | Delegate |
+|--------|--------|----------|
+| Read 1-3 files to decide/verify | ✅ | — |
+| Read 4+ files to explore/understand | — | ✅ |
+| Read as preparation for writing | — | ✅ together with the write |
+| Write one file, mechanical, you know what | ✅ | — |
+| Write with analysis / multi-file / new logic | — | ✅ |
+| Bash for state (git, openspec status) | ✅ | — |
+| Bash for execution (tests, build, install) | — | ✅ |
+
+Anti-patterns — these ALWAYS inflate context:
+- Reading 4+ files to "understand" the codebase inline → delegate an exploration
+- Writing a feature across multiple files inline → delegate
+- Running tests or builds inline → delegate
+- Reading files as preparation for edits, then editing → delegate the whole thing together

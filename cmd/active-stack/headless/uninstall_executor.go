@@ -35,6 +35,8 @@ func RunHeadlessUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, re
 			fmt.Fprintf(w, "  ✓ %s\n", e.StepID)
 		case pipeline.StepStatusFailed:
 			fmt.Fprintf(w, "  ✗ %s: %v\n", e.StepID, e.Err)
+		case pipeline.StepStatusDegraded:
+			fmt.Fprintf(w, "  ⚠ %s: %v\n", e.StepID, e.Err)
 		case pipeline.StepStatusRolledBack:
 			fmt.Fprintf(w, "  ↩ %s (rolled back)\n", e.StepID)
 		}
@@ -42,9 +44,10 @@ func RunHeadlessUninstall(params ParsedUninstallFlags, cat uninstall.Catalog, re
 
 	// ── Build uninstall options ──────────────────────────────────────────────
 	opts := uninstall.Options{
-		HomeDir:    params.HomeDir,
-		Registry:   reg,
-		OnProgress: progressFn,
+		HomeDir:         params.HomeDir,
+		Registry:        reg,
+		OnProgress:      progressFn,
+		OverwriteEdited: params.OverwriteEdited,
 	}
 
 	// Wire RestoreManifest when strategy is restore (D6).

@@ -1,0 +1,13 @@
+{
+  "failing_test": "TestWrapExactWidth",
+  "root_cause": {
+    "file": "report/report.go",
+    "start_line": 15,
+    "end_line": 15,
+    "mechanism": "La condición usa >= en vez de >: una línea que entra justo en width se corta (off-by-one)."
+  },
+  "alternative": {
+    "file": "config/config.go",
+    "description": "config.Parse devuelve 5 para width=5 (TestParseWidth pasa y el mensaje de la falla muestra 5); no resta ni suma nada."
+  }
+}

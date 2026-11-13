@@ -307,6 +307,9 @@ func collectWritePaths(adapters []AgentAdapter, effectiveBase string, target mod
 		case model.HarnessConfig:
 			for _, a := range adapters {
 				addFile(resolvedInstructionsPath(a, effectiveBase, target))
+				if a.ConfigDelivery() == model.ConfigDeliveryManagedSkill && id == "sdd-orchestrator" {
+					addManagedSkillPaths(filepath.Join(resolvedSkillsDir(a, effectiveBase, target), id), addFile, addDir)
+				}
 			}
 		case model.HarnessSkill:
 			for _, a := range adapters {
@@ -534,10 +537,20 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 				tier:     tier,
 			}, nil
 		}
+		realHome := resolveSnapshotHomeDir(opts)
+		shadow := make(map[model.Agent]string, len(adapters))
+		for _, a := range adapters {
+			shadow[a.Agent()] = a.SkillsDir(realHome)
+		}
 		return &configStep{
-			h:        h,
-			adapters: stepAdapters,
-			homeDir:  effectiveBase,
+			h:          h,
+			adapters:   stepAdapters,
+			homeDir:    effectiveBase,
+			realHome:   realHome,
+			target:     opts.Target,
+			shadow:     shadow,
+			onProgress: opts.OnProgress,
+			lang:       opts.Lang,
 		}, nil
 
 	case model.HarnessCommand:
@@ -596,4 +609,27 @@ func (s *verifyStep) Run() error { return s.fn() }
 // skillRunner is the interface required by skill.NewInstaller.
 type skillRunner interface {
 	Run(ctx context.Context, args []string) error
+}
+
+// addManagedSkillPaths registers the managed skill directory for the snapshot:
+// its files and directories when it exists (so a rollback can restore them), a
+// directory hint when it does not (so a rollback removes what the install created).
+func addManagedSkillPaths(dir string, addFile, addDir func(string)) {
+	info, err := os.Stat(dir)
+	if err != nil || !info.IsDir() {
+		addDir(dir)
+		return
+	}
+	addDir(dir)
+	_ = filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
+		if err != nil || p == dir {
+			return nil
+		}
+		if d.IsDir() {
+			addDir(p)
+		} else {
+			addFile(p)
+		}
+		return nil
+	})
 }

@@ -1,0 +1,35 @@
+## Artifact Lifecycle
+
+All artifacts live on the filesystem under `openspec/changes/<name>/`:
+
+```
+openspec/changes/<name>/
+├── .openspec.yaml   ← change metadata (created by CLI)
+├── proposal.md      ← what & why
+├── design.md        ← how
+├── tasks.md         ← implementation checklist
+└── specs/           ← delta specs (optional)
+```
+
+Main specs (source of truth) live at `openspec/specs/<capability>/spec.md`.
+
+Archive goes to `openspec/changes/archive/YYYY-MM-DD-<name>/`.
+
+## Key CLI Commands Reference
+
+```bash
+# Create a new change
+openspec new change "<name>"
+
+# List active changes
+openspec list --json
+
+# Get change status + artifact graph
+openspec status --change "<name>" --json
+
+# Get instructions for creating an artifact
+openspec instructions <artifact-id> --change "<name>" --json
+
+# Get apply instructions (implementation context)
+openspec instructions apply --change "<name>" --json
+```

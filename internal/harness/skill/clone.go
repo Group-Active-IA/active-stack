@@ -100,7 +100,7 @@ func cloneInstaller(
 			skillID, skillID, repoURL)
 	}
 
-	return refreshSkillDirectory(skillsDir, skillID, backupDir, func(stage string) error {
+	return refreshSkillDirectory(skillsDir, skillID, backupDir, false, func(stage string) error {
 		return copyDir(srcDir, stage)
 	})
 }

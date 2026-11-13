@@ -116,3 +116,5 @@ func TestInstall_SkipEmptyPath(t *testing.T) {
 		t.Error("skip adapter should produce no written files")
 	}
 }
+
+func (a claudeAdapter) SkillsDir(string) string { return "" }

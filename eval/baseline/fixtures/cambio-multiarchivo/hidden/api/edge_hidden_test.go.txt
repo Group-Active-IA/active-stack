@@ -1,0 +1,19 @@
+package api
+
+import (
+	"testing"
+
+	"example.com/kv/store"
+)
+
+// Prueba oculta del fixture cambio-multiarchivo: borde de valor vacio presente.
+func TestHiddenDescribeEmptyValue(t *testing.T) {
+	s := store.New()
+	s.Set("vacio", "")
+	if got := Describe(s, "vacio"); got != "vacio: (vacío)" {
+		t.Errorf("Describe(vacio) = %q, want %q", got, "vacio: (vacío)")
+	}
+	if got := Describe(s, "nada"); got != "nada: (sin valor)" {
+		t.Errorf("Describe(nada) = %q, want %q", got, "nada: (sin valor)")
+	}
+}
