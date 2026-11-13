@@ -231,6 +231,25 @@ El **`sdd-orchestrator`** es el harness clave: es de tipo `config` y se compone 
 
 ---
 
+### OPSX bajo demanda en Codex
+
+La entrega Machine de Codex instala la skill `$sdd-orchestrator`. Invocala
+explícitamente dentro de tu sesión para coordinar un change. El bloque universal
+de `AGENTS.md` conserva las reglas generales y la skill carga los módulos de la
+acción elegida.
+
+La migración respalda las piezas administradas y detecta colisiones antes de
+escribir. La actualización con selección registrada vuelve a usar el instalador.
+El retiro conserva archivos propios del usuario. Una restauración protegida que
+encuentra ediciones posteriores informa el conflicto y la ubicación del respaldo.
+
+Project conserva su entrega anterior. Si el proyecto todavía contiene coordinación
+legada, esa fuente debe tratarse explícitamente al evaluar una sesión normal.
+Los resultados de CLI y extensión IDE en Windows/Linux se registran por separado
+en el [change 04](openspec/changes/archive/2026-11-13-codex-native-opsx/). Las acciones que requieren
+captura y evidencia corroborada esperan los contratos de 05/06; una protección o
+módulo obligatorio ausente detiene la acción afectada.
+
 ## Cómo funciona la instalación
 
 `active-stack install` no copia archivos a lo bruto. Resuelve dependencias, hace backup, inyecta con markers idempotentes y verifica:

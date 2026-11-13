@@ -62,5 +62,5 @@ func (a *Adapter) PathsFor(base string, target model.InstallTarget) model.AgentP
 }
 
 func (a *Adapter) ConfigDelivery() model.ConfigDelivery {
-	return model.ConfigDeliveryInstructions
+	return model.ConfigDeliveryManagedSkill
 }

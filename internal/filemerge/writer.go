@@ -14,6 +14,16 @@ type WriteResult struct {
 }
 
 func WriteFileAtomic(path string, content []byte, perm fs.FileMode) (WriteResult, error) {
+	return writeFileAtomic(path, content, perm, true)
+}
+
+// WriteFileAtomicPreservingParent leaves existing directory permissions intact.
+// Missing parent directories are created privately, subject to the process umask.
+func WriteFileAtomicPreservingParent(path string, content []byte, perm fs.FileMode) (WriteResult, error) {
+	return writeFileAtomic(path, content, perm, false)
+}
+
+func writeFileAtomic(path string, content []byte, perm fs.FileMode, repairParent bool) (WriteResult, error) {
 	if perm == 0 {
 		perm = 0o644
 	}
@@ -31,14 +41,20 @@ func WriteFileAtomic(path string, content []byte, perm fs.FileMode) (WriteResult
 	}
 
 	dir := filepath.Dir(path)
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	parentPerm := fs.FileMode(0o700)
+	if repairParent {
+		parentPerm = 0o755
+	}
+	if err := os.MkdirAll(dir, parentPerm); err != nil {
 		return WriteResult{}, fmt.Errorf("create parent directories for %q: %w", path, err)
 	}
 	// Ensure the directory is writable — it may have been created with
 	// restricted permissions by a previous installer version.
 	// MkdirAll succeeds on existing dirs but does not fix their permissions.
-	if err := os.Chmod(dir, 0o755); err != nil {
-		return WriteResult{}, fmt.Errorf("set write permission on directory for %q: %w", path, err)
+	if repairParent {
+		if err := os.Chmod(dir, 0o755); err != nil {
+			return WriteResult{}, fmt.Errorf("set write permission on directory for %q: %w", path, err)
+		}
 	}
 
 	tmp, err := os.CreateTemp(dir, ".active-stack-*.tmp")

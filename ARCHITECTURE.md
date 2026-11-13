@@ -71,15 +71,23 @@ Es un harness de **configuración** que arma el orquestador SDD con piezas
 - Governance por dominio (sí/no)
 - … (extensible)
 
-El resultado depende del agente. Para **Claude** (`ConfigDeliveryManagedSkill`) es una
-entrega por capas: la skill `/sdd-orchestrator` (rol coordinador y `modules/` por acción,
-sólo los de toggles activos, con `disable-model-invocation: true` y marca de propiedad) y
-un bloque universal mínimo en `CLAUDE.md` (`active-stack:universal-rules`). La partición
-sigue `openspec/matriz-reglas-opsx.md`. Con una versión de Claude Code menor que la mínima
-(2.1.110) o no verificable, rige el **modo legado**: el bloque único de siempre en
-`CLAUDE.md`, idéntico byte a byte. Para el resto de los agentes sigue siendo el bloque de
-instrucciones que se inyecta en `AGENTS.md` / `opencode.json`, compuesto a partir de los
-toggles elegidos.
+Para Claude (`ConfigDeliveryManagedSkill`) se conserva la entrega por capas de 03:
+la skill explícita `/sdd-orchestrator`, con `disable-model-invocation: true`, marca
+de propiedad y módulos según toggles, y el bloque universal de `CLAUDE.md`
+(`active-stack:universal-rules`). Una versión insuficiente o desconocida conserva
+el bloque legado; la detección y sus avisos siguen siendo específicos de Claude.
+La partición sigue `openspec/matriz-reglas-opsx.md`.
+
+En Codex Machine, el resultado se entrega como skill administrada de invocación
+explícita `$sdd-orchestrator`, con política en `agents/openai.yaml`, módulos por
+acción y reglas universales en `AGENTS.md`. La instalación Project conserva su
+entrega legada. El adapter resuelve las rutas de destino. El ciclo de migración
+mantiene un punto persistente de reversión con estado esperado por archivo; una
+edición posterior genera un conflicto recuperable. El mismo enum de entrega se
+despacha por cliente en instalación, verificación y retiro, preservando opciones
+Claude y estados de escritura Codex. Antigravity y OpenCode conservan su estrategia
+de entrega. La aceptación por cliente e interfaz se registra en el
+change `codex-native-opsx`.
 
 > Hoy los toggles salen del catálogo (`toggles:` en `harnesses.yaml`): el usuario
 > **no** los elige en la TUI/GUI, que solo muestran harnesses. Por eso una capacidad
