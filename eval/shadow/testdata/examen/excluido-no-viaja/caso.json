@@ -1,0 +1,7 @@
+{
+  "incluir": [
+    "diff.patch"
+  ],
+  "envia": true,
+  "reglas": []
+}

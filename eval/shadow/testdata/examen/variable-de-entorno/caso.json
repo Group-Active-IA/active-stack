@@ -1,0 +1,9 @@
+{
+  "incluir": [
+    "diff.patch"
+  ],
+  "envia": false,
+  "reglas": [
+    "env-assignment"
+  ]
+}
