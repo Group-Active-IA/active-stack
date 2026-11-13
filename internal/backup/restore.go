@@ -16,6 +16,7 @@ type RestoreService struct{}
 type rollbackGuard struct {
 	expected [sha256.Size]byte
 	restored bool
+	absent   bool
 }
 
 // GuardRollback associates a live install snapshot with the bytes written by
@@ -27,7 +28,28 @@ func (m *Manifest) GuardRollback(path string, expected [sha256.Size]byte) {
 	m.rollbackGuards[filepath.Clean(path)] = &rollbackGuard{expected: expected}
 }
 
+// GuardRollbackAbsent protects a removed file against a later recreation.
+func (m *Manifest) GuardRollbackAbsent(path string) {
+	if m.rollbackGuards == nil {
+		m.rollbackGuards = make(map[string]*rollbackGuard)
+	}
+	m.rollbackGuards[filepath.Clean(path)] = &rollbackGuard{absent: true}
+}
+
+// GuardPersistentRestore protects a file using the expected post-install bytes.
+// Persist the manifest after every successfully recorded installation operation.
+func (m *Manifest) GuardPersistentRestore(path string, expected [sha256.Size]byte) {
+	if m.RestoreGuards == nil {
+		m.RestoreGuards = make(map[string][sha256.Size]byte)
+	}
+	m.RestoreGuards[filepath.Clean(path)] = expected
+	m.RestoreGuardVersion = 1
+}
+
 func (s RestoreService) Restore(manifest Manifest) error {
+	if manifest.RestoreGuardVersion != 0 || manifest.RestoreGuards != nil {
+		return s.restoreProtected(manifest)
+	}
 	entries := manifest.Entries
 	var conflicts error
 	if len(manifest.rollbackGuards) != 0 {
@@ -35,7 +57,11 @@ func (s RestoreService) Restore(manifest Manifest) error {
 		excluded := make(map[string]bool)
 		for path, guard := range manifest.rollbackGuards {
 			raw, err := os.ReadFile(path)
-			if !guard.restored && (err != nil || sha256.Sum256(raw) != guard.expected) {
+			matches := err == nil && sha256.Sum256(raw) == guard.expected
+			if guard.absent {
+				matches = os.IsNotExist(err)
+			}
+			if !guard.restored && !matches {
 				conflicts = errors.Join(conflicts, fmt.Errorf("preserved %q because it changed after installation; backup at %q", path, manifest.RootDir))
 				excluded[path] = true
 			} else if guard.restored {
@@ -108,7 +134,7 @@ func (s RestoreService) restoreCompressed(manifest Manifest) error {
 				Existed:      true,
 				Mode:         entry.Mode,
 			}
-			if err := restoreEntry(resolvedEntry); err != nil {
+			if err := restoreEntry(resolvedEntry, manifest.rollbackGuards[filepath.Clean(entry.OriginalPath)] != nil); err != nil {
 				return err
 			}
 
@@ -140,7 +166,7 @@ func (s RestoreService) restorePlain(manifest Manifest) error {
 
 		case entry.Existed && !entry.IsDir:
 			// Preexisting file → restore content.
-			if err := restoreEntry(entry); err != nil {
+			if err := restoreEntry(entry, manifest.rollbackGuards[filepath.Clean(entry.OriginalPath)] != nil); err != nil {
 				return err
 			}
 
@@ -161,17 +187,17 @@ func (s RestoreService) restorePlain(manifest Manifest) error {
 	return nil
 }
 
-func restoreEntry(entry ManifestEntry) error {
+func restoreEntry(entry ManifestEntry, preserveParent bool) error {
 	content, err := os.ReadFile(entry.SnapshotPath)
 	if err != nil {
 		return fmt.Errorf("read snapshot file %q: %w", entry.SnapshotPath, err)
 	}
 
-	if err := os.MkdirAll(filepath.Dir(entry.OriginalPath), 0o755); err != nil {
-		return fmt.Errorf("create restore directory for %q: %w", entry.OriginalPath, err)
+	writer := filemerge.WriteFileAtomic
+	if preserveParent {
+		writer = filemerge.WriteFileAtomicPreservingParent
 	}
-
-	if _, err := filemerge.WriteFileAtomic(entry.OriginalPath, content, os.FileMode(entry.Mode)); err != nil {
+	if _, err := writer(entry.OriginalPath, content, os.FileMode(entry.Mode)); err != nil {
 		return fmt.Errorf("restore path %q: %w", entry.OriginalPath, err)
 	}
 

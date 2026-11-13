@@ -141,20 +141,46 @@ var primaryAgentRemovalFn = func(settingsPath, agentID string) error {
 }
 
 type markerRemovalStep struct {
-	h        model.Harness
-	adapters []AgentAdapter
-	homeDir  string
-	manifest *backup.Manifest
+	h              model.Harness
+	adapters       []AgentAdapter
+	homeDir        string
+	manifest       *backup.Manifest
+	nativeRollback *managedRollback
 }
 
-func (s *markerRemovalStep) ID() string { return "marker:" + s.h.ID }
+func (s *markerRemovalStep) ID() string                     { return "marker:" + s.h.ID }
 func (s *markerRemovalStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *markerRemovalStep) Run() error {
 	for _, a := range s.adapters {
 		if s.h.ID == "sdd-orchestrator" && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
-			if err := s.removeLayered(a); err != nil {
+			if a.Agent() == model.AgentClaude {
+				if err := s.removeLayered(a); err != nil {
+					return err
+				}
+				continue
+			}
+			if a.Agent() != model.AgentCodex {
+				return fmt.Errorf("managed skill delivery unsupported for agent %q", a.Agent())
+			}
+			if s.nativeRollback == nil {
+				s.nativeRollback = newManagedRollback()
+			}
+			paths, err := config.ManagedSkillOwnedPaths(a, s.homeDir, s.h.ID)
+			if err != nil {
 				return err
+			}
+			if err := s.nativeRollback.capture(paths, s.homeDir); err != nil {
+				return err
+			}
+			instructions, err := os.ReadFile(a.InstructionsPath(s.homeDir))
+			if err != nil && !os.IsNotExist(err) {
+				return err
+			}
+			changed, removeErr := config.RemoveManagedSkill(a, s.homeDir, s.h.ID)
+			s.nativeRollback.record(s.manifest, changed, a.InstructionsPath(s.homeDir), string(instructions), s.h.ID)
+			if removeErr != nil {
+				return fmt.Errorf("managed skill removal for agent %q: %w", a.Agent(), removeErr)
 			}
 			continue
 		}
@@ -225,6 +251,9 @@ func (s *markerRemovalStep) Rollback() error {
 	if s.manifest == nil {
 		return nil
 	}
+	if s.nativeRollback != nil {
+		return s.nativeRollback.restore(*s.manifest)
+	}
 	return restoreFn(*s.manifest)
 }
 
@@ -245,7 +274,7 @@ type skillRemovalStep struct {
 	manifest *backup.Manifest
 }
 
-func (s *skillRemovalStep) ID() string { return "skill-removal:" + s.h.ID }
+func (s *skillRemovalStep) ID() string                     { return "skill-removal:" + s.h.ID }
 func (s *skillRemovalStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *skillRemovalStep) Run() error {
@@ -286,7 +315,7 @@ type commandRemovalStep struct {
 	manifest *backup.Manifest
 }
 
-func (s *commandRemovalStep) ID() string { return "command-removal:" + s.h.ID }
+func (s *commandRemovalStep) ID() string                     { return "command-removal:" + s.h.ID }
 func (s *commandRemovalStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *commandRemovalStep) Run() error {
@@ -327,7 +356,7 @@ type permissionsRemovalStep struct {
 	manifest *backup.Manifest
 }
 
-func (s *permissionsRemovalStep) ID() string { return "permissions-removal:" + s.h.ID }
+func (s *permissionsRemovalStep) ID() string                     { return "permissions-removal:" + s.h.ID }
 func (s *permissionsRemovalStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *permissionsRemovalStep) Run() error {
@@ -486,8 +515,8 @@ type externalSkipStep struct {
 	h model.Harness
 }
 
-func (s *externalSkipStep) ID() string  { return "external-skip:" + s.h.ID }
-func (s *externalSkipStep) Run() error  { return nil }
+func (s *externalSkipStep) ID() string { return "external-skip:" + s.h.ID }
+func (s *externalSkipStep) Run() error { return nil }
 
 type codexMCPRemovalStep struct {
 	h        model.Harness
