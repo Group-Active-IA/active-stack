@@ -36,20 +36,20 @@ interfaz, plataforma, modelo, comando, timestamp y testigo usado, siguiendo el m
 Scripts en `investigacion/`, nunca en `internal/`. Toda corrida con modelo sigue D9. Orden: 1.12 y
 1.11 primero.
 
-- [ ] 1.1 Skill invocada con `/sdd-orchestrator` desde `~/.claude/skills/`: repetir D0 con testigos únicos en `CLAUDE.md` de proyecto y global, en `SKILL.md` y en un módulo; registrar qué ve el hilo y qué ve un subagente general lanzado después.
-- [ ] 1.2 Subagentes integrados (Explore, Plan, general-purpose): mismo procedimiento; confirmar que Explore y Plan arrancan sin `CLAUDE.md` en la versión fijada.
-- [ ] 1.3 Precedencia: cómo queda el cuerpo de la skill frente al prompt de sistema y al contenido del usuario en `CLAUDE.md`; resultado alimenta "Precedencia de capas".
-- [ ] 1.4 Versión mínima y presupuesto: primera versión de Claude Code con skills de usuario, `disable-model-invocation` y reenganche de skills tras compactar (changelog oficial o prueba). Fijar el umbral de tokens del `SKILL.md` con el contador que acuerde 02. Ambos valores reemplazan los `(TBD · tarea 1.4)` de design.md D7 y D10.
-- [ ] 1.5 Target Project: verificar que Claude lee `<root>/.claude/skills/sdd-orchestrator/` y `<root>/.claude/CLAUDE.md`, y cuál prevalece frente a una skill Machine con el mismo ID (la documentación dice "personal over project").
-- [ ] 1.6 Origen real de las skills `openspec-*` en Claude (contradicción C2): qué crea `openspec init`, qué instala Active Stack y qué nombres invoca el coordinador; dejar la tabla de nombres reales.
-- [ ] 1.7 Desde el hilo con la skill invocada, el coordinador lanza subagentes con la herramienta Agent y el subagente no recibe el testigo de `SKILL.md` (oráculo 1.11).
-- [ ] 1.8 Archivos de apoyo: el coordinador lee `modules/<x>.md` con `${CLAUDE_SKILL_DIR}` en terminal y en IDE; registrar si la ruta se resuelve en ambas interfaces.
-- [ ] 1.9 Skills con `disable-model-invocation: true` en el campo `skills` de un subagente: confirmar que no se precargan.
-- [ ] 1.10 Determinista: en una sesión normal la descripción de `sdd-orchestrator` no figura en las skills disponibles para el modelo, y un pedido OPSX sin invocar no la activa. Verificación: entrada del registro de contexto con la lista de skills, con control positivo (otra skill sin el flag sí figura).
-- [ ] 1.11 Validar el oráculo de D8: con testigos conocidos en `CLAUDE.md`, `SKILL.md`, un módulo leído y el prompt de un subagente, comprobar en qué entradas de la transcripción aparece cada uno, antes y después de `/compact`, en la misma corrida que un testigo ausente a propósito.
-- [ ] 1.12 Mecanismo de autenticación con directorio de configuración temporal: qué variable usa Claude Code para el directorio de configuración y cuál acepta para la credencial; registrar sólo los nombres. Prohibido copiar archivos de credenciales.
-- [ ] 1.13 Hecho a verificar, no decisión: si `settings.json` (por ejemplo `env`, `apiKeyHelper`) o `~/.claude.json` pueden contener credenciales, según documentación oficial y sin leer valores del usuario. Resultado al humano para ALTO vs CRITICAL.
-- [ ] 1.14 Reanudación: con la skill invocada, cerrar y reanudar con `claude --continue` y con `--resume`; registrar si el testigo del coordinador sigue en el contexto. Resultado ajusta el escenario "Reanudación".
+- [ ] 1.1 Skill invocada con `/sdd-orchestrator` desde `~/.claude/skills/`: repetir D0 con testigos únicos en `CLAUDE.md` de proyecto y global, en `SKILL.md` y en un módulo; registrar qué ve el hilo y qué ve un subagente general lanzado después. (DEUDA: hecho en target Project; global no se tocó (no se escribe en ~/.claude real))
+- [ ] 1.2 Subagentes integrados (Explore, Plan, general-purpose): mismo procedimiento; confirmar que Explore y Plan arrancan sin `CLAUDE.md` en la versión fijada. (DEUDA: queda la documentación oficial)
+- [ ] 1.3 Precedencia: cómo queda el cuerpo de la skill frente al prompt de sistema y al contenido del usuario en `CLAUDE.md`; resultado alimenta "Precedencia de capas". (DEUDA)
+- [x] 1.4 Versión mínima y presupuesto: primera versión de Claude Code con skills de usuario, `disable-model-invocation` y reenganche de skills tras compactar (changelog oficial o prueba). Fijar el umbral de tokens del `SKILL.md` con el contador que acuerde 02. Ambos valores reemplazan los `(TBD · tarea 1.4)` de design.md D7 y D10. (2026-11-13: mínima 2.1.110 por CHANGELOG oficial; umbral 4000 tokens, bytes/4. Ver investigacion/pruebas-claude-real.md)
+- [ ] 1.5 Target Project: verificar que Claude lee `<root>/.claude/skills/sdd-orchestrator/` y `<root>/.claude/CLAUDE.md`, y cuál prevalece frente a una skill Machine con el mismo ID (la documentación dice "personal over project"). (parcial: Project leído (pruebas 1-6); precedencia según documentación oficial y advertencia 5.3)
+- [ ] 1.6 Origen real de las skills `openspec-*` en Claude (contradicción C2): qué crea `openspec init`, qué instala Active Stack y qué nombres invoca el coordinador; dejar la tabla de nombres reales. (DEUDA (C2))
+- [x] 1.7 Desde el hilo con la skill invocada, el coordinador lanza subagentes con la herramienta Agent y el subagente no recibe el testigo de `SKILL.md` (oráculo 1.11). (2026-11-13: subagente general ve U19 y no K41. Ver investigacion/)
+- [x] 1.8 Archivos de apoyo: el coordinador lee `modules/<x>.md` con `${CLAUDE_SKILL_DIR}` en terminal y en IDE; registrar si la ruta se resuelve en ambas interfaces. (2026-11-13: terminal Linux resuelve; IDE no disponible en esta máquina)
+- [ ] 1.9 Skills con `disable-model-invocation: true` en el campo `skills` de un subagente: confirmar que no se precargan. (DEUDA: documentación oficial)
+- [x] 1.10 Determinista: en una sesión normal la descripción de `sdd-orchestrator` no figura en las skills disponibles para el modelo, y un pedido OPSX sin invocar no la activa. Verificación: entrada del registro de contexto con la lista de skills, con control positivo (otra skill sin el flag sí figura). (2026-11-13: init lista ambas, el modelo ve CTRL-55 y no ZQ7/K41)
+- [x] 1.11 Validar el oráculo de D8: con testigos conocidos en `CLAUDE.md`, `SKILL.md`, un módulo leído y el prompt de un subagente, comprobar en qué entradas de la transcripción aparece cada uno, antes y después de `/compact`, en la misma corrida que un testigo ausente a propósito. (2026-11-13: oráculo validado sobre la transcripción: K41 presente antes de `compact_boundary` y ausente del contexto después)
+- [ ] 1.12 Mecanismo de autenticación con directorio de configuración temporal: qué variable usa Claude Code para el directorio de configuración y cuál acepta para la credencial; registrar sólo los nombres. Prohibido copiar archivos de credenciales. (DEUDA)
+- [ ] 1.13 Hecho a verificar, no decisión: si `settings.json` (por ejemplo `env`, `apiKeyHelper`) o `~/.claude.json` pueden contener credenciales, según documentación oficial y sin leer valores del usuario. Resultado al humano para ALTO vs CRITICAL. (Juani decidió ALTO)
+- [x] 1.14 Reanudación: con la skill invocada, cerrar y reanudar con `claude --continue` y con `--resume`; registrar si el testigo del coordinador sigue en el contexto. Resultado ajusta el escenario "Reanudación". (2026-11-13: `--resume` conserva K41; `/compact` no reengancha, se aplica la rama de reinvocar)
 
 ## 2. Coordinación y decisiones de grupo
 
@@ -152,9 +152,9 @@ Precondiciones: 1.11 y 1.12 cerradas como EVIDENCIA. Directorio de configuració
 nunca el `~/.claude` real. Cada corrida se registra con el manifiesto de 02 (cliente, versión,
 interfaz, plataforma, permisos efectivos).
 
-- [ ] 8.1 Script reproducible en `investigacion/` que instala con testigos únicos en universal, `SKILL.md`, cada módulo y contenido del usuario, y ejecuta: sesión normal sin invocar; pedido OPSX sin invocar; `/sdd-orchestrator` en una sesión con conversación previa; subagente de propose, de apply y de verify lanzados por el coordinador; Explore lanzado por el coordinador; intento de delegar al coordinador; módulo obligatorio borrado; `/compact` y continuación; reanudación (1.14). Verificación: tabla de presencia y ausencia por oráculo, con control positivo en cada corrida, que coincide con los escenarios de `claude-instruction-layers` y `claude-coordinator-skill`.
-- [ ] 8.2 Repetir 8.1 en terminal e IDE, en Windows y Linux (lo que no se pueda correr queda "no disponible" con motivo); para target Project (con 7.4 en verde; limpieza a mano según README); para precedencia; y en Machine después de update, reinstalación y restore.
-- [ ] 8.3 Entregar a 02 la variante modular instalable para su tarea 4.1 (comparación antes y después con el mismo protocolo). Los criterios funcionales de esta ficha no dependen de ese resultado.
+- [ ] 8.1 Script reproducible en `investigacion/` que instala con testigos únicos en universal, `SKILL.md`, cada módulo y contenido del usuario, y ejecuta: sesión normal sin invocar; pedido OPSX sin invocar; `/sdd-orchestrator` en una sesión con conversación previa; subagente de propose, de apply y de verify lanzados por el coordinador; Explore lanzado por el coordinador; intento de delegar al coordinador; módulo obligatorio borrado; `/compact` y continuación; reanudación (1.14). Verificación: tabla de presencia y ausencia por oráculo, con control positivo en cada corrida, que coincide con los escenarios de `claude-instruction-layers` y `claude-coordinator-skill`. (parcial en investigacion/pruebas-claude-real.md; script reproducible y casos de propose/apply/verify/Explore quedan DEUDA)
+- [ ] 8.2 Repetir 8.1 en terminal e IDE, en Windows y Linux (lo que no se pueda correr queda "no disponible" con motivo); para target Project (con 7.4 en verde; limpieza a mano según README); para precedencia; y en Machine después de update, reinstalación y restore. (no disponible: IDE y Windows sin entorno; Machine probado con install, reinstalación, uninstall y restore en home temporal)
+- [ ] 8.3 Entregar a 02 la variante modular instalable para su tarea 4.1 (comparación antes y después con el mismo protocolo). Los criterios funcionales de esta ficha no dependen de ese resultado. (DEUDA para 02)
 
 ## 9. Documentación (Knowledge Base Impact)
 
@@ -169,6 +169,6 @@ interfaz, plataforma, permisos efectivos).
 
 ## 10. Integración y cierre
 
-- [ ] 10.1 Suite completa una vez sobre la revisión entregada: `go test ./...`, `go vet ./...` y el formateo del repo; registrar comando, timestamp, revisión y veredicto.
+- [x] 10.1 Suite completa una vez sobre la revisión entregada: `go test ./...`, `go vet ./...` y el formateo del repo; registrar comando, timestamp, revisión y veredicto. (2026-11-13, rev 4341660: `go test ./...` 5 FAIL preexistentes de la base, iguales en 35a89f8/ded396b; `go vet ./...` ok; `gofmt -l .` sin archivos nuevos)
 - [ ] 10.2 Archivar el change con `openspec archive` después de la verificación y la aprobación humana registrada.
 - [ ] 10.3 Abrir el PR desde `claude-native-opsx` hacia `main` con: qué entrega (criterios C por escenario), cómo se comprueba (comandos y evidencia de 8.x y 10.1) y qué queda pendiente (DEUDA y decisiones abiertas). Revisa el responsable del change anterior.
