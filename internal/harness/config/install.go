@@ -52,10 +52,14 @@ func InstallWith(h model.Harness, adapters []AgentAdapter, homeDir string, opts 
 		return installSection(h, fragment, adapters, homeDir)
 	}
 
-	var written []string
 	var warnings []string
+	var written []string
 	var modes map[model.Agent]string
 	allAlready := true
+	managedWrites := map[string]ManagedWriteState{}
+	partialResult := func() Result {
+		return Result{Warnings: warnings, Files: written, ManagedWrites: managedWrites, Modes: modes}
+	}
 
 	for _, adapter := range adapters {
 		snapshotDir := filepath.Join(homeDir, ".active-stack", "backups",
@@ -66,20 +70,54 @@ func InstallWith(h model.Harness, adapters []AgentAdapter, homeDir string, opts 
 			writtenPath string
 		)
 
-		switch adapter.ConfigDelivery() {
+		delivery := adapter.ConfigDelivery()
+		project := opts.Target == model.Project
+		if target, ok := adapter.(interface{ InstallTarget() model.InstallTarget }); ok {
+			project = project || target.InstallTarget() == model.Project
+		}
+		if adapter.Agent() == model.AgentCodex && project {
+			delivery = model.ConfigDeliveryInstructions
+		}
+		switch delivery {
 		case model.ConfigDeliveryManagedSkill:
-			mode, changed, warns, err := installManaged(h, adapter, homeDir, opts)
-			if err != nil {
-				return Result{}, fmt.Errorf("config.Install: managed skill for agent %q: %w", adapter.Agent(), err)
-			}
-			if modes == nil {
-				modes = map[model.Agent]string{}
-			}
-			modes[adapter.Agent()] = mode
-			warnings = append(warnings, warns...)
-			if changed {
-				allAlready = false
-				written = append(written, adapter.InstructionsPath(homeDir))
+			switch adapter.Agent() {
+			case model.AgentCodex:
+				native, ok := adapter.(ManagedSkillAdapter)
+				if !ok {
+					return partialResult(), fmt.Errorf("managed skill adapter %q does not expose skill paths", adapter.Agent())
+				}
+				result, err := InstallManagedSkill(h, native, homeDir)
+				written = append(written, result.Files...)
+				warnings = append(warnings, result.Warnings...)
+				for path, state := range result.ManagedWrites {
+					managedWrites[path] = state
+				}
+				if err != nil {
+					return partialResult(), err
+				}
+				if !result.AllAlready {
+					allAlready = false
+				}
+				if modes == nil {
+					modes = map[model.Agent]string{}
+				}
+				modes[adapter.Agent()] = "skill"
+			case model.AgentClaude:
+				mode, changed, warns, err := installManaged(h, adapter, homeDir, opts)
+				warnings = append(warnings, warns...)
+				if err != nil {
+					return partialResult(), fmt.Errorf("config.Install: managed skill for agent %q: %w", adapter.Agent(), err)
+				}
+				if modes == nil {
+					modes = map[model.Agent]string{}
+				}
+				modes[adapter.Agent()] = mode
+				if changed {
+					allAlready = false
+					written = append(written, adapter.InstructionsPath(homeDir))
+				}
+			default:
+				return partialResult(), fmt.Errorf("managed skill delivery unsupported for agent %q", adapter.Agent())
 			}
 			continue
 
@@ -94,11 +132,11 @@ func InstallWith(h model.Harness, adapters []AgentAdapter, homeDir string, opts 
 			}
 			composed, err := Compose(h.Toggles, adapter.VariantKey())
 			if err != nil {
-				return Result{}, fmt.Errorf("config.Install: compose for agent %q: %w", adapter.Agent(), err)
+				return partialResult(), fmt.Errorf("config.Install: compose for agent %q: %w", adapter.Agent(), err)
 			}
 			r, err := InjectPrimaryAgent(h.ID, composed, adapter.InstructionsPath(homeDir), settingsPath, snapshotDir)
 			if err != nil {
-				return Result{}, fmt.Errorf("config.Install: primary-agent inject for agent %q: %w", adapter.Agent(), err)
+				return partialResult(), fmt.Errorf("config.Install: primary-agent inject for agent %q: %w", adapter.Agent(), err)
 			}
 			wr, writtenPath = r, settingsPath
 
@@ -111,13 +149,16 @@ func InstallWith(h model.Harness, adapters []AgentAdapter, homeDir string, opts 
 			}
 			composed, err := Compose(h.Toggles, adapter.VariantKey())
 			if err != nil {
-				return Result{}, fmt.Errorf("config.Install: compose for agent %q: %w", adapter.Agent(), err)
+				return partialResult(), fmt.Errorf("config.Install: compose for agent %q: %w", adapter.Agent(), err)
 			}
 			r, err := Inject(path, composed, snapshotDir)
 			if err != nil {
-				return Result{}, fmt.Errorf("config.Install: inject for agent %q: %w", adapter.Agent(), err)
+				return partialResult(), fmt.Errorf("config.Install: inject for agent %q: %w", adapter.Agent(), err)
 			}
 			wr, writtenPath = r, path
+			if h.ID == "sdd-orchestrator" && adapter.Agent() == model.AgentCodex && project {
+				warnings = append(warnings, fmt.Sprintf("Codex Project uses legacy coordinator instructions in %s; native skill delivery is available for Machine installations only.", path))
+			}
 		}
 
 		if wr.Changed {
@@ -127,10 +168,11 @@ func InstallWith(h model.Harness, adapters []AgentAdapter, homeDir string, opts 
 	}
 
 	return Result{
-		Files:      written,
-		AllAlready: allAlready && len(written) == 0,
-		Warnings:   warnings,
-		Modes:      modes,
+		Warnings:      warnings,
+		Files:         written,
+		AllAlready:    allAlready && len(written) == 0,
+		ManagedWrites: managedWrites,
+		Modes:         modes,
 	}, nil
 }
 
@@ -177,10 +219,14 @@ func installManaged(h model.Harness, adapter AgentAdapter, base string, opts Ins
 	if err != nil {
 		return "", false, nil, err
 	}
+	native, ok := adapter.(interface{ SkillsDir(string) string })
+	if !ok {
+		return "", false, nil, fmt.Errorf("managed skill adapter %q does not expose skill paths", adapter.Agent())
+	}
 	in := LayeredInstall{
 		HomeDir:          home,
 		InstructionsPath: mdPath,
-		SkillsDir:        adapter.SkillsDir(base),
+		SkillsDir:        native.SkillsDir(base),
 		Skill:            layers.Skill,
 		UniversalContent: layers.Universal,
 	}

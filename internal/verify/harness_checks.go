@@ -97,6 +97,15 @@ func checkSkill(h model.Harness, adapter Adapter, homeDir string) []Check {
 // one the config installer writes (internal/harness/config: Inject uses
 // "sdd-orchestrator" for the orchestrator, installSection uses h.ID).
 func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
+	if h.ID == "sdd-orchestrator" && adapter.Agent() == model.AgentCodex && adapter.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+		return []Check{{
+			ID:          fmt.Sprintf("config:%s:%s", h.ID, adapter.Agent()),
+			Description: fmt.Sprintf("managed skill files, ownership and explicit invocation policy for %s", adapter.Agent()),
+			Run: func(_ context.Context) error {
+				return config.VerifyManagedSkill(h, adapter, homeDir)
+			},
+		}}
+	}
 	// Only the orchestrator is delivered as a primary agent. Section harnesses
 	// such as design-mockups still write a marker to AGENTS.md on OpenCode.
 	if h.ID == "sdd-orchestrator" && adapter.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
@@ -104,7 +113,12 @@ func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
 	}
 
 	if h.ID == "sdd-orchestrator" && adapter.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
-		return checkManagedSkillConfig(h, adapter, homeDir)
+		if adapter.Agent() == model.AgentClaude {
+			return checkManagedSkillConfig(h, adapter, homeDir)
+		}
+		return []Check{{ID: fmt.Sprintf("config:%s:%s", h.ID, adapter.Agent()), Run: func(context.Context) error {
+			return fmt.Errorf("managed skill delivery unsupported for agent %q", adapter.Agent())
+		}}}
 	}
 
 	instrPath := adapter.InstructionsPath(homeDir)

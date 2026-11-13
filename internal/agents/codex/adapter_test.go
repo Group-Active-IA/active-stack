@@ -61,7 +61,7 @@ func TestAdapterIdentityAndDelivery(t *testing.T) {
 	if a.VariantKey() != "codex" {
 		t.Errorf("VariantKey() = %q", a.VariantKey())
 	}
-	if a.ConfigDelivery() != model.ConfigDeliveryInstructions {
+	if a.ConfigDelivery() != model.ConfigDeliveryManagedSkill {
 		t.Errorf("ConfigDelivery() = %v", a.ConfigDelivery())
 	}
 }
