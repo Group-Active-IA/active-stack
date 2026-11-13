@@ -2,9 +2,12 @@ package capture
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"time"
 )
 
@@ -81,9 +84,53 @@ func folder(change string) string {
 	return change
 }
 
-// RunDir es <raíz>/<change>/<id de corrida>/.
+// RunDir es <raíz>/<change>/<id de corrida>/. No valida: es la ruta nominal;
+// Save, Purge, BeginRun y Lookup validan antes de tocar disco.
 func (s *Store) RunDir(change, runID string) string {
 	return filepath.Join(s.Root, folder(change), runID)
+}
+
+// idRe es el alcance de un componente de ruta (change o id de corrida): sin
+// separadores, sin `.`/`..`, sin volumen, sin vacío.
+var idRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]*$`)
+
+func validComponent(c string) bool { return idRe.MatchString(c) }
+
+// checkIdentity valida change (vacío = _sin-change) y runID.
+func checkIdentity(change, runID string) error {
+	if change != "" && !validComponent(change) {
+		return fmt.Errorf("capture: change inválido %q", change)
+	}
+	if !validComponent(runID) {
+		return fmt.Errorf("capture: id de corrida inválido %q", runID)
+	}
+	return nil
+}
+
+// safeRunDir valida la identidad, confina el resultado dentro de Root y rechaza
+// que el directorio del change o el de la corrida sean symlinks.
+func (s *Store) safeRunDir(change, runID string) (string, error) {
+	if err := checkIdentity(change, runID); err != nil {
+		return "", err
+	}
+	dir := s.RunDir(change, runID)
+	rel, err := filepath.Rel(s.Root, dir)
+	if err != nil || rel == "." || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) || filepath.IsAbs(rel) {
+		return "", fmt.Errorf("capture: la corrida %q/%q escapa de la raíz", change, runID)
+	}
+	for _, p := range []string{filepath.Join(s.Root, folder(change)), dir} {
+		fi, err := os.Lstat(p)
+		if os.IsNotExist(err) {
+			continue
+		}
+		if err != nil {
+			return "", err
+		}
+		if !fi.IsDir() {
+			return "", fmt.Errorf("capture: %s no es un directorio propio (symlink o archivo)", p)
+		}
+	}
+	return dir, nil
 }
 
 func (s *Store) indexPath() string { return filepath.Join(s.Root, "index.json") }
@@ -110,7 +157,7 @@ func (s *Store) save(idx index) error {
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(s.indexPath(), data, 0o600)
+	return writeFileAtomic(s.indexPath(), data)
 }
 
 // expiry devuelve cuándo vence una corrida, o false si todavía no tiene plazo
@@ -127,7 +174,10 @@ func (idx index) expiry(change string, e indexEntry) (time.Time, bool) {
 
 // Save guarda la copia redactada y su registro bajo la ruta de corrida.
 func (s *Store) Save(change, runID string, rec Record, copy []byte) (string, error) {
-	dir := s.RunDir(change, runID)
+	dir, err := s.safeRunDir(change, runID)
+	if err != nil {
+		return "", err
+	}
 	if err := writeRun(dir, rec, copy); err != nil {
 		return "", err
 	}
@@ -150,17 +200,24 @@ func (s *Store) MarkArchived(change string) error {
 func (s *Store) Purge() ([]string, error) {
 	idx := s.load()
 	var removed []string
+	var bad []error
 	now := s.Now()
 	for k, e := range idx.Runs {
 		if e.PurgedOn != nil {
 			continue
 		}
 		change, runID := splitKey(k)
+		// El índice es entrada no confiable: se valida antes de cualquier RemoveAll.
+		dir, err := s.safeKeyDir(change, runID)
+		if err != nil {
+			bad = append(bad, fmt.Errorf("capture: clave de índice %q rechazada: %w", k, err))
+			continue
+		}
 		exp, ok := idx.expiry(unfolder(change), e)
 		if !ok || now.Before(exp) {
 			continue
 		}
-		if err := os.RemoveAll(filepath.Join(s.Root, change, runID)); err != nil {
+		if err := os.RemoveAll(dir); err != nil {
 			return removed, err
 		}
 		purged := exp
@@ -169,9 +226,15 @@ func (s *Store) Purge() ([]string, error) {
 		removed = append(removed, k)
 	}
 	if len(removed) == 0 {
-		return nil, nil
+		return nil, errors.Join(bad...)
 	}
-	return removed, s.save(idx)
+	return removed, errors.Join(append(bad, s.save(idx))...)
+}
+
+// safeKeyDir es safeRunDir para una clave de índice, cuyo change llega como
+// nombre de carpeta (`_sin-change` incluido).
+func (s *Store) safeKeyDir(folderName, runID string) (string, error) {
+	return s.safeRunDir(unfolder(folderName), runID)
 }
 
 // BeginRun purga los vencidos al iniciar cada corrida y devuelve su ruta.
@@ -184,6 +247,9 @@ func (s *Store) BeginRun(change, runID string) (string, error) {
 
 // Lookup informa si el original de una corrida se recupera, venció o nunca existió.
 func (s *Store) Lookup(change, runID string) Availability {
+	if checkIdentity(change, runID) != nil {
+		return Availability{State: NeverCaptured}
+	}
 	idx := s.load()
 	e, ok := idx.Runs[key(change, runID)]
 	if !ok {

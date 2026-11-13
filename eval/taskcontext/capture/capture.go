@@ -143,8 +143,12 @@ func Run(spec Spec) (Record, error) {
 	redacted, byID := spec.Redactor.RedactText(buf.String())
 	buf.Reset() // el original no sale de memoria
 	sum := sha256.Sum256([]byte(redacted))
+	// El comando de la referencia también es texto libre que se persiste: pasa
+	// por el mismo redactor que la salida (la identidad de la corrida son el
+	// id, la huella y el código, no la credencial).
+	command, _ := spec.Redactor.RedactText(spec.Command)
 	rec := Record{
-		Command: spec.Command, RunID: spec.RunID,
+		Command: command, RunID: spec.RunID,
 		Source: SourceHarness, Redactor: SourceHarness,
 		Client: spec.Meta.Client, Interface: spec.Meta.Interface, System: spec.Meta.System, Version: spec.Meta.Version,
 		ExitCode: exit, Coverage: CoverageDemonstrated,
@@ -165,12 +169,63 @@ func writeRun(dir string, rec Record, copy []byte) error {
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return err
 	}
-	if err := os.WriteFile(filepath.Join(dir, CopyFile), copy, 0o600); err != nil {
+	if err := requireOwnDir(dir); err != nil {
+		return err
+	}
+	if err := writeFileAtomic(filepath.Join(dir, CopyFile), copy); err != nil {
 		return err
 	}
 	data, err := json.MarshalIndent(rec, "", "  ")
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(filepath.Join(dir, RecordFile), append(data, '\n'), 0o600)
+	return writeFileAtomic(filepath.Join(dir, RecordFile), append(data, '\n'))
+}
+
+// requireOwnDir exige que dir sea un directorio real, no un symlink.
+func requireOwnDir(dir string) error {
+	fi, err := os.Lstat(dir)
+	if err != nil {
+		return err
+	}
+	if !fi.IsDir() {
+		return fmt.Errorf("capture: %s no es un directorio propio (symlink o archivo)", dir)
+	}
+	return nil
+}
+
+// writeFileAtomic publica path sin adoptar destinos ajenos: si ya existe y no
+// es un archivo regular (symlink, directorio) falla; escribe en un temporal
+// 0600 del mismo directorio y lo renombra, de modo que el rename reemplaza el
+// nombre final en lugar de seguir cualquier enlace.
+func writeFileAtomic(path string, data []byte) error {
+	if fi, err := os.Lstat(path); err == nil {
+		if !fi.Mode().IsRegular() {
+			return fmt.Errorf("capture: %s existe y no es un archivo regular: no se sobrescribe", path)
+		}
+	} else if !os.IsNotExist(err) {
+		return err
+	}
+	tmp, err := os.CreateTemp(filepath.Dir(path), ".tmp-*")
+	if err != nil {
+		return err
+	}
+	name := tmp.Name()
+	_, werr := tmp.Write(data)
+	if werr == nil {
+		werr = tmp.Sync()
+	}
+	if cerr := tmp.Close(); werr == nil {
+		werr = cerr
+	}
+	if werr == nil {
+		werr = os.Chmod(name, 0o600)
+	}
+	if werr == nil {
+		werr = os.Rename(name, path)
+	}
+	if werr != nil {
+		_ = os.Remove(name)
+	}
+	return werr
 }

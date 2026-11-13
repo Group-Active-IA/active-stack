@@ -82,7 +82,11 @@ func (tc *TaskContext) Resolve(q Query) (Resolution, error) {
 		}
 		toggleOn := m.Toggle == "" || active[m.Toggle]
 		if q.Role == RoleSpecialist {
-			if e, ok := specialistEntry(m, q, toggleOn); ok {
+			e, blocked, ok := specialistEntry(m, q, toggleOn)
+			switch {
+			case blocked:
+				res.Blocked = append(res.Blocked, m.ID)
+			case ok:
 				res.Entries = append(res.Entries, e)
 			}
 			continue
@@ -117,21 +121,27 @@ func (tc *TaskContext) Resolve(q Query) (Resolution, error) {
 func toggleOf(byID map[string]Module, id string) string { return byID[id].Toggle }
 
 // specialistEntry decide si un especialista recibe el módulo en su encargo.
-func specialistEntry(m Module, q Query, toggleOn bool) (Entry, bool) {
-	if !m.Specialist.Receives || !toggleOn {
-		return Entry{}, false
+// blocked es true cuando el especialista lo recibiría pero es obligatorio en la
+// acción y su toggle está inactivo: igual que para el coordinador, la acción
+// se detiene (D19).
+func specialistEntry(m Module, q Query, toggleOn bool) (e Entry, blocked, ok bool) {
+	if !m.Specialist.Receives {
+		return Entry{}, false, false
 	}
 	if len(m.Specialist.Actions) > 0 && !slices.Contains(m.Specialist.Actions, q.Action) {
-		return Entry{}, false
+		return Entry{}, false, false
 	}
 	if m.RequiresFlag == "strict-tdd" && !q.StrictTDD {
-		return Entry{}, false
+		return Entry{}, false, false
 	}
 	// Un módulo que la acción no usa (p. ej. artifacts en explore) no se pega.
 	if m.Actions[q.Action] == "" && m.OptionalVia == "" {
-		return Entry{}, false
+		return Entry{}, false, false
 	}
-	return Entry{Module: m.ID, Level: LevelAssigned, Condition: m.Specialist.Note}, true
+	if !toggleOn {
+		return Entry{}, m.Actions[q.Action] == LevelMandatory, false
+	}
+	return Entry{Module: m.ID, Level: LevelAssigned, Condition: m.Specialist.Note}, false, true
 }
 
 func (tc *TaskContext) validateModules() error {

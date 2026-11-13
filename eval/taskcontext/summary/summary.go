@@ -462,7 +462,8 @@ type Corroboration struct {
 //   - verificado: nada de eso, y la captura independiente tiene fuente arnés o
 //     cliente con cobertura demostrada y su registro es el de su copia;
 //   - sin verificar: el resto (captura del agente, cobertura no demostrada,
-//     registro que no es de esa copia). Una huella coincidente sola no alcanza.
+//     registro que no es de esa copia, o captura de otro comando que el de la
+//     referencia: la igualdad de salida no vincula la ejecución). Una huella coincidente sola no alcanza.
 func Corroborate(tc *catalog.TaskContext, tool, text string, ev Evidence) Corroboration {
 	text = normalizeText(text)
 	p := parse(text)
@@ -488,6 +489,9 @@ func Corroborate(tc *catalog.TaskContext, tool, text string, ev Evidence) Corrob
 	case in.Record.SHA256 != shaHex(in.Copy):
 		unverified = append(unverified, "el registro de captura no es el de esa copia: no corrobora nada")
 	default:
+		if reason := commandBinding(p.ref["cmd"], in.Record.Command); reason != "" {
+			unverified = append(unverified, reason)
+		}
 		if p.exit != nil && *p.exit != in.Record.ExitCode {
 			rejected = append(rejected, fmt.Sprintf("código de salida %d, la captura independiente registra %d", *p.exit, in.Record.ExitCode))
 		}
@@ -507,6 +511,31 @@ func Corroborate(tc *catalog.TaskContext, tool, text string, ev Evidence) Corrob
 	}
 	c.Reasons = dedupe(append(rejected, unverified...))
 	return c
+}
+
+// commandBinding vincula la captura independiente con la ejecución afirmada:
+// el comando de la referencia y el del registro deben ser el mismo (la misma
+// ejecución o una re-ejecución del mismo comando, que lleva otro id de corrida
+// y otra ruta). Ambos se comparan redactados, porque el capturador persiste el
+// comando redactado. Sin comando en alguno de los dos no hay vínculo: no
+// corrobora. Devuelve el motivo, o "" si corresponde.
+func commandBinding(refCmd, recCmd string) string {
+	if strings.TrimSpace(refCmd) == "" {
+		return "la referencia no declara el comando: la captura independiente no se puede vincular a la ejecución afirmada"
+	}
+	if strings.TrimSpace(recCmd) == "" {
+		return "el registro de la captura independiente no declara el comando: no se puede vincular a la ejecución afirmada"
+	}
+	r, err := redactorFor()
+	if err != nil {
+		return "no se pudo armar el redactor para comparar comandos: " + err.Error()
+	}
+	want, _ := r.RedactText(strings.TrimSpace(refCmd))
+	got, _ := r.RedactText(strings.TrimSpace(recCmd))
+	if want != got {
+		return fmt.Sprintf("el comando de la captura independiente (%s) no es el de la ejecución afirmada (%s): no corrobora", got, want)
+	}
+	return ""
 }
 
 // compareFailures compara los fallos del resumen con los que registra una copia.

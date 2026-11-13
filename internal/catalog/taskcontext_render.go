@@ -39,7 +39,10 @@ func (tc *TaskContext) RenderActionTable(client string) (string, error) {
 
 // RenderActionTableFor es la tabla de un cliente para una instalación concreta:
 // un módulo cuyo toggle está inactivo no figura y una fila que queda sin
-// módulos se omite (matriz común, «Reglas de la tabla»). Con todos los toggles
+// módulos se omite (matriz común, «Reglas de la tabla»). Si el módulo apagado
+// es obligatorio, la fila conserva el bloqueo de Resolve («STOP: missing
+// module: <id> — <action> stopped»); el de un módulo condicionado a Strict TDD
+// se escribe condicional. Con todos los toggles
 // activos coincide byte a byte con RenderActionTable.
 func (tc *TaskContext) RenderActionTableFor(client string, toggles []string) (string, error) {
 	if toggles == nil {
@@ -89,6 +92,26 @@ func (tc *TaskContext) renderActionTable(client string, toggles []string) (strin
 	omitted := func(m Module) bool { return slices.Contains(m.OmittedIn, client) || !active(m) }
 
 	for _, action := range Actions {
+		// Bloqueos: los mismos que calcula Resolve. Los de un módulo con
+		// requires_flag solo valen si el proyecto activa esa condición.
+		var blocks []string
+		if toggles != nil {
+			plain, err := tc.Resolve(Query{Action: action, Role: RoleCoordinator, Toggles: toggles, Client: client})
+			if err != nil {
+				return "", err
+			}
+			strict, err := tc.Resolve(Query{Action: action, Role: RoleCoordinator, Toggles: toggles, Client: client, StrictTDD: true})
+			if err != nil {
+				return "", err
+			}
+			for _, id := range strict.Blocked {
+				stop := "STOP: `" + missingModuleLine(id, action) + "`"
+				if !slices.Contains(plain.Blocked, id) {
+					stop = "if Strict TDD is active, " + stop
+				}
+				blocks = append(blocks, stop)
+			}
+		}
 		var mandatory, optional []string
 		for _, id := range tc.ModuleOrder {
 			m := tc.module(id)
@@ -106,6 +129,7 @@ func (tc *TaskContext) renderActionTable(client string, toggles []string) (strin
 				optional = append(optional, c)
 			}
 		}
+		mandatory = append(mandatory, blocks...)
 		if toggles != nil && len(mandatory) == 0 && len(optional) == 0 {
 			continue
 		}
@@ -135,6 +159,11 @@ func (tc *TaskContext) renderActionTable(client string, toggles []string) (strin
 	b.WriteString("\n")
 	b.WriteString(actionTableRules)
 	return b.String(), nil
+}
+
+// missingModuleLine es la línea de forma fija de un módulo obligatorio ausente.
+func missingModuleLine(id, action string) string {
+	return "missing module: " + id + " — " + action + " stopped"
 }
 
 func (tc *TaskContext) module(id string) Module {

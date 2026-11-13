@@ -31,6 +31,8 @@ type Observed struct {
 	Output         string
 	ExitCode       *int
 	TruncatedChars int
+	// Interrupted: el hook marcó la ejecución como interrumpida; no hay código de salida.
+	Interrupted bool
 }
 
 var truncMarker = regexp.MustCompile(`\.\.\. \[(\d+) characters truncated\] \.\.\.`)
@@ -39,12 +41,14 @@ func intp(n int) *int { return &n }
 
 // FromClaudePostToolUse adapta el hook PostToolUse de Bash: tool_response con
 // stdout, stderr, interrupted e isImage. Un PostToolUse es un comando que no
-// falló, así que el código es 0.
+// falló, así que el código es 0, salvo que venga interrumpido: entonces
+// Interrupted=true y ExitCode queda nil.
 func FromClaudePostToolUse(payload []byte) (Observed, error) {
 	var ev struct {
 		ToolResponse *struct {
-			Stdout string `json:"stdout"`
-			Stderr string `json:"stderr"`
+			Stdout      string `json:"stdout"`
+			Stderr      string `json:"stderr"`
+			Interrupted bool   `json:"interrupted"`
 		} `json:"tool_response"`
 	}
 	if err := json.Unmarshal(payload, &ev); err != nil {
@@ -57,15 +61,36 @@ func FromClaudePostToolUse(payload []byte) (Observed, error) {
 	// stdout y stderr llegan separados: se concatenan y el orden entre ambos se pierde.
 	// La nota que el cliente agrega a stderr en Windows no es salida del comando.
 	obs.Present = true
-	obs.Output = ev.ToolResponse.Stdout + cwdNote.ReplaceAllString(ev.ToolResponse.Stderr, "")
+	obs.Output = ev.ToolResponse.Stdout + stripCwdNote(ev.ToolResponse.Stderr)
+	// Una ejecución interrumpida no terminó: el hook no entrega código y no se inventa 0.
+	if ev.ToolResponse.Interrupted {
+		obs.Interrupted = true
+		return obs, nil
+	}
 	obs.ExitCode = intp(0)
 	return obs, nil
 }
 
 var exitPrefix = regexp.MustCompile(`^Exit code (-?\d+)\n`)
 
-// cwdNote es la nota de Claude Code en Windows (medida en 2.1.319) al final de stderr.
-var cwdNote = regexp.MustCompile(`\n?Shell cwd was reset to [^\n]*\n?$`)
+// cwdNote es la nota de Claude Code en Windows (medida en 2.1.319): la última
+// línea completa de stderr. Anclada a inicio de línea para no tocar una línea
+// real del comando que solo contenga la frase.
+var cwdNote = regexp.MustCompile(`(?m)^Shell cwd was reset to [^\n]*\n?\z`)
+
+// stripCwdNote quita la nota del cliente y conserva el salto de línea que cierra
+// el contenido real. Si no queda contenido real, el salto era solo el separador.
+func stripCwdNote(stderr string) string {
+	loc := cwdNote.FindStringIndex(stderr)
+	if loc == nil {
+		return stderr
+	}
+	rest := stderr[:loc[0]]
+	if rest == "\n" {
+		return ""
+	}
+	return rest
+}
 
 // FromClaudePostToolUseFailure adapta el hook PostToolUseFailure: el campo
 // error empieza con `Exit code N` y se recorta por el medio con la marca
@@ -95,19 +120,37 @@ func FromClaudePostToolUseFailure(payload []byte) (Observed, error) {
 	return obs, nil
 }
 
+// errAmbiguous: la fuente trae más de un comando y no se puede decir cuál se pide.
+func errAmbiguous(source string, ids []string) error {
+	return fmt.Errorf("clientsrc: %s: la entrada trae más de un comando (%s); pasar los eventos de uno solo", source, strings.Join(ids, ", "))
+}
+
 // FromCodexAppServer adapta las notificaciones del App Server:
 // item/commandExecution/outputDelta (en orden) y el item final con
-// aggregatedOutput y exitCode, ambos opcionales.
+// aggregatedOutput y exitCode, ambos opcionales. Salida y código se correlacionan
+// por itemId: la entrada debe ser de un solo comando, y si trae más de uno se
+// rechaza en vez de mezclar o descartar en silencio.
 func FromCodexAppServer(lines [][]byte) (Observed, error) {
 	obs := Observed{Source: "cliente:app-server"}
 	var deltas strings.Builder
 	var aggregated string
+	var ids []string
+	seen := func(id string) {
+		for _, s := range ids {
+			if s == id {
+				return
+			}
+		}
+		ids = append(ids, id)
+	}
 	for _, line := range lines {
 		var ev struct {
 			Method string `json:"method"`
 			Params struct {
-				Delta string `json:"delta"`
-				Item  struct {
+				ItemID string `json:"itemId"`
+				Delta  string `json:"delta"`
+				Item   struct {
+					ID               string `json:"id"`
 					Type             string `json:"type"`
 					AggregatedOutput string `json:"aggregatedOutput"`
 					ExitCode         *int   `json:"exitCode"`
@@ -119,13 +162,18 @@ func FromCodexAppServer(lines [][]byte) (Observed, error) {
 		}
 		switch ev.Method {
 		case "item/commandExecution/outputDelta":
+			seen(ev.Params.ItemID)
 			deltas.WriteString(ev.Params.Delta)
 		case "item/completed":
 			if ev.Params.Item.Type == "commandExecution" {
+				seen(ev.Params.Item.ID)
 				aggregated = ev.Params.Item.AggregatedOutput
 				obs.ExitCode = ev.Params.Item.ExitCode
 			}
 		}
+	}
+	if len(ids) > 1 {
+		return Observed{Source: obs.Source}, errAmbiguous("App Server", ids)
 	}
 	switch {
 	case aggregated != "":
@@ -138,13 +186,16 @@ func FromCodexAppServer(lines [][]byte) (Observed, error) {
 
 // FromCodexExecJSON adapta `codex exec --json`: el item command_execution con
 // aggregated_output y exit_code. Medido en X7 (Codex 0.167.1, Windows): trae la
-// salida completa.
+// salida completa. La entrada debe tener un solo command_execution: con ids
+// distintos, o con más de uno sin id, devuelve error en vez de quedarse con el último.
 func FromCodexExecJSON(lines [][]byte) (Observed, error) {
 	obs := Observed{Source: "cliente:exec-json"}
+	var ids []string
 	for _, line := range lines {
 		var ev struct {
 			Type string `json:"type"`
 			Item struct {
+				ID               string `json:"id"`
 				Type             string `json:"type"`
 				AggregatedOutput string `json:"aggregated_output"`
 				ExitCode         *int   `json:"exit_code"`
@@ -153,11 +204,18 @@ func FromCodexExecJSON(lines [][]byte) (Observed, error) {
 		if err := json.Unmarshal(line, &ev); err != nil {
 			return obs, fmt.Errorf("clientsrc: exec --json: %w", err)
 		}
-		if ev.Type == "item.completed" && ev.Item.Type == "command_execution" {
-			obs.Present = true
-			obs.Output = ev.Item.AggregatedOutput
-			obs.ExitCode = ev.Item.ExitCode
+		if ev.Type != "item.completed" || ev.Item.Type != "command_execution" {
+			continue
 		}
+		if len(ids) > 0 && (ev.Item.ID == "" || ev.Item.ID != ids[0]) {
+			return Observed{Source: obs.Source}, errAmbiguous("exec --json", append(ids, ev.Item.ID))
+		}
+		if len(ids) == 0 {
+			ids = append(ids, ev.Item.ID)
+		}
+		obs.Present = true
+		obs.Output = ev.Item.AggregatedOutput
+		obs.ExitCode = ev.Item.ExitCode
 	}
 	return obs, nil
 }

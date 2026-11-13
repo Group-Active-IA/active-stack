@@ -3,7 +3,9 @@ package catalog
 import (
 	"bytes"
 	_ "embed"
+	"errors"
 	"fmt"
+	"io"
 	"regexp"
 	"slices"
 	"strings"
@@ -135,6 +137,13 @@ func ParseTaskContext(data []byte) (*TaskContext, error) {
 	dec := yaml.NewDecoder(bytes.NewReader(data))
 	dec.KnownFields(true)
 	if err := dec.Decode(&tc); err != nil {
+		return nil, fmt.Errorf("catalog: task-context parse: %w", err)
+	}
+	// Un segundo documento YAML se ignoraría en silencio: se rechaza.
+	if err := dec.Decode(new(any)); !errors.Is(err, io.EOF) {
+		if err == nil {
+			err = fmt.Errorf("unexpected second YAML document")
+		}
 		return nil, fmt.Errorf("catalog: task-context parse: %w", err)
 	}
 	if err := tc.validate(); err != nil {

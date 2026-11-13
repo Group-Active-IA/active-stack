@@ -48,7 +48,7 @@ sensitive_patterns:
   - id: env-assignment
     category: env-file
     kind: line
-    regex: '(?m)^\s*(?:export\s+)?[A-Z][A-Z0-9]*_[A-Z0-9_]*=(?P<secret>\S+)'
+    regex: '(?m)^\s*(?:export\s+)?(?:[A-Z][A-Z0-9]*_[A-Z0-9_]*|[A-Z0-9]*(?:PASSWORD|PASSWD|PASS|SECRET|TOKEN|KEY|CREDENTIALS?)[A-Z0-9]*)=(?P<secret>\S+)'
     covers: [".env", ".env.*"]
   - id: env-var-value
     category: env-var
