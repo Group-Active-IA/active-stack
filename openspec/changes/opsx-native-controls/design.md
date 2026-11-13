@@ -37,7 +37,7 @@ Lo que hoy cubre `permissions` en Claude es el piso `deny` (lectura y edición d
 
 En todos los artefactos de este change:
 
-- **Hook del instalador** = `VerifyHook` de la instalación (Go, del binario). Fuera del piloto, salvo para decir qué *no* comprueba. En el caso del 02/11 terminó ✓ con "0 passed, 0 failed" sin comprobar ningún control.
+- **Hook del instalador** = `VerifyHook` de la instalación (Go, del binario). Fuera del piloto, salvo para decir qué *no* comprueba. En el caso del 02/11 el paso terminó ✓ y el reporte dijo "0 passed, 0 failed" por una causa que 06 ya investigó (`openspec/changes/archive/2026-11-13-opsx-verifiable-evidence/informes/investigacion-verify-hook-2026-11-13.md` (`origin/propose/opsx-verifiable-evidence` `3c7d908`)): `cmd/active-stack/headless/executor.go:158-159` imprime `verify.BuildReport(nil)`, de modo que el reporte siempre dice "0 checks, verified"; los checks reales corren dentro del paso `verify-hook` y se descartan si pasan (en `lite`/`claude` son 6). Un reporte con cero checks no prueba que se verificó nada ni que existan controles. La corrección que propone 06 (`cmd/active-stack/headless` e `internal/verify`) está **fuera de 08**.
 - **Hook del cliente** = comando que el cliente ejecuta alrededor de una acción (Claude Code en `settings.json`; Codex en `hooks.json` o en una tabla `[hooks]` de `config.toml`, D6).
 - **Recibo de ejecución** = el registro de 06 (una ejecución de un comando). No es el "registro de instalación" de 04.
 
