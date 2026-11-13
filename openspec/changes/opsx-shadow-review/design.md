@@ -2,7 +2,7 @@
 
 ## Context
 
-El flujo OPSX revisa un change contra sus requisitos y escenarios. 06 agrega recibos con integridad, procedencia y suficiencia; 08 agrega controles nativos con cobertura documentada; 02 (`240e1b2`) define el protocolo de medición y 09 (`89f1fa5`) mide modelo y caché. Esta ficha pregunta si un juez externo, corriendo aparte y sin influir, agrega señal que justifique su costo y su exposición de datos.
+El flujo OPSX revisa un change contra sus requisitos y escenarios. 06 (archivada con alcance parcial en `3c7d908`, PR #12) define el recibo de ejecución con tres controles separados (integridad, procedencia y suficiencia) y tres estados (verificado, rechazado, sin verificar); 08 agrega controles nativos con cobertura documentada; 02 (`240e1b2`) define el protocolo de medición y 09 (`89f1fa5`) mide modelo y caché. Esta ficha pregunta si un juez externo, corriendo aparte y sin influir, agrega señal que justifique su costo y su exposición de datos.
 
 "Externo" significa fuera del flujo de aceptación: no es el auditor ni un rol del coordinador, no ve el razonamiento de los otros roles y no decide. Puede ser otro modelo, otro proveedor o un servicio.
 
@@ -31,7 +31,7 @@ El flujo OPSX revisa un change contra sus requisitos y escenarios. 06 agrega rec
 | Capa | Qué es | Para qué |
 |---|---|---|
 | Etiquetas congeladas | defectos conocidos por caso, fijados antes de correr | verdad del análisis principal |
-| Revisión de referencia | el flujo actual: requisitos + escenarios + recibos 06 + tabla de cobertura de 08 (qué acciones del caso quedan controladas y cuáles no) + persona | la línea a superar |
+| Revisión de referencia | el flujo actual: requisitos + escenarios + recibos de ejecución de 06 con su paso de revisión y estado por requisito + tabla de cobertura de 08 (qué acciones del caso quedan controladas y cuáles no) + persona | la línea a superar |
 | Juez | candidato en sombra | lo que se evalúa |
 
 Referencia y juez se miden **las dos** contra las etiquetas congeladas. La señal adicional es lo que el juez encuentra y la referencia no, confirmado por la etiqueta.
@@ -43,7 +43,7 @@ Referencia y juez se miden **las dos** contra las etiquetas congeladas. La seña
 | Fuente | Cómo se arma | Aporta |
 |---|---|---|
 | Histórica | commits `fix` de `main` (33 en `1b4639b`) mapeados al commit que introdujo el defecto; el caso es el estado **previo** al fix | defectos reales que el flujo dejó pasar |
-| Preparada | fixtures de la familia "Revisión de un diff sembrado" de 02 (`opsx-baseline/design.md:30`), con su rúbrica, más casos de rechazo de 06 (recibo falso con hash correcto, mismo HEAD con diff distinto, salida truncada sin original, tests verdes sin cubrir el requisito) y defectos de lógica con ubicación conocida | verdad conocida, cobertura de clases y una sola definición de falso positivo compartida con 02 |
+| Preparada | fixtures de la familia "Revisión de un diff sembrado" de 02 (`opsx-baseline/design.md:30`), con su rúbrica, más casos de rechazo de 06 (recibo falso con hash correcto, mismo HEAD con diff distinto, salida truncada sin original, tests verdes sin cubrir el requisito), tomados de sus 22 fixtures con veredicto esperado (`eval/evidence/testdata/casos/`, rama de 06 `3c7d908`) sin reescribirlos, y defectos de lógica con ubicación conocida | verdad conocida, cobertura de clases y una sola definición de falso positivo compartida con 02 |
 | Control | **controles inspeccionados**: changes revisados manualmente por los etiquetadores y declarados sin defecto conocido, y **fixtures limpios** construidos para ese fin | tasa de falsas alarmas |
 
 Que un change no tenga fixes posteriores conocidos no prueba que esté limpio, así que no alcanza para ser control: los controles históricos pasan primero por inspección. Datos de recibos y salidas en la primera ronda: ficticios.
@@ -96,7 +96,7 @@ Se reportan aparte. Un defecto nuevo confirmado no cambia retroactivamente las m
 |---|---|---|
 | Pública revisada | diff del estado previo, proposal/design/specs/tasks del change, código del repo público | sí, tras el examen previo |
 | Ficticia | recibos, salidas y configuraciones construidos para los fixtures | sí |
-| Derivada real redactada | recibos y salidas reales redactados según 06 | **no** (evaluar en otra ronda) |
+| Derivada real redactada | recibos de ejecución y salidas reales, redactados con la lista D14 de 05 y referenciados por el recibo de 06 | **no** (evaluar en otra ronda) |
 | Privada | salidas originales, `settings.json`/`config.toml` del usuario, memoria de Engram, `.env`, transcripciones | nunca |
 
 **Examen previo de todo el paquete.** Aunque el repo sea público, se examina el paquete completo antes de enviarlo, diffs públicos incluidos: un commit público puede contener un secreto filtrado. El examen usa la **lista única de patrones de valor sensibles de 05** (`opsx-task-context/design.md`, D14: `.env` y sus valores, tokens y API keys, credenciales de nube, claves SSH y `*.pem`, valores de variables de entorno, rutas del home, identificadores de cuenta), sin una lista propia. Además rechaza archivos de configuración de usuario (`settings.json`, `config.toml`), que son una clase de archivo y no un patrón de valor. Un positivo cancela el envío del caso.
@@ -191,3 +191,20 @@ Decision: no (no UI) — 2026-11-10.
 | Dos definiciones de falso positivo (02 y 10) | D2 casos preparados desde la familia de revisión de 02; D4 regla de emparejamiento de 02; tarea 1.2 |
 | Cobertura de 08 implícita en la referencia | D1 tabla; tarea 2.1 |
 | Jev sin dueño en 09 y 10 | D6; tarea 0.2 compartida con 09 |
+
+## Cambios por la integración de 03 a 06 (13/11)
+
+`main` pasó a `0005a6f`: 03 y 04 integradas (`d5e95bd`), 05 (`b27b8e0`, PR #10) y 06 (`0005a6f`, PR #12, última corrección `d3ab8b3`). 07 sigue en PR #13 con su batería de veredictos (`eval/delegation`); 08 se archivó con alcance parcial en PR #15 (`56c827f`), todavía fuera de `main`; 09 sigue en PR #14 (`f0c58c0`). Ninguna decisión de 10 se revierte.
+
+| Hecho | Efecto sobre 10 |
+|---|---|
+| 06 fija «recibo de ejecución» como único término y tres estados por requisito | D1: la referencia usa el estado por requisito del paso de revisión de 06. Un requisito *sin verificar* en la referencia no cuenta como defecto detectado ni como limpio. Las etiquetas congeladas siguen siendo la verdad |
+| 06 trae 22 fixtures con veredicto esperado en `main` (`eval/evidence/testdata/casos/`), incluidos los cuatro rechazos que nombra D2 | Tarea 1.2: se referencian desde `eval/shadow/muestra/preparados.json` con huella fijada, sin copiarlos ni reescribir el veredicto |
+| Los fixtures de 06 traen la respuesta en `id`, `descripcion` y `esperado`; los de 02, en `key.json`, `reference.json` y `defective.json` | D2 «paquetes sin pistas» también vale para los preparados: el material de un caso de 06 lleva sólo requisito, recibos, entorno y copias; el de 02, sólo `prompt.md` y `seeded.patch`. Lo exige `TestPrepared_MaterialHasNoClues` |
+| 05 declara D14 en el catálogo (`internal/catalog/taskcontext.yaml`, `sensitive_patterns`) y su redactor está en `eval/taskcontext/redact` | Tarea 3.2: el examen previo usa ese redactor con los patrones del catálogo; 10 no tiene lista propia. Los `covers` de D14 (`.env`, `.env.*`, `*.pem`) se aplican además al nombre del archivo |
+| **Hallazgo:** el patrón `env-assignment` de D14 está anclado al inicio de línea y no ve una línea agregada en un diff (`+export SERVICE_PASSWORD=…` no se detecta; sin el `+`, sí) | D5 exige examinar diffs públicos. 10 normaliza el diff antes de aplicar D14 (examina además cada línea de contenido sin su marca) y no cambia D14. Se informa a 05 por si su redactor recibe salidas con formato de diff |
+| 06 dejó sin decidir quién evalúa la suficiencia (Open Questions 3) | D1 (propuesta de 10, pendiente de grupo): hasta que se decida, la persona de la referencia evalúa la suficiencia y se registra como juicio, no como estado de 06 |
+| 07 (PR #13): regla de delegación y sobre de retorno | Sin efecto directo: el juez no es un worker de 07 ni recibe su sobre. Un juez que corriera dentro del flujo sería un rol y no estaría en sombra (D3) |
+| `main` sumó `fix` desde `7a60089`: `cd4aa37` y `e4c7e48` (42 en `d5e95bd`) y cinco más con 05 y 06 (`4074694`, `06216ba`, `25ad5c2`, `41d7cb6`, `d3ab8b3`; 47 en `0005a6f`) | Tarea 1.1: los dos primeros ya tienen SZZ en `muestra-candidatos.md`; los cinco nuevos quedan pendientes de mapear |
+| 08 archivada con alcance parcial (PR #15), fuera de `main` | Sigue bloqueando 2.1 (tabla de cobertura de 08) hasta que se integre |
+| 09 publicó su primera entrega (`f0c58c0`, PR #14, abierto; 8/12 tareas): `eval/modelcache`, análisis offline de modelo y caché, sin corridas reales. Verificado por Neyen el 13/11: `go vet ./eval/...` y `go test ./eval/modelcache/...` en exit 0, sin cambios en `cmd/` ni `internal/`, `openspec validate --strict` válido | Jev sigue sin decidir: 09 lo deja como pregunta de grupo en su D2, sin documentación, así que la tarea compartida 0.2 sigue abierta. El costo por caso de D4 puede reutilizar la contabilidad de 09 cuando se integre. La calibración de 4.5 sigue sin parámetros medidos por 09 |

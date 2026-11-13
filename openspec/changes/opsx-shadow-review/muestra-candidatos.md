@@ -4,6 +4,11 @@
 > roadmap ("los casos de prueba se pueden preparar antes"). **No es la muestra**: no tiene etiquetas,
 > no está congelada y no pasó por el doble etiquetado de 1.4. Es la tabla fix → origen → archivos
 > que pide 1.1, con la aceptación de cada fila todavía abierta.
+>
+> **Actualización 13/11 sobre `d5e95bd`:** `main` suma dos `fix`, `cd4aa37`
+> (`fix(codex): retain rollback state and report Project delivery`) y `e4c7e48`
+> (`fix(codex): preserve literal paths in managed diagnostics`); 42 en total. SZZ corrido el 13/11 con el
+> mismo script: ambos van al estrato B (abajo). Falta la confirmación manual por fila, como el resto.
 
 ## Método
 
@@ -69,6 +74,8 @@ origen** (es lo que un revisor habría visto) y el defecto queda localizado. Má
 | `0d81f65` | tags no-semver al resolver versión de engram | `6db23d1`(8) | external |
 | `d670c2c` | engram no operativo en máquina limpia | `7b52941`(14) `fc084a8`(8) | install |
 | `7229a44` | compatibilidad del tier estricto de Codex | `9e318ba`(11) `253e79a`(5) `7d6db0e`(4) | permisos — origen disperso, revisar |
+| `e4c7e48` | rutas literales en diagnósticos de la entrega gestionada de Codex | `66a7d8a`(19) — `feat` de 186 archivos | backup (ALTO), harness/config, uninstall |
+| `cd4aa37` | estado de rollback y aviso de entrega Project en Codex | `ca5fcde`(4) `66a7d8a`(2) | harness/config, install — origen disperso, revisar |
 
 ## 3. Descartados o en suspenso
 
