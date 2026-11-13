@@ -1,8 +1,9 @@
 # Entrega de 06 a 03/04/07: texto del `## Evidence Contract`
 
 > Borrador para la ronda `apply`, sobre `origin/main` `7a60089`. Llena la fila 28 de
-> `openspec/matriz-reglas-opsx.md` y el hueco "06: insert the `## Evidence Contract` excerpt here"
-> de `entrega-delegation.md` de 07 (`origin/propose/opsx-selective-delegation`, `3fb24ee`). El texto
+> `openspec/matriz-reglas-opsx.md` y el contenido de `modules/evidence.md`, que
+> `entrega-delegation.md` de 07 (`origin/propose/opsx-selective-delegation`, revisión consultada
+> en `design.md`) ya referencia en sus secciones «Return envelope» y «Evidence». El texto
 > de los módulos va en inglés, como los assets de 03. **Nada de esto está instalado ni edita
 > archivos de 03, 04 ni 07.** La ubicación del módulo (`evidence` propio o dentro de `delegation`) es
 > **propuesta de 06, pendiente de acuerdo con 03 (Juani) y 04 (Matías)** (design D5). Las decisiones
@@ -39,8 +40,9 @@ redacted copy.
 - **Integrity**: the redacted copy exists and its recomputed fingerprint matches. It does not prove
   the command ran.
 - **Provenance**: an independent source or a re-run by another party confirms the command, the exit
-  code (the capture record's, not the worker's) and the exact tree state. No independent source
-  means unverified.
+  code (the capture record's, not the worker's) and the exact tree state. A re-run counts only if it
+  has its own capture from an independent source; your own re-run without that capture does not
+  confirm anything. No independent source means unverified.
 - **Sufficiency**: the command exercises what the requirement asks and the result supports it.
   Green tests with an unmet requirement are rejected. If verifying needs a detail the redaction
   discarded, the receipt stays unverified; do not store the original to avoid that.
@@ -71,7 +73,8 @@ Run this for every requirement an action claims to have covered, in this order:
 1. **Completeness**: all receipt fields present. A missing field → unverified.
 2. **Integrity**: recompute the fingerprint of the redacted copy.
 3. **Provenance**: the capture record's exit code and the tree state match what the receipt says and
-   the current tree; an independent source or a re-run confirms it.
+   the current tree; an independent source or a re-run confirms it. A re-run counts only with its
+   own capture from an independent source; the coordinator's re-run without it does not corroborate.
 4. **Sufficiency**: the command and the result support the requirement. When the action requires
    independent review (for example, verify after an apply), the reviewer is a different agent than
    the one that built it.
@@ -83,11 +86,11 @@ Delegated execution: run it on the `receipts` of the return envelope. A requirem
 receipts is unverified. Report the status of each requirement with the reason.
 ````
 
-Esto responde a "mismo paso de revisión": 04 `design.md:33,42-43`, 07 D6 (veredicto, `design.md:128-130`).
+Esto responde a "mismo paso de revisión": 04 («Matriz común de reglas» y requisito «Evidencia directa y delegada»), 07 D6 (validación y veredicto).
 
 ## (c) Contenido del campo `recibos` (`receipts`) del sobre de 07
 
-07 es dueña del sobre (`design.md` D6 `:115-130`: `estado`, `partida`, `modificados`, `hallazgos`,
+07 es dueña del sobre (`design.md` D6: `estado`, `partida`, `modificados`, `hallazgos`,
 `recibos`, `pendiente`; en `entrega-delegation.md`: `status`, `start`, `modified`, `findings`,
 `receipts`, `pending`). **06 define solo el contenido de `recibos`.**
 
@@ -119,7 +122,7 @@ Resumen de los ocho cambios de `design.md` D5 (los aplican sus dueños; **no se 
 | Tabla acción → módulos | `apply` → `artifacts`, `tdd`; no hay fila `verify` | `apply` → `artifacts`, `tdd`, `evidence`; `verify` → `evidence` (más `delegation` si exige revisor independiente); delegar → `delegation`, `model-assignments` |
 | Regla "módulo solo con toggle activo" | sin excepciones | excepción: `evidence` es obligatorio sin toggle propio (su ausencia detiene la acción, D11 de 03) |
 | 03 D4 / D12 / tarea 2.3 (archivados en `main`) | el extracto vive en `delegation.md` | vive en `evidence.md`; requiere un seguimiento de 03 sobre `main` |
-| 04 `design.md:33`, `:43` | ajuste coordinado pendiente | se cierra con la fila nueva |
+| 04 `design.md`, «Matriz común de reglas», filas 28 y `verify` | ajuste coordinado pendiente | se cierra con la fila nueva |
 
 **Si el grupo no acepta el módulo**, el texto (a) y (b) se pega igual dentro de `delegation.md` como
 prevé la fila 28 actual, y queda un límite declarado: con el toggle `delegation` apagado la

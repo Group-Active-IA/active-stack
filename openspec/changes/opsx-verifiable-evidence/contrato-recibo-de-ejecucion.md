@@ -62,6 +62,10 @@ Veredicto: *verificado* (integridad aprobada, procedencia corroborada, suficienc
 | `viejo` | el commit del recibo no es el del árbol actual | rechazado | procedencia |
 | `mismo-head-otro-diff` | mismo `HEAD`, huella del estado distinta | rechazado | procedencia |
 | `directorio-ajeno` | producido fuera del worktree del change | rechazado (propuesta de partida, (TBD) con 05) | procedencia |
+| `directorio-ajeno-separadores-windows` | otro directorio, escrito con separadores de Windows | rechazado | procedencia |
+| `directorio-separadores-windows` | el mismo directorio con separadores de Windows y barra final | verificado (se normalizan separadores y barra final; mayúsculas, enlaces y 8.3: (TBD)) | — |
+| `reejecucion-del-coordinador-sin-captura` | reejecución sin captura independiente | sin verificar | procedencia |
+| `reejecucion-con-captura-independiente` | reejecución con captura propia independiente | verificado | — |
 | `comando-insuficiente` | el comando no ejercita el requisito | rechazado | suficiencia |
 | `tests-verdes-requisito-incumplido` | tests verdes y requisito incumplido | rechazado | suficiencia |
 | `truncado-sin-original` | salida truncada que nunca tuvo referencia | rechazado | integridad |
@@ -82,7 +86,7 @@ Se informan **por separado**; aprobar uno no implica los otros.
    exacto del árbol. El código de salida lo escribe quien captura (05 D9) y se compara con el
    declarado. Estado actual de la fuente por interfaz (05 D22, citado, no decidido por 06): solo
    el arnés es referencia por construcción; sin fuente demostrada, un resultado declarado queda
-   *sin verificar* salvo reejecución por otra parte con captura (05 D20).
+   *sin verificar* salvo reejecución por otra parte con captura (05 D20). **Una reejecución solo cuenta como fuente independiente si tiene captura propia de una fuente independiente; la reejecución del coordinador sin esa captura no corrobora** (propuesta de 06, pendiente de confirmación; fixtures `reejecucion-con-captura-independiente` y `reejecucion-del-coordinador-sin-captura`).
 3. **Suficiencia.** El comando ejercita lo que el requisito pide y el resultado lo respalda.
    Cada requisito nombra qué evidencia lo satisface. Quién la evalúa: **abierta**; propuesta de
    partida de 06, pendiente de confirmación: el revisor distinto del constructor de 04 (D8).
