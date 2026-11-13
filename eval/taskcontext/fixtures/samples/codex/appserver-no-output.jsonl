@@ -1,0 +1,1 @@
+{"method":"item/completed","params":{"threadId":"thr_FICTICIO","turnId":"turn_1","item":{"type":"commandExecution","id":"item_1","command":"go test -v ./mini/","status":"failed"}}}
