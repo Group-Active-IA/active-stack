@@ -3,9 +3,11 @@ package install_test
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
+	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
 	"github.com/Group-Active-IA/active-stack/internal/i18n"
@@ -166,5 +168,33 @@ func TestManagedWiring_ProjectInstallNamesManualCleanup(t *testing.T) {
 	machine := joinedErrs(runApplyEvents(t, install.Options{HomeDir: t.TempDir()}, res))
 	if strings.Contains(machine, "universal-rules") {
 		t.Error("Machine install must not print the manual cleanup")
+	}
+}
+
+// C5 (PR #8 review): the install does not depend on the claude binary of the
+// machine. A claude on PATH that reports an old version must not change the
+// result when the detector is injected.
+func TestManagedWiring_InstallIgnoresClaudeOnPathWhenDetectorInjected(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the PATH stub is a POSIX shell script")
+	}
+	bin := t.TempDir()
+	stub := "#!/bin/sh\necho '1.0.0 (Claude Code)'\n"
+	if err := os.WriteFile(filepath.Join(bin, "claude"), []byte(stub), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	defer install.SetClaudeDetectFn(func() claude.VersionCheck {
+		return claude.VersionCheck{State: claude.VersionCompatible, Version: "2.1.318", Min: claude.MinVersion}
+	})()
+	home := t.TempDir()
+	plan := managedPlan(t, install.Options{HomeDir: home})
+	for _, s := range append(append([]pipeline.Step{}, plan.Prepare...), plan.Apply...) {
+		if err := s.Run(); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err := os.Stat(filepath.Join(home, ".claude", "skills", "sdd-orchestrator", "SKILL.md")); err != nil {
+		t.Errorf("the injected detector must decide the layered delivery: %v", err)
 	}
 }

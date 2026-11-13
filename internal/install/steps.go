@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	cmdinstaller "github.com/Group-Active-IA/active-stack/internal/harness/command"
 	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
@@ -183,6 +184,11 @@ var configInstallFn = func(
 	return cfginstaller.InstallWith(h, adapters, homeDir, opts)
 }
 
+// claudeDetectFn reports the installed Claude Code version for the layered
+// delivery. Production uses claude.Detect; tests inject a fixed result so the
+// install does not depend on the claude binary of the machine.
+var claudeDetectFn = claude.Detect
+
 type configStep struct {
 	h        model.Harness
 	adapters []AgentAdapter
@@ -204,7 +210,7 @@ func (s *configStep) setManifest(m *backup.Manifest) { s.manifest = m }
 func (s *configStep) Run() error {
 	cfg := toConfigAdapters(s.adapters)
 	res, err := configInstallFn(s.h, cfg, s.homeDir, cfginstaller.InstallOptions{
-		Home: s.realHome, Target: s.target, ShadowSkillsDir: s.shadow,
+		Home: s.realHome, Target: s.target, ShadowSkillsDir: s.shadow, DetectVersion: claudeDetectFn,
 	})
 	if err != nil {
 		return err
