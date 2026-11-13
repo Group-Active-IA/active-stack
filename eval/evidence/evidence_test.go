@@ -165,3 +165,124 @@ func TestMissing_ListsEachAbsentField(t *testing.T) {
 		t.Errorf("un recibo vacío debe reportar al menos los 6 campos de D2, reportó %d", got)
 	}
 }
+
+// loadValid carga el recibo válido; el recibo original debe seguir verificado (control de las
+// regresiones que siguen).
+func loadValid(t *testing.T) Case {
+	t.Helper()
+	c, err := LoadCase("testdata/casos/valido.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := EvaluateRequirement("R1", c.Receipts, c.Env); got.Status != Verified {
+		t.Fatalf("el recibo original dejó de estar verificado: %q (%v)", got.Status, got.Reasons)
+	}
+	return c
+}
+
+// Cambiar el comando conservando el id de corrida no permite reutilizar la corroboración ni la
+// suficiencia: la fuente independiente vio otro comando (rechazado) y el juicio del revisor no
+// corresponde al comando nuevo.
+func TestEvaluateRequirement_ChangedCommandKeepingRunIDReusesNoJudgment(t *testing.T) {
+	c := loadValid(t)
+	r := c.Receipts[0]
+	r.Command = "echo no-test"
+	got := EvaluateRequirement("R1", []Receipt{r}, c.Env)
+	if got.Status == Verified {
+		t.Fatalf("comando distinto con el mismo id quedó verificado: %+v", got)
+	}
+	if got.Provenance == provOK || got.Sufficiency == suffOK {
+		t.Errorf("se reutilizaron juicios de otra ejecución: procedencia %q, suficiencia %q", got.Provenance, got.Sufficiency)
+	}
+	if got.Status != Rejected || got.Provenance != provBad {
+		t.Errorf("la fuente independiente vio otro comando: esperado rechazado/contradicha, fue %q/%q", got.Status, got.Provenance)
+	}
+
+	// Sin registro de corroboración para el comando nuevo, solo la suficiencia deja de aplicar.
+	env := c.Env
+	env.Corroboration = nil
+	got = EvaluateRequirement("R1", []Receipt{r}, env)
+	if got.Status != Unverified || got.Sufficiency != notEvaluable || got.Provenance != provNone {
+		t.Errorf("sin evidencia independiente de esa ejecución: esperado sin verificar, fue %+v", got)
+	}
+}
+
+// La corroboración identifica comando, árbol y resultado: cualquier diferencia con el recibo es una
+// ejecución distinta de la que la fuente observó.
+func TestEvaluateRequirement_CorroborationMustDescribeTheSameExecution(t *testing.T) {
+	other := 1
+	cases := map[string]func(*Receipt){
+		"otro directorio": func(r *Receipt) { r.Tree.Dir = "/work/otro" },
+		"otro commit":     func(r *Receipt) { r.Tree.Commit = "0000000000000000000000000000000000000000" },
+		"otra huella":     func(r *Receipt) { r.Tree.Fingerprint = &Fingerprint{Algorithm: "sha256", Value: "aa"} },
+		"otro resultado":  func(r *Receipt) { r.Result.ExitCode = &other },
+	}
+	for name, mutate := range cases {
+		t.Run(name, func(t *testing.T) {
+			c := loadValid(t)
+			r := c.Receipts[0]
+			mutate(&r)
+			env := c.Env
+			// Aísla la procedencia: el entorno acompaña al recibo mutado salvo en lo que se juzga.
+			env.Dir, env.Commit, env.StateFP = r.Tree.Dir, r.Tree.Commit, r.Tree.Fingerprint
+			got := EvaluateRequirement("R1", []Receipt{r}, env)
+			if got.Status == Verified || got.Provenance != provBad {
+				t.Errorf("la corroboración de otra ejecución se reutilizó: %+v", got)
+			}
+		})
+	}
+}
+
+// El juicio de suficiencia es de un requisito concreto: el de R1 no respalda R2.
+func TestEvaluateRequirement_SufficiencyIsPerRequirement(t *testing.T) {
+	c := loadValid(t)
+	r := c.Receipts[0]
+	r.Requirements = []string{"R1", "R2"}
+	got := EvaluateRequirement("R2", []Receipt{r}, c.Env)
+	if got.Status != Unverified || got.Sufficiency != notEvaluable {
+		t.Errorf("R2 con el juicio de R1: esperado sin verificar/no evaluable, fue %+v", got)
+	}
+	if got := EvaluateRequirement("R1", []Receipt{r}, c.Env); got.Status != Verified {
+		t.Errorf("R1 debe seguir verificado: %+v", got)
+	}
+}
+
+// Captura declarada por el agente: sin una fuente independiente distinta, el recibo no se corrobora
+// aunque la huella coincida, ya sea porque no hay registro o porque el registro lo firma el propio
+// agente.
+func TestEvaluateRequirement_AgentDeclaredCaptureWithoutIndependentCorroboration(t *testing.T) {
+	c := loadValid(t)
+	r := c.Receipts[0]
+	cap := *r.Output.Capture
+	cap.Source = "agente"
+	r.Output.Capture = &cap
+
+	t.Run("sin registro", func(t *testing.T) {
+		env := c.Env
+		env.Corroboration = nil
+		got := EvaluateRequirement("R1", []Receipt{r}, env)
+		if got.Status != Unverified || got.Provenance != provNone || got.Integrity != intPass {
+			t.Errorf("esperado sin verificar/sin corroborar con integridad aprobada, fue %+v", got)
+		}
+	})
+	t.Run("registro de la misma fuente", func(t *testing.T) {
+		env := c.Env
+		rec := env.Corroboration[0]
+		rec.Source = "agente"
+		env.Corroboration = []CorroborationRecord{rec}
+		got := EvaluateRequirement("R1", []Receipt{r}, env)
+		if got.Status != Unverified || got.Provenance != provNone {
+			t.Errorf("la autocorroboración del agente no es independiente: %+v", got)
+		}
+	})
+	t.Run("registro de otra corrida", func(t *testing.T) {
+		env := c.Env
+		rec := env.Corroboration[0]
+		rec.Run = "r-999"
+		env.Corroboration = []CorroborationRecord{rec}
+		got := EvaluateRequirement("R1", []Receipt{r}, env)
+		if got.Status != Unverified || got.Provenance != provNone {
+			t.Errorf("la corroboración de otra corrida no aplica: %+v", got)
+		}
+	})
+}

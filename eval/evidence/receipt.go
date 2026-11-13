@@ -125,15 +125,33 @@ type caseFile struct {
 	} `json:"esperado"`
 }
 
+type corroborationFile struct {
+	Run      string        `json:"corrida"`
+	Command  string        `json:"comando"`
+	Dir      string        `json:"directorio"`
+	Commit   string        `json:"commit"`
+	StateFP  *Fingerprint  `json:"huella_estado,omitempty"`
+	ExitCode *int          `json:"codigo_de_salida"`
+	Source   string        `json:"fuente"`
+	Verdict  Corroboration `json:"veredicto"`
+}
+
+type sufficiencyFile struct {
+	Run         string      `json:"corrida"`
+	Requirement string      `json:"requisito"`
+	Command     string      `json:"comando"`
+	Verdict     Sufficiency `json:"veredicto"`
+}
+
 type envFile struct {
-	Dir           string                   `json:"directorio"`
-	Commit        string                   `json:"commit"`
-	StateFP       *Fingerprint             `json:"huella_estado,omitempty"`
-	Copies        map[string]string        `json:"copias"`
-	Expired       []string                 `json:"vencidas"`
-	Corroboration map[string]Corroboration `json:"corroboracion"`
-	Sufficiency   map[string]Sufficiency   `json:"suficiencia"`
-	DetailNeeded  []string                 `json:"detalle_descartado_necesario"`
+	Dir           string              `json:"directorio"`
+	Commit        string              `json:"commit"`
+	StateFP       *Fingerprint        `json:"huella_estado,omitempty"`
+	Copies        map[string]string   `json:"copias"`
+	Expired       []string            `json:"vencidas"`
+	Corroboration []corroborationFile `json:"corroboracion"`
+	Sufficiency   []sufficiencyFile   `json:"suficiencia"`
+	DetailNeeded  []string            `json:"detalle_descartado_necesario"`
 }
 
 // LoadCase lee un caso; las copias redactadas se leen como bytes, relativas al directorio del
@@ -149,14 +167,18 @@ func LoadCase(path string) (Case, error) {
 	}
 	base := filepath.Dir(filepath.Dir(path))
 	env := Env{
-		Dir:           f.Env.Dir,
-		Commit:        f.Env.Commit,
-		StateFP:       f.Env.StateFP,
-		Copies:        map[string][]byte{},
-		Expired:       set(f.Env.Expired),
-		Corroboration: f.Env.Corroboration,
-		Sufficiency:   f.Env.Sufficiency,
-		DetailNeeded:  set(f.Env.DetailNeeded),
+		Dir:          f.Env.Dir,
+		Commit:       f.Env.Commit,
+		StateFP:      f.Env.StateFP,
+		Copies:       map[string][]byte{},
+		Expired:      set(f.Env.Expired),
+		DetailNeeded: set(f.Env.DetailNeeded),
+	}
+	for _, c := range f.Env.Corroboration {
+		env.Corroboration = append(env.Corroboration, CorroborationRecord(c))
+	}
+	for _, s := range f.Env.Sufficiency {
+		env.Sufficiency = append(env.Sufficiency, SufficiencyRecord(s))
 	}
 	for run, rel := range f.Env.Copies {
 		b, err := os.ReadFile(filepath.Join(base, rel))

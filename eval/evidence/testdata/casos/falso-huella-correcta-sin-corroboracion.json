@@ -47,10 +47,15 @@
       "r-001": "copias/go-test-ok.txt"
     },
     "vencidas": [],
-    "corroboracion": {},
-    "suficiencia": {
-      "r-001": "suficiente"
-    },
+    "corroboracion": [],
+    "suficiencia": [
+      {
+        "corrida": "r-001",
+        "requisito": "R1",
+        "comando": "go test ./...",
+        "veredicto": "suficiente"
+      }
+    ],
     "detalle_descartado_necesario": []
   },
   "esperado": {

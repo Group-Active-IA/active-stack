@@ -33,12 +33,25 @@
       "r-001": "copias/go-test-ok.txt"
     },
     "vencidas": [],
-    "corroboracion": {
-      "r-001": "confirma"
-    },
-    "suficiencia": {
-      "r-001": "suficiente"
-    },
+    "corroboracion": [
+      {
+        "corrida": "r-001",
+        "comando": "go test ./...",
+        "directorio": "/work/active-stack-06",
+        "commit": "7a600895e8f1fe1f3728cffa1fcb57dca5663a59",
+        "codigo_de_salida": 0,
+        "fuente": "fuente-independiente (ilustrativa)",
+        "veredicto": "confirma"
+      }
+    ],
+    "suficiencia": [
+      {
+        "corrida": "r-001",
+        "requisito": "R1",
+        "comando": "go test ./...",
+        "veredicto": "suficiente"
+      }
+    ],
     "detalle_descartado_necesario": []
   },
   "esperado": {

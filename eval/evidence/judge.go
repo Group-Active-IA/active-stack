@@ -62,9 +62,34 @@ type Env struct {
 	StateFP       *Fingerprint
 	Copies        map[string][]byte // bytes de la copia redactada guardada; ausente = no existe
 	Expired       map[string]bool   // la referencia existía y la copia venció
-	Corroboration map[string]Corroboration
-	Sufficiency   map[string]Sufficiency
+	Corroboration []CorroborationRecord
+	Sufficiency   []SufficiencyRecord
 	DetailNeeded  map[string]bool // verificar exige un detalle que la redacción descartó
+}
+
+// CorroborationRecord es lo que una fuente independiente (o una reejecución) observó de UNA
+// ejecución concreta: qué comando corrió, en qué árbol y con qué resultado. El id de corrida solo
+// no basta: sin esos datos, cambiar el comando del recibo conservando el id reutilizaría el juicio.
+//
+// Source es la fuente independiente. Vacía, o igual a la fuente de la captura del recibo (el
+// agente o el arnés que lo escribió), no es independiente y el registro no cuenta.
+type CorroborationRecord struct {
+	Run      string
+	Command  string
+	Dir      string
+	Commit   string
+	StateFP  *Fingerprint
+	ExitCode *int
+	Source   string
+	Verdict  Corroboration
+}
+
+// SufficiencyRecord es el juicio del revisor sobre un comando y un requisito concretos.
+type SufficiencyRecord struct {
+	Run         string
+	Requirement string
+	Command     string
+	Verdict     Sufficiency
 }
 
 // Verdict separa los tres controles y da el estado (D3, D4).
@@ -92,9 +117,9 @@ func EvaluateRequirement(req string, receipts []Receipt, env Env) Verdict {
 		return Verdict{Status: Unverified, Integrity: notApplied, Provenance: notApplied,
 			Sufficiency: notApplied, Reasons: []string{"sin recibos para " + req}}
 	}
-	worst := evaluateReceipt(mine[0], env)
+	worst := evaluateReceipt(mine[0], req, env)
 	for _, r := range mine[1:] {
-		if v := evaluateReceipt(r, env); rank(v.Status) > rank(worst.Status) {
+		if v := evaluateReceipt(r, req, env); rank(v.Status) > rank(worst.Status) {
 			worst = v
 		}
 	}
@@ -111,7 +136,7 @@ func rank(s Status) int {
 	return 0
 }
 
-func evaluateReceipt(r Receipt, env Env) Verdict {
+func evaluateReceipt(r Receipt, req string, env Env) Verdict {
 	// Salida truncada que nunca tuvo referencia a una copia: caso 4 de la ficha, rechazado.
 	if r.Output.Truncated && r.Output.Fingerprint == nil {
 		return Verdict{Status: Rejected, Integrity: intFail, Provenance: notEvaluable, Sufficiency: notEvaluable,
@@ -143,18 +168,19 @@ func evaluateReceipt(r Receipt, env Env) Verdict {
 	}
 
 	// Procedencia: la ejecución es real y corresponde al estado del código.
+	corr := corroborationOf(r, env)
 	switch {
-	case env.Corroboration[r.Run] == Contradicts || env.Corroboration[r.Run] == ReexecContradicts:
+	case corr == provBad:
 		v.Provenance = provBad
-		rejected = append(rejected, "la fuente independiente o la reejecución lo contradicen")
+		rejected = append(rejected, "la fuente independiente o la reejecución contradicen la ejecución del recibo")
 	case r.Result.ExitCode != nil && r.Output.Capture.ExitCode != nil && *r.Result.ExitCode != *r.Output.Capture.ExitCode:
 		v.Provenance = provBad
 		rejected = append(rejected, "el código de salida declarado difiere del registro de captura")
-	case env.Corroboration[r.Run] == Confirms || env.Corroboration[r.Run] == ReexecConfirms:
+	case corr == provOK:
 		v.Provenance = provOK
 	default:
 		v.Provenance = provNone
-		unverified = append(unverified, "sin fuente independiente ni reejecución")
+		unverified = append(unverified, "sin fuente independiente ni reejecución para esta ejecución")
 	}
 	if !sameDir(r.Tree.Dir, env.Dir) {
 		rejected = append(rejected, "directorio ajeno")
@@ -169,7 +195,7 @@ func evaluateReceipt(r Receipt, env Env) Verdict {
 		v.Sufficiency = notEvaluable
 		unverified = append(unverified, "verificar exige un detalle que la redacción descartó")
 	default:
-		switch env.Sufficiency[r.Run] {
+		switch sufficiencyOf(r, req, env) {
 		case Sufficient:
 			v.Sufficiency = suffOK
 		case InsufficientCmd:
@@ -193,6 +219,62 @@ func evaluateReceipt(r Receipt, env Env) Verdict {
 		v.Status = Verified
 	}
 	return v
+}
+
+// corroborationOf agrega los registros independientes de esta corrida. Contradicción gana sobre
+// confirmación. Un registro que confirma pero describe otra ejecución (otro comando, árbol o
+// resultado) contradice el recibo: la fuente vio algo distinto de lo que el recibo declara.
+func corroborationOf(r Receipt, env Env) string {
+	got := provNone
+	for _, c := range env.Corroboration {
+		if c.Run != r.Run || !independent(c, r) {
+			continue
+		}
+		switch c.Verdict {
+		case Contradicts, ReexecContradicts:
+			return provBad
+		case Confirms, ReexecConfirms:
+			if !describes(c, r) {
+				return provBad
+			}
+			got = provOK
+		}
+	}
+	return got
+}
+
+func independent(c CorroborationRecord, r Receipt) bool {
+	return c.Source != "" && (r.Output.Capture == nil || c.Source != r.Output.Capture.Source)
+}
+
+func describes(c CorroborationRecord, r Receipt) bool {
+	return c.Command == r.Command && sameDir(c.Dir, r.Tree.Dir) && c.Commit == r.Tree.Commit &&
+		sameFP(c.StateFP, r.Tree.Fingerprint) && sameExit(c.ExitCode, r.Result.ExitCode)
+}
+
+// sufficiencyOf devuelve el juicio del revisor solo si corresponde a esta corrida, este requisito
+// y este comando; si no, no hay juicio aplicable. El peor juicio aplicable manda.
+func sufficiencyOf(r Receipt, req string, env Env) Sufficiency {
+	var got Sufficiency
+	for _, s := range env.Sufficiency {
+		if s.Run != r.Run || s.Requirement != req || s.Command != r.Command {
+			continue
+		}
+		switch {
+		case s.Verdict == InsufficientCmd || s.Verdict == UnmetRequirement:
+			return s.Verdict
+		case s.Verdict == Sufficient:
+			got = Sufficient
+		}
+	}
+	return got
+}
+
+func sameExit(a, b *int) bool {
+	if a == nil || b == nil {
+		return a == nil && b == nil
+	}
+	return *a == *b
 }
 
 func sameFP(a, b *Fingerprint) bool {
