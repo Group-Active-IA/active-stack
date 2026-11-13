@@ -45,7 +45,13 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 			"modules/artifacts.md": artifacts,
 		},
 	}
-	actions := "\n## Action modules\n\nRead `modules/artifacts.md` for propose, apply and archive.\n"
+	for _, name := range []string{"directed-code-reading", "bounded-command-output", "task-tool-selection", "concise-agent-reporting"} {
+		content, err := fs.ReadFile(embeddedAssets, "assets/codex/native/modules/"+name+".md")
+		if err != nil {
+			return CodexPackage{}, err
+		}
+		pkg.Files["modules/"+name+".md"] = string(content)
+	}
 	if active["governance"] {
 		governance, err := loadFragment("governance.md")
 		if err != nil {
@@ -82,7 +88,6 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 		pkg.Universal += "\n" + header + "\n" + universal
 		pkg.Files["SKILL.md"] += "\n" + coordinator
 		pkg.Files["modules/engram-opsx.md"] = opsx + "\n" + sync
-		actions += "Read `modules/engram-opsx.md` for OPSX memory wiring and project-memory Git sync.\n"
 	}
 	if active["delegation"] {
 		delegation, err := fs.ReadFile(embeddedAssets, "assets/codex/native/delegation.md")
@@ -90,9 +95,6 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 			return CodexPackage{}, err
 		}
 		pkg.Files["modules/delegation.md"] = string(delegation)
-		actions += "Read `modules/delegation.md` before delegating and for verify that requires an independent reviewer.\n"
-	} else {
-		actions += "Delegation is disabled. Stop any verification that requires an independent reviewer unless equivalent independent review is available.\n"
 	}
 	if active["tdd"] {
 		tdd, err := loadFragment("strict-tdd.md")
@@ -100,12 +102,33 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 			return CodexPackage{}, err
 		}
 		pkg.Files["modules/tdd.md"] = "Strict TDD Mode: enabled\n\n" + tdd
-		actions += "Read `modules/tdd.md` for apply and include it in implementation assignments.\n"
-	} else {
-		actions += "TDD is disabled. Stop an apply action if its mandatory TDD requirement cannot be satisfied.\n"
 	}
-	pkg.Files["SKILL.md"] += actions
+	table, err := fs.ReadFile(embeddedAssets, "assets/codex/native/action-table.md")
+	if err != nil {
+		return CodexPackage{}, err
+	}
+	pkg.Files["SKILL.md"] += codexActionModules(active, string(table))
 	return pkg, nil
+}
+
+// codexActionModules applies Codex-relative paths and existing toggle rules to
+// the action table delivered by change 05. It does not compose Claude assets.
+func codexActionModules(active map[string]bool, table string) string {
+	tdd := "Strict TDD is disabled; stop apply if Strict TDD is required"
+	delegation := "delegation disabled — verify stopped"
+	delegate := "delegation disabled; do not delegate"
+	engram := "Engram OPSX wiring disabled"
+	if active["tdd"] {
+		tdd = "`modules/tdd.md` when Strict TDD is on and a test runner exists"
+	}
+	if active["delegation"] {
+		delegation = "`modules/delegation.md`"
+		delegate = "`modules/delegation.md`"
+	}
+	if active["engram"] {
+		engram = "`modules/engram-opsx.md`"
+	}
+	return fmt.Sprintf(table, tdd, delegation, delegate, engram)
 }
 
 // splitCodexAsset keeps the source fragments authoritative while assigning each

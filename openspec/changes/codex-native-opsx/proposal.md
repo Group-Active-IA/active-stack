@@ -37,3 +37,7 @@ El cambio afecta al adapter de Codex, el despacho de configuración, los assets,
 ## Revisión humana y preparación de apply
 
 Matías confirmó el 13/11/2026 el alcance Machine inicial, la reversión con snapshot persistente protegido por ruta y el avance de tareas independientes mientras 05/06 completan sus contratos. La aceptación integrada de evidencia espera esas dependencias. El dominio es **ALTO** por migración y retiro de configuración. El alcance concreto de producción está en design. Matías lo aprobó y autorizó iniciar las tareas independientes el 13/11/2026. Las sondas técnicas y las dependencias externas conservan su estado pendiente.
+
+## Entrega parcial para revisión
+
+Se integraron en Codex los cuatro módulos textuales disponibles de 05 `e4ec0f5` y las normas parciales corregidas D2–D4 de 06 `f62cf00`. No se entrega todavía un contrato final de recibos, capturador o validador operativo de evidencia. Matías autorizó registrar como deuda los pendientes que no pueden avanzar sin 05/06/07 y publicar el avance para revisión. El registro `informes/deudas-aceptadas-05-06-07-2026-11-13.md` identifica resultado requerido, responsable y prueba de reanudación; no acepta en nombre del equipo contratos propuestos ni convierte las demás tareas de 04 en completas. El change no se archiva y las acciones con requisitos obligatorios ausentes conservan su bloqueo.

@@ -1,5 +1,7 @@
 # Dependencias 05, 06 y 07 para cerrar 04
 
+> **Informe histórico, sustituido en la misma sesión.** Este análisis inspeccionó la rama antigua de 06 en `f3f005e`. Después apareció `origin/propose/opsx-verifiable-evidence` en `f62cf00c09dc8a3aa96ddb4648801250e1a67a8c`, que incorpora correcciones normativas. Para la entrega vigente de 04, consultar [consumo de módulos 05/06](consumo-modulos-05-06-2026-11-13.md) y [deudas aceptadas de 05/06/07](deudas-aceptadas-05-06-07-2026-11-13.md). Las conclusiones siguientes conservan su fecha y referencias originales; no describen el estado actual de la nueva rama de 06.
+
 13 de noviembre de 2026. Análisis en lectura de referencias remotas disponibles en el repositorio. No se implementan 03/05/06/07, no se incorporan sus ramas y no se marcan tareas de 04. El informe unificado y la revisión de Juani se usan como requisitos y evidencia atribuida a sus autores; no autorizan cambios adicionales de alcance ni aceptación de deuda.
 
 ## Resultado

@@ -95,3 +95,43 @@ Verify de instalación SHALL comprobar archivos administrados, política de invo
 #### Scenario: Archivos correctos sin aceptación del IDE
 - **WHEN** pasan chequeos estáticos pero no se probó la extensión IDE
 - **THEN** sólo se acredita la estructura instalada y se deja pendiente la aceptación funcional de esa interfaz
+
+### Requirement: Módulos de contexto con fuente identificada
+
+La entrega Codex SHALL incorporar los cuatro módulos textuales disponibles de 05 con revisión identificada, sin frontmatter de skill y sin toggle propio. SHALL adaptar la tabla a rutas relativas Codex y a los toggles existentes, sin modificar la entrega Claude. Verificar la instalación SHALL rechazar cada módulo ausente, vacío o modificado.
+
+#### Scenario: Entrega y actualización de módulos de 05
+- **WHEN** se instala o actualiza el paquete Codex con los módulos disponibles de 05
+- **THEN** se inventarían sus cuatro archivos con los bytes de la revisión fijada y la reinstalación idéntica no los reescribe
+- **AND** el retiro elimina sólo archivos propios y conserva notas del usuario y la primera copia de migración
+
+#### Scenario: Módulo vacío o sólo espacios
+- **WHEN** un módulo de la tabla se elimina o contiene cero bytes o sólo espacios
+- **THEN** falla la verificación estructural y no se adopta silenciosamente el contenido alterado
+- **AND** la skill instruye detener sólo la acción que requiere el módulo obligatorio
+
+#### Scenario: Módulo opcional ausente
+- **WHEN** falta un módulo opcional y los requisitos obligatorios de la acción están satisfechos
+- **THEN** se informa el límite y se continúa sin afirmar equivalencia con la capacidad ausente
+
+#### Scenario: Reanudación tras compactación
+- **WHEN** se compacta o reanuda una sesión coordinada
+- **THEN** se requiere reinvocar la skill y releer los módulos de la acción antes de continuar
+
+### Requirement: Requisitos parciales de evidencia sin contrato ficticio
+
+La entrega SHALL identificar los requisitos normativos consumidos de 06 como parciales mientras falte su contrato final. SHALL mantener el mismo estándar directo y delegado, controles separados y estado exacto probado. No SHALL presentar el texto parcial, una huella coherente o la instalación de módulos como ejecución verificada.
+
+#### Scenario: Norma parcial con delegación desactivada
+- **WHEN** se compone Codex con el toggle de delegación desactivado
+- **THEN** siguen disponibles las reglas parciales de evidencia en la skill explícita y se declara que el contrato completo aún falta
+- **AND** no se crea un módulo final o esquema de recibos en nombre de 06
+
+#### Scenario: Huella válida con procedencia o suficiencia ausente
+- **WHEN** un resultado contiene una huella coherente pero no corrobora ejecución y árbol exacto o no cubre el requisito
+- **THEN** no se marca verificado y se informan por separado integridad, procedencia y suficiencia
+
+#### Scenario: Bytes y estados distintos
+- **WHEN** dos corridas comparten HEAD pero tienen diffs distintos, o sus copias usan bytes LF y CRLF distintos
+- **THEN** se exige distinguir los estados exactos y las huellas de bytes sin normalizar fines de línea
+- **AND** no se inventa el mecanismo operativo de huella del árbol pendiente de 06
