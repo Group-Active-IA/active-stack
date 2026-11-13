@@ -239,6 +239,7 @@ Quedan vivas las que dependen del grupo o de otras propuestas; ninguna se cierra
 8. **Actualización desatendida** sin posibilidad de aprobar el diff (D14, TBD).
 9. **Remoción acotada de `permissions` en `uninstall`** (D8): quién la implementa (TBD).
 10. **Mínimo de cobertura** para considerar adoptable el piloto (TBD, grupo).
-11. **Nombre de la rama:** hoy es `opsx-native-controls`; renombrarla a `propose/opsx-native-controls` se decide con Juan Cruz (TBD).
+11. **Nombre de la rama:** cuando se publique será `propose/opsx-native-controls`, por la convención de `CHANGES.md:10` (`git switch -c propose/<nombre-del-change>`). **El push todavía no se hizo.** La rama local actual se llama `opsx-native-controls`; la rama vieja `opsx-native-controls` del remoto (`f3ba5d3`) no se toca. Cuándo y cómo se publica queda para el responsable (TBD).
+12. **Pedidos de 07 y 05 a 08** (TBD, grupo; tarea 6.6): 07 (D4) pide incluir "escritura fuera del conjunto de escritura del encargo" como candidata a "debe bloquearse"; 05 (D14, D8) pide un piso equivalente al de Claude en Codex a 01 u 08 y deja a 08 como dueña de un eventual hook `PreToolUse` de captura.
 
 Resueltas o pasadas a otro change: *agentes incluidos* (el roadmap fija "Ambos", Claude y Codex: `CHANGES.md` ficha 08), *política de Estricto de Codex* (01, en `main`), *activación de 03* (skill explícita, en `main`).
