@@ -17,7 +17,7 @@ instalador. Disparador: install o update. Resultado: manifiesto registrado y arc
 - **WHEN** `CLAUDE.md` contiene `active-stack:sdd-orchestrator` y texto del usuario, y se ejecuta install
 - **THEN** existe un snapshot con el contenido previo exacto bajo `<home>/.active-stack/backups/` (también en target Project), su ruta queda registrada como manifiesto de migración, el bloque legado ya no está, el bloque universal aparece una vez, existe `<skills>/sdd-orchestrator/SKILL.md` con marca de propiedad y el texto del usuario es idéntico
 
-#### Scenario: Secciones administradas hermanas se conservan (depende de G7, recomendación)
+#### Scenario: Secciones administradas hermanas se conservan
 - **WHEN** `CLAUDE.md` contiene también `active-stack:design-mockups`
 - **THEN** esa sección queda intacta después de la migración
 
@@ -52,7 +52,7 @@ presente y viejo ausente.
 - **WHEN** el usuario modificó un archivo dentro del directorio de la skill que tiene marca de propiedad y corre un update con contenido distinto
 - **THEN** el update lo reemplaza, la versión editada queda en un snapshot y la salida nombra la ruta del snapshot (comportamiento declarado: el directorio con marca pertenece a Active Stack)
 
-#### Scenario: Proyectos registrados con instalación Project V1 (depende de G10, recomendación)
+#### Scenario: Proyectos registrados con instalación Project V1
 - **WHEN** `installation.json` lista proyectos y alguno tiene el bloque legado en `<root>/.claude/CLAUDE.md`
 - **THEN** el update no escribe en esos proyectos y emite una advertencia por proyecto con la ruta y el comando de migración explícita (`active-stack install` con target Project)
 
@@ -118,7 +118,7 @@ después de la migración sin la confirmación específica de esta guarda. Actor
 - **WHEN** se ejecuta uninstall sin estrategia restore sobre una instalación Machine
 - **THEN** se eliminan el bloque universal y el directorio de la skill con marca de propiedad, y el resto de `CLAUDE.md` y del directorio de skills queda intacto
 
-### Requirement: Permisos del usuario preservados (depende de G6, recomendación)
+### Requirement: Permisos del usuario preservados
 Al reescribir un archivo existente del usuario, el instalador MUST conservar su modo de permisos y,
 sobre el directorio que lo contiene, MUST agregar como máximo el bit de escritura del dueño, nunca
 permisos de grupo u otros. Actor: instalador. Disparador: escritura sobre archivo existente.
@@ -159,7 +159,7 @@ con ID y motivo.
 - **WHEN** la instalación se hizo con target Project en `<root>`
 - **THEN** el verify posterior al install revisa `<root>/.claude/CLAUDE.md` y `<root>/.claude/skills/sdd-orchestrator/`, resueltos por el adaptador de verify de Project, y una skill presente sólo en `<home>` no hace pasar el check Project
 
-### Requirement: Limpieza manual documentada para target Project (depende de G12, plan actual sin recomendación)
+### Requirement: Limpieza manual documentada para target Project
 Uninstall sigue siendo sólo Machine en este change; el sistema MUST documentar en README los pasos
 manuales para quitar en target Project el directorio de la skill con marca y la sección universal,
 y la salida de install Project MUST nombrar esas rutas. Actor: usuario. Disparador: install

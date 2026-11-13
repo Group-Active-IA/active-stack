@@ -306,8 +306,7 @@ opt-ins de contenido de 02 (D7 y D10 de 02).
   Code reengancha tras compactar. Con el asset partido, el coordinador sale de los 8.899 B de la
   base menos lo que pasa a universal y módulos; los módulos (hasta ~11 KB) quedan fuera del
   presupuesto porque son archivos aparte. Test sin modelo: el tamaño del `SKILL.md` compuesto con
-  todos los toggles queda bajo el umbral (`(TBD · tarea 1.4)` en tokens, medido con el contador que
-  acuerde 02). Orden: rol, reglas obligatorias y tabla acción → módulos primero.
+  todos los toggles queda bajo el umbral (4000 tokens, estimados como bytes/4; 02 no dejó un contador en `main`). Orden: rol, reglas obligatorias y tabla acción → módulos primero.
 - **Compactación.** Después de `/compact` o de la compactación automática, el testigo del
   coordinador sigue en el contexto y el coordinador vuelve a leer el módulo de la acción en curso
   en lugar de suponerlo cargado.
@@ -353,19 +352,22 @@ Cerradas por el grupo o por el acuerdo de 2026-11-10:
 | G4 | Matriz de reglas por capa | `openspec/matriz-reglas-opsx.md`, publicada por la 03; la 04 se alinea. Governance (niveles) universal, coincidiendo con 05. | Decisión de Juani, 2026-11-12 |
 | G9 | Exposición del coordinador como subagente | Deja de aplicar: una skill con `disable-model-invocation: true` no se puede precargar en subagentes ni la invoca el modelo. Queda un escenario determinista (tarea 1.10). | Documentación de skills; auditoría complementaria |
 
-Abiertas. Las specs están escritas sobre la recomendación y cada requisito dependiente lo marca
-con "(depende de Gn, recomendación)":
+Cerradas por Juani el 2026-11-13 (se adopta la recomendación escrita, salvo G6 y G12):
 
-| ID | Decisión | Opciones | Recomendación | Con quién |
-|---|---|---|---|---|
-| G1 | Dónde se instala cada pieza | universal en `CLAUDE.md` + skill en `.claude/skills/` según target / todo en Project / todo en Machine | según target, como hoy, con la advertencia de colisión personal sobre proyecto | grupo |
-| G3 | Cómo llegan los módulos al especialista | archivos de apoyo pegados en el encargo / una skill por módulo / agente por especialista | archivos de apoyo (D4) | 04 |
-| G6 | Alcance del arreglo de permisos y guarda persistente | sólo rutas de esta ficha / arreglo global de `WriteFileAtomic` / diferir como DEUDA | global con tests, serializado con 08 D9 y un único revisor ALTO | 01, 08 |
-| G7 | Sección `design-mockups` | queda en `CLAUDE.md` / pasa a módulo | queda en este change | grupo |
-| G10 | Proyectos registrados con instalación Project V1 | advertir y migrar a pedido / migrar en `update` / ignorar | advertir con el comando de migración | grupo |
-| G11 | Entrega cuando falta el binario `claude` | por capas con advertencia / legado / no instalar | por capas con advertencia | grupo |
-| G12 | Uninstall con target Project | mantener Machine-only con limpieza manual y DEUDA / agregar `--project` | sin recomendación; el plan mantiene Machine-only | grupo |
-| G13 | Limitar tipos de subagente que lanza el coordinador | no limitar / `permissions.deny` por tipo | no limitar en esta ficha; si se pide, lo implementa 08 | 08 |
+| ID | Decisión | Resultado | Fuente |
+|---|---|---|---|
+| G1 | Dónde se instala cada pieza | Universal en `CLAUDE.md` y skill en `.claude/skills/` según el target, como hoy, con advertencia de colisión cuando una skill personal tapa a la del proyecto. | Decisión de Juani, 2026-11-13 |
+| G3 | Cómo llegan los módulos al especialista | Archivos de apoyo que el coordinador pega en el encargo (D4). | Decisión de Juani, 2026-11-13 |
+| G6 | Alcance del arreglo de permisos y guarda persistente | Alcance chico: sólo las rutas de esta ficha (`CLAUDE.md`, `~/.claude`, `~/.claude/skills` y la skill) conservan su modo. Sin cambios en `internal/filemerge` global ni en el código de 01/08. La guarda persistente de la reversión posterior queda propia de esta ficha (hashes del paso 7 de D5). | Decisión de Juani, 2026-11-13 |
+| G7 | Sección `design-mockups` | Queda en `CLAUDE.md` en este change. | Decisión de Juani, 2026-11-13 |
+| G10 | Proyectos registrados con instalación Project V1 | Advertir con el comando de migración; no se reescriben en `update`. | Decisión de Juani, 2026-11-13 |
+| G11 | Entrega cuando falta el binario `claude` | Por capas con advertencia ("versión no comprobada"). | Decisión de Juani, 2026-11-13 |
+| G12 | Uninstall con target Project | Machine-only con limpieza manual documentada y DEUDA-1 (el plan no tenía recomendación). | Decisión de Juani, 2026-11-13 |
+| G13 | Limitar tipos de subagente que lanza el coordinador | No limitar en esta ficha; si se pide, lo implementa 08. | Decisión de Juani, 2026-11-13 |
+
+Umbral de reenganche (antes `(TBD · tarea 1.4)`): 4000 tokens para el `SKILL.md` compuesto con los
+cinco toggles, fijado por Juani el 2026-11-13. Medición en el test: `bytes/4` (02 no dejó un contador
+en `main`; es una estimación conservadora y se documenta como tal).
 
 ### Matriz de reglas (G4, cerrada el 2026-11-12)
 

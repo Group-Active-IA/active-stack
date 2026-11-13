@@ -12,7 +12,7 @@
 - Bloqueantes para construir: (1) decisiones abiertas de design.md (tabla G); (2) ~~matriz con 04 (G4)~~ publicada el 2026-11-12; (3) aprobación humana fechada en proposal.md `## Aprobación`, incluido el nivel
   ALTO o CRITICAL; (4) resultados de 1.4, 1.10, 1.11 y 1.14 antes de cerrar los escenarios de
   continuidad.
-- 2026-11-12: Juani autorizó empezar el apply de las tareas no bloqueadas sin esperar la sección 2; la aprobación ALTO/CRITICAL de 2.7 sigue pendiente.
+- 2026-11-12: Juani autorizó empezar el apply de las tareas no bloqueadas sin esperar la sección 2; la aprobación ALTO de 2.7 quedó dada por Juani el 2026-11-13.
 - Cierre: implementar, archivar y abrir PR hacia `main` declarando qué entrega, cómo se comprueba
   y qué queda pendiente. Revisa el responsable del change anterior (circuito del grupo: contrato,
   evidencia, decisión).
@@ -52,13 +52,17 @@ Scripts en `investigacion/`, nunca en `internal/`. Toda corrida con modelo sigue
 
 ## 2. Coordinación y decisiones de grupo
 
-- [ ] 2.1 Presentar al grupo las decisiones abiertas de design.md (G1, G3, G4, G6, G7, G10-G13) con recomendación; registrar opción, fecha y quién decidió. Verificación: `rg -n "depende de G" specs/` coincide con las filas que siguen abiertas.
+- [x] 2.1 Presentar al grupo las decisiones abiertas de design.md (G1, G3, G4, G6, G7, G10-G13) con recomendación; registrar opción, fecha y quién decidió. Verificación: `rg -n "depende de G" specs/` coincide con las filas que siguen abiertas.
+  - Evidencia: decidido por Juani 2026-11-13: G1, G3, G7, G10, G11, G13 con la recomendación; G12 Machine-only con DEUDA-1. Registrado en design.md "Decisiones". `rg -n "depende de G" specs/` ya no devuelve filas.
 - [x] 2.2 (2026-11-12: matriz publicada en `openspec/matriz-reglas-opsx.md` por la 03; la 04 se alinea completando la columna Codex) Con Matías (04): publicar la matriz común por cliente, interfaz, rol y acción (ubicación a acordar), con la columna de Claude completa, y enlazarla desde design.md. Verificación: escenarios "Ninguna regla sin capa" y "Regla en dos capas".
 - [ ] 2.3 Con Emiliano (05): divergencia de `governance` resuelta en la matriz (universal, como pide 05); recibir los textos de D17. Con Gianfranco (06) y Neyén (07): recibir el `## Evidence Contract` y el sobre de retorno; ubicarlos en `modules/delegation.md` sin redefinirlos.
-- [ ] 2.4 Con Juan Cruz (01) y Gianfranco (08): acordar un único revisor ALTO para `filemerge` y el orden de integración del arreglo de permisos de esta ficha y el de 08 D9 (G6); confirmar si alguna de las dos agrega una guarda persistente en `internal/backup` que esta ficha reutilice.
-- [ ] 2.5 Con 08: mensaje de control obligatorio ausente por superficie (D11) y G13.
+- [x] 2.4 Con Juan Cruz (01) y Gianfranco (08): acordar un único revisor ALTO para `filemerge` y el orden de integración del arreglo de permisos de esta ficha y el de 08 D9 (G6); confirmar si alguna de las dos agrega una guarda persistente en `internal/backup` que esta ficha reutilice.
+  - Evidencia: decidido por Juani 2026-11-13 (G6 alcance chico): sólo las rutas de esta ficha; no se toca `internal/filemerge` global ni código de 01/08, así que no hace falta revisor único de `filemerge` ni orden de integración con 08 D9. La guarda de reversión usa los hashes registrados por esta ficha, no una guarda persistente de `internal/backup`.
+- [x] 2.5 Con 08: mensaje de control obligatorio ausente por superficie (D11) y G13.
+  - Evidencia: decidido por Juani 2026-11-13: G13 no se limita en esta ficha (lo implementa 08 si se pide). El mensaje de control ausente (D11) queda como texto de 08 y no se redefine acá.
 - [ ] 2.6 Si alguna decisión o un resultado de la sección 1 cambia specs o design, actualizar los artefactos y repetir la revisión del plan antes de seguir.
-- [ ] 2.7 Pedir la aprobación humana en proposal.md `## Aprobación` con el resultado de 1.13. Sin ella no empieza la sección 3.
+- [x] 2.7 Pedir la aprobación humana en proposal.md `## Aprobación` con el resultado de 1.13. Sin ella no empieza la sección 3.
+  - Evidencia: decidido por Juani 2026-11-13: nivel ALTO aprobado, completado en proposal.md `## Aprobación`.
 
 ## 3. Modelo y adapter de Claude
 

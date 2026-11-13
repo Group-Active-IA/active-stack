@@ -52,7 +52,7 @@ de contexto de la transcripción propia del subagente.
 - **WHEN** con el coordinador invocado se pide verify con delegación activa y 06 entregó el contrato de evidencia
 - **THEN** el contexto del especialista de verify contiene el testigo universal, el del módulo de delegación (con el sobre de retorno de 07) y el del contrato de evidencia de 06, y no contiene el del coordinador
 
-#### Scenario: Especialista de apply recibe el módulo TDD (depende de G3, recomendación)
+#### Scenario: Especialista de apply recibe el módulo TDD
 - **WHEN** el coordinador delega una acción apply con el toggle `tdd` activo
 - **THEN** el contexto del especialista contiene el testigo del módulo TDD y no contiene el testigo del módulo `model-assignments`
 - **AND** con G3 en archivos de apoyo este escenario prueba que el coordinador pegó el módulo en el encargo (comportamiento del modelo, no del instalador) y se verifica sobre el prompt registrado del subagente

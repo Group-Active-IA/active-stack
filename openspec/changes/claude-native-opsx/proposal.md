@@ -51,7 +51,7 @@ el usuario no lo haya pedido.
   `internal/filemerge/writer.go:40` y `:63` fuerzan `0o755`/`0o644`). Por tocar `filemerge`, el
   cambio se coordina con 01 y 08 en una sola revisión ALTO (design.md D6).
 - Las decisiones que siguen abiertas están en design.md (tabla G). Cada requisito que depende de
-  una decisión abierta lo marca con "(depende de Gn, recomendación)".
+  las decisiones abiertas se marcaban con "(depende de Gn, recomendación)"; el 2026-11-13 quedaron cerradas y se quitaron esas marcas.
 
 ## Capabilities
 
@@ -130,6 +130,14 @@ grupo (contrato, evidencia, decisión).
 
 <!-- Sólo la completa una persona humana. Ningún agente firma acá. -->
 <!-- Formato sugerido: fecha, nombre, nivel elegido (ALTO o CRITICAL, ver Clasificación), opción elegida para cada decisión abierta (design.md, tabla G) y alcance aprobado. -->
+
+- Fecha: 2026-11-13.
+- Persona: Juani Sarmiento.
+- Nivel elegido: ALTO (no CRITICAL).
+- Decisiones: G1, G3, G7, G10, G11 y G13 con la opción recomendada en design.md; G12 queda Machine-only con limpieza manual y DEUDA-1; G6 con alcance chico (sólo las rutas de esta ficha, sin tocar `internal/filemerge` global ni el código de 01/08). Detalle en design.md, "Decisiones".
+- Umbral de reenganche del `SKILL.md`: 4000 tokens.
+- Alcance aprobado: tareas 3 a 7 y 9 de tasks.md. Siguen fuera de esta aprobación: la sección 1 y la 8 (las corre Juani con Claude real), la 10 y el push.
+- Pendiente declarado: los textos de 05, 06 y 07 (tarea 2.3); `MinVersion` sigue en 0.0.0 hasta que Juani lo fije con pruebas reales.
 
 ## Knowledge Base Impact
 

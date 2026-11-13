@@ -8,7 +8,7 @@ target de instalación.
 
 ## ADDED Requirements
 
-### Requirement: Coordinador entregado como skill administrada (depende de G1, recomendación)
+### Requirement: Coordinador entregado como skill administrada
 Al instalar `sdd-orchestrator` para Claude en una versión compatible, el instalador MUST crear el
 directorio de skill `sdd-orchestrator` en el directorio de skills del target, con `SKILL.md` que
 declara `disable-model-invocation: true` y la marca de propiedad de Active Stack, y con un archivo
@@ -72,7 +72,7 @@ reinvocar.
 - **WHEN** se invocó `/sdd-orchestrator` en una sesión y se reanuda con `claude --continue` o `--resume`
 - **THEN** el registro de contexto de la sesión reanudada contiene el testigo del coordinador; si la tarea 1.14 muestra que no, el bloque universal indica volver a invocar `/sdd-orchestrator` y README lo documenta
 
-### Requirement: Módulos por acción según la acción OPSX (depende de G3, recomendación)
+### Requirement: Módulos por acción según la acción OPSX
 El coordinador MUST cargar sólo los módulos que la tabla acción → módulos de `SKILL.md` asigna a
 la acción solicitada y, cuando delega, MUST pasar su contenido en el encargo del especialista.
 Actor: coordinador. Disparador: pedido de una acción (explore, propose, apply, verify, archive).
@@ -137,7 +137,7 @@ verify definidos para cada caso.
 
 #### Scenario: Binario claude ausente (CI, Docker de e2e, instalar antes que Claude)
 - **WHEN** `claude` no está en el PATH
-- **THEN** el instalador escribe la entrega por capas (bloque universal y skill), advierte que no pudo comprobar la versión, y verify reporta "versión no comprobada" (advertencia, no fallo) (depende de G11, recomendación)
+- **THEN** el instalador escribe la entrega por capas (bloque universal y skill), advierte que no pudo comprobar la versión, y verify reporta "versión no comprobada" (advertencia, no fallo)
 
 #### Scenario: Verify informa la vía activa
 - **WHEN** se ejecuta el verify posterior a un install para Claude
