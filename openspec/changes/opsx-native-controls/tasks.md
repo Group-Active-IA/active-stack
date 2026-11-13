@@ -24,10 +24,10 @@
 - [ ] 3.1 Definir la política de fallo por tipo de acción, partiendo de D6 (TBD del grupo).
 - [ ] 3.2 Definir el contrato de entrada y salida de los handlers y la opción de handler a pilotear (D5).
 - [ ] 3.3 Definir la capacidad opcional de hooks en los adapters y el mecanismo de ownership (D4).
-- [ ] 3.4 Definir cómo se integran los controles a `update` y `uninstall`: remoción acotada del overlay de permisos y de las claves de hooks (hoy el paso de `permissions` de `uninstall` no hace nada, `internal/uninstall/steps.go:333`), y registro de cada archivo escrito con `Manifest.GuardRollback` (reutilizar, no reimplementar; D8). Definir la actualización desatendida (D14).
+- [ ] 3.4 Definir cómo se integran los controles a `update` y `uninstall`: remoción acotada del overlay de permisos y de las claves de hooks (hoy el paso de `permissions` de `uninstall` no hace nada, `internal/uninstall/steps.go:362-384`), y registro de cada archivo escrito con `Manifest.GuardRollback` (reutilizar, no reimplementar; D8). Definir la actualización desatendida (D14).
 - [ ] 3.5 Definir cómo se mezclan listas y escalares del usuario y cómo se aborta ante un archivo ilegible (D9), y quién revisa el cambio en `filemerge` (D15).
 - [ ] 3.6 Extender la vista de `install --dry-run` con el diff de permisos y hooks.
-- [ ] 3.7 Definir el contenido del mensaje de control ausente y qué cuenta como protección equivalente verificada, alineado con 03 D11/D12 y con la regla de 04 (`specs/codex-opsx-delivery/spec.md:59-65`) sin redefinirlas, y la lista de controles obligatorios y opcionales (TBD, grupo).
+- [ ] 3.7 Definir el contenido del mensaje de control ausente y qué cuenta como protección equivalente verificada, alineado con 03 D11/D12 y con la regla de 04 (`openspec/specs/codex-opsx-delivery/spec.md:64-78`) sin redefinirlas, y la lista de controles obligatorios y opcionales (TBD, grupo).
 - [ ] 3.8 Completar la tabla D14 (dueño, reversión, precedencia, Bypass, actualización desatendida, restauración) para cada entrada que se instale.
 
 ## 4. Pruebas previstas (ALTO)
@@ -39,8 +39,8 @@
 - [ ] 4.5 **Archivo ilegible:** con un `settings.json` malformado en un `HOME` temporal, la escritura aborta, el archivo queda byte-idéntico y se informa ruta y motivo (hoy `MergeJSONObjects` lo trata como `{}`, `json_merge.go:10-15`: la prueba debe fallar primero por esa razón). Lo mismo con un `config.toml` inválido.
 - [ ] 4.6 Escritura con revisión, backup, fallo de backup, preservación de entradas ajenas (lista `allow` del usuario, `defaultMode` fijado por el usuario, hooks del usuario), reinstalación idempotente, `update`, `uninstall`, reversión y reversión con ediciones posteriores del usuario (el archivo actual se conserva).
 - [ ] 4.7 **Control obligatorio:** (a) obligatorio presente, la acción procede; (b) obligatorio ausente, se detiene solo esa acción y el mensaje nombra la protección y cómo restablecerla; (c) opcional ausente, advertencia y la acción continúa.
-- [ ] 4.8 **CRLF y modos:** medir en Windows y Linux la conversión de CRLF a LF de `UpsertTOMLTopLevel` (`toml.go:29`), el `chmod 0755` del directorio padre y el `0644` del archivo de `WriteFileAtomic` (`writer.go:40,62`) y la pérdida de comentarios de `MergeJSONObjects`.
-- [ ] 4.9 Matriz de plataformas con Windows y Linux como mínimo: distribuidas (`.github/workflows/release.yml:71-76`), declaradas (`CLAUDE.md:21`) y probadas (lo que se corrió).
+- [ ] 4.8 **CRLF y modos:** medir en Windows y Linux la conversión de CRLF a LF de `UpsertTOMLTopLevel` (`toml.go:29`), el `chmod 0755` del directorio padre (`writer.go:54-58`) y el `0644` del archivo que `permissions` pasa a `WriteFileAtomic` (`install.go:143,185`; `writer.go:78`) y la pérdida de comentarios de `MergeJSONObjects`.
+- [ ] 4.9 Matriz de plataformas con Windows y Linux como mínimo: distribuidas (`.github/workflows/release.yml:71-76`), declaradas (`CLAUDE.md:13`) y probadas (lo que se corrió).
 - [ ] 4.10 Pruebas por superficie, por separado.
 - [ ] 4.11 Suite Go completa en verde y revisión de qué paquetes ALTO cambiaron (`git diff --stat`).
 
@@ -55,7 +55,7 @@
 - [ ] 6.1 Con 06: apuntar al contrato de 06 sin redefinirlo. Un control posterior valida de forma mecánica los campos del recibo de ejecución de 06 (D2: `corrida`, `arbol`, `comando`, `resultado`, `requisitos`, `salida`) y la integridad de la copia redactada; la procedencia (fuente independiente o reejecución) y la suficiencia son de 06 (D3). Los hooks complementan la evidencia pero no son un registro exhaustivo, y la ausencia de un rastro no verifica ni rechaza un recibo (06 D9 y requisito "Hooks complement evidence"). La contraparte en 06 es su tarea 5.3.
 - [ ] 6.2 Con 01: casos de permisos efectivos compartidos y registro único de resultados (D11).
 - [ ] 6.3 Con 03: punto de contacto en `WriteFileAtomic` (G6) y clave `agent` (D12); el mensaje de control ausente que 03 D12 le asigna a 08.
-- [ ] 6.4 Con 04 (Matías): que su regla de controles y módulos faltantes (`specs/codex-opsx-delivery/spec.md:59-65`) use el mensaje de D7, y qué hooks de Codex entran al piloto.
+- [ ] 6.4 Con 04 (Matías): que su regla de controles y módulos faltantes (`openspec/specs/codex-opsx-delivery/spec.md:64-78`) use el mensaje de D7, y qué hooks de Codex entran al piloto.
 - [ ] 6.5 Con 10: línea de base de cobertura para comparar con un juez en sombra, con la tabla de D13.
 
 ## 7. Cierre del change (flujo: entrega, comprobación, pendientes, traspaso, PR)

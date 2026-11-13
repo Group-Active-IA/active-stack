@@ -252,7 +252,7 @@ The pull request of this change touches `filemerge` (ALTO). Any change to `filem
 
 ### Requirement: Platform matrix
 
-The pilot SHALL treat Windows and Linux as the minimum platforms and publish a matrix that distinguishes distributed (`.github/workflows/release.yml:71-76`), declared (`CLAUDE.md:21`) and tested platforms, where "tested" means what was actually run.
+The pilot SHALL treat Windows and Linux as the minimum platforms and publish a matrix that distinguishes distributed (`.github/workflows/release.yml:71-76`), declared (`CLAUDE.md:13`) and tested platforms, where "tested" means what was actually run.
 
 #### Scenario: Platform matrix
 
