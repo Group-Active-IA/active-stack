@@ -2,6 +2,10 @@
 
 Define migración, actualización y retiro de las piezas administradas de Codex con preservación de contenido propio, respaldo y restauración protegida frente a ediciones posteriores.
 
+**Alcance de entrega y revisión.**
+
+Las pruebas técnicas de migración/rollback y su paquete de revisión están entregados. La disposición compartida de 01/03/08 sigue como deuda externa D04-010308 y D04-REV01, no como tarea abierta de implementación de Matías ni como aprobación recibida. Esto no cambia los requisitos de preservación ni acredita aceptación funcional de clientes. Ver `informes/deudas-aceptadas-05-06-07-2026-11-13.md`.
+
 ## ADDED Requirements
 
 ### Requirement: Preflight y propiedad

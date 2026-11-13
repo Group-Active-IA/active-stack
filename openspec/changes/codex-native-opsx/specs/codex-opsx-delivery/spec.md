@@ -2,6 +2,10 @@
 
 Define la activación explícita de OPSX dentro de la sesión actual de Codex, las reglas por rol y acción y los límites comprobables de cada interfaz.
 
+**Alcance de la comprobación de esta entrega.**
+
+Los requisitos siguientes conservan el comportamiento completo objetivo. El ajuste de seguimiento autorizado por Matías separa entrega comprobada, trabajo propio pendiente y deuda externa; no presenta deuda como cumplimiento. Las pruebas de composición/lifecycle no acreditan activación funcional, especialistas o CLI/IDE en celdas no ejecutadas. Los insumos/disposiciones de 02/03/05/06/07/08 y revisores se siguen con IDs en `informes/deudas-aceptadas-05-06-07-2026-11-13.md`, fuera del checklist activo. Matías conserva P2, especialistas y aceptación propia. El mapa literal previo está en `informes/trazabilidad-alcance-y-deuda-04-2026-11-13.md`.
+
 ## ADDED Requirements
 
 ### Requirement: Activación explícita en la sesión actual
@@ -135,3 +139,16 @@ La entrega SHALL identificar los requisitos normativos consumidos de 06 como par
 - **WHEN** dos corridas comparten HEAD pero tienen diffs distintos, o sus copias usan bytes LF y CRLF distintos
 - **THEN** se exige distinguir los estados exactos y las huellas de bytes sin normalizar fines de línea
 - **AND** no se inventa el mecanismo operativo de huella del árbol pendiente de 06
+
+### Requirement: Estado de entrega y deuda sin aceptación ficticia
+
+El seguimiento SHALL distinguir las unidades propias entregadas, las pendientes propias y los insumos o disposiciones externos registrados como deuda. Una unidad parcial completada MUST NOT acreditar el requisito funcional completo ni una aprobación ajena. El reporte SHALL identificar proveedor, disparador, criterio y riesgo de cada deuda externa, conservando el comportamiento de bloqueo ante requisitos obligatorios ausentes.
+
+#### Scenario: Dependencia externa registrada como deuda
+- **WHEN** un requisito necesita un contrato, medición o disposición de otro responsable que aún no llegó
+- **THEN** se registra fuera del checklist activo de Matías con su ID y criterio de reanudación, sin marcarlo implementado ni verificado
+- **AND** el consumo propio se retoma al recibir el insumo y la acción que exige un obligatorio ausente permanece detenida
+
+#### Scenario: Unidad parcial entregada y comportamiento completo no probado
+- **WHEN** se completan normas textuales, pruebas estructurales o un paquete de revisión pero faltan especialistas o aceptación real de la interfaz
+- **THEN** se acredita solo esa parte y se conservan explícitos los pendientes propios, sin declarar concluido o archivado el change ni cerrar el PR

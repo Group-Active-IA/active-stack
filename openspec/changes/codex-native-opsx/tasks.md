@@ -1,71 +1,52 @@
 # Tasks · Codex Native OPSX
 
-Las tareas marcadas están implementadas y probadas en perfiles aislados; continúan pendientes los contratos compartidos y la aceptación real por interfaz. Matías confirmó Machine inicial, snapshot persistente protegido por ruta y avance de tareas independientes con integración de evidencia sujeta a 05/06. El alcance concreto está en design. Cada tarea espera sólo los pendientes que afectan sus rutas y contratos. Las tareas independientes pueden avanzar dentro del alcance aprobado. Matías aprobó el alcance ALTO descrito en design y autorizó iniciar las tareas independientes el 13/11/2026. Antes de editar producción, ejecutar safety net del área y seguir RED → GREEN → triangulación → refactor con evidencia por tarea. Las pruebas se ejecutan en perfiles aislados. El registro de código probado debe identificar también cambios sin commit. No ejecutar build sin pedido explícito.
+## Alcance activo de Matías y deuda externa
 
-## 1. Contratos y comprobaciones previas
+Esta lista sigue exclusivamente trabajo propio de 04. Matías pidió separar como **deuda** los cambios, insumos y disposiciones que no dependen de él; no dejarlos como tareas activas abiertas suyas. Las tareas mixtas se dividieron: el sufijo `a` identifica solo la parte entregada, sin afirmar completado el requisito original completo.
 
-- [ ] 1.1 Alinear el contrato técnico de entrega con 03 y completar la matriz compartida para Machine, incluida evidencia directa por acción. Verificar coincidencia de filas, targets y rutas entre ambos diseños.
-- [ ] 1.2 Resolver P2 con sondas de CLI y extensión IDE en Windows y Linux. Registrar versión, mecanismo de roles, política explícita, contexto, controles y reanudación por celda. Verificar un pedido implícito y uno manual por interfaz.
-- [ ] 1.3 Revisar con 01/03/08 el diff de escritura del snapshot persistente confirmado. Verificar que la reversión posterior usa estado esperado persistente y no depende sólo de guardas en memoria.
-- [ ] 1.4 Fijar revisiones corregidas de 05/06 y consumir el sobre de 07. Mantener la integración de evidencia pendiente de esas entregas mientras avanzan tareas independientes. Verificar ejecución directa y delegada con los mismos criterios de evidencia y el sobre de retorno común.
+**20 unidades activas: 17 entregadas y 3 propias pendientes (1.2, 2.4, 4.2).** Antes del ajuste había 21 tareas originales, 11 completas y 10 pendientes mixtas. El checklist original literal y la correspondencia por responsabilidad están en [trazabilidad del alcance](informes/trazabilidad-alcance-y-deuda-04-2026-11-13.md). Este cambio de conteo no equivale a 17/21 tareas originales implementadas.
 
-## 2. Entrega y composición
+La deuda externa se gestiona fuera de este checklist en [registro de deuda](informes/deudas-aceptadas-05-06-07-2026-11-13.md): D04-0501/0601–0604/0701–0702, D04-0201, D04-0301, D04-010308, D04-BASE01 y D04-REV01. Cada fila conserva proveedor, origen, disparador y criterio de cierre; Matías integra lo que corresponda cuando llegue el insumo. No se marca como implementado lo que no se hizo.
 
+Alcance Machine y escritura ALTA ya aprobados. Las pruebas usan perfiles aislados; aplicar safety net y TDD antes de producción. No ejecutar build sin pedido explícito. La entrega funcional completa aún no está acreditada: las acciones con requisitos obligatorios ausentes se detienen y quedan sin verificar. No se archiva automáticamente ni se cierra el PR antes de su disposición y merge.
+
+## Trabajo propio del alcance vigente
+
+- [x] 1.1a Entregar conciliación técnica del despacho Codex con main, columna Codex de matriz y paquete de revisión compartida; no incluye la disposición humana de 03 ni la fila de evidencia final. Ver D04-0301/D04-0601.
+- [ ] 1.2 Ejecutar las sondas propias P2 de Codex CLI y extensión IDE en Windows/Linux: versión, roles, invocación manual/implícita, contexto, controles y reanudación. Los insumos externos concretos se retoman desde deuda; esta comprobación de Matías sigue pendiente.
+- [x] 1.3a Entregar pruebas de reversión con snapshot persistente, estado esperado y manifiesto recargado, junto con el diff y evidencia para revisión 01/03/08. La disposición de esos responsables se registra en D04-010308.
+- [x] 1.4a Fijar revisiones 05/06/07 y consumir en Codex los cuatro módulos disponibles de 05 y las normas parciales D2–D4 de 06, con pruebas de composición y lifecycle. Operación final de captura/recibos/retorno queda en D04-0501/0601–0604/0701–0702.
 - [x] 2.1 Capturar safety net de model, adapters y config. Caracterizar consumidores Claude/OpenCode/Antigravity y design-mockups antes de cambiar despacho. Registrar tests existentes y fallos preexistentes.
 - [x] 2.2 Implementar la entrega y las rutas acordadas en P1 mediante el adapter, preservando el valor cero de ConfigDelivery. Probar ruta Machine, error por interfaz opcional ausente y el diagnóstico de Project legado.
 - [x] 2.3 Componer skill con agents/openai.yaml, bloque universal y módulos de apoyo. Probar política allow_implicit_invocation falsa, mapa de toggles, ausencia de referencias a módulos omitidos y ausencia de aliases de modelos de Claude.
-- [ ] 2.4 Entregar especialistas según la sonda P2 con los módulos y reglas del encargo. Probar TOML cuando corresponda, rutas con espacios y Windows, y fallback genérico con el sobre de 07/06.
-- [ ] 2.5 Integrar verify y el contrato de evidencia requerido por acción. Probar apply directo, verificación breve independiente, revisor ausente y evidencia autoconsistente sin corroboración que quede sin verificar.
-
-## 3. Instalación, actualización y retiro
-
+- [ ] 2.4 Implementar los especialistas y el encargo propios de Codex según P2, con rutas por adapter, espacios/Windows y alternativa genérica en lo independiente. La integración con contrato final de recibos/retorno espera D04-0601/D04-0701; no reemplaza el trabajo propio pendiente.
+- [x] 2.5a Distribuir y probar las normas parciales de evidencia e independencia y los mensajes de bloqueo ante contrato/captura/revisor ausentes. No incluye verify funcional ni generación/validación operativa de recibos; esos tramos condicionados están en D04-0501/0601–0604/0701.
 - [x] 3.1 Implementar preflight por ruta y propiedad antes de escribir. Probar skill o rol ajeno, archivo inválido, notas propias dentro de la skill y ausencia de cambios después del rechazo.
 - [x] 3.2 Incorporar las rutas al snapshot y plan. Migrar markers actuales y heredados, preservar secciones hermanas y contenido propio y escribir atómicamente. Probar instalación limpia, migración, fallo de backup, coexistencia de markers y reinstalación sin reescritura.
 - [x] 3.3 Implementar el punto persistente de reversión confirmado y persistir su identidad y estado esperado. Probar actualización doble, manifiesto recargado y edición posterior conservada. Documentar acceso al respaldo en las interfaces aprobadas.
 - [x] 3.4 Probar rollback con fallo de escritura después de AGENTS.md y con fallo duro de verify. Verificar recuperación de rutas sin cambios posteriores y preservación de una edición concurrente con conflicto informado.
 - [x] 3.5 Integrar update con y sin registro de instalación. Probar replay, idempotencia y ausencia de adopción silenciosa sin registro. Documentar el término registro de instalación en los mensajes.
 - [x] 3.6 Implementar uninstall archivo por archivo para Machine. Probar archivo ajeno dentro de la skill, directorio no vacío, ruta ausente y rollback sin pérdida de datos del usuario.
-
-## 4. Verificación y documentación de entrega
-
 - [x] 4.1 Extender verify de instalación para propiedad, skill, policy, módulos y referencias. Probar piezas ausentes y distinguir resultado estructural de aceptación del cliente real.
-- [ ] 4.2 Repetir los mismos escenarios funcionales en CLI y extensión IDE en Windows y Linux: normal, explícito, especialista, verify independiente, módulo/control obligatorio ausente, protección equivalente y control opcional ausente. Guardar evidencia por celda y declarar las que no pudieron probarse.
-- [ ] 4.3 Ejecutar con 02 la comparación de sesión normal y coordinada, incluidas aprobaciones y métricas ausentes por interfaz. Verificar que la baseline pendiente no se presenta como concluida y que terminal integrada se clasifica como CLI.
-- [ ] 4.4 Verificar regresiones de consumidores, pruebas de áreas afectadas, gofmt y go vet, y suite Go completa al entregar. Registrar RED/GREEN, casos de borde y revisión independiente de preservación, ownership y rollback.
+- [ ] 4.2 Ejecutar aceptación propia con Codex real en CLI y extensión IDE Windows/Linux: normal, explícito, especialista, verify en lo habilitado, módulo/control ausente y alternativas. Identificar los casos detenidos por deuda externa; no acreditar celdas no ejecutadas.
+- [x] 4.4a Ejecutar y documentar regresiones, gofmt, go vet, suite Go y revisión técnica independiente de preservación/ownership/rollback sobre la entrega publicada. Registrar suite fallida y comparación exacta con main; resolución/disposición de fallos ajenos queda en D04-BASE01.
 - [x] 4.5 Actualizar README, arquitectura y AGENTS/CLAUDE en espejo para invocación, matriz, fallback, límites y reversión. Si se toca el catálogo validar catalog.Load(). Comprobar que los comandos documentados existen.
-- [ ] 4.6 Realizar revisión conjunta 03/04 sobre la matriz y escenarios comunes antes de promover la migración. Registrar disposición humana del alcance ALTO y pendientes de las dependencias.
+- [x] 4.6a Entregar paquete revisable de matriz, compatibilidad y escenarios técnicos comunes 03/04 con resultados y límites. La disposición humana conjunta y revisión de responsables siguen en D04-REV01/D04-0301.
 
-## Workflow follow-up
+## Evidencia de las unidades entregadas
 
-- Archivar después de verificar los escenarios y resolver las limitaciones de aceptación registradas.
-- Los informes propose anteriores conservan evidencia histórica del diseño sustituido.
+| Unidades | Evidencia |
+|---|---|
+| 1.1a, 4.6a | [Integración de main](informes/integracion-main-pr8-2026-11-13.md), [revisión de integración](informes/revision-integracion-pr8-04-2026-11-13.md). No sustituyen revisión humana de otros responsables. |
+| 1.3a, 3.1–3.6 | [Lifecycle](informes/apply-lifecycle-2026-11-13.md), [backup](informes/apply-backup-2026-11-13.md), [revisión independiente](informes/revision-independiente-04-2026-11-13.md). |
+| 1.4a, 2.3, 2.5a | [Consumo implementado de módulos](informes/apply-modulos-05-06-2026-11-13.md), [revisión de módulos](informes/revision-modulos-05-06-2026-11-13.md). Son normas y entrega estructural, no aceptación de verify funcional. |
+| 2.1, 2.2 | [Composición](informes/apply-composition-2026-11-13.md), [diagnóstico Project](informes/avance-paralelo-04-2026-11-13.md). |
+| 4.1, 4.4a, 4.5 | Informes de integración, módulos, revisiones independientes y [correcciones de revisión](informes/correcciones-revision-pr9-2026-11-13.md). Suite final: 2081 eventos aprobados, 6 fallidos conocidos y 3 omitidos; vet/race aprobados. Suite global no verde. |
 
-## Avance del 13 de noviembre
+## Trabajo propio que sigue pendiente
 
-- 2.1 y 2.3 completadas para composición independiente. Ver `informes/apply-composition-2026-11-13.md`.
-- La entrega Machine ya está conectada al instalador, verify y retiro. Project conserva su recorrido legado.
-- 3.3 completada: primer snapshot persistente, dos actualizaciones, publicación atómica, listado existente y restauración protegida desde disco. Ver informe de lifecycle y verificación final.
-- 03 mantiene pendiente el contrato común de entrega y matriz final. 05/06 mantienen pendiente la integración de captura y recibos corroborados.
-- 1.2 y 4.2 requieren clientes CLI/IDE Windows/Linux. Ver sonda local en `informes/apply-2026-11-13-sonda-local.md`.
-- El protocolo pendiente de ejecución para esas celdas está en [plan de aceptación de clientes](informes/plan-aceptacion-clientes-04.md); su preparación no marca tareas de aceptación como completas.
+- **1.2:** obtener y registrar las sondas P2; el [plan de clientes](informes/plan-aceptacion-clientes-04.md) está preparado, no ejecutado por completo.
+- **2.4:** entregar especialistas y sus rutas/encargos; no hay prueba de roles funcionales que permita darla por hecha.
+- **4.2:** ejecutar la matriz con clientes reales sobre el paquete final. La sonda macOS solo acredita descubrimiento; Linux de Juani acredita instalador. No sustituyen CLI/IDE Windows/Linux.
 
-
-## Integración del 13 de noviembre
-
-La evidencia por tarea está en `informes/apply-lifecycle-2026-11-13.md` y `informes/verificacion-integracion-2026-11-13.md`.
-
-- 3.1–3.4 prueban propiedad, migración, snapshot persistente, reintentos, fallos de escritura y rollback tardío con notas o directorios sustituidos.
-- 3.5 reutiliza el replay de update por install. Las pruebas dirigidas de update preservan la configuración sin registro; el recorrido nativo de instalación prueba reaplicación y actualización de módulos.
-- 3.6 y 4.1 prueban retiro por archivo y estructura, ownership y policy. No equivalen a aceptación del comportamiento del modelo.
-- 4.5 actualiza README, arquitectura y el bloque correspondiente de AGENTS/CLAUDE en espejo.
-- 2.2 completada en el instalador: entrega Machine, error de capacidad opcional ausente y diagnóstico stderr de Project legado, sin cambiar su comportamiento ni etiquetarlo degradado. La alineación compartida con 03 sigue en 1.1/4.6; la aceptación de clientes reales, en 1.2/4.2. Ver `informes/avance-paralelo-04-2026-11-13.md`. 2.4 espera sondas de roles. 2.5 espera contratos/captura corregidos de 05/06.
-- 4.4 sigue pendiente: la suite completa tiene fallos reproducidos en main; el detalle y los comandos están en el informe final. CLI/IDE Windows/Linux y comparación modular siguen pendientes en 1.2, 4.2 y 4.3.
-- Revisión independiente de preservación y diagnóstico, con corrección del retorno parcial tras fallo de un adapter posterior y regresión de rollback: `informes/revision-independiente-04-2026-11-13.md`. La tanda final conserva los mismos fallos globales conocidos; el conteo de tareas permanece 11/21.
-- Observación de rutas de la revisión del PR #9 corregida en los mensajes propios de 04, con RED/GREEN y seis casos de preflight, restauración y conflicto de rollback: `informes/correcciones-revision-pr9-2026-11-13.md`. Esto no acredita aceptación funcional de Windows ni cambia las tareas pendientes.
-- Tras el merge del PR #8 en main `7a600895`, se concilió técnicamente el despacho por cliente, contratos, rutas, verificación y retiro. Ver `informes/integracion-main-pr8-2026-11-13.md`. Las tareas 1.1 y 4.6 conservan su estado pendiente por evidencia directa y revisión humana compartida; esta integración no agrega funciones de 03 ni altera el conteo 11/21.
-
-## Consumo disponible y deuda externa autorizada
-
-- Se amplió la composición de 2.3 con los cuatro módulos literales de 05 `e4ec0f5`, tabla Codex por acción/toggle y reglas de ausencia/vacío/reanudación. Se incorporaron inline las normas corregidas D2–D4 de 06 `f62cf00`, identificadas como parciales. Pruebas y alcance: `informes/apply-modulos-05-06-2026-11-13.md`.
-- 1.4 y 2.5 permanecen sin completar: su consumo textual disponible está implementado, pero falta el contrato/operación de recibos y captura. Matías autorizó tratar únicamente esas dependencias externas de 05/06/07 como deuda para entregar el avance a revisión, según `informes/deudas-aceptadas-05-06-07-2026-11-13.md` (D04-0501, D04-0601–0604, D04-0701–0702).
-- La deuda no reemplaza checks implementados ni las pruebas funcionales propias. Continúan pendientes P2, especialistas, CLI/IDE Windows/Linux, comparación con 02 y revisión humana compartida; no están aceptadas como deuda por esta autorización. Las acciones que requieren contrato/captura/revisor aún ausentes siguen detenidas. No se archiva el change por publicar la entrega parcial.
+No se asignó ese trabajo propio a terceros sin acuerdo ni se lo ocultó como deuda externa. Las partes realmente condicionadas a otros changes se retoman desde sus IDs de deuda, no como duplicados abiertos del checklist.

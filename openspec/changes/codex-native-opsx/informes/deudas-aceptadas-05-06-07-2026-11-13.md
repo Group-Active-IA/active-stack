@@ -1,6 +1,6 @@
-# Deudas de 05/06/07 aceptadas para la entrega de 04
+# Deuda externa aceptada para la entrega de 04
 
-13 de noviembre de 2026. **Aceptación: Matías, instrucción explícita en esta conversación de marcar como deuda lo que no pueda avanzar sin 05/06/07.** La autorización permite registrar esos pendientes y publicar el avance de 04 para revisión. No aprueba en nombre de Emiliano, Gianfranco, Neyen o el grupo un contrato técnico propuesto; tampoco declara terminado el change ni mergeable el PR.
+13 de noviembre de 2026. **Aceptación vigente: Matías amplió expresamente la instrucción a dejar como deuda los cambios que no dependen de él.** Sustituye la restricción inicial a 05/06/07 y comprende insumos de 02, revisiones/disposiciones de otros responsables y fallos ajenos. La aceptación permite retirar esos pendientes del checklist activo propio y publicar el avance para revisión. No aprueba contratos en nombre del grupo ni declara terminado el change o mergeable el PR. El nombre de este archivo se conserva por los enlaces existentes; su alcance vigente es toda la deuda externa identificada.
 
 Este registro complementa [consumo disponible de módulos](consumo-modulos-05-06-2026-11-13.md). No marca checks ni archiva OpenSpec. Las normas disponibles se consumen en Codex con su procedencia; lo que falta externamente se conserva con estado y criterio de reanudación verificable.
 
@@ -34,16 +34,36 @@ Los cuatro textos de 05 y su tabla son entrega textual disponible. De 06 están 
 
 El texto de 04 debe identificar origen y carácter parcial, por ejemplo: «Requisitos parciales de evidencia, derivados de 06 en `f62cf00`; no constituyen el contrato completo de recibos». Se conserva la condición: **si faltan contrato completo requerido o captura independiente, detener la acción afectada y mantener el resultado sin verificar**. La presencia del texto o de módulos nuevos no satisface por sí sola esa condición.
 
-## Qué no queda aceptado como deuda por esta autorización
+## Ampliación a los demás responsables
 
-- Sondas propias P2, especialistas, herencia, lectura real de módulos y aceptación CLI/IDE Windows/Linux de 04 (tareas 1.2, 2.4 y 4.2, salvo el insumo externo concreto registrado arriba).
-- Comparación con 02, resultados de ahorro y su baseline (4.3).
-- Revisión humana de snapshot, matriz y migración, ni comprobaciones de integración y regresiones propias de 04 (1.1, 1.3, 4.4 y 4.6).
-- Defectos propios de 04 o fallos preexistentes de main: se registran y disponen por su circuito, no se convierten en dependencias 05/06/07.
-- Deuda de 03, implementación de otros responsables, archivo del change, aceptación por el equipo o merge automático del PR.
+Los requisitos externos se retiran del checklist activo de Matías, sin marcarlos hechos. Estas filas se suman a D04-0501/0601–0604/0701–0702; no sustituyen sus criterios.
 
-Las tareas mixtas 1.4/2.5 pueden tener una parte implementada y otra sujeta a este registro. Un checkbox completo no sustituye esa separación ni la evidencia. Este documento no modifica su estado; el integrador debe reflejar alcance y referencias en los artefactos que mantiene, sin ocultar los requisitos restantes.
+| ID | Origen original y responsable externo | Artefacto/disposición faltante y disparador | Criterio de cierre y prueba al retomar | Riesgo/estado |
+|---|---|---|---|---|
+| D04-0201 | 4.3; Giuliano, responsable de 02; Matías consumidor de 04 al llegar el insumo | Referencia/protocolo operativo aprobado y disposición de corrida conjunta normal/coordinada. Disparador: entrega identificada de 02 y condiciones de medición disponibles. | Fijar revisión, cohortes CLI/IDE, permisos, esperas y métricas ausentes; ejecutar comparación con misma rúbrica y publicar resultados sin inventar ahorro ni doble contar padre/hijos. | Deuda externa aceptada, medición no ejecutada. Matías conserva integración/ejecución consumidora al disparador; no se presenta baseline ni ahorro concluidos. |
+| D04-0301 | 1.1 y 4.6; Juani, responsable de 03, más 06 para la fila de evidencia | Confirmación del responsable sobre matriz/compatibilidad y acuerdo compartido de fila 28. Disparador: revisión del paquete técnico de 04 y texto/acuerdo final de 06. | Disposición humana identificada, IDs/rutas/targets acordados y comprobación del consumo en ambos clientes cuando corresponda; preservar estrategia de Claude. | Deuda externa aceptada, aprobación no recibida. Integración técnica y tests combinados de 04 sí están entregados; no se afirma aprobación de Juani ni se implementa 03. |
+| D04-010308 | 1.3; Juan Cruz (01), Juani (03), Gianfranco (08) | Disposición compartida del diff de snapshot/restauración y controles sobre configuración propia. Disparador: revisión del diff/evidencia ya entregados. | Registrar aceptación o hallazgos por responsable y retestar el ajuste pertinente: manifiesto recargado, primer snapshot, ediciones posteriores y conflicto sin pérdida. | Deuda externa aceptada, revisión humana no concluida. La aprobación de Matías del alcance ALTO y los tests técnicos no se atribuyen como aprobación de los otros responsables. |
+| D04-BASE01 | 4.4; Giuliano/02 para fixtures; responsable de descargador y test WindowsTheme (TBD equipo) | Corrección o disposición de fallos conocidos de main. Disparador: revisión corregida del proveedor o decisión documentada del equipo. | Repetir tests identificados y comparar con main de la revisión integrada. API404 y tres tests principales de fixture deben dejar de fallar, o documentarse la disposición sin presentar verde la suite. WindowsTheme exige entorno/corrección pertinente. | Deuda externa aceptada. Los checks propios se ejecutaron y documentaron; no se corrige código ajeno ni se ocultan exclusiones/fallos. |
+| D04-REV01 | 4.6 y proceso de integración; Juani/03 y revisores del equipo | Disposición humana final del paquete común y revisión del PR #9. Disparador: revisores evalúan la entrega y sus límites actuales. | Registrar aprobación o comentarios, aplicar correcciones propias y revalidar lo afectado. El merge es una acción posterior a la aprobación correspondiente. | Deuda externa aceptada, disposición pendiente. Paquete y evidencia de Matías entregados; no equivale a aceptación por el equipo, cierre de PR ni archivo OpenSpec. |
+
+### Origen de las siete deudas iniciales
+
+| IDs | Tareas originales de las que se separan |
+|---|---|
+| D04-0501 | 1.4, 2.5; insumo externo de captura para los casos aplicables de 4.2 |
+| D04-0601–0604 | 1.4, 2.5; contrato/huella/datos/suficiencia externos para integración posterior de 04 |
+| D04-0701–0702 | 1.4, 2.5 y parte dependiente del retorno final de 2.4 |
+
+El [mapa de trazabilidad](trazabilidad-alcance-y-deuda-04-2026-11-13.md) conserva literalmente las 21 tareas originales y el reparto de las diez que estaban abiertas. Los históricos anteriores con exclusiones de 02/revisiones reflejan la autorización inicial y quedan sustituidos en el seguimiento vigente por esta ampliación.
+
+## Trabajo propio que no se convierte en deuda ajena
+
+Permanecen activas **1.2, 2.4 y 4.2**: sondas P2, implementación independiente de especialistas/rutas/encargo y aceptación propia con clientes reales. No se asignaron a otro responsable sin acuerdo; no disponer hoy de un entorno no demuestra que su autoría sea externa. Se registran aparte los insumos de otras fichas que requieren algunos escenarios, sin declarar completa la ejecución propia no realizada.
+
+Las unidades sufijadas `a` en tasks son únicamente partes entregadas de tareas mixtas: texto, pruebas estructurales, conciliación técnica o paquete de revisión. No significan que se implementó el comportamiento funcional completo ni que la aprobación ajena fue recibida. El nuevo conteo es 17/20 unidades activas, con tres propias pendientes; no 17/21 tareas originales completadas.
+
+No se acepta como hecha la implementación de 03 o de otros responsables, no se archiva el change y no se cierra el PR antes de su revisión/disposición y merge. Si una revisión ajena detecta un defecto propio de 04, corregirlo es trabajo propio y vuelve al checklist activo pertinente, no una deuda externa permanente.
 
 ## Reanudación
 
-Cuando llegue una revisión nueva de 05/06/07, comparar el contrato con la revisión fijada, revisar su disposición humana y pruebas, ejecutar en 04 el caso de la fila correspondiente y registrar árbol/revisión/resultados. Solo entonces cerrar la deuda aplicable. El seguimiento no implica implementar los changes proveedores desde esta rama ni extrapolar cobertura entre clientes o interfaces.
+Cuando llegue un insumo, revisión o disposición de cualquiera de los responsables externos, compararlo con la referencia fijada, revisar sus pruebas, ejecutar en 04 el caso de la fila correspondiente y registrar árbol/revisión/resultados. Solo entonces cerrar la deuda aplicable. El seguimiento no implica implementar los changes proveedores desde esta rama ni extrapolar cobertura entre clientes o interfaces.
