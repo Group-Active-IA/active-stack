@@ -276,3 +276,65 @@ func TestManagedUninstall_OtherManifestKeepsGuardAndWarns(t *testing.T) {
 		t.Errorf("output must warn that it is not the migration manifest and name its path: %q", joined)
 	}
 }
+
+// B2 (PR #8 review): skipping settings.json only applies when the manifest being
+// restored is the registered claude-native-opsx migration one. Any other
+// manifest (for instance the permissions harness one) restores it as in main.
+func TestManagedUninstall_RestoreOtherManifestRestoresSettings(t *testing.T) {
+	m := migrate(t)
+	const before = "{\"permissions\": \"BEFORE\"}\n"
+	write(t, m.settings, before)
+	other, err := backup.NewSnapshotter().Create(filepath.Join(m.home, "settings-manifest"), []string{m.settings})
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(t, m.settings, "{\"permissions\": \"AFTER-INSTALL\"}\n")
+	if err := runApply(plan(t, m, uninstall.Intent{Strategy: uninstall.StrategyRestore}, uninstall.Options{RestoreManifest: &other})); err != nil {
+		t.Fatalf("restore: %v", err)
+	}
+	if got := read(t, m.settings); got != before {
+		t.Errorf("settings.json must be restored from a non-migration manifest.\nwant %q\ngot  %q", before, got)
+	}
+}
+
+// The migration manifest itself never rewrites settings.json, even when it holds
+// a snapshot of it.
+func TestManagedUninstall_RestoreMigrationManifestSkipsSettings(t *testing.T) {
+	m := migrate(t)
+	mf := migrationManifest(t, m)
+	snap, err := backup.NewSnapshotter().Create(filepath.Join(m.home, "inject-settings"), []string{m.settings})
+	if err != nil {
+		t.Fatal(err)
+	}
+	mf.Entries = append(mf.Entries, snap.Entries...)
+	write(t, m.settings, "{\"agent\": \"later\"}\n")
+	if err := runApply(plan(t, m, uninstall.Intent{Strategy: uninstall.StrategyRestore}, uninstall.Options{RestoreManifest: &mf})); err != nil {
+		t.Fatalf("restore: %v", err)
+	}
+	if read(t, m.settings) != "{\"agent\": \"later\"}\n" {
+		t.Error("the migration manifest must not touch settings.json")
+	}
+}
+
+// C2 (PR #8 review): the guard fails closed. A claude-migration.json that exists
+// but cannot be parsed stops the restore before writing anything, and the error
+// names the file.
+func TestManagedUninstall_RestoreFailsClosedOnUnreadableMigrationRecord(t *testing.T) {
+	m := migrate(t)
+	mf := migrationManifest(t, m)
+	edited := read(t, m.md) + "\nmy later edit\n"
+	write(t, m.md, edited)
+	recPath := config.MigrationRecordPath(m.home)
+	write(t, recPath, "{not json")
+
+	err := runApply(plan(t, m, uninstall.Intent{Strategy: uninstall.StrategyRestore}, uninstall.Options{RestoreManifest: &mf, OverwriteEdited: true}))
+	if err == nil || !strings.Contains(err.Error(), recPath) {
+		t.Fatalf("want an error naming %q, got %v", recPath, err)
+	}
+	if read(t, m.md) != edited {
+		t.Error("nothing may be written when the migration record cannot be read")
+	}
+	if !exists(m.skill) {
+		t.Error("the skill dir must stay when the restore is refused")
+	}
+}

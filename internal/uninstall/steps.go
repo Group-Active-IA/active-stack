@@ -370,8 +370,9 @@ type restoreStep struct {
 	installManifest backup.Manifest
 	home            string
 	overwriteEdited bool
-	// skipPaths are never restored (Claude settings.json: claude-native-opsx
-	// only reads it).
+	// skipPaths are never restored when the manifest is the registered
+	// claude-native-opsx migration one (Claude settings.json: that migration
+	// only reads it). Any other manifest restores them as usual.
 	skipPaths  []string
 	onProgress pipeline.ProgressFunc
 }
@@ -383,7 +384,11 @@ func (s *restoreStep) Run() error {
 	if err := s.guardEdited(m); err != nil {
 		return err
 	}
-	if len(s.skipPaths) > 0 {
+	migration, err := registeredMigration(s.home, m)
+	if err != nil {
+		return err
+	}
+	if migration && len(s.skipPaths) > 0 {
 		skip := map[string]bool{}
 		for _, p := range s.skipPaths {
 			skip[filepath.Clean(p)] = true
@@ -399,6 +404,22 @@ func (s *restoreStep) Run() error {
 	return restoreFn(m)
 }
 
+// registeredMigration reports whether m is the manifest registered in
+// claude-migration.json for one of its entries. An unreadable record is an
+// error: the restore fails closed instead of guessing.
+func registeredMigration(home string, m backup.Manifest) (bool, error) {
+	for _, e := range m.Entries {
+		rec, ok, err := config.LoadMigrationRecord(home, e.OriginalPath)
+		if err != nil {
+			return false, fmt.Errorf("not restoring: cannot read the migration record: %w", err)
+		}
+		if ok && filepath.Clean(rec.ManifestDir) == filepath.Clean(m.RootDir) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
 // guardEdited applies the hash guard of the layered Claude delivery: for every
 // manifest entry that is an instructions file with a registered migration, the
 // current hash of CLAUDE.md and of each skill file is compared with the hash
@@ -410,7 +431,10 @@ func (s *restoreStep) guardEdited(m backup.Manifest) error {
 	var edited []string
 	for _, e := range m.Entries {
 		rec, ok, err := config.LoadMigrationRecord(s.home, e.OriginalPath)
-		if err != nil || !ok {
+		if err != nil {
+			return fmt.Errorf("not restoring: cannot read the migration record: %w", err)
+		}
+		if !ok {
 			continue
 		}
 		if filepath.Clean(rec.ManifestDir) != filepath.Clean(m.RootDir) {
