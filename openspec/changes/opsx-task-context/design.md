@@ -6,159 +6,180 @@ Ver `proposal.md` — Why e Impact para la motivación y la medición de partida
 
 Tres restricciones del estado actual condicionan todo el diseño:
 
-1. **El mecanismo de composición ya existe y es puro.** `internal/harness/config/compose.go` ensambla el bloque de forma determinista: dos toggles sustractivos (`delegation`, `model-routing`, que quitan secciones marcadas del archivo base) y tres aditivos (`governance`, `engram`, `tdd`, que se concatenan en orden fijo). La función no hace I/O y el mismo input produce siempre el mismo output. No hay que construir un mecanismo de carga modular: hay que darle un selector.
-2. **El selector no existe.** Claude y Codex componen en la rama `default` de `internal/harness/config/install.go:70`, que invoca `Compose(h.Toggles, …)` con los toggles literales del catálogo; OpenCode pasa por la rama `ConfigDeliveryPrimaryAgent` (`install.go:53`, que elige `internal/agents/opencode/adapter.go:113`) con los mismos toggles. No hay bandera de CLI, pantalla de TUI ni campo de configuración que los filtre, y el `CLAUDE.md` del proyecto lo declara explícitamente (`CLAUDE.md:82`): los toggles del orquestador no se exponen en la TUI ni en la GUI. El resultado es que toda instalación produce el bloque máximo.
-3. **La decisión ocurre en el momento equivocado.** La composición se congela al instalar y se inyecta con markers en `CLAUDE.md`/`AGENTS.md`. En ese momento no se conoce la acción activa, así que no hay información con la que decidir. Mover la decisión a donde la acción sí se conoce es el núcleo de este change.
+1. **El mecanismo de composición ya existe y es puro.** `internal/harness/config/compose.go` ensambla el bloque de forma determinista: dos toggles sustractivos (`delegation`, `model-routing`, que quitan secciones marcadas del archivo base) y tres aditivos (`governance`, `engram`, `tdd`, que se concatenan en orden fijo). La función no hace I/O y el mismo input produce siempre el mismo output.
+2. **El selector no existe en `main`.** Claude y Codex componen en la rama `default` de `internal/harness/config/install.go:70`, que invoca `Compose(h.Toggles, …)` con los toggles literales del catálogo; OpenCode pasa por la rama `ConfigDeliveryPrimaryAgent` (`install.go:53`). No hay bandera de CLI, pantalla de TUI ni campo de configuración que los filtre (`CLAUDE.md:82`). Toda instalación produce el bloque máximo.
+3. **La decisión ocurre en el momento equivocado.** La composición se congela al instalar y se inyecta con markers en `CLAUDE.md`/`AGENTS.md`. En ese momento no se conoce la acción activa. La entrega por skill que parte el bloque en capa universal, cuerpo de la skill y módulos existe hoy **dos veces y fuera de `main`**: la 03 (PR #8, change archivado en su rama) con `ComposeLayers`, que parte el asset con anotaciones `<!-- as:module/<id> -->`, y la 04 (PR #9, borrador) con `ComposeCodexPackage`, que lo parte con `splitCodexAsset` y escribe la tabla de acciones a mano. Las dos agregan la constante `ConfigDeliveryManagedSkill` con semánticas distintas y no se integran sin conflicto (documentado y medido: `entrega-03-04.md` §5, R5 y R6). Lo que esta ficha agrega es **cuándo** se lee cada módulo, y propone el compositor común que lo resuelve una sola vez (D23).
+
+Fuentes de esta revisión (2026-11-13): el informe unificado de revisión OPSX del 11/11 (`informe-unificado-propuestas-opsx.md`), la matriz común de reglas que publicó la 03 el 12/11 (`origin/claude-native-opsx:openspec/matriz-reglas-opsx.md`, en adelante *la matriz común*) y las pruebas reales del 13/11 con Claude Code 2.1.319 y Codex 0.167.1 en Windows y sobre las PR #8 y #9 (`entrega-03-04.md` §5 y §6, citadas por id: C1…, X1…, R1…).
 
 ## Goals / Non-Goals
 
 **Goals:**
 
 - Especificar la frontera entre lo que es obligatorio en toda sesión y lo que se resuelve por acción, de forma que la frontera sea verificable y no una recomendación.
-- Especificar un contrato de resumen de salida que se pueda probar con fixtures antes de que exista implementación.
-- Dejar el inventario de partida medido y reproducible, para que 02 pueda comparar contra él y para que la discusión de ahorro deje de ser una estimación.
-- Entregar el diseño de los fixtures y el criterio de aceptación; las corridas se planifican como tareas.
+- Especificar un contrato de resumen de salida que se pueda probar con fixtures antes de que exista implementación, con roles separados para capturar, redactar y resumir.
+- Demostrar, por cliente, interfaz y sistema, qué fuente independiente captura la salida antes del truncamiento.
+- Dejar el inventario de partida medido y reproducible, para que 02 pueda comparar contra él.
 
 **Non-Goals:**
 
-- No se diseña ningún subcomando nuevo del binario. Los *Límites compartidos* del roadmap (`CHANGES.md:49`) dicen que *"un ledger firmado, un runtime nuevo o una integración permanente del juez requieren una decisión de arquitectura separada"* y que *"el arnés de evaluación queda fuera del binario"*. Un subcomando que capture y resuma salidas sería ese runtime nuevo. Además, el informe ejecutivo advierte que un envoltorio de estado no debe crear una segunda autoridad frente a OpenSpec, que `ARCHITECTURE.md:165` declara fuente de verdad del estado. El resumen de salida se especifica como **contrato de formato**: qué debe conservar, qué referencia debe llevar, qué se redacta. Quién lo produce se decide en D8 y quién ejecuta cada regla en D17.
-- No se reestructura `sdd-orchestrator.md`. Ese artefacto lo tocan seis fichas; su reestructuración en módulos es de 03 y 04. Este change escribe requisitos sobre él y **redacta el texto de sus propios módulos** (lectura dirigida, resumen acotado, selección de herramientas, reporte conciso) como entrega a 03 y 04, que lo ubican (D17).
-- No se define ninguna métrica de consumo de modelo. Eso es 02. Los números de este change son de tamaño de texto y están etiquetados como tales.
-- No se diseña un almacén de evidencia. La ubicación y la retención del original se deciden en D9 con valores concretos; qué evidencia se considera suficiente para aceptar un cambio sigue siendo de 06.
+- No se diseña ningún subcomando nuevo del binario. Los *Límites compartidos* del roadmap (`CHANGES.md:49`) dicen que *"un ledger firmado, un runtime nuevo o una integración permanente del juez requieren una decisión de arquitectura separada"* y que *"el arnés de evaluación queda fuera del binario"*. La captura independiente de esta ficha vive en el arnés (`eval/taskcontext/`) o es una fuente que el cliente ya ofrece (D8, D22); un capturador permanente instalado en la sesión del usuario es esa decisión separada.
+- No se reestructura `sdd-orchestrator.md`. La partición en capas es de 03 y 04 (matriz común). Esta ficha **redacta el texto de sus propios módulos** y la tabla de carga, y los entrega (D23).
+- No se define ninguna métrica de consumo de modelo. Eso es 02. Los números de este change son de tamaño de texto.
+- No se define qué evidencia alcanza para aceptar un cambio: eso es de 06. Esta ficha define captura, acceso y política de datos.
+
+## Estado de las decisiones
+
+Cada decisión lleva su estado:
+
+| Estado | Qué significa |
+|---|---|
+| **acordado** | lo registra el informe unificado (11/11), la matriz común (12/11) o el roadmap |
+| **propuesto a <ficha>** | toca alcance de otra ficha y espera su confirmación; queda en *Coordinación pendiente* |
+| **de la 05** | está dentro del alcance de esta ficha y no cambia el de otra |
+
+Cada afirmación sobre un cliente o una rama lleva además su respaldo: **medido** (prueba real, con su id en `entrega-03-04.md` §5; n = 1), **documentado** (fuente citada) o **no probado** (motivo en `entrega-03-04.md` §6).
 
 ## Decisions
 
-### D1 — Mover la selección al momento de la acción, conservando la composición determinista
+### D1 — La selección ocurre al leer la skill, no al componer
 
-Se conserva el ensamblado determinista actual y se le agrega una entrada: la acción activa. La composición sigue siendo pura y el orden sigue siendo fijo, de modo que la resolución es reproducible y comparable entre corridas.
+**Acordado** (matriz común, *Capas*). La composición sigue siendo pura y determinista al instalar: produce la capa universal, el cuerpo de la skill y los módulos como archivos (`ComposeLayers` de la 03). La acción activa **no** es una entrada de `Compose`: el coordinador la conoce en la sesión y lee los módulos que la tabla acción → módulos del `SKILL.md` indica para ella. Esa tabla la genera el catálogo (D19), así que la resolución sigue siendo reproducible y comparable entre corridas.
 
-*Alternativa descartada: exponer los cinco toggles como banderas de instalación.* Es más barata y el plan previo del proyecto la propone. Se descarta porque resuelve otro problema —permite medir si un componente vale su costo, pero sigue congelando la elección al instalar: un equipo que active TDD porque lo usa en apply lo carga igual en explore— y porque el proyecto decidió que los toggles del orquestador no se exponen en la TUI ni en la GUI (`CLAUDE.md:82`). Este change no la propone ni como paso intermedio. La comparación con y sin cada módulo que 02 necesita no depende de banderas: se arma con el arnés de evaluación fuera del binario (tarea 6.4).
+*Alternativa descartada: exponer los cinco toggles como banderas de instalación.* Resuelve otro problema —permite medir si un componente vale su costo, pero sigue congelando la elección al instalar— y el proyecto decidió no exponer los toggles en la TUI ni en la GUI (`CLAUDE.md:82`). La comparación con y sin cada módulo se arma con el arnés fuera del binario (tarea 9.3).
 
-*Alternativa descartada: dejar el bloque completo y confiar en la caché del proveedor.* El informe ejecutivo ya matizó esa afirmación: el proveedor reutiliza bajo condiciones y el ensamblado lo hace el host. Depender de eso convierte una propiedad de diseño en una esperanza sobre un tercero. La estabilidad de prefijos y caché es materia de 09, como variable independiente.
+*Alternativa descartada: dejar el bloque completo y confiar en la caché del proveedor.* El proveedor reutiliza bajo condiciones y el ensamblado lo hace el host. La estabilidad de prefijos y caché es materia de 09.
 
-### D2 — El núcleo obligatorio se define por consecuencia, no por tamaño
+### D2 — El reparto por capa lo fija la matriz común; la 05 aporta el criterio
 
-La frontera entre núcleo y módulo no se fija con un presupuesto de bytes ni de líneas. Una instrucción pertenece al núcleo si su ausencia puede producir daño o invalidar el trabajo con independencia de la acción; pertenece a un módulo si su pertinencia depende de la acción activa.
+**Acordado** (matriz común, *Decisiones tomadas al publicar*). El criterio de la 05 es por consecuencia, no por tamaño: una instrucción va a la capa universal si su ausencia puede producir daño o invalidar el trabajo con independencia de la acción; va a módulo si su pertinencia depende de la acción. La matriz común aplica ese criterio fila por fila y es la única fuente del reparto: la 05 no redefine filas.
 
-*Por qué no un presupuesto numérico:* el informe ejecutivo marcó los umbrales de 40 líneas y 1.500 tokens como presupuestos de diseño, no como límites validados. Adoptar un número como criterio reintroduce exactamente la afirmación que la revisión rechazó. Los números siguen siendo útiles como hipótesis a medir con 02, y así quedan registrados en `proposal.md`.
-
-Aplicando el criterio al inventario medido, el reparto es el siguiente (**decidido por la 05 — pendiente de revisión del grupo**):
-
-| Fragmento | Reparto | Razón |
+| Fragmento | Capa en la matriz común | Relación con la propuesta de la 05 |
 |---|---|---|
-| reglas de cumplimiento obligatorio | núcleo | su ausencia invalida el trabajo en cualquier acción |
-| `governance` (1.276 B) | núcleo | `governance.md:3`: *"It applies to **all agents**, regardless of provider"*; define cuánta autonomía tiene el agente sobre dominios sensibles y eso no depende de la acción |
-| `engram` — regla corta | núcleo | `engram-protocol.md:4`: *"This protocol is MANDATORY and ALWAYS ACTIVE"*. Al núcleo va solo lo que lo hace siempre activo: la memoria existe, se consulta al empezar y se guarda ante decisiones |
-| `engram` — protocolo detallado | módulo | formato de guardado, cierre de sesión, recuperación tras compactación y git sync; se carga al inicio y al cierre de cada acción |
-| `delegation` (1.005 / 851 B) | módulo | solo aplica cuando la acción coordina subagentes; incluye la coordinación de subagentes, como lo trata la 07 (D19) |
-| `model-routing` (778 / 450 B) | módulo | solo aplica cuando hay delegación; se carga junto con `delegation` |
-| `tdd` (3.797 B) | módulo | solo aplica en `apply` con Strict TDD activo y runner de tests disponible |
-| `design-mockups` (8.865 B, `assets/design-mockups.md`) | fuera de alcance | es un harness propio con su sección `active-stack:design-mockups` (registrada en `sectionFragments`, `internal/harness/config/assets.go:29`) y política por proyecto; no es un toggle del orquestador |
+| `governance` — niveles (`governance.md:1-13`) | universal (fila 18) | converge: la 05 lo proponía en el núcleo |
+| `governance` — aplicación a delegación (`:14-fin`) | coordinador (fila 19) | compatible: la 05 no lo separaba |
+| `engram` — encabezado, guardado proactivo y búsqueda | universal (filas 8, 20, 22) | la 05 proponía una regla corta; la matriz deja universal más texto |
+| `engram` — wiring OPSX y git sync | módulo `engram-opsx` (filas 21, 24) | converge |
+| `engram` — cierre de sesión y compactación | coordinador (fila 23) | compatible |
+| delegación | módulo `delegation` (fila 10) | converge |
+| model routing | módulo `model-assignments` (fila 17); en Codex se omite hasta la 09 | converge; cambia el nombre |
+| `tdd` | módulo `tdd` (filas 25, 26) | converge |
+| ciclo de artefactos | módulo `artifacts` (fila 14) | nuevo de la matriz; la 05 fija cuándo se carga (D19) |
+| módulos de esta ficha | módulos nuevos (fila 27) | los entrega la 05 (D23) |
+| `design-mockups` | sección propia (fila 30) | fuera de alcance |
 
-**Por qué `engram` se parte en lugar de ir entero a un lado.** El dato medido es que `engram` son 6.093 B, el 30,4 % del bloque de Claude y el 33,8 % del de Codex (`proposal.md` — Impact). Entero al núcleo, esa fracción vuelve a estar en toda sesión; entero a módulo, contradice `engram-protocol.md:4`. Partido, al núcleo va solo la regla corta; su tamaño queda registrado en el golden de la tarea 1.1 cuando se redacte (tarea 3.10).
+**Por qué se adopta la fila de memoria aunque difiera.** `engram` son 6.093 B, el 30,4 % del bloque de Claude (`proposal.md` — Impact). La matriz deja en la capa universal el guardado y la búsqueda, que son más que la regla corta que proponía la 05. La 05 no reabre la fila: lleva la medición con y sin ese texto a la tarea 9.4 y entrega el resultado a la matriz como insumo.
 
-**Divergencias registradas con 03 y 04.** La 03 propone `governance` dividido —`governance.md:1-13` como módulo de propose y `:14-19` como coordinador— y `engram` partido entre universal (encabezado y guardado proactivo) y coordinador (wiring OPSX, cierre de sesión), todo marcado `(TBD grupo)` en su tabla (`claude-native-opsx/design.md:287-292`). La 04 deja G4 abierto entre *universal · módulo · híbrido*, con recomendación híbrido sujeta a 02 (`codex-native-opsx/design.md:331`). El reparto de la 05 **converge** con las dos en `engram` (partido, coincide con el corte universal/coordinador de la 03 y con el híbrido de la 04) y **diverge** de la 03 en `governance`: acá va entero al núcleo porque su propio texto dice que aplica a todo agente. La tarea 3.1 registra la divergencia contra la matriz única (punto *Matriz de módulos* abajo); el reparto se ajusta si el grupo lo rechaza, no queda abierto esperándola.
+*Por qué no un presupuesto numérico:* el informe ejecutivo marcó los umbrales de 40 líneas y 1.500 tokens como presupuestos de diseño, no como límites validados. Siguen siendo hipótesis a medir con 02.
 
 ### D3 — El resumen de salida se especifica por lo que debe conservar, no por cuánto debe recortar
 
-Un límite de tamaño es el modo de fallo que la ficha nombra: una salida extensa puede ocultar un fallo. Por eso el contrato se escribe en términos de retención obligatoria (errores, fallos, código de salida, redacción de datos sensibles) y de recuperabilidad del original, y no en términos de un tope de líneas. Un resumen que cumple la retención y pierde volumen es correcto; uno que cumple un tope y pierde un fallo es incorrecto.
+**De la 05.** Un límite de tamaño es el modo de fallo que la ficha nombra: una salida extensa puede ocultar un fallo. Por eso el contrato se escribe en términos de retención obligatoria (errores, fallos, código de salida, redacción de datos sensibles) y de recuperabilidad del original, y no en términos de un tope de líneas.
 
 El único número del contrato es **cuándo** se resume, no **cuánto**: una salida de más de 300 líneas **o** de más de 10.000 caracteres, lo que ocurra primero, se entrega como resumen más referencia (D19). Es una condición de entrada, no un tope de recorte.
 
-**Por qué dos unidades** (**decidido por la 05 — pendiente de revisión del grupo**). Los clientes no miden en líneas. Claude Code entrega inline un resultado válido hasta unos 30.000 caracteres y uno fallido hasta unos 10.000; pasado eso, el válido llega como ruta de archivo más una vista previa de los primeros 2.000 caracteres y el fallido como un extracto de cabeza y cola, *"with no file path"* (https://code.claude.com/docs/en/tools-reference, *Output limits*). Codex recorta el medio de cada salida dentro de un presupuesto por salida, `tool_output_token_limit` (https://learn.chatgpt.com/docs/config-file/config-reference), cuyo valor por defecto la documentación no da. Con 300 líneas de unos 100 caracteres, un comando fallido ya se recorta en Claude alrededor de la línea 100: el umbral en líneas solo, que es el de la lectura de archivos (D11), llegaba tarde justo en el caso que importa. Los 10.000 caracteres son el límite documentado más bajo de los dos clientes, y el umbral en líneas queda para que la regla siga siendo legible en la unidad del rango. El umbral de lectura de archivos (D11) y el de salidas de comando son **dos reglas distintas**, aunque compartan las 300 líneas.
+**Por qué dos unidades.** Los clientes no miden en líneas. Lo que recibe el modelo, por cliente:
 
-*Alternativa descartada: recortar por cabeza y cola.* Falla justamente en el caso del fallo central, que es uno de los tres que la ficha pide probar. Es además lo que el cliente ya hace por su cuenta con una salida fallida: por eso el resumen se arma desde el original capturado (D8) y no desde lo que el cliente mostró.
+| | Claude Code 2.1.319 | Codex 0.167.1 |
+|---|---|---|
+| Comando fallido con salida larga | **medido** (C1–C5): unos 10.040 caracteres de cabeza y cola con la marca `[N characters truncated]`, sin ruta al resto. Bash conserva primero unos 30.000 caracteres, así que la "cola" **no es el final real**: de 3.000 líneas, lo visible termina en la 912, un fallo en la última línea no aparece y la marca dice 20.012 cuando se omitieron ~90.000. Con 750 líneas (~25.000 caracteres) se pierden las líneas ~155 a 599. Solo stderr: igual | **medido** (X1–X6): cabeza y cola, mitad y mitad aproximada, con `Warning: truncated output (original token count: N)` y `…N tokens truncated…`; el final real se conserva. Igual con exit 0 o 1 y con solo stderr. El tamaño lo elige el modelo por llamada (`max_output_tokens`) con un tope externo de ~10.000 tokens (~40 KB); con 750 líneas (32.297 caracteres) ya se pierde el medio. El modelo no avisa que falta el medio. `-c tool_output_token_limit` en 2.000 y 50.000 no tuvo efecto observable (no concluyente) |
+| Comando exitoso con salida larga | **medido** (C6): vista previa de ~2 KB más la ruta a un archivo del cliente con la salida completa (3.000 líneas, 100.897 B). **Documentado**: *"with no file path"* para el fallido (https://code.claude.com/docs/en/tools-reference) | igual que el fallido |
+| Original completo disponible | solo en éxito, y es copia del cliente sin redactar (D9) | **medido** (X7): `aggregated_output` de `codex exec --json` trae la salida completa (D22); el historial de la sesión guarda la recortada (X8) |
 
-### D4 — Los fixtures son el entregable verificable de esta ronda
+Consecuencias. Los 10.000 caracteres se confirman: es el tamaño que Claude deja de un comando fallido y queda debajo del recorte de Codex. Para el caso que importa —un comando que falla con salida larga— **Claude no ofrece en la sesión ninguna fuente completa**, así que la captura la hace el arnés o el agente con la receta de D8. Y como ni Claude (marca que subestima) ni Codex (sin aviso) le dicen al modelo cuánto perdió, el módulo prohíbe resumir desde la vista del cliente. El par se sigue calibrando con las salidas reales del ciclo (tarea 1.8). El umbral de lectura de archivos (D11) y el de salidas son **dos reglas distintas**, aunque compartan las 300 líneas.
 
-Como el change no implementa, el artefacto que demuestra que la especificación es verificable son los fixtures. Se diseñan con el fallo en tres posiciones (inicio, medio, final), con varios fallos dispersos, con una salida verbosa sin fallos como control negativo, con un fallo que aparece **solo por stderr**, y con un comando cuyo original **nunca se capturó**. Cada fixture declara su salida original, su resumen esperado y el fallo que debe sobrevivir.
+**Qué es un fallo.** El código de salida distinto de cero es siempre un fallo. Además, el catálogo declara patrones de fallo por herramienta, empezando por las de este repositorio (`go test`: `--- FAIL`, `FAIL\t`, `panic:`; `go build` y `go vet`: `<archivo>:<línea>:<columna>:`), y cada fixture declara su conjunto de fallos esperado (tarea 2.10). Una salida de una herramienta sin patrones declarados se evalúa solo por código de salida, y el resumen lo dice. Así la comparación de fallos no depende del juicio del modelo.
 
-El fixture de stderr existe porque los clientes no tratan igual ese flujo: en Claude la salida llega *"with stderr interleaved into stdout"* (https://code.claude.com/docs/en/monitoring-usage); en Codex la documentación no lo dice. La captura de D8 redirige los dos flujos al mismo archivo, así que el fallo de stderr tiene que sobrevivir en ambos clientes; el fixture se corre en los dos. Los fixtures se corren **contra el cliente real** (D17): el recorte propio del cliente forma parte de lo que miden.
+*Alternativa descartada: recortar por cabeza y cola.* Falla justamente en el caso del fallo central, y es lo que el cliente ya hace con una salida fallida.
+
+### D4 — Los fixtures son el entregable verificable
+
+**De la 05.** Los fixtures son comandos deterministas cuya salida conoce el arnés. Se diseñan con el fallo en tres posiciones (inicio, medio, final), con fallos dispersos, con una salida verbosa sin fallos como control negativo, con ruido que imita un error, con un fallo real entre ruido, con un fallo **solo por stderr**, con **datos sensibles ficticios** —un valor inventado por cada patrón de D14, marcado como ficticio— y con un comando cuyo original **nunca se capturó**. Cada fixture declara su salida, su código de salida, su resumen esperado y el fallo que debe sobrevivir.
+
+Los fixtures sirven para dos cosas: medir **la fuente de captura** (si lo que entrega coincide con la salida conocida, D22) y medir **el resumen** (si conserva lo que el contrato exige, tarea 2.9). Los dos se corren contra el cliente real en el grupo 8.
 
 ### D5 — Procedencia obligatoria en lugar de umbral de lectura como regla principal
 
-La regla que más evita trabajo inválido no es "leé menos" sino "toda afirmación sobre el código indica ruta y línea o símbolo". El umbral de lectura completa es un apoyo; la procedencia es lo que hace falsable cada hallazgo. Se especifican las dos, con la procedencia como requisito normativo y el umbral como condición declarada en el catálogo.
+**De la 05.** La regla que más evita trabajo inválido no es "leé menos" sino "toda afirmación sobre el código indica ruta y línea o símbolo". El umbral de lectura completa es un apoyo; la procedencia es lo que hace falsable cada hallazgo.
 
 ### D6 — La llamada innecesaria se registra, no se bloquea
 
-Una relectura o una invocación repetida se marca como llamada innecesaria y queda registrada; nada la impide. Bloquearla exigiría decidir con certeza que el estado observado no cambió, y hay casos legítimos donde sí cambió por fuera de la sesión. Registrar convierte el problema en una medida —cuántas llamadas innecesarias por tarea aceptada— que 02 puede comparar entre configuraciones, que es el uso que tiene valor. Qué significa "registrar" lo fija D17.
-
-*Alternativa descartada: bloquear la segunda llamada.* Un falso positivo deja al agente sin un dato que sí cambió, y el daño de eso es mayor que el de una llamada repetida. La excepción es el sondeo de una integración ya informada como no disponible: ahí el estado sí es conocido dentro de la tarea, y el requisito es no volver a invocarla.
+**De la 05.** Una relectura o una invocación repetida se marca como llamada innecesaria y queda registrada; nada la impide. Bloquearla exigiría decidir con certeza que el estado observado no cambió. Registrar convierte el problema en una medida que 02 puede comparar. La excepción es el sondeo de una integración ya informada como no disponible: ahí el requisito es no volver a invocarla.
 
 ### D7 — El inventario de verbosidad cubre todas las fuentes, no solo el orquestador
 
-La ficha pide localizar dónde aparecen instrucciones largas o resultados verbosos (`CHANGES.md:162`). El orquestador es la fuente más grande y ya está medida, pero no es la única: los cuerpos de skill y los fragmentos de sección propia que el instalador escribe en el proyecto destino también ocupan contexto en toda sesión, y las salidas verbosas de comandos (tests, build, logs) aparecen en puntos concretos del ciclo. El inventario se completa sobre todas las fuentes —instrucciones (tareas 1.1 a 1.7) y salidas (tarea 1.8)— y se publica como una tabla única ordenada por tamaño, porque el criterio para elegir qué se resuelve por tarea debe apoyarse en el total real y no en el fragmento que resultó más fácil de medir.
+**De la 05.** El inventario cubre instrucciones (tareas 1.1 a 1.7) y salidas de comandos (tarea 1.8), y se publica como una tabla única ordenada por tamaño. Es investigación, no comportamiento: vive en `tasks.md` y en `proposal.md` — Impact. Se propone a la 02 reutilizarlo en lugar de duplicarlo.
 
-Este inventario es una actividad de investigación, no un comportamiento del sistema: por eso vive en `tasks.md` (grupo 1) y en `proposal.md` — Impact, y no como requisito de una spec. Se propone a la 02 reutilizarlo para su inventario de instrucciones (`opsx-baseline/design.md:46`) en lugar de duplicarlo.
+### D8 — Tres roles separados: captura independiente, redacción determinista y resumen del agente
 
-### D8 — El resumen lo produce el agente bajo instrucción, y el contrato no depende del productor
+**Acordado** (informe unificado: *05 · Contexto*, *05/06 · Retención*, contrato *Salidas y recibos*). El informe pide documentar por separado quién captura stdout y stderr, quién redacta y quién genera el resumen, y que la captura la haga una fuente independiente antes del truncamiento. La versión anterior de esta decisión ponía los tres roles en el agente; eso hace que la misma parte que reporta produzca el original, y por eso no alcanza para verificar nada.
 
-*Límite declarado:* el manejo de salidas grandes de un hook de Codex (https://learn.chatgpt.com/docs/hooks) no prueba que toda salida de shell se conserve. Por eso la captura de esta decisión no depende de hooks: la hace el agente redirigiendo el comando a un archivo.
-
-De las tres opciones, el envoltorio ejecutable sería un runtime nuevo, que `CHANGES.md:49` deja sujeto a una decisión de arquitectura separada. La capacidad nativa del cliente existe en los dos, pero con otra forma y otro fin: Claude acota con `BASH_MAX_OUTPUT_LENGTH` (https://code.claude.com/docs/en/env-vars) y guarda el resto en archivo o entrega cabeza y cola; Codex acota con `tool_output_token_limit` y recorta el medio (https://learn.chatgpt.com/docs/config-file/config-reference). Ninguna de las dos resume conservando fallos, que es lo que pide el contrato, así que elegirla tampoco resuelve el problema. Queda el agente bajo instrucción, que está disponible en los dos y no agrega autoridad nueva.
-
-**El agente captura antes de leer** (**decidido por la 05 — pendiente de revisión del grupo**). La versión anterior de esta decisión suponía que el agente ve la salida completa y la resume. No la ve: el cliente la recorta antes (D3), y el caso que más recorta —un comando que falla, con el error al medio— es el que el contrato quiere proteger. Por eso el módulo de resumen acotado prescribe un paso previo, sin subcomando nuevo (`CHANGES.md:49`):
-
-1. Un comando largo o verboso —los que el inventario de la tarea 1.8 declara así para cada acción, y cualquier otro cuya salida se espere por encima del umbral de D3— se ejecuta **redirigiendo stdout y stderr al mismo archivo** dentro de la ruta de corrida de D9, y **capturando el código de salida** en la misma invocación.
-2. El agente redacta, calcula la huella y resume **desde ese archivo**, leyéndolo con lectura dirigida (rango, búsqueda de patrones de fallo, cola), y no desde lo que el cliente mostró inline.
-3. Si el original no se pudo capturar —el comando ya corrió sin redirección, el archivo falta o quedó vacío sin explicación—, el resumen se marca **"parcial — sin verificar"** y dice por qué. Si el comando no tiene efectos laterales (una suite de tests, un `go vet`), el agente puede volver a correrlo con captura en lugar de entregar el parcial; si los tiene, no lo repite.
-
-La receta es por shell, porque el código de salida se pierde de forma distinta en cada una cuando se encadena con una tubería:
-
-| Shell | Receta | Cuidado |
+| Rol | En el arnés de evaluación | En una sesión real, hoy |
 |---|---|---|
-| bash / sh | `cmd > "$f" 2>&1; echo "exit=$?" >> "$f.exit"` | no usar `cmd 2>&1 \| tee "$f"`: sin `set -o pipefail`, `$?` es el de `tee` |
-| PowerShell | `& cmd *> $f; "exit=$LASTEXITCODE" \| Out-File "$f.exit"` | `$LASTEXITCODE` vale para comandos nativos; `$?` solo dice si falló el último paso |
+| **Captura** | el capturador del arnés ejecuta el comando del fixture y recibe stdout y stderr en un mismo flujo, con el código de salida (tarea 3.3). Es independiente por construcción y su salida es la referencia | una fuente del cliente solo cuando D22 la declara `probada` para esa celda; si no, la **captura declarada por el agente**, que no es independiente |
+| **Redacción** | código del arnés, en memoria, con la lista de D14, antes de escribir a disco; no queda crudo | quien captura: el código de la fuente, o el agente si la captura es declarada, y entonces la redacción también es declarada |
+| **Resumen** | el agente, desde la copia capturada y con lectura dirigida | el agente |
 
-La copia que el cliente guarda por su cuenta (en Claude, el archivo de trabajo y el del directorio de sesión, https://code.claude.com/docs/en/tools-reference) **no** es el original de Active Stack: no está redactada ni lleva la huella de D9. El resumen nunca la cita como referencia.
+El registro de captura (D9) dice quién cumplió cada rol, y eso fija el estado máximo que puede alcanzar el resultado (D20).
 
-La objeción válida es que una instrucción no es un control: el agente puede no retener el fallo. Se resuelve así: **el contrato y los fixtures verifican el resumen, no al productor.** Un resumen se acepta o se rechaza por lo que conserva, con independencia de quién lo escribió. Y el resumen declara quién lo produjo, de modo que un incumplimiento es atribuible. Sustituir mañana la instrucción por un envoltorio ejecutable no cambia una sola spec ni un solo fixture: cambia el productor y los mismos fixtures lo evalúan.
+**Fuentes candidatas del cliente.** Documentadas, con su cobertura por demostrar en D22: el hook `PostToolUse` de Claude Code, cuyo `tool_response` de Bash trae `stdout`, `stderr`, `interrupted` e `isImage`, y `PostToolUseFailure`, cuyo `error` empieza con `Exit code N` y se *"middle-truncates"* con una marca `... [N characters truncated] ...` (https://code.claude.com/docs/en/hooks); en Codex App Server, `item/commandExecution/outputDelta`, que *"streams stdout/stderr for a command"*, y el item final con `aggregatedOutput?` y `exitCode?` (https://learn.chatgpt.com/docs/app-server); y en `codex exec --json`, el item `command_execution` con `aggregated_output` y `exit_code`. La documentación no dice en ningún caso si la salida llega completa. **Medido** (X7): en Codex CLI 0.167.1 sobre Windows, `aggregated_output` trae la salida completa —129.047 caracteres de 3.000 líneas, con el fallo central y el final— en stdout, en solo stderr y con exit 0 o 1. Es la primera fuente del cliente con cobertura medida; vale para lo que el arnés conduce con `codex exec --json`, no para una sesión interactiva. En Claude, los hooks siguen **no probados**; lo que recibe el modelo (y por eso `stream-json`) está recortado (C1). Ninguna fuente cuenta como independiente en una celda hasta que la tarea 8.1 la corra con los fixtures del arnés (D22).
 
-**Supuesto declarado:** que el agente bajo instrucción captura antes de leer y retiene los fallos de los fixtures. Nadie lo midió todavía. Se valida corriendo los fixtures del grupo 2 contra un agente real, en el cliente real, con el arnés fuera del binario (tareas 2.7 y 2.17); si los fixtures del fallo central, de stderr o de ruido fallan, el resultado se lleva al grupo como insumo para la decisión de arquitectura que `CHANGES.md:49` reserva.
+**Captura declarada por el agente.** Sigue siendo útil: recupera el fallo central que el cliente recorta aunque el resultado quede *sin verificar*. El módulo `bounded-command-output` la prescribe **siempre** para los comandos de verificación (tests, build, vet, lint) y para los que el inventario de la tarea 1.8 declara verbosos, sin depender de adivinar el tamaño antes de correr. Si un comando no capturado resultó verboso y no tiene efectos laterales, se vuelve a correr con captura; si los tiene, el resumen es "parcial — sin verificar". Recetas:
 
-*Alternativa descartada: esperar a que exista el envoltorio.* Dejaría la ficha sin entregable verificable en esta ronda, que es justamente lo que D4 evita.
+| Shell | Receta | Por qué |
+|---|---|---|
+| bash / sh | `cmd > "$f" 2>&1; echo "exit=$?" > "$f.exit"` | sin tubería, `$?` es el del comando |
+| PowerShell 5.1 y 7 | `cmd /c "<comando> > ""$f"" 2>&1"; "exit=$LASTEXITCODE" \| Set-Content -Encoding ascii "$f.exit"` | `*>` en PowerShell 5.1 escribe UTF-16 LE con BOM y envuelve stderr como `NativeCommandError` (reproducido por la auditoría del 10/11); `cmd /c` deja los bytes del comando |
 
-### D9 — El original se redacta antes de guardarse, vive fuera del repo y vence después de archivar
+La tarea 3.8 prueba las dos recetas en cada shell disponible.
 
-Tres decisiones unidas (**decidido por la 05 — pendiente de revisión del grupo**).
+**La copia propia del cliente no es el original de Active Stack**: no está redactada ni tiene huella ni vencimiento. El resumen nunca la cita.
 
-**Redacción antes de conservar.** Los valores que coincidan con la lista de patrones sensibles (D14) se redactan antes de conservar el original, no solo al resumirlo. Como la captura de D8 es una redirección del shell, el primer archivo que se escribe es **crudo**: el agente lo redacta a un segundo archivo, que es el original que se conserva, y borra el crudo antes de entregar el resumen. Ninguna copia que guarde Active Stack queda con secretos esperando a que venza una retención. Nadie necesita el valor de un secreto para diagnosticar un fallo; necesita saber que había uno y dónde.
+*Alternativa descartada: un envoltorio ejecutable instalado en la sesión.* Es el runtime nuevo que `CHANGES.md:49` reserva. Un hook `PreToolUse` que reescriba el comando para capturarlo sería un capturador del cliente bajo control del instalador; es candidato para esa decisión separada, con la 08 como dueña de los hooks, y no se adopta acá.
 
-**Límite declarado: el cliente guarda sus propias copias.** Claude Code *"streams a command's output to a working file as the command runs"* y deja las salidas grandes en *"a file saved to the session directory"* (https://code.claude.com/docs/en/tools-reference); Codex guarda la salida, ya recortada, *"in history"* (`tool_output_token_limit`, https://learn.chatgpt.com/docs/config-file/config-reference), y dónde persiste no está documentado. Esas copias no pasan por nuestra redacción. La garantía se acota entonces a **la copia que guarda Active Stack**, y la protección real se apoya en no leer el secreto en origen: las reglas de denegación de lectura del piso de Claude (`Read(.env)`, `internal/harness/config/permissions/overlays.go:16-28`) y su equivalente nativo de Codex, que hoy el instalador no escribe (D14). Cuando hay dos copias, **gobierna la de Active Stack**: es la única con huella y vencimiento.
+*Alternativa descartada: confiar en la captura del agente si declara productor.* La declaración hace atribuible un incumplimiento; no lo detecta.
 
-**Referencia y ubicación.** Todo resumen lleva una referencia con cinco campos: `{comando, id de corrida, ruta, huella sha256 del original ya redactado, fecha de vencimiento}`. Una sola huella alcanza porque el crudo no se conserva: no hay un original sin redactar que haya que distinguir del redactado. El original vive en la caché del usuario, fuera del repositorio: `<os.UserCacheDir>/active-stack/runs/<change>/`. Desde `1b4639b` `openspec/` se versiona, así que una salida guardada dentro del change podría commitearse por error; fuera del repo no puede.
+### D9 — Copia redactada fuera del repo, registro de captura y vencimiento
 
-**Retención y acceso.** El original se conserva hasta que el change se archive **y siete días más**; no hay otro plazo, así que no hay prelación que resolver. Los siete días son un **supuesto**: no los respalda ninguna medición —a diferencia del umbral de D11—. Se recalibran con el primer uso real: si nadie pide un original más de tres días después de archivar, se baja; si alguien lo pide a los diez, se sube. Vencido el plazo, la referencia informa que el original no está disponible y desde qué fecha. Un original **vencido** y uno **nunca capturado** son casos distintos: el primero existió y tiene referencia completa; el segundo no tiene ruta ni huella, y su resumen es "parcial — sin verificar" (D8). El acceso es el del usuario local con los permisos de sistema de archivos de su directorio de caché: el original no se publica ni se envía a ningún lado.
+**Propuesto a 06** (informe unificado, *05/06 · Retención*: *"05 y 06 deben acordar ubicación, acceso y vencimiento de la copia redactada"*). Lo que ya está acordado: una fuente independiente captura antes del truncamiento; por defecto se persiste solo la copia redactada, con la huella de esa copia y el registro de captura; si verificar un requisito exige un detalle descartado, el resultado queda sin verificar hasta conseguir evidencia independiente suficiente.
 
-**Diferencias con la 06**, que es hermana y define la evidencia. Coincidimos en no versionar las salidas completas por defecto (`opsx-verifiable-evidence/design.md:78`). Diferimos en cuatro puntos, y se le propone a la 06 adoptar los de acá:
+**Qué se persiste.** Solo la copia redactada. En el arnés no existe crudo en disco: el capturador redacta en memoria (D8). En la captura declarada por el agente el primer archivo es crudo; el módulo manda redactarlo a un segundo archivo y borrar el crudo antes de entregar el resumen, y eso queda declarado, no garantizado.
+
+**Referencia.** Todo resumen lleva `{comando, id de corrida, ruta, huella sha256 de la copia redactada, vencimiento}`. La huella nombra el algoritmo (`sha256:<hex>`) y es de bytes, sin normalizar finales de línea.
+
+**Registro de captura**, junto a la copia: fuente de captura (`arnés`, `cliente:<fuente>` o `agente`), redactor, cliente, interfaz, sistema, versión, código de salida, cobertura antes del truncamiento (`demostrada` según D22, o `no demostrada`) y conteo de redacciones por categoría. El código de salida vive acá, escrito por quien captura, y no en un archivo aparte del agente.
+
+**Ubicación.** `<os.UserCacheDir>/active-stack/runs/<change>/<id de corrida>/`, fuera del repositorio, y `_sin-change` en lugar del nombre cuando la acción no tiene change activo (por ejemplo, `explore`). Desde `1b4639b` `openspec/` se versiona y `openspec archive` mueve la carpeta del change, así que una salida guardada dentro del change podría commitearse; fuera del repo no puede. En una superficie sin disco persistente del usuario (Codex en la nube) no hay ubicación: la celda figura `no disponible` en D22 y el resumen es "parcial — sin verificar".
+
+**Retención y quién borra.** Hasta que el change se archive y siete días más; para `_sin-change`, siete días desde la captura. Borra quien escribió: el arnés purga los vencidos al iniciar cada corrida (tarea 3.5). En una sesión real sin capturador independiente nadie borra, porque una instrucción no vence archivos: ahí la retención es una **recomendación declarada** y la referencia igual informa el vencimiento. Los siete días son un **supuesto**; se recalibran con el primer uso real. Un original **vencido** y uno **nunca capturado** son distintos: el primero tiene referencia completa; el segundo no tiene ruta ni huella.
+
+**Acceso.** El del usuario local con los permisos de su directorio de caché. La copia no se publica ni se envía.
+
+**Límite declarado: el cliente guarda sus propias copias** sin redactar —la transcripción de Claude Code en `~/.claude/projects/` y el archivo de trabajo (https://code.claude.com/docs/en/tools-reference); el historial de Codex—. La garantía se acota a **las copias que administra Active Stack**. La protección en origen es no leer el secreto: el piso de Claude (`Read(.env)`, `internal/harness/config/permissions/overlays.go:16-28`) y su equivalente nativo de Codex, que hoy el instalador no escribe (D14).
+
+**Diferencias con la 06** (su rama `opsx-verifiable-evidence` no cambió desde `f3f005e`). Coincidimos en no versionar las salidas completas (`opsx-verifiable-evidence/design.md:78`).
 
 | | 06 (`opsx-verifiable-evidence/design.md`) | 05 |
 |---|---|---|
-| cuándo se redacta | antes de compartir la salida (`:79`) | antes de conservarla; el crudo de la captura se borra |
-| huellas | dos: la original y la de la versión redactada (`:79`) | una: la del original ya redactado |
-| dónde vive | subdirectorio local de la evidencia, bajo `openspec/changes/<change>/evidence/` (`:73`, `:78`) | `<os.UserCacheDir>/active-stack/runs/<change>/`, fuera del repo |
-| retención | `(TBD)`, *"por ejemplo, hasta archivar el change"* (`:80`) | hasta archivar y siete días más, compatible con su ejemplo |
-| formato de referencia | ruta, huella y si fue truncada (`:46`) | comando, id de corrida, ruta, huella sha256, vencimiento |
+| cuándo se redacta | antes de compartir (`:79`) | antes de persistir |
+| huellas | dos (`:79`), con `git hash-object` | una, sha256 de la copia redactada, con el algoritmo nombrado |
+| dónde vive | `openspec/changes/<change>/evidence/` (`:73`, `:78`) | `<os.UserCacheDir>/active-stack/runs/…`, fuera del repo |
+| retención | `(TBD)` (`:80`) | hasta archivar y siete días más |
+| referencia | ruta, huella y si fue truncada (`:46`) | cinco campos más el registro de captura |
 
-*Alternativa descartada: conservar el original sin redactar y controlar el acceso.* Un control de acceso sobre un archivo local es una ficción; redactar antes de conservar elimina el problema en la copia propia en lugar de administrarlo.
+La 02 dejó el plazo de borrado de sus trazas originales como `(TBD · se fija junto con 05)` en su D6; esta decisión le da el valor.
 
-*Alternativa descartada: redactar en la tubería, antes de que toque el disco.* Exigiría un filtro ejecutable entre el comando y el archivo, que es el envoltorio que `CHANGES.md:49` reserva. El crudo transitorio es el costo de no tenerlo, y queda declarado.
+*Alternativa descartada: conservar el crudo con dos huellas para poder comparar la redacción.* La redacción del arnés es código determinista y se prueba con el fixture de datos ficticios (tarea 3.3), así que no hace falta conservar secretos para auditarla.
 
 ### D10 — Las clases de tarea son las cinco acciones del ciclo OPSX
 
-El eje de clasificación no se inventa: son `explore`, `propose`, `apply`, `verify` y `archive` (`CLAUDE.md:26`, `ARCHITECTURE.md:6`, `ARCHITECTURE.md:164`). Es el eje que el proyecto ya declara, que OpenSpec ya conoce y que el orquestador ya usa para ubicarse, de modo que declarar un eje propio habría creado un segundo vocabulario para lo mismo (**decidido por la 05 — pendiente de revisión del grupo**).
+**Acordado** (la matriz común usa las acciones OPSX en su tabla acción → módulos). El eje es `explore`, `propose`, `apply`, `verify` y `archive` (`CLAUDE.md:26`, `ARCHITECTURE.md:6`, `ARCHITECTURE.md:164`). Las cinco tareas de medición de la ficha 02 son **cargas de trabajo** que se ejecutan dentro de esas acciones, no clases.
 
-Las cinco tareas de medición de la ficha 02 (exploración, cambio pequeño, cambio multiarchivo, diagnóstico, revisión) no son clases de tarea: son **cargas de trabajo** que se ejecutan dentro de esas acciones y sirven para comparar. Se mapean sobre las acciones, no las reemplazan.
-
-*Alternativa descartada: un eje propio por tipo de trabajo (lectura, escritura, diagnóstico).* Más expresivo, pero obliga a traducir entre dos vocabularios en cada ficha que toque el orquestador.
-
-*Alternativa descartada: OPSX más un sub-eje de tipo de trabajo dentro de cada acción.* La objeción que la motivaba —analizar un log y escribir documentación caen las dos en `apply` y necesitan herramientas distintas— queda cubierta sin sub-eje por dos piezas que ya existen: la tabla de herramientas por clase (D18), que habilita las condicionales solo cuando la acción las necesita (Playwright si toca UI), y las señales de delegación de la 07 (`opsx-selective-delegation/design.md:40-43`), que distinguen una tarea verbosa de una que no lo es. Un sub-eje agregaría un tercer vocabulario sin cambiar ninguna de las dos.
+*Alternativa descartada: un eje propio por tipo de trabajo, o un sub-eje dentro de cada acción.* Agregaría otro vocabulario sin cambiar la tabla de herramientas (D18) ni las señales de delegación de la 07.
 
 ### D11 — El umbral de lectura completa es 300 líneas, medido sobre este repositorio
 
-**En líneas**, porque es la unidad en la que el agente pide un rango y en la que se expresa la procedencia que D5 hace obligatoria. Los bytes no se corresponden con nada que el agente pueda pedir; los símbolos no existen en archivos sin parser disponible.
-
-**300**, porque sale de medir el repositorio y no de estimar. Conjunto medido: los 130 archivos `.go` versionados bajo `internal/` y `cmd/` que no terminan en `_test.go`, en `1b4639b` (código idéntico en `b74fd76`), contando líneas con `wc -l`. Percentiles por rango más cercano; la mediana, como promedio de los dos valores centrales:
+**De la 05.** **En líneas**, porque es la unidad en la que el agente pide un rango y en la que se expresa la procedencia. **300**, porque sale de medir: los 130 archivos `.go` versionados bajo `internal/` y `cmd/` que no terminan en `_test.go`, en `1b4639b`, con `wc -l`. Percentiles por rango más cercano:
 
 | | líneas |
 |---|---|
@@ -177,25 +198,17 @@ Las cinco tareas de medición de la ficha 02 (exploración, cambio pequeño, cam
 | 400 | 124 de 130 (95 %) |
 | 500 | 126 de 130 (97 %) |
 
-Descarté 400 —que había puesto primero— justamente por medirlo: a 400 la regla toca solo 6 archivos y no cambia el comportamiento en la práctica. Y descarté 200 porque fuerza lectura acotada en archivos donde leer entero sale más barato que dos viajes de ida y vuelta: un archivo de 200 líneas son unos 2.500 tokens, y dos consultas acotadas con riesgo de una tercera no ahorran nada.
+A 400 la regla toca solo 6 archivos; a 200 fuerza lectura acotada donde leer entero sale más barato. 300 queda entre el p85 y el p92 y reserva la lectura acotada para los 14 archivos grandes.
 
-300 queda entre el p85 (244) y el p92 (375), justo debajo del p90: deja pasar el 89 % de los archivos, que son chicos y baratos, y reserva la lectura acotada para los 14 que son genuinamente grandes, donde sí paga. La regla tiene que ser **rara y dirigida**, no una fricción constante.
-
-**Cabe en lo que los clientes leen.** En Claude Code una lectura devuelve como máximo 25.000 tokens y rechaza un archivo entero de más de 256 KB; Read acepta `offset`/`limit` y Grep `head_limit`/`offset` (https://code.claude.com/docs/en/tools-reference). Un archivo de 300 líneas queda muy por debajo, y los rangos que la regla pide existen como parámetros de la herramienta. En Codex no hay una herramienta de lectura documentada con límite propio: es **no verificable** con la documentación, y la tarea 4.4 lo comprueba en el arnés.
-
-Este umbral es de **lectura de archivos**. El de salidas de comando es otra regla (D3), porque los clientes recortan salidas en caracteres y no en líneas.
-
-El valor vive en el catálogo y se ajusta sin tocar ninguna spec; 300 es el **valor inicial medido**, no un límite fijo. La regla de recalibración es mecánica y no depende de otra ficha: la tarea 4.2 mide el mismo conjunto en cada corrida y falla si 300 sale del intervalo p85–p92; en ese caso se elige el nuevo valor dentro del intervalo con el mismo criterio y se actualiza este cuadro.
+En Claude Code una lectura devuelve como máximo 25.000 tokens y Read acepta `offset`/`limit` (https://code.claude.com/docs/en/tools-reference). En Codex no hay herramienta de lectura documentada con límite propio: es **no verificable** con la documentación y lo comprueba la tarea 8.6. El valor vive en el catálogo; la tarea 4.2 falla si 300 sale del intervalo p85–p92 y entonces se elige el nuevo valor con el mismo criterio.
 
 ### D12 — Esta ficha no fija ni propone un tope para los cuerpos de skill
 
-El inventario de las tareas 1.5 a 1.7 publica el tamaño de cada cuerpo de skill, que es el entregable. Fijar un tope es política del catálogo y afecta a toda ficha que instale skills; adoptarlo acá sería legislar para las otras nueve desde la ficha 05.
-
-**Decisión:** la 05 entrega la medición y declara el tope fuera de su alcance. No lo propone como cambio de catálogo. El inventario queda publicado para que cualquier ficha o change posterior que quiera proponer un tope parta de esos números y no de una estimación.
+**De la 05.** El inventario de las tareas 1.5 a 1.7 publica el tamaño de cada cuerpo de skill. Fijar un tope es política del catálogo para todas las fichas; la 05 entrega la medición y lo declara fuera de su alcance.
 
 ### D13 — La señal de pertinencia son el tipo de coincidencia y su cantidad
 
-La orientación a nivel repositorio devuelve rutas candidatas, y cada una viene con dos datos: **qué tipo de coincidencia** tiene y **cuántas**. El tipo es uno de tres, ordenados por peso:
+**De la 05.** La orientación a nivel repositorio devuelve rutas candidatas con **qué tipo de coincidencia** tienen y **cuántas**:
 
 | Tipo | Qué es | Peso |
 |---|---|---|
@@ -203,15 +216,13 @@ La orientación a nivel repositorio devuelve rutas candidatas, y cada una viene 
 | referencia | el símbolo se usa en ese archivo | medio |
 | texto | coincidencia literal sin estructura | bajo |
 
-Una definición pesa más que cualquier cantidad de referencias, y una referencia más que cualquier cantidad de coincidencias de texto. Dentro del mismo tipo, ordena la cantidad.
-
-*Por qué estos tres y no una puntuación:* una puntuación numérica obliga a justificar los pesos y no es inspeccionable. Tres categorías ordenadas se explican en una línea y el agente puede decidir con ellas sin que nadie calibre nada. Y los tres son obtenibles sin leer el contenido de los archivos descartados, que es el requisito que esta señal tiene que respetar.
+Una definición pesa más que cualquier cantidad de referencias, y una referencia más que cualquier cantidad de coincidencias de texto. Dentro del mismo tipo, ordena la cantidad. Tres categorías se explican en una línea y se obtienen sin leer el contenido de los archivos descartados.
 
 ### D14 — Una sola lista de patrones de valor sensibles, declarada en el catálogo y con dueña la 05
 
-La redacción no usa las clases del piso de permisos: el piso bloquea **rutas** (`Read(.env)`, `Edit(.env.*)`, `internal/harness/config/permissions/overlays.go:16-28`) y la redacción tiene que reconocer **valores** dentro de una salida. Además el piso aplica solo a Claude (`composeClaudeOverlay`, `overlays.go:73`); en Codex el instalador escribe únicamente `approval_policy` y `sandbox_mode` (`permissions/install.go:114-134`), así que no hay lista que heredar en ese cliente. Codex **sí tiene** un mecanismo nativo equivalente que el instalador no usa: `permissions.<name>.filesystem` acepta `"deny"` por ruta o patrón (*"glob subpaths such as `"**/*.env"` can deny reads"*) y `shell_environment_policy` filtra variables de entorno (https://learn.chatgpt.com/docs/config-file/config-reference). La documentación marca los perfiles de permisos como beta en algunos apartados; su estado actual es **no verificable**.
+**Acordado** (informe unificado, contrato *Salidas y recibos*: *"05 mantiene captura, acceso y política de datos"*; 02 D10: *"05 mantiene la lista sensible"*). La redacción no usa las clases del piso de permisos: el piso bloquea **rutas** (`overlays.go:16-28`) y solo en Claude (`composeClaudeOverlay`, `overlays.go:73`); en Codex el instalador escribe únicamente `approval_policy` y `sandbox_mode` (`permissions/install.go:114-134`). Codex sí tiene un mecanismo nativo que el instalador no usa: `permissions.<name>.filesystem` con `"deny"` por patrón y `shell_environment_policy` (https://learn.chatgpt.com/docs/config-file/config-reference), con estado beta **no verificable**.
 
-**Decisión** (**decidido por la 05 — pendiente de revisión del grupo**): una sola lista de **patrones de valor**, declarada en el catálogo, cuya dueña es esta ficha y que usan también 02, 06 y 10. Contenido inicial:
+Contenido inicial de la lista de **patrones de valor**:
 
 - `.env` y `.env.*`: el archivo y los valores de sus asignaciones
 - tokens y API keys
@@ -219,308 +230,245 @@ La redacción no usa las clases del piso de permisos: el piso bloquea **rutas** 
 - claves SSH y `*.pem`
 - valores de variables de entorno
 - rutas del home del usuario
-- identificadores de cuenta
+- identificadores de cuenta, correo y UUID de cuenta (los que ya redacta `eval/baseline/record`)
 
-La lista coincide con lo que la 06 ya redacta antes de compartir (variables de entorno, tokens, credenciales, rutas del home, `opsx-verifiable-evidence/design.md:79`) y con lo que la 10 necesita para su *"derivado redactado con lista de inclusión"* (`opsx-shadow-review/design.md:126`). Un test verifica que todo lo que bloquea el piso de Claude está cubierto por la lista (tarea 2.9): si el piso agrega una regla que la lista no cubre, la validación falla en lugar de divergir en silencio. Llevar un piso equivalente a Codex no es de esta ficha: se le pide a la 01 o a la 08, señalando las claves de arriba como el mecanismo concreto. La 01 (`propose/codex-strict-compat`) hoy no toca la lista sensible.
-
-*Alternativa descartada: reusar el piso de permisos como única lista.* Era la decisión anterior. Se descarta porque mezcla dos objetos —rutas que se bloquean y valores que se redactan—, porque el piso es de Claude solo, y porque con el piso actual la redacción protegería únicamente `.env`.
+La usan 02, 06 y 10. Un test verifica que todo lo que bloquea el piso de Claude está cubierto (tarea 3.1). Llevar un piso equivalente a Codex se le pide a la 01 o a la 08.
 
 ### D15 — La lista de condiciones para leer un archivo completo es cerrada
 
-Son cinco, y lo que no está acá no justifica lectura completa:
+**De la 05.** Son cinco:
 
 1. el archivo no supera el umbral de D11
 2. la tarea va a reescribir el archivo entero
 3. el archivo es el artefacto que la acción activa produce o edita
 4. una lectura acotada previa sobre ese archivo devolvió vacío
-5. los rangos no alcanzan, y el motivo queda declarado en el reporte con forma fija: `lectura completa: <ruta> — <motivo>`
+5. los rangos no alcanzan, y el motivo queda declarado en el reporte con forma fija: `full read: <path> — <reason>` (las formas fijas van en inglés porque viven en el texto del módulo; están en `entrega-03-04.md` §2)
 
-La primera es la regla general: un archivo de 300 líneas o menos se lee completo. Las otras cuatro son las únicas excepciones para un archivo que supera el umbral, que en cualquier otro caso se lee por ruta, rango o símbolo.
-
-*Por qué cerrada:* una lista abierta vuelve inaplicable el registro de lectura no justificada — siempre se puede alegar una condición nueva. Cerrada, el registro es decidible: o la lectura entra en una de las cinco o queda marcada.
-
-La cuarta existe para no dejar al agente trabado: si pidió un símbolo y no estaba, leer entero es la salida razonable y no debería contar como falta.
-
-La quinta (**decidido por la 05 — pendiente de revisión del grupo**) es la excepción justificada: hay archivos donde ningún rango sirve —una tabla de dispatch que cruza todo el archivo, un archivo generado cuyo orden no sigue al símbolo— y forzar rangos sale más caro que leer entero. No abre la lista, porque solo vale con el motivo escrito en el reporte: el arnés cuenta cuántas lecturas entran por la quinta y con qué motivos, y eso es el insumo para recalibrar el umbral de D11 sin tocar ninguna spec. Una lectura completa sin motivo declarado sigue quedando registrada como no justificada. 300 sigue siendo el valor inicial medido.
-
-Una lectura por símbolo devuelve el símbolo completo y, si está anidado, la **firma o encabezado** de la declaración que lo contiene —no su cuerpo—, para que la procedencia sea interpretable sin leer los vecinos.
+Cerrada, el registro de lectura no justificada es decidible. La quinta es la excepción justificada para archivos donde ningún rango sirve; el arnés cuenta cuántas lecturas entran por ella y con qué motivos, como insumo para recalibrar D11. Una lectura por símbolo devuelve el símbolo completo y, si está anidado, la **firma** de la declaración que lo contiene.
 
 ### D16 — La respuesta del agente es una capacidad aparte, no parte del resumen de comandos
 
-La ficha pide localizar *"instrucciones largas o resultados verbosos"* (`CHANGES.md:162`), y hay dos clases de resultado verboso: la salida de un comando y la respuesta del propio agente. Las dos entierran el hallazgo, pero **no se arreglan con el mismo contrato**, y por eso van en capacidades separadas.
+**De la 05.** La ficha pide localizar *"instrucciones largas o resultados verbosos"* (`CHANGES.md:162`), y hay dos clases de resultado verboso:
 
 | | Salida de comando | Respuesta del agente |
 |---|---|---|
 | quién la produce | una herramienta | el modelo |
 | hay un original completo | **sí**, y se conserva | **no**, nunca existió |
-| cómo se accede al detalle | referencia al original guardado | se produce a pedido |
+| cómo se accede al detalle | referencia a la copia guardada | se produce a pedido |
 | qué se puede perder | una línea de fallo | el hallazgo, enterrado en el relato |
 
-La diferencia que decide es la segunda: **no se puede referenciar el original de algo que nunca se produjo.** Para una salida de comando la regla es conservar y referenciar; para una respuesta es poner el hallazgo primero y generar el desarrollo recién cuando se lo piden.
+La regla observable: **la primera línea del reporte dice el resultado; la segunda, la consecuencia o el próximo paso; no se repite el desarrollo de pasos anteriores.** Se evalúa con una rúbrica sobre los fixtures del grupo 7. Tiene prioridad 2 dentro de esta ficha (tasks.md).
 
-La regla se vuelve observable así: **la primera línea del reporte dice el resultado; la segunda, la consecuencia o el próximo paso; no se repite el desarrollo de pasos anteriores.** Se evalúa con una rúbrica aplicada sobre los fixtures del grupo 7, corridos con el arnés fuera del binario; no con un test de Go, porque lo que se evalúa es conducta del modelo.
+### D17 — "El sistema" es el agente siguiendo los módulos, más el catálogo, más el arnés
 
-*Alternativa descartada: ampliar `bounded-command-output` y renombrarla.* Tentador por lo parecido del síntoma, pero el nombre dejaría de describir lo que la capacidad hace y el requisito de original recuperable quedaría sin sentido para la mitad de los casos.
+**Acordado** (`CHANGES.md:49`; la 03 espera los textos de esta ficha en su tarea 2.3 y en la fila 27 de la matriz común).
 
-Una de las reglas de esta capacidad sale de una corrección de esta misma sesión: una respuesta no reproduce lo que ya está escrito en un artefacto, lo señala. Vale para lo que el agente le dice a una persona y para lo que un artefacto le copia a otro.
+- **"El sistema"** es el agente siguiendo los módulos de instrucción, más lo declarado en el catálogo (`internal/catalog/harnesses.yaml`). No hay subcomando, hook ni proceso nuevo en el binario.
+- **"Registrar"** es que el agente lo declare en su reporte en una línea con forma fija (por ejemplo, `unnecessary call: <tool> <input>`), para que el arnés lo cuente. Las formas fijas son las de los módulos (`entrega-03-04.md` §2) y las especificaciones las citan literales.
+- **El arnés** (`eval/taskcontext/`, fuera del binario, reutiliza `eval/baseline/`) captura, redacta, evalúa y purga en evaluación (D8, D9).
+- **Tests de Go** verifican lo declarativo y lo mecánico: el catálogo validado por `catalog.Load()`, los textos de módulo como archivos, el capturador, el redactor, el evaluador y la generación de tablas.
+- **La conducta del agente** se verifica contra el cliente real (Claude Code y Codex), no contra una simulación (grupo 8).
+- **La 05 redacta** los módulos `directed-code-reading`, `bounded-command-output`, `task-tool-selection` y `concise-agent-reporting` (antes `lectura-dirigida`, `resumen-acotado`, `herramientas` y `reporte`; el id coincide con la capacidad) y la tabla de carga, y los entrega a 03 y 04 (D23). No escribe en `sdd-orchestrator.md`.
 
-### D17 — "El sistema" es el agente siguiendo los módulos más lo declarado en el catálogo
-
-Las specs dicen "el sistema registra", "el sistema informa", "el sistema rechaza". Sin runtime nuevo (`CHANGES.md:49`) hay que decir quién es (**decidido por la 05 — pendiente de revisión del grupo**):
-
-- **"El sistema"** es el agente siguiendo los módulos de instrucción, más lo declarado en el catálogo (`internal/catalog/harnesses.yaml`). No hay subcomando, hook ni proceso nuevo.
-- **"Registrar"** es que el agente lo declare en su reporte de la acción, en una línea con forma fija (por ejemplo, `llamada innecesaria: <herramienta> <entrada>`), para que el arnés de evaluación lo cuente.
-- **Tests de Go** verifican solo lo declarativo: el catálogo validado por `catalog.Load()`, el texto compuesto por `Compose`, y los fixtures como archivos (que existen, que declaran lo que dicen declarar).
-- **El comportamiento del agente** se verifica corriendo los fixtures contra el agente real con un arnés fuera del binario, como manda `CHANGES.md:49` y como lo planifica la 02. Es etapa posterior a esta ronda. Las corridas son **contra el cliente real** (Claude Code y Codex), no contra una simulación: el recorte de salidas que hace cada cliente (D3) forma parte del resultado que se mide.
-- **"Resumir una salida"** incluye capturarla antes de leerla (D8): el módulo de resumen acotado prescribe la redirección a archivo, la captura del código de salida y la lectura dirigida del archivo. Un resumen hecho sobre lo que el cliente mostró inline, sin captura, es "parcial — sin verificar".
-- **La 05 redacta el texto** de los módulos de lectura dirigida, resumen acotado, selección de herramientas y reporte conciso, y lo entrega a 03 y 04, que lo ubican en la estructura de módulos. La 05 no escribe en `sdd-orchestrator.md`.
-
-Cada tarea que antes decía "Implementar…" pasa a ser tres piezas: redactar el texto del módulo, declarar en el catálogo lo que corresponda y escribir el fixture que lo evalúa.
-
-*Alternativa descartada: implementar los registros y la orientación como código del instalador.* Es el runtime nuevo que el roadmap reserva para una decisión de arquitectura separada.
+*Alternativa descartada: implementar los registros y la orientación como código del instalador.* Es el runtime nuevo que el roadmap reserva.
 
 ### D18 — Tabla de herramientas por clase de tarea
 
-**Decidido por la 05 — pendiente de revisión del grupo.** Toda integración opcional está apagada por defecto y se habilita por clase. Las herramientas base del cliente (lectura, búsqueda, edición, ejecución de tests, OpenSpec CLI) no son integraciones opcionales: la tabla dice cuáles corresponden a cada acción para que el agente no las use fuera de lugar, pero no las instala ni las apaga.
+**Propuesto a 03, 04, 07 y 08** (`CHANGES.md:166` pone *"qué capacidad es necesaria para cada tarea"* entre lo que se acuerda en grupo). Toda integración opcional está apagada por defecto y se habilita por acción. Las herramientas base del cliente no son opcionales: la tabla dice cuáles corresponden a cada acción, pero no las instala ni las apaga.
 
 | Acción | Base | Opcionales habilitadas |
 |---|---|---|
-| `explore` | lectura dirigida, búsqueda | Context7 (docs de librerías) |
+| `explore` | lectura dirigida, búsqueda | Context7 |
 | `propose` | lectura dirigida, OpenSpec CLI | Context7 |
-| `apply` | edición, tests | Context7; skills de dominio del registro (`go-testing` en este repo, `CLAUDE.md:160`); Playwright solo si la acción toca UI |
+| `apply` | edición, tests | Context7; skills de dominio del registro (`go-testing` en este repo); Playwright solo si la acción toca UI |
 | `verify` | tests, lectura dirigida | Playwright solo si hay UI |
 | `archive` | OpenSpec CLI | ninguna |
 
-- **Engram** no figura como integración opcional: llega por el núcleo y el módulo de D2.
-- **Integraciones de diseño** (Stitch, `emil-design-eng`, `design-taste-frontend-v1`) se habilitan solo con el harness `design-mockups` activo, según la política del proyecto; fuera de eso no se ofrecen en ninguna acción.
+- **Engram** no es integración opcional: llega por la capa universal y el módulo `engram-opsx` (D2).
+- **Integraciones de diseño** (Stitch, `emil-design-eng`, `design-taste-frontend-v1`) se habilitan solo con el harness `design-mockups` activo, según la política del proyecto.
 
-La tabla se declara en el catálogo (tarea 5.1) y `docs/` la genera desde ahí (tarea 5.8).
+La tabla se declara en el catálogo (tarea 5.1), `docs/` la genera desde ahí (tarea 5.5) y el módulo `task-tool-selection` la lleva en inglés (`entrega-03-04.md` §2); hasta que exista el catálogo, la de este D18 manda.
 
-**A qué nivel queda "no habilitada" una herramienta** (**decidido por la 05 — pendiente de revisión del grupo**). "No se ofrece" puede querer decir tres cosas distintas, y la tabla no vale lo mismo en cada una:
+**Solo recomendada o restringida por el cliente.** El informe pide documentar qué herramientas están solo recomendadas y cuáles restringe el cliente. "No habilitada" tiene tres niveles, con nombre:
 
-| Nivel | Qué es | Claude Code | Codex |
-|---|---|---|---|
-| **(a) instrucción** | el módulo le pide al agente que no la use | `CLAUDE.md` o cuerpo del agente; la documentación dice que esas instrucciones se tratan *"as context, not enforced configuration"* (https://code.claude.com/docs/en/memory) | `AGENTS.md`, `developer_instructions` o cuerpo de la skill |
-| **(b) descripción fuera del contexto** | el agente no ve que existe | skill con `disable-model-invocation: true`: *"Description not in context"* (https://code.claude.com/docs/en/skills); MCP con búsqueda de herramientas, activa por defecto, difiere las definiciones (https://code.claude.com/docs/en/mcp) | skill con `policy.allow_implicit_invocation: false`: la documentación no dice si la descripción sale del contexto (https://learn.chatgpt.com/docs/build-skills); un reporte de usuarios indica que sí sale (https://github.com/openai/codex/issues/23454) — **no verificable** en la documentación |
-| **(c) el cliente no deja invocarla** | aunque el agente lo intente, la llamada no ocurre | `permissions.deny` con `Skill(skill:<nombre>)`, `Agent(<nombre>)` o `mcp__<servidor>__*`; un nombre pelado *"removes the tool from Claude's context entirely"* (https://code.claude.com/docs/en/permissions); `tools`, `disallowedTools` y `mcpServers` en el archivo de un subagente (https://code.claude.com/docs/en/sub-agents) | `mcp_servers.<id>.enabled_tools` / `disabled_tools` y `enabled` en `config.toml` (https://learn.chatgpt.com/docs/config-file/config-reference); `skills.config` y `features.*=false` en el archivo de un rol (https://learn.chatgpt.com/docs/agent-configuration/subagents) |
+| Nivel | Nombre | Qué es | Claude Code | Codex |
+|---|---|---|---|---|
+| **(a)** | *solo recomendada* | el módulo le pide al agente que no la use | `CLAUDE.md`, cuerpo del agente o de la skill: *"as context, not enforced configuration"* (https://code.claude.com/docs/en/memory) | `AGENTS.md`, `developer_instructions` o cuerpo de la skill |
+| **(b)** | *fuera del contexto* | el agente no ve que existe | skill con `disable-model-invocation: true` (https://code.claude.com/docs/en/skills); MCP con búsqueda de herramientas (https://code.claude.com/docs/en/mcp) | skill con `policy.allow_implicit_invocation: false` (https://learn.chatgpt.com/docs/build-skills). **Medido** (X9, X11): la invocación implícita queda bloqueada y el cuerpo no se carga, pero nombre y descripción siguen listados; no es (b) completo |
+| **(c)** | *restringida por el cliente* | aunque el agente lo intente, la llamada no ocurre | `permissions.deny` con `Skill(skill:<nombre>)`, `Agent(<nombre>)` o `mcp__<servidor>__*` (https://code.claude.com/docs/en/permissions); `tools`, `disallowedTools` y `mcpServers` de un subagente (https://code.claude.com/docs/en/sub-agents) | `mcp_servers.<id>.enabled_tools` / `disabled_tools` y `enabled` (https://learn.chatgpt.com/docs/config-file/config-reference); `skills.config` y `features.*=false` en un rol (https://learn.chatgpt.com/docs/agent-configuration/subagents) |
 
-Lo que decide la tabla de arriba es **por acción**, dentro de una misma sesión, y eso cambia el nivel alcanzable:
+Por acción, dentro de una misma sesión:
 
-- **Claude:** por acción, (c) solo si la acción corre en un subagente con su propia lista (`tools`, `mcpServers`, `skills`). En el hilo principal la lista queda fija para toda la sesión, así que ahí el control por acción es (a).
-- **Codex:** el archivo de un rol no puede fijar `mcp_servers` —*"Configure MCP servers in the parent session"*, https://learn.chatgpt.com/docs/agent-configuration/subagents—, así que el control por acción de una integración MCP es **solo (a)**, y se declara como límite del cliente. Para skills, `skills.config` en el rol da (c) por rol.
-- Una skill de Claude con `allowed-tools` **no** restringe: *"It does not restrict which tools are available"* (https://code.claude.com/docs/en/skills). Solo preaprueba, y no se cuenta como (c).
+- **Claude:** (c) solo si la acción corre en un subagente con su propia lista. En el hilo principal la lista queda fija para la sesión, así que ahí el control por acción es (a).
+- **Codex:** el archivo de un rol no puede fijar `mcp_servers` (*"Configure MCP servers in the parent session"*), así que el control por acción de una integración MCP es **solo (a)**, declarado como límite. Para skills, `skills.config` en el rol da (c).
+- `allowed-tools` de una skill de Claude **no** restringe (*"It does not restrict which tools are available"*): no cuenta como (c).
 
-El catálogo declara, por integración opcional, por cliente y por superficie (CLI, IDE, app), qué nivel alcanza la tabla (tarea 5.9). Que una skill o un MCP esté instalado, o no, no prueba aislamiento por tarea: el nivel se declara por lo que el cliente documenta que impide, no por lo que está instalado. El nivel (a) nunca se presenta como aislamiento: una integración "no habilitada" al nivel (a) sigue invocable, y si el agente la invoca, queda registrado como uso fuera de clase.
+El catálogo declara el nivel por integración, cliente y superficie (tarea 5.2). Una integración *solo recomendada* sigue invocable: si el agente la invoca, queda registrado como uso fuera de clase, y el reporte nunca la presenta como bloqueada.
 
-### D19 — Interfaz con la 07: umbral de salida verbosa y obligatoriedad de módulos
+### D19 — Tabla de carga de módulos por acción
 
-**Decidido por la 05 — pendiente de revisión del grupo.** La 07 consume esta ficha (`opsx-selective-delegation/proposal.md:4`) y cita dos cosas que hay que fijar:
+**Acordado** que la 05 define cuándo se carga cada módulo (informe unificado, contrato *Activación, núcleo y módulos*). La tabla —nueve módulos por cinco acciones, con la columna *Especialista* y sus condiciones— vive en `entrega-03-04.md` §3, junto con el texto en inglés que va al `SKILL.md`; es la única fuente de esa regla hasta que el catálogo la declare (tarea 6.1), una función pura la resuelva y el texto del `SKILL.md` se **genere** desde ella (tarea 6.2), porque el agente no lee el catálogo embebido en el binario. Reemplaza la tabla que hoy escriben a mano la 03 (`actionTable`, sin `explore` ni `verify`, medido R1) y la 04 (string `actions`). La matriz común dice en qué capa vive cada regla; esta tabla dice cuándo se lee cada módulo. Un módulo de toggle inactivo no figura (matriz común); si el inactivo es obligatorio para una acción, la fila dice que esa acción se detiene. `model-assignments` se omite en Codex hasta la 09: límite declarado.
 
-- **"Salida verbosa"** es una salida de más de 300 líneas o de más de 10.000 caracteres, lo que ocurra primero (D3). Las 300 líneas coinciden con el umbral medido de lectura de archivos (D11); los 10.000 caracteres son el límite documentado más bajo con que un cliente recorta una salida fallida. Es la condición para capturar y resumir, no un tope de recorte. Reemplaza "el presupuesto de 05" de la señal S1 de la 07 (`opsx-selective-delegation/design.md:40`), que no existe: D3 rechaza presupuestos de tamaño.
-- **El módulo de delegación es obligatorio solo en `verify`**, por la separación de rol de la señal S4 de la 07 (`design.md:43`). En el resto de las acciones es opcional: si falta, el agente avisa y resuelve directo. Así la regla de detener de `task-context-loading` —respaldada por la *Aceptación transversal* (`CHANGES.md:47`: *"Si falta un módulo obligatorio, informar la limitación y detener la acción que lo requiere"*)— aplica a los módulos obligatorios y es compatible con la D2 de la 07 (`design.md:58`: *"se informa y se resuelve directo o se detiene la acción si la acción exige delegar (S4)"*).
+**Por qué `bounded-command-output` es obligatorio en `apply` y `verify`.** Son las acciones que corren tests y producen evidencia; sin el módulo, la captura y la referencia no existen y el resultado no puede verificarse. Se propone a la 06 que su contrato de evidencia se cargue con la misma condición, en ejecución directa y delegada (*Coordinación pendiente*).
 
-Tabla de carga, que es el mapeo que pide la ficha (`CHANGES.md:164`: *"Mapeá con 03, 04 y 07 cuándo se cargan TDD, delegación y coordinación de subagentes"*):
+**Regla de módulo ausente** (la generación de la tabla la escribe debajo; texto en `entrega-03-04.md` §3): un módulo obligatorio ausente detiene solo la acción que lo requiere, informa qué falta y deja seguir las tareas que no dependen de él; un módulo opcional ausente se avisa y la acción se resuelve directo. **Un módulo vacío cuenta como ausente**: con un módulo de 0 B Claude tuvo tres conductas distintas en tres corridas (medido, C13), mientras que con el módulo borrado se detuvo e informó (medido, C12); y el verify de la 03 deja pasar un módulo vacío (medido, R3). Es compatible con la *Aceptación transversal* (`CHANGES.md:47`) y con la D2 de la 07 (`opsx-selective-delegation/design.md:58`).
 
-| Módulo | `explore` | `propose` | `apply` | `verify` | `archive` |
-|---|---|---|---|---|---|
-| `tdd` | — | — | obligatorio si el proyecto tiene Strict TDD activo y runner | — | — |
-| `delegation` (con coordinación de subagentes) | opcional, si la regla de la 07 decide delegar | opcional, ídem | opcional, ídem | **obligatorio** (S4) | opcional, ídem |
-| `model-routing` | con `delegation` | con `delegation` | con `delegation` | con `delegation` | con `delegation` |
-| `engram` — protocolo detallado | al inicio y al cierre | al inicio y al cierre | al inicio y al cierre | al inicio y al cierre | al inicio y al cierre |
-| `governance`, `engram` — regla corta | núcleo | núcleo | núcleo | núcleo | núcleo |
+**Compactación y reanudación.** Después de `/compact` el cuerpo de la skill y los módulos leídos salen del contexto y solo sobrevive el aviso universal de reinvocar que escribe la 03 (medido, C11). Regla: tras compactar o reanudar, el coordinador vuelve a invocar la skill y **relee los módulos de la acción en curso** antes de seguirla. El texto va debajo de la tabla del `SKILL.md`.
 
-**Superficie sin subagentes.** Codex documenta la actividad de subagentes en la app de escritorio, el CLI y la extensión del IDE, y no en la nube (https://learn.chatgpt.com/docs/agent-configuration/subagents). En una superficie sin subagentes, `verify` queda **detenida por diseño**: el módulo de delegación es obligatorio ahí y no puede entregarse. Se declara como límite de esa superficie, no como fallo; qué superficies soporta cada cliente lo fijan 03 y 04.
+**Modo legado** (Claude Code anterior a 2.1.110; la 03 deja el coordinador como bloque único en `CLAUDE.md`, medido con versión simulada, C14). No hay skill ni tabla, así que los módulos de la 05 **no se entregan** y ninguna acción puede detenerse por su ausencia. Comportamiento declarado: la paridad (tarea 6.8) registra el modo legado como límite; todo resultado de `apply` o `verify` en esa instalación queda *sin verificar* (D20), porque falta el `bounded-command-output` obligatorio; y se le pide a la 03 que el aviso de instalación degradada nombre que los módulos de contexto no se entregan. La 05 no agrega texto al bloque legado, que la 03 conserva byte a byte.
 
-### D20 — Un resumen de un worker sin corroborar queda "sin verificar"
+**"Salida verbosa"**, para la señal S1 de la 07, es la condición de D3: más de 300 líneas o más de 10.000 caracteres. La 07 ya cita las 300 líneas (`opsx-selective-delegation/design.md:49`); falta avisarle los caracteres.
 
-**Decidido por la 05 — pendiente de revisión del grupo.** Cuando un especialista (worker) corre un comando y le devuelve al coordinador un resumen, el coordinador recibe una afirmación, no evidencia: no vio el original y no sabe si el worker capturó antes de leer (D8). Ese resumen queda **sin verificar** hasta que el coordinador lo corrobora de una de dos formas:
+**Superficie sin subagentes.** Codex documenta subagentes en la app de escritorio, el CLI y la extensión del IDE, y no en la nube (https://learn.chatgpt.com/docs/agent-configuration/subagents). Ahí `verify` queda **detenida por diseño**, como límite de esa superficie. Qué superficies soporta cada cliente lo fijan 03 y 04.
 
-1. contra el original o su referencia: la ruta existe, la huella sha256 coincide y los fallos declarados están en el original; o
-2. volviendo a correr el comando con captura, si no tiene efectos laterales.
+### D20 — Un resultado declarado por el agente queda sin verificar hasta corroboración independiente
 
-Corroborado, el resumen pasa a **verificado**; si la corroboración encuentra un fallo omitido o una huella que no coincide, a **rechazado**. Los tres estados son los de la 06 (`opsx-verifiable-evidence/design.md:57-61`), con la duda hacia *sin verificar*, y no se inventa un vocabulario propio. La 05 no define qué evidencia alcanza para aceptar un cambio —eso es de la 06—: define solo que un resumen sin corroborar no cuenta como corroborado.
+**Acordado** (informe unificado, *05/06*: *"Un resultado declarado por el agente queda sin verificar hasta corroborar de forma independiente la ejecución y el estado del código"*). Vale igual en ejecución directa y delegada: el resumen del coordinador sobre su propio comando y el que un worker le devuelve.
 
-*Alternativa descartada: confiar en el resumen del worker si declara productor.* La declaración de productor (D8) hace atribuible un incumplimiento; no lo detecta. Un worker que no capturó produce un resumen bien formado y falso.
+Se separan tres preguntas:
 
-### D21 — El núcleo nombra la invocación por cliente, no una sola sintaxis
-
-**Decidido por la 05 — pendiente de revisión del grupo.** El núcleo incluye *"la referencia para invocar al orquestador"* (`specs/task-context-loading`). Esa referencia no puede ser un texto único, porque la invocación explícita difiere por cliente y por superficie:
-
-| Cliente | Invocación explícita documentada | Fuente |
+| Pregunta | Qué la responde | De quién es |
 |---|---|---|
-| Claude Code | skill: `/nombre` al inicio del mensaje | https://code.claude.com/docs/en/skills |
-| Codex CLI e IDE | `$nombre` o `/skills` | https://learn.chatgpt.com/docs/build-skills |
-| Codex en la app de ChatGPT | `@` para elegir la skill | https://learn.chatgpt.com/docs/build-skills |
+| **integridad**: ¿la copia es la que dice la referencia? | la huella sha256 coincide | 05 (D9) |
+| **procedencia**: ¿la ejecutó y capturó alguien que no es quien reporta? | el registro de captura: fuente `arnés`, o `cliente:<fuente>` con cobertura `demostrada` (D22), o re-ejecución por otra parte con captura | 05 aporta el registro; los estados y la regla son de 06 |
+| **suficiencia**: ¿alcanza para el requisito? | la revisión de 06 | 06 |
 
-El núcleo lleva **un texto por cliente**, y la referencia a las skills `openspec-*` con la sintaxis de cada uno (`/openspec-propose` en Claude, `$openspec-propose` en Codex). **Qué es el orquestador** en cada cliente es de 03 y 04. La 03 lo proponía como agente elegido con `claude --agent <id>` (`claude-native-opsx/design.md:116`) y la 04 como skill `$sdd-orchestrator` (`codex-native-opsx/design.md:153-160`). La decisión confirmada del equipo para 03/04 (auditoría técnica del 10/11) es activarlo **explícitamente dentro de la sesión actual con una skill**:
+Un resultado pasa a **verificado** solo con integridad y procedencia independiente, y la suficiencia la decide 06. Con fuente `agente`, o con cobertura `no demostrada`, queda **sin verificar** aunque la huella coincida: un archivo, una huella y un resumen fabricados por la misma parte son coherentes entre sí y no prueban nada (auditoría de ramas del 10/11, N5.1). Si la corroboración encuentra un fallo omitido o una huella distinta, pasa a **rechazado**. Si verificar exige un detalle que la redacción descartó, queda sin verificar hasta conseguir evidencia independiente. Los tres estados son los de la 06 (`opsx-verifiable-evidence/design.md:57-61`).
 
-- En Claude Code, `/sdd-orchestrator` con `disable-model-invocation: true` (https://code.claude.com/docs/en/skills).
-- En Codex, `$sdd-orchestrator` con `policy.allow_implicit_invocation: false` en `agents/openai.yaml` (https://learn.chatgpt.com/docs/build-skills).
+### D21 — Referencia de invocación por cliente
 
-El núcleo nombra esas dos invocaciones. Hay dos salvedades:
+**Acordado** (informe unificado, *03/04*). La invocación explícita es una skill en la sesión actual: `/sdd-orchestrator` en Claude Code, con `disable-model-invocation: true` (https://code.claude.com/docs/en/skills), y `$sdd-orchestrator` en Codex, con `policy.allow_implicit_invocation: false` (https://learn.chatgpt.com/docs/build-skills); en la app de ChatGPT la skill se elige con `@`. El texto que la nombra es la fila 3 de la matriz común y lo escriben 03 y 04; esta ficha solo exige que cada cliente nombre la suya y no la del otro (tarea 6.7). En Codex, la invocación con `$` de una skill con `allow_implicit_invocation: false` tiene un reporte abierto (https://github.com/openai/codex/issues/23454): la alternativa es `/skills` y la 04 la verifica por versión. **Medido** en Codex 0.167.1 sobre Windows: `$sdd-orchestrator` inyecta el cuerpo (X10) y el pedido sin `$` no la invoca (X11); `/skills` sin interfaz quedó **no probado**. En Claude Code 2.1.319, **medido**: la skill no figura para el modelo hasta invocarla (C7) y `/sdd-orchestrator` la carga (C8).
 
-- En Codex, la invocación con `$` de una skill con `allow_implicit_invocation: false` tiene un bug abierto (https://github.com/openai/codex/issues/23454). El texto del núcleo indica el camino alternativo `/skills`, y el spike de la 04 lo verifica por versión.
-- Si 03 y 04 cambian el nombre, el núcleo toma el que fijen por superficie.
+**Qué especialistas reciben las reglas universales.** Explore y Plan *"start without your CLAUDE.md files"*, igual que un agente con `omitClaudeMd: true` (documentado, https://code.claude.com/docs/en/sub-agents; **medido**, C10: Explore y Plan no ven `CLAUDE.md`, y un general-purpose ve `CLAUDE.md` pero no `SKILL.md`): para ellos el encargo repite las reglas obligatorias y `governance` (matriz común, fila 1), y a todo especialista el coordinador le pega los módulos. En Codex, si un subagente lee `AGENTS.md` sigue **no probado** (la política de shell de Windows impide lanzarlo, X12); hasta que la 04 lo responda, el encargo también las repite.
 
-**Qué especialistas reciben el núcleo.** En Claude el núcleo vive en `CLAUDE.md`, y los subagentes integrados Explore y Plan *"start without your CLAUDE.md files"*, igual que un agente con `omitClaudeMd: true` (https://code.claude.com/docs/en/sub-agents). Para esos especialistas, el encargo que arma el coordinador **repite** las reglas de cumplimiento obligatorio y `governance`. En Codex no está documentado si un subagente lee `AGENTS.md` (https://learn.chatgpt.com/docs/agent-configuration/agents-md): hasta que el spike de la 04 lo responda, el encargo también las repite.
+### D22 — Matriz de cobertura de captura por cliente, interfaz y sistema
+
+**De la 05**, con el formato acordado para plataformas (informe unificado, *Plataformas*: Windows y Linux como mínimo; distribuida, declarada y probada). Es lo que la *Coordinación pendiente* 05 → 06 espera: *"La elección del mecanismo de captura queda pendiente de que 05 demuestre qué fuente cubre cada interfaz antes del truncamiento."*
+
+Estados de una celda: **distribuida** (el cliente se instala ahí), **declarada** (la documentación dice que la fuente existe), **probada** (la fuente coincidió con la salida conocida en una corrida real; *sonda* si fue con generadores propios, *8.1* cuando la tarea 8.1 la corre con los fixtures 2.1 y 2.7 y deja id de corrida), **truncada** (la corrida mostró recorte), **no disponible** (la fuente no existe en esa interfaz) y **no probada** (con su motivo). Solo una celda *probada 8.1* cuenta como independiente (D20).
+
+Estado al 2026-11-13 (`entrega-03-04.md` §5 y §6):
+
+| Cliente · interfaz · sistema | Fuente | Estado | Respaldo |
+|---|---|---|---|
+| cualquiera · arnés | capturador del arnés sobre el comando del fixture | referencia por construcción | — |
+| Claude Code · CLI · Windows | lo que recibe el modelo (`stream-json`, `tool_result`) en un comando **fallido** | **truncada**: ~10.040 caracteres de cabeza y cola, la cola no es el final, sin ruta | medido (C1–C5) |
+| Claude Code · CLI · Windows | archivo del cliente en un comando **exitoso** (`tool-results/<id>.txt`) | **probada (sonda)** para exit 0; copia del cliente sin redactar (D9), y no existe en un fallo | medido (C6) |
+| Claude Code · CLI · Windows | hooks `PostToolUse` (`tool_response.stdout`, `stderr`) y `PostToolUseFailure` (`error`, documentado como *"middle-truncates"*, https://code.claude.com/docs/en/hooks) | declarada; no probada (no se instalaron hooks) | documentado |
+| Claude Code · IDE · Windows | los mismos hooks (*"fires the same hook events wherever it runs"*) | declarada; no probada (sin IDE operable) | documentado |
+| Codex · CLI · Windows | `codex exec --json`, `item.completed` de `command_execution`: `aggregated_output`, `exit_code` | **probada (sonda)**: salida completa (129.047 caracteres) en stdout, solo stderr, exit 0 y 1; falta 8.1 con los fixtures del arnés | medido (X7) |
+| Codex · CLI · Windows | lo que recibe el modelo; historial de la sesión | **truncada**: cabeza y cola sin aviso al modelo; el historial guarda la recortada | medido (X1–X6, X8) |
+| Codex · CLI · Windows | App Server conducido por el arnés: `item/commandExecution/outputDelta`, `aggregatedOutput?`, `exitCode?` | declarada; no probada | documentado (https://learn.chatgpt.com/docs/app-server) |
+| Codex · IDE · Windows | App Server interno de la extensión | **no disponible** como fuente externa: el arnés no puede suscribirse a la instancia de la extensión | documentado |
+| Codex · escritorio | — | no probada; la 04 no promete aceptación en escritorio (`codex-native-opsx/design.md:59-63`) | documentado |
+| Codex · nube | sin disco persistente del usuario | **no disponible** (D9); la 04 tampoco la promete | documentado |
+| Claude Code y Codex · CLI e IDE · Linux | las mismas fuentes | **no probada** (sin cliente nativo en WSL) | — |
+
+Conclusiones. En Claude, el caso que más importa —un comando que falla con salida larga— **no tiene fuente completa en la sesión**: la captura independiente es la del arnés, y en una sesión real la del agente (D8), que no supera *sin verificar*. En Codex CLI el arnés tiene una fuente del cliente que, en la sonda, entregó todo: la tarea 8.1 la convierte en celda *probada 8.1* y la tarea 3.6 la usa con muestras reales en lugar de derivadas de la documentación. Donde no haya una celda *probada 8.1*, el resultado de una sesión real queda *sin verificar* (D20).
+
+### D23 — Qué entrega la 05 a 03 y 04
+
+**Acordado** que la 05 entrega texto y la tabla de carga (D17); el contenido de la entrega es **de la 05**. Responde la fila 27 de la matriz común (*"Lectura dirigida, resumen acotado, herramientas, reporte conciso · módulos nuevos · según 05 D2 · pendiente de texto de 05"*) y la tarea 2.3 de la 03.
+
+**Qué se entrega hoy.** El texto, no el código: los cuatro módulos en inglés, la tabla acción → módulos con su regla de módulo ausente o vacío y la de compactación, y las rutas por cliente, todo en `entrega-03-04.md` (§2 y §3). Estado: *texto listo para integrar; integración en código pendiente de la ronda de apply*.
+
+| Entrega | Texto hoy | En código (apply) | Tarea | Qué hacen 03 y 04 |
+|---|---|---|---|---|
+| módulo `directed-code-reading` | `entrega-03-04.md` §2 | `internal/harness/config/assets/modules/directed-code-reading.md` | 4.4 | lo registran en el compositor común |
+| módulo `bounded-command-output` | ídem | `…/modules/bounded-command-output.md` | 6.3 | ídem |
+| módulo `task-tool-selection` | ídem | `…/modules/task-tool-selection.md` | 5.3 | ídem |
+| módulo `concise-agent-reporting` | ídem | `…/modules/concise-agent-reporting.md` | 7.2 | ídem |
+| tabla acción → módulos, regla de módulo ausente o vacío, compactación | `entrega-03-04.md` §3 | generada desde el catálogo | 6.1, 6.2 | la incluyen en el `SKILL.md` sin editarla |
+
+**Compositor común con registro de módulos (propuesto a 03 y 04).** Hoy hay dos compositores que se superponen (medido y documentado, R5 y R6) y los dos fijan la tabla en código. Un sexto módulo anotado sin toggle se descarta en silencio en la 03 (medido, R2), así que copiar los archivos a `modules/` no alcanza. La 05 propone que 03 y 04 compartan un registro con esta forma, sin fijar la implementación:
+
+| Campo | Qué es |
+|---|---|
+| id | nombre estable del módulo (`artifacts`, `bounded-command-output`, …), igual al del archivo `modules/<id>.md` |
+| texto | contenido del archivo, desde un asset o un fragmento partido de un asset |
+| carga por acción | para cada acción: obligatorio, opcional o no se carga, con su condición (por ejemplo, `tdd` solo con Strict TDD y runner) |
+| especialista | si el especialista lo recibe en el encargo y cuándo |
+| toggle | opcional: si existe y está inactivo, el módulo no se entrega y una acción que lo tenga como obligatorio se detiene. Un módulo sin toggle (los cuatro de la 05) se entrega siempre |
+| clientes | en qué clientes se entrega (`model-assignments` no en Codex hasta la 09) |
+
+Con ese registro, la tabla de `entrega-03-04.md` §3 es la **única fuente** y reemplaza `actionTable`, `exists` y `ExpectedModules` de la 03 y el string `actions` de la 04; el verify de la instalación compara lo instalado con el registro y falla con un módulo ausente o vacío (el de la 04 ya compara byte a byte, R4). El texto del `SKILL.md` se genera desde el registro por cliente, con la ruta de cada uno (`${CLAUDE_SKILL_DIR}/modules/<id>.md` en Claude, medido C8; `modules/<id>.md` relativa en Codex, no probado X12).
+
+Los cuatro archivos no llevan frontmatter de skill, para que el cliente no los liste como skills propias, y no usan los encabezados `## Core Principles` ni `## Rules` (matriz común, *Reglas de la tabla*). La 05 **no** entrega texto de la capa universal ni de la invocación: son filas de la matriz común que escriben 03 y 04.
+
+## Ubicación de los módulos
+
+**Acordado** (matriz común, *Capas*: *"Módulo `<x>`: archivo de apoyo de la skill, se lee sólo para la acción que lo pide"*). Los módulos son archivos dentro de la skill del orquestador, `sdd-orchestrator/modules/<id>.md`, en los dos clientes. Una skill puede traer archivos de apoyo que se leen bajo demanda (https://code.claude.com/docs/en/skills, https://learn.chatgpt.com/docs/build-skills). La materialización —que el instalador entregue una skill con `modules/`— es de 03 y 04, hoy en dos ramas con dos compositores (D23). Si se delega, el coordinador pega el módulo en el encargo: el especialista no ve la skill (medido, C9 y C10).
 
 ## Risks / Trade-offs
 
-- **La matriz de módulos de 03 y 04 todavía no está cerrada →** la 05 usa su propio reparto (D2) hasta que exista la matriz única propuesta (punto *Matriz de módulos*), y la tarea 3.1 registra las divergencias contra ella. El criterio de reparto no depende de esa matriz.
-- **Seis fichas tocan `sdd-orchestrator.md` y ninguna lo posee →** este change escribe requisitos y redacta texto de módulos como entrega (D17), no contenido en el archivo, y lleva al grupo la propuesta de que 03 y 04 sean dueñas. La 07 ya la respalda (`opsx-selective-delegation/design.md:173`: *"03+04, como propone 05"*).
-- **Resolver módulos por acción agrega un punto de fallo que hoy no existe →** mitigado por el requisito de que un módulo obligatorio ausente detenga la acción e informe, que es el modo de fallo que la aceptación transversal ya exige (`CHANGES.md:47`). D19 fija cuáles son obligatorios para que la regla no frene acciones que pueden resolverse directo.
-- **Mover instrucciones fuera del bloque siempre presente puede degradar el comportamiento del agente en acciones que sí las necesitaban →** por eso ninguna adopción se decide en este change. La comparación con y sin cada módulo, sobre la misma aceptación, es requisito de `task-context-loading` y usa el protocolo de 02 (tarea 6.4).
-- **El contrato de resumen no sirve de nada si el productor no retiene el fallo →** el productor está decidido (D8) y su supuesto se valida corriendo los fixtures del grupo 2 contra un agente real, en el cliente real (tareas 2.7 y 2.17). El contrato evalúa el resumen, así que cambiar el productor no invalida nada.
-- **El cliente recorta la salida antes de que el agente la vea →** el agente captura a archivo antes de leer (D8), con el umbral en la unidad del cliente (D3). Lo que no se capturó se entrega como "parcial — sin verificar", nunca como resumen completo.
-- **El agente puede no capturar, o un worker puede resumir sin capturar →** un resumen sin original capturado es parcial (D8) y el de un worker queda sin verificar hasta que el coordinador lo corrobora (D20).
-- **Una tabla de herramientas que en un cliente es solo instrucción puede leerse como aislamiento →** D18 declara el nivel alcanzable por cliente y prohíbe presentar el nivel (a) como control.
-- **Solapamiento con 07 →** la 07 consume esta ficha y ya la declara dependencia. D19 fija el umbral de salida verbosa y qué módulo es obligatorio en qué acción, y la tabla de carga queda acá para que la 07 la consuma sin redefinirla.
-- **La redacción por instrucción puede fallar →** un agente puede conservar un valor sensible, y la captura de D8 escribe un crudo antes de redactar. Mitigación: la lista de D14 es declarativa y testeable, el fixture 2.4 lo evalúa, el crudo se borra antes de entregar el resumen, y el original vive fuera del repo (D9), de modo que un fallo de redacción no termina en un commit. Las copias propias del cliente quedan fuera de esta garantía y se declaran como límite (D9); la protección en origen es no leer el secreto.
+- **Ninguna fuente del cliente queda probada →** el arnés sigue siendo la fuente independiente de la evaluación, y en sesiones reales todo resultado queda *sin verificar* (D20). Es una conclusión válida de la ficha, no un fallo: lleva al grupo el insumo para la decisión de arquitectura de `CHANGES.md:49`.
+- **La captura declarada por el agente puede faltar o estar mal →** queda *sin verificar* por construcción; sin captura, el resumen es "parcial — sin verificar".
+- **Seis fichas tocan `sdd-orchestrator.md` →** la matriz común es la única fuente del reparto; esta ficha entrega archivos nuevos y una tabla generada (D23), no ediciones al asset.
+- **03 y 04 integran con compositores distintos →** cada módulo de la 05 tendría que cablearse dos veces y un módulo sin toggle se perdería en la 03 (R2). D23 propone el registro común; mientras no exista, `entrega-03-04.md` §1 dice qué cambiar en cada rama.
+- **El cliente le oculta al modelo cuánto perdió →** Claude subestima la marca y Codex no avisa (D3). El módulo prohíbe resumir desde la vista del cliente y prescribe la captura antes de leer.
+- **Resolver módulos por acción agrega un punto de fallo →** un módulo obligatorio ausente detiene la acción e informa (`CHANGES.md:47`); D19 fija cuáles son obligatorios.
+- **Mover instrucciones fuera del bloque siempre presente puede degradar el comportamiento →** ninguna adopción se decide acá; la comparación con y sin cada módulo usa el protocolo de 02 (tareas 9.3 y 9.4).
+- **Una tabla de herramientas que en un cliente es solo recomendada puede leerse como aislamiento →** D18 nombra cada nivel y prohíbe presentar (a) como control.
+- **La redacción puede fallar →** en el arnés es código determinista probado con datos ficticios (tarea 3.3); en la captura declarada es instrucción y lo dice. Las copias del cliente quedan fuera y se declaran.
+- **La retención en sesiones reales no tiene quien borre →** se declara como recomendación (D9); en el arnés purga el arnés.
+- **Las recetas de captura dependen del shell →** se fijan por shell y se prueban en Windows y Linux (tareas 3.8 y 8.1).
 
 ## Migration Plan
 
-No aplica en esta ronda: el change no modifica configuración instalada. Cuando se implemente, la migración del bloque administrado en `CLAUDE.md`/`AGENTS.md` pertenece a 03 y 04, que ya la tienen en su alcance con snapshot, preservación de contenido del usuario y rollback. Este change no debe introducir una segunda ruta de migración sobre los mismos archivos.
+No aplica a esta ficha: no modifica configuración instalada. La migración del bloque administrado en `CLAUDE.md`/`AGENTS.md` pertenece a 03 y 04, con snapshot, preservación de contenido del usuario y rollback; esta ficha no introduce una segunda ruta de migración. Ninguna tarea toca `internal/backup`, `internal/filemerge` ni `internal/pipeline`.
 
-**OpenCode y Antigravity** mantienen el bloque global actual. Es un límite declarado de la 05: el roadmap es de Claude y Codex (`CHANGES.md:3`) y ninguna ficha tiene asignado qué les pasa al retirar el bloque global; queda sin dueño hasta que el roadmap lo asigne.
+**OpenCode y Antigravity** mantienen el bloque global actual. El roadmap es de Claude y Codex (`CHANGES.md:3`).
 
 ## UI Mockups
 
 Decision: no (no UI) — 2026-11-05. El change no agrega ni modifica pantalla, componente, layout ni interacción.
 
-## Decisiones tomadas — pendientes de revisión del grupo
+## Coordinación pendiente
 
-Trece puntos. Todos están decididos acá; se comparten porque tocan alcance de otras fichas. Cada uno con la decisión, en qué se apoya, a qué fichas afecta y qué cambia si el grupo la rechaza. Se identifican por su nombre, no por un código: así nadie tiene que buscar una leyenda y no se confunden con los puntos de otra ficha.
+Lo que depende de otra ficha, qué resultado necesita y qué comprobará esta ficha cuando llegue. El envío de cada pedido está en `tasks.md` — *Workflow follow-up*; lo que cada ficha tiene que hacer en código con la entrega, en `entrega-03-04.md` §7.
 
-Una decisión puede apoyarse en tres cosas, y cada una lleva su procedencia, igual que D5 exige para cualquier afirmación sobre el código:
+**Estado real al 2026-11-13.** La 03 está archivada en su rama (PR #8) con 15 tareas abiertas, entre ellas la 2.3, que espera los textos de esta ficha. La 04 es un borrador (PR #9) con 10 de 21 tareas cerradas; su tarea 1.4 pide fijar las revisiones de 05 y 06 y su `SKILL.md:20` dice *"Consume context and capture modules from change 05 when available"*. Ninguna está en `main` y las dos ramas chocan en 9 archivos (R5). La entrega de esta ficha (`entrega-03-04.md`) deja satisfacibles la 2.3 de la 03 y la 1.4 de la 04 en lo que toca a la 05; falta integrarla en código.
 
-| | Qué significa |
-|---|---|
-| **documentado** | está escrito en el repositorio, en el roadmap o en la rama de otra ficha, con archivo y línea, o en la documentación oficial del cliente, con su URL |
-| **medido** | lo midió este change y el número es reproducible |
-| **supuesto** | no hay respaldo todavía; se declara junto con la decisión y con cuándo se recalibra |
+| De → a | Qué falta | Qué se comprueba cuando llegue |
+|---|---|---|
+| 05 → 06 | La 06 confirma o contrapropone ubicación, acceso y vencimiento de la copia redactada (D9), la lista sensible (D14), el registro de captura y que su contrato de evidencia se cargue con `bounded-command-output` en `apply` y `verify`, directa o delegada (D19). La elección del mecanismo de captura ya tiene la matriz medida de D22 | que la referencia de cinco campos y el campo de fuente de captura entren en su recibo sin redefinirse, y que su regla de *verificado* use la procedencia de D20 |
+| 05 → 03 y 04 | Compositor común con registro de módulos (D23) en lugar de dos compositores; registrar los cuatro módulos y la tabla de `entrega-03-04.md` | tareas 6.5 a 6.7 |
+| 03 → 05 | Que el aviso de instalación degradada (modo legado) nombre que los módulos de contexto no se entregan (D19) | tarea 6.8 |
+| 04 (Matías según el informe unificado) → 05 | Tarea 2.5 de la 04 (`verify` y contrato de evidencia por acción); si un subagente de Codex lee `AGENTS.md`; lectura real de módulos y módulo ausente o vacío en Codex, hoy no probados por la política de shell de Windows (X12). La lista de superficies ya está declarada en su design (`codex-native-opsx/design.md:59-63`) y `aggregated_output` ya está medido (X7) | tareas 6.8, 8.1 y la regla de D21 sobre el encargo |
+| 02 → 05 | Uso de la lista de D14 en `eval/baseline/record` y del plazo de D9 en su D6 | que las trazas de 02 y las salidas de 05 compartan política |
+| 05 → 07 | La 07 actualiza S1 con los 10.000 caracteres y adopta D20 para el retorno del worker | que su escenario de salida verbosa use el par de D3 |
+| 05 → 01 u 08 | Piso equivalente al de Claude en Codex (D14) | que el test de cobertura del piso pueda extenderse a Codex |
+| 05 → matriz común | Resultado de la tarea 9.4 sobre las filas de memoria | que la matriz lo use como insumo, sin cambiarla desde esta ficha |
 
-### Matriz de módulos
+## Puntos de grupo y su estado
 
-| | |
-|---|---|
-| **Decisión** | proponer la matriz de G4 de la 04 (`codex-native-opsx/design.md:300-313`, columnas sesión normal / orquestador / especialista / Codex / Claude) como **matriz única** de 03 y 04; la 03 completa la columna de Claude. Hasta que esté, la 05 usa su reparto (D2) y la tarea 3.1 registra divergencias |
-| **En qué se apoya** | **documentado.** La dependencia es circular: la 03 dice que el inventario de módulos lo da la 04 (`claude-native-opsx/proposal.md:78`) y la 04 que lo da la 03 (`codex-native-opsx/proposal.md:71`). La matriz de la 04 es la única publicada con columnas para los dos clientes |
-| **Afecta a** | 03, 04, 05, 07 |
-| **Si se rechaza** | la tarea 3.1 compara contra la matriz que el grupo elija; ningún requisito cambia |
+| Punto | Decisión | Estado | Si cambia |
+|---|---|---|---|
+| Matriz de módulos | la matriz común de la 03, con la columna de Codex de la 04 | acordado (12/11) | — |
+| Ubicación de los módulos | archivos `modules/<id>.md` dentro de la skill | acordado (12/11) | la ruta de las tareas 4.4, 5.3, 6.3 y 7.2 |
+| Compositor común | un registro de módulos compartido por 03 y 04, con la tabla de la 05 como única fuente (D23) | propuesto a 03 y 04 (13/11) | las tareas 6.5 a 6.7 y lo que 03 y 04 cambian en código (`entrega-03-04.md` §7) |
+| Ids de los módulos de la 05 | el nombre de la capacidad, en inglés (D17) | de la 05 (13/11) | los nombres en la tabla de `entrega-03-04.md` §3 |
+| Eje de clases de tarea | las cinco acciones OPSX (D10) | acordado (matriz común) | — |
+| Reparto por capa | el de la matriz común; la 05 mide memoria (D2) | acordado (12/11) | la tarea 9.4 |
+| Herramientas por clase | tabla y niveles con nombre (D18) | propuesto a 03, 04, 07 y 08 | la tabla de D18 y las tareas 5.1 a 5.5 |
+| Copia redactada | ubicación, acceso, vencimiento y registro de captura (D9) | propuesto a 06 | los requisitos de ubicación y retención y las tareas 3.4, 3.5 y 8.5 |
+| Lista sensible | una sola, en el catálogo, dueña la 05 (D14) | acordado (11/11) | — |
+| Roles de captura | tres roles separados y captura independiente (D8) | acordado (11/11) | — |
+| Cobertura por interfaz | matriz de D22 | de la 05; la espera la 06 | las celdas, según la tarea 8.1 |
+| Quién ejecuta | agente con módulos, catálogo y arnés (D17) | acordado (`CHANGES.md:49`) | — |
+| Interfaz con la 07 | salida verbosa de D3; tabla de carga de D19 | propuesto a 07 (300 líneas ya adoptadas) | el escenario de S1 de la 07 |
+| Resultado sin verificar | D20 en ejecución directa y delegada | acordado (11/11) | — |
+| Invocación por cliente | D21 | acordado (11/11) | — |
+| Agentes incluidos | Claude y Codex; OpenCode y Antigravity mantienen el bloque global | acordado (`CHANGES.md:3`) | — |
 
-### Ubicación de los módulos
+## Decisiones para el grupo
 
-| | |
-|---|---|
-| **Decisión** | **Decidido por la 05 — pendiente de revisión del grupo.** Los módulos son **archivos dentro de la skill del orquestador**, en los dos clientes: `sdd-orchestrator/modules/<id>.md` (`tdd`, `delegation`, `subagents`, `engram`, `model-routing` y los de esta ficha: `lectura-dirigida`, `resumen-acotado`, `herramientas`, `reporte`). La skill los lee según la acción activa, y el catálogo declara qué acción requiere cada módulo (tarea 3.2). No son skills separadas ni entradas sueltas de catálogo. |
-| **En qué se apoya** | **Documentado.** La decisión confirmada del equipo para 03/04 activa el orquestador como skill en los dos clientes: `/sdd-orchestrator` en Claude Code y `$sdd-orchestrator` en Codex (D21). Una skill puede traer archivos de apoyo que se leen bajo demanda (https://code.claude.com/docs/en/skills, https://learn.chatgpt.com/docs/build-skills). Coincide con la G5 de la 04 (`codex-native-opsx/design.md:199`). |
-| **Supuesto** | Que los archivos de `modules/` no aparezcan como skills propias en la sesión normal. Mientras el spike de la 04 no lo confirme, cada módulo se escribe sin metadatos de skill (sin frontmatter `name`/`description`), así no hay nada que el cliente pueda listar. |
-| **Afecta a** | 03, 04, 05, 07 |
-| **Si se rechaza** | cambian la tarea 3.2 y la ruta de los módulos; ningún requisito, porque las specs hablan de "módulo de la acción" y no de su ruta |
+Mejoras que surgieron de la revisión del 13/11 y que **no** se aplican en esta ronda porque
+cambian convenciones de más de una ficha. Quedan para decidir en grupo:
 
-Esto deja sin efecto la G3(a) de la 03, que pega los módulos en el brief: con activación por skill, el módulo se lee desde la skill. Cuando hace falta que un especialista lo reciba, el coordinador lo incluye en el encargo, como ya prevé D21 para Explore y Plan.
-
-### Eje de clases de tarea
-
-| | |
-|---|---|
-| **Decisión** | las cinco acciones OPSX, sin sub-eje (D10) |
-| **En qué se apoya** | **documentado** en `CLAUDE.md:26`, `ARCHITECTURE.md:6` y `ARCHITECTURE.md:164`. La 04 usa las acciones OPSX como opción para su inventario de especialistas (G6, `codex-native-opsx/design.md:333`), que es otro eje —quién ejecuta, no qué se carga— y no lo contradice |
-| **Afecta a** | 03, 04, 05, 07 |
-| **Si se rechaza** | el vocabulario del catálogo en las tareas 3.2 y 5.1 y la tabla de D18; los requisitos dicen "la acción activa" |
-
-### Reparto núcleo / módulo
-
-| | |
-|---|---|
-| **Decisión** | `governance` y la regla corta de `engram` al núcleo; protocolo detallado de `engram`, `tdd`, `delegation` y `model-routing` a módulo; `design-mockups` fuera de alcance (D2) |
-| **En qué se apoya** | **documentado** en `governance.md:3` y `engram-protocol.md:4`; **medido** en `proposal.md` — Impact: `engram` es el 30,4 % del bloque de Claude, reproducible por la tarea 1.1 |
-| **Afecta a** | 03, 04, 05 |
-| **Si se rechaza** | la tabla de D2, la de D19 y la tarea 3.1; el criterio de reparto no cambia |
-
-### Herramientas por clase de tarea
-
-| | |
-|---|---|
-| **Decisión** | la tabla de D18: todo opcional apagado por defecto y habilitado por acción, con el nivel de control —(a) instrucción, (b) descripción fuera del contexto, (c) el cliente no deja invocarla— declarado por cliente; (a) nunca se presenta como aislamiento |
-| **En qué se apoya** | **documentado**: `CHANGES.md:166` pone *"qué capacidad es necesaria para cada tarea"* entre lo que se acuerda en grupo; el catálogo declara Context7 y Playwright (`harnesses.yaml:36`, `:50`). Los niveles por cliente: **documentado** en https://code.claude.com/docs/en/permissions, https://code.claude.com/docs/en/skills, https://code.claude.com/docs/en/sub-agents y https://learn.chatgpt.com/docs/agent-configuration/subagents (el archivo de un rol de Codex no fija `mcp_servers`). La asignación por acción es **supuesto** razonado; se recalibra con la comparación con y sin cada integración del grupo 6 |
-| **Afecta a** | 03, 04, 05, 07, 08 |
-| **Si se rechaza** | la tabla de D18 y las tareas 5.1, 5.8 y 5.9 |
-
-### Referencia, ubicación y retención del original
-
-| | |
-|---|---|
-| **Decisión** | referencia `{comando, id de corrida, ruta, huella sha256, vencimiento}`; original en `<os.UserCacheDir>/active-stack/runs/<change>/`; retención hasta archivar el change y siete días más; acceso del usuario local; el crudo de la captura se borra y la garantía de redacción cubre solo la copia de Active Stack, no las del cliente (D9). Se propone a la 06 adoptar el formato |
-| **En qué se apoya** | **documentado**: `CHANGES.md:166` pone *"dónde queda el original"* entre lo que se acuerda en grupo y pide coordinar la referencia con 06; la 06 tampoco versiona originales (`opsx-verifiable-evidence/design.md:78`); el cliente guarda su propia copia (https://code.claude.com/docs/en/tools-reference). **Supuesto**: los siete días; se recalibran con el primer uso real (D9) |
-| **Afecta a** | 05, 06 |
-| **Si se rechaza** | los valores del requisito de ubicación y retención y las tareas 2.10, 2.11 y 2.14 |
-
-El commit `1b4639b` no es la fuente de esta decisión: es lo que volvió urgente la pregunta. Antes `openspec/` estaba en el `.gitignore` y una salida guardada en la carpeta del change no podía llegar al repositorio ni por error; ahora sí. Por eso el original vive fuera del repo.
-
-### Datos sensibles
-
-| | |
-|---|---|
-| **Decisión** | una sola lista de patrones de valor en el catálogo, dueña la 05, usada por 02, 06 y 10; un test garantiza que cubre el piso de Claude (D14) |
-| **En qué se apoya** | **documentado**: el piso bloquea rutas y solo en Claude (`overlays.go:16-28`, `:73`); el instalador no escribe piso en Codex (`permissions/install.go:114-134`), aunque Codex tiene `permissions.<name>.filesystem` con `"deny"` (https://learn.chatgpt.com/docs/config-file/config-reference); la 06 redacta valores (`opsx-verifiable-evidence/design.md:79`) y la 10 consume una redacción (`opsx-shadow-review/design.md:126`) |
-| **Afecta a** | 01, 02, 05, 06, 08, 10 |
-| **Si se rechaza** | el requisito de datos sensibles y las tareas 2.4 y 2.9 |
-
-### Productor del resumen acotado
-
-| | |
-|---|---|
-| **Decisión** | el agente bajo instrucción, que **captura antes de leer**: redirige stdout y stderr a un archivo de la ruta de corrida con el código de salida, y resume desde ese archivo; sin captura, el resumen es "parcial — sin verificar" (D8) |
-| **En qué se apoya** | **documentado**: un envoltorio ejecutable sería un runtime nuevo (`CHANGES.md:49`); la capacidad nativa existe en los dos pero recorta sin conservar fallos (https://code.claude.com/docs/en/tools-reference, https://learn.chatgpt.com/docs/config-file/config-reference). **Supuesto**: que el agente captura y retiene el fallo; se valida con las tareas 2.7 y 2.17 |
-| **Afecta a** | 05, 06, 07 |
-| **Si se rechaza** | el productor y nada más: los fixtures evalúan el resumen |
-
-### Quién ejecuta
-
-| | |
-|---|---|
-| **Decisión** | "el sistema" es el agente con los módulos más el catálogo; tests de Go solo sobre lo declarativo; conducta con arnés fuera del binario; la 05 redacta el texto de sus módulos y lo entrega a 03 y 04 (D17) |
-| **En qué se apoya** | **documentado** en `CHANGES.md:49` (*"el arnés de evaluación queda fuera del binario"*; runtime nuevo sujeto a decisión separada) |
-| **Afecta a** | 02, 03, 04, 05 |
-| **Si se rechaza** | las tareas que dicen "redactar el texto del módulo" pasan a implementación en el binario, previa decisión de arquitectura |
-
-### Interfaz con la 07
-
-| | |
-|---|---|
-| **Decisión** | salida verbosa = más de 300 líneas o más de 10.000 caracteres, lo que ocurra primero; delegación obligatoria solo en `verify`, que queda detenida en una superficie sin subagentes; tabla de carga de D19 |
-| **En qué se apoya** | **documentado**: `CHANGES.md:47` y `:164`; la 07 en `opsx-selective-delegation/design.md:40`, `:43` y `:58`. **Medido**: las 300 líneas salen de D11. **Documentado**: los 10.000 caracteres son el límite de Claude para un resultado fallido (https://code.claude.com/docs/en/tools-reference) |
-| **Afecta a** | 05, 07 |
-| **Si se rechaza** | el requisito de umbral de salida verbosa, la tabla de D19 y la tarea 3.5 |
-
-### Agentes incluidos
-
-| | |
-|---|---|
-| **Decisión** | solo Claude y Codex; OpenCode y Antigravity mantienen el bloque global actual como límite declarado (Migration Plan) |
-| **En qué se apoya** | **documentado** en `CHANGES.md:3` —*"plan canónico de mejoras de OPSX para Codex y Claude"*— y `CHANGES.md:158` (*Cliente Ambos*). La 07 declara lo mismo (`opsx-selective-delegation/proposal.md:61`); la 06 lo tiene como pregunta abierta nº 5 (`opsx-verifiable-evidence/design.md:114`) |
-| **Afecta a** | 05, 06, 07, 08 |
-| **Si se rechaza** | el alcance de la paridad por cliente y la tarea 1.2 |
-
-### Estado de un resumen sin corroborar
-
-| | |
-|---|---|
-| **Decisión** | el resumen que un worker le entrega al coordinador queda *sin verificar* hasta que el coordinador lo corrobora contra el original o su referencia, o con una re-ejecución; corroborado pasa a *verificado*, y con un fallo omitido o una huella distinta, a *rechazado* (D20) |
-| **En qué se apoya** | **documentado**: los tres estados y la duda hacia *sin verificar* son de la 06 (`opsx-verifiable-evidence/design.md:57-61`); el cliente recorta salidas antes de que el worker las vea (https://code.claude.com/docs/en/tools-reference) |
-| **Afecta a** | 05, 06, 07 |
-| **Si se rechaza** | el requisito de resumen de un worker y la tarea 2.18 |
-
-### Referencia de invocación por cliente
-
-| | |
-|---|---|
-| **Decisión** | el núcleo lleva un texto por cliente con la invocación explícita documentada —Claude Code `/nombre`; Codex `$nombre` en CLI e IDE y `@` en la app de ChatGPT—; el nombre final del orquestador y si es agente o skill son de 03 y 04; no se fija `claude --agent` en el núcleo; los especialistas que no cargan `CLAUDE.md` reciben las reglas obligatorias en el encargo (D21) |
-| **En qué se apoya** | **documentado** en https://code.claude.com/docs/en/skills, https://learn.chatgpt.com/docs/build-skills y https://code.claude.com/docs/en/sub-agents (Explore y Plan sin `CLAUDE.md`; `omitClaudeMd`); `claude-native-opsx/design.md:116` y `codex-native-opsx/design.md:153-160` |
-| **Afecta a** | 03, 04, 05 |
-| **Si se rechaza** | los requisitos de núcleo y de referencia de invocación de `task-context-loading` y las tareas 3.7 y 3.11 |
-
-### La frontera con la 06, que no es una decisión
-
-La 05 y la 06 son **hermanas**: las dos dependen de 03 y 04, ninguna de la otra. La 06 lo escribió desde su lado, en su *Fuera de alcance*: *"Lectura dirigida y acotado de salidas (propuesta 05). Aquí solo se exige conservar la referencia al original."* Esta ficha lo escribe desde el suyo. Comparten el formato de la referencia al original y su vencimiento, los dos definidos por la 05 (D9); lo que se le propone a la 06 es adoptarlos, junto con la lista de patrones de D14.
+| Decisión | Qué cambiaría | Por qué no se aplica ahora |
+|---|---|---|
+| Ids en inglés para todos los artefactos | nombres de requisitos, estados y formas en specs y tasks de todas las fichas | es convención común; esta ficha solo pasó a inglés los ids de sus módulos y las líneas de forma fija, porque se insertan en assets en inglés (D17, D23) |
+| Método testigo en todos los escenarios de las specs | cada escenario de conducta nombraría su testigo (texto único, oráculo de transcripción) como hacen las pruebas de la 03 | cambia el formato de los escenarios de todas las fichas |
+| `governance` solo a los especialistas que escriben | hoy el encargo de Explore y Plan repite `governance` (D21); se podría limitar a los que editan | toca la fila 1 y la 18 de la matriz común |
+| Guarda de tamaño del `SKILL.md` y de los módulos | un test que falle si el texto compuesto supera un tope | D12 deja los topes fuera del alcance de la 05; la 03 ya fijó 4.000 tokens para su `SKILL.md` |

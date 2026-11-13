@@ -56,12 +56,12 @@ Cuando el agente necesita ubicar dónde vive una capacidad y no sabe todavía en
 
 ### Requirement: Relectura de contenido ya disponible registrada
 
-El agente SHALL registrar como llamada innecesaria toda relectura de un contenido que ya está disponible en la sesión: el mismo archivo y el mismo rango, sin que haya mediado una escritura sobre ese archivo. La relectura MUST NOT bloquearse.
+El agente SHALL registrar como llamada innecesaria, con la línea de forma fija `unnecessary call: <tool> <input>`, toda relectura de un contenido que ya está disponible en la sesión: el mismo archivo y el mismo rango, sin que haya mediado una escritura sobre ese archivo. La relectura MUST NOT bloquearse.
 
 #### Scenario: Misma lectura repetida sin cambios intermedios
 
 - **WHEN** el agente lee el mismo archivo y el mismo rango dos veces y entre ambas lecturas no hubo escritura sobre ese archivo
-- **THEN** la segunda lectura queda registrada como llamada innecesaria
+- **THEN** la segunda lectura queda registrada como llamada innecesaria con `unnecessary call: <tool> <input>`
 
 #### Scenario: Relectura después de una escritura
 
@@ -95,7 +95,7 @@ Leer un archivo completo SHALL estar justificado solo si: no supera el umbral; l
 #### Scenario: Excepción justificada porque los rangos no alcanzan
 
 - **WHEN** el agente lee por completo un archivo que supera el umbral porque ningún rango cubre lo que la tarea necesita
-- **THEN** la lectura se considera justificada si el reporte declara la ruta y el motivo
+- **THEN** la lectura se considera justificada si el reporte contiene `full read: <path> — <reason>`
 - **AND** sin motivo declarado queda registrada como no justificada
 
 #### Scenario: Lectura completa sin condición aplicable

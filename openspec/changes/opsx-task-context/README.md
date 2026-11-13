@@ -1,42 +1,46 @@
 # Ficha 05 · `opsx-task-context` — empezá por acá
 
 **Lectura dirigida y herramientas por tarea** · Emiliano · ambos clientes · P1 · gobernanza **MEDIO**
-Rama `propose/opsx-task-context` · base `1b4639b` · alcance de esta ronda: **solo propose**
+Rama `propose/opsx-task-context` · base `1b4639b`, con `main` integrado (`35a89f8`) · próxima ronda: **apply**
 Depende de **03** y **04**. Habilita **07**. Hermana de **06**: ninguna depende de la otra.
 
-**Trece decisiones tomadas, pendientes de revisión del grupo**, en `design.md`, cada una con en qué
-se apoya, qué fichas afecta y qué cambia si se rechaza. Todas están decididas acá; se comparten
-porque tocan alcance de otras fichas.
+Revisado el 2026-11-13 contra el informe unificado de revisión OPSX (11/11), la matriz común de
+reglas de 03 y 04 (12/11) y pruebas reales con Claude Code y Codex (`entrega-03-04.md` §5). Cada decisión de `design.md` lleva su estado —**acordado**, **propuesto
+a <ficha>** o **de la 05**— y lo que todavía depende de otra ficha está en `design.md` —
+*Coordinación pendiente*.
 
 Ficha original: [CHANGES.md § 05](../../../CHANGES.md#change-05).
 
 | Archivo | Qué contesta |
 |---|---|
 | `proposal.md` | por qué hay que hacerlo, con la medición de partida |
-| `specs/` | qué tiene que hacer el sistema — 33 reglas con 89 escenarios, en 5 capacidades |
-| `design.md` | cómo, y por qué así: 21 decisiones con su alternativa descartada, y los trece puntos para la revisión del grupo |
-| `tasks.md` | en qué orden y cómo se verifica cada paso — 70 tareas, todas pendientes |
+| `specs/` | qué tiene que hacer el sistema — 41 reglas con 107 escenarios, en 5 capacidades |
+| `design.md` | cómo, y por qué así: 23 decisiones con su estado y su respaldo (medido, documentado o no probado), la coordinación pendiente, los puntos de grupo y las decisiones para el grupo |
+| `entrega-03-04.md` | lo que la 05 entrega a 03 y 04: los cuatro módulos en inglés, la tabla acción → módulos, el contrato de captura por referencia, las pruebas reales del 13/11 y qué falta en código por ficha. Estado: texto listo para integrar; integración en código pendiente de la ronda de apply |
+| `tasks.md` | en qué orden y cómo se verifica cada paso — 64 tareas pendientes: 46 implementables ya y 18 bloqueadas, con el bloqueo nombrado |
 | `research-notes.md` | de dónde salió todo esto: las cuatro fuentes, los hallazgos y el contraste con la documentación oficial de Claude Code y Codex |
 
 ## Reglas duras de esta ronda
 
 - **NUNCA especificar subcomandos nuevos del binario** (`active-stack run`, `active-stack
-  state`) → el resumen de salida se especifica como **contrato de formato**. Los *Límites
+  state`) → el resumen de salida se especifica como **contrato de formato**, y la captura
+  independiente vive en el arnés `eval/taskcontext/` o es una fuente del cliente (`design.md` — D8). Los *Límites
   compartidos* del roadmap (`CHANGES.md:49`) dejan un runtime nuevo sujeto a una decisión de
   arquitectura separada y el arnés de evaluación fuera del binario. El informe ejecutivo
   advierte además que un envoltorio de estado no debe crear una segunda autoridad frente a
   OpenSpec, que `ARCHITECTURE.md:165` declara fuente de verdad del estado.
 - **NUNCA escribir contenido en `internal/harness/config/assets/*/sdd-orchestrator.md`** →
   ese archivo lo tocan seis fichas (02, 03, 04, 05, 07, 09) y no tiene dueño declarado. Su
-  reestructuración en módulos es de 03 y 04. Esta ficha escribe **requisitos** sobre él y
-  **redacta el texto de sus módulos** como entrega a 03 y 04, que lo ubican (`design.md` — D17).
+  partición en capas es de 03 y 04 (matriz común). Esta ficha **redacta sus cuatro módulos** en
+  `entrega-03-04.md` (en código, `internal/harness/config/assets/modules/` en apply) y genera la
+  tabla de carga, y los entrega a 03 y 04 (`design.md` — D23).
 - **NUNCA adoptar 1.500 tokens ni 40 líneas como criterio de diseño** → el informe
   ejecutivo los marcó como presupuestos no validados. La frontera núcleo/módulo se define
   **por consecuencia**, no por tamaño (`design.md` — D2). Como hipótesis a medir con 02, sí.
 - **NUNCA definir métricas propias de consumo de modelo** → eso es la ficha 02. Los números
   de esta ficha son de **tamaño de texto** y deben etiquetarse como tales.
-- **NUNCA tocar archivos rastreados para medir** → el golden de inventario entra como tarea
-  (grupo 1), no como artefacto de propose. `git status` debe mostrar cambios solo en esta carpeta.
+- **NUNCA tocar `internal/backup`, `internal/filemerge` ni `internal/pipeline`** → son ALTO
+  (`CLAUDE.md` §4). Si una tarea los necesitara, se detiene y espera revisión humana fechada.
 - **NUNCA cerrar la propuesta con un `(TBD)` que cambie alcance, diseño o aceptación** → se
   resuelve en el grupo antes de enviarla a revisión (`CHANGES.md:16`, paso 4). Si marcás
   `(TBD)`, documentá su impacto.
@@ -48,8 +52,8 @@ Ficha original: [CHANGES.md § 05](../../../CHANGES.md#change-05).
 - **NO confundir consultar con dejar abierto** → consultar es amplio: va al grupo *toda duda o
   modificación de stack o de implementación*. Lo **excepcional** es dejar algo abierto como
   `(TBD)`, y eso exige acuerdo del grupo más su impacto documentado. Hoy esta ficha tiene
-  **cero `(TBD)` propios** y ninguna pregunta abierta: cada supuesto está declarado junto con su
-  decisión y con cuándo se recalibra.
+  **cero `(TBD)` propios**: cada supuesto está declarado junto con su decisión y con cuándo se
+  recalibra, y lo que depende de otra ficha figura en *Coordinación pendiente*.
 - **NUNCA suponer lo que aportan las fichas anteriores** (01, 02, 03, 04) → lo que la 05
   necesita de cada una está pedido explícitamente en `tasks.md` — *Workflow follow-up*. Si algo no
   llegó, se arranca con el estado actual y se declara el punto donde se re-corre.
@@ -59,6 +63,10 @@ Ficha original: [CHANGES.md § 05](../../../CHANGES.md#change-05).
 | Necesito… | Leer / mirar |
 |---|---|
 | La ficha original y sus criterios de cierre | [CHANGES.md § 05](../../../CHANGES.md#change-05) (`CHANGES.md:154-176`) |
+| Qué entrega la 05 a 03 y 04 y las pruebas reales | `entrega-03-04.md` |
+| La matriz común de reglas por capa (03 y 04) | `origin/claude-native-opsx:openspec/matriz-reglas-opsx.md` |
+| Qué se implementa ya y qué está bloqueado | `tasks.md` — *Resumen de bloqueos* |
+| El arnés de medición de la 02 que reutiliza esta ficha | `eval/baseline/README.md` |
 | El motivo y la medición de partida | `proposal.md` |
 | Las decisiones y por qué se descartó cada alternativa | `design.md` |
 | Los requisitos y escenarios verificables | `specs/` |

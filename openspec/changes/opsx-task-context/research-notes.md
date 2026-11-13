@@ -5,6 +5,10 @@
 > assets. No es un artefacto de OpenSpec: es el registro de por qué la propuesta tiene la forma
 > que tiene, y qué hallazgos hay que llevar al grupo. Referenciado desde el `README.md` de este change.
 
+> **Nota del 2026-11-13.** Este registro es histórico. Desde entonces cambiaron los responsables
+> (Giuliano lleva 02; Matías, 04 y 09) y la numeración de `tasks.md`; las decisiones vigentes y sus
+> estados están en `design.md`, y las tareas, en `tasks.md`.
+
 ## 1. Las cuatro fuentes y cómo se encadenan
 
 | Fuente | Fecha | Qué es | Unidad de diseño |
@@ -217,3 +221,5 @@ Fuente: documentación de Claude Code (`https://code.claude.com/docs/en/`) y de 
 | Una lectura de Claude admite hasta 25.000 tokens y 256 KB; Read y Grep aceptan rangos | https://code.claude.com/docs/en/tools-reference | el umbral de 300 líneas de lectura se mantiene como valor inicial medido; se agrega la excepción justificada (D11, D15) |
 
 **Queda no verificable con la documentación** (y por eso se declara, no se decide): cómo combina Codex stdout y stderr; el valor por defecto de `tool_output_token_limit`; dónde persiste Codex las salidas; si un subagente de Codex lee `AGENTS.md`; si `allow_implicit_invocation: false` saca la descripción del contexto; el estado beta o estable de los perfiles de permisos de Codex; cuánto contexto pesa una herramienta MCP diferida en Claude.
+
+**Actualización del 2026-11-13** (pruebas reales, `entrega-03-04.md` §5 y §6). Pasaron a medidos en Codex 0.167.1 sobre Windows: dónde persiste las salidas (el historial guarda la versión recortada; `aggregated_output` de `codex exec --json` trae la completa, X7–X8) y si `allow_implicit_invocation: false` saca la descripción del contexto (no: nombre y descripción siguen listados, X9). El valor de `tool_output_token_limit` quedó no concluyente (X5). Si un subagente de Codex lee `AGENTS.md` sigue no probado (X12).

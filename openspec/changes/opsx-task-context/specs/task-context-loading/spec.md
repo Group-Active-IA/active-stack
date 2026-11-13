@@ -8,7 +8,7 @@ Define qué instrucciones del orquestador recibe un agente en función de la acc
 
 ### Requirement: Núcleo obligatorio en toda sesión
 
-El sistema SHALL entregar en toda sesión un núcleo que no depende de la acción activa: las reglas de cumplimiento obligatorio, el modelo de `governance`, la regla corta de memoria (existe, se consulta al empezar y se guarda ante decisiones) y la referencia para invocar al orquestador. El núcleo MUST estar en la sesión normal, en la del orquestador y en la de un especialista; si el especialista no carga `CLAUDE.md` ni `AGENTS.md`, las reglas obligatorias y `governance` MUST viajar en su encargo.
+El sistema SHALL entregar en toda sesión un núcleo independiente de la acción: las filas de capa universal de la matriz común de 03 y 04 (`design.md` — D2), entre ellas las reglas obligatorias, los niveles de `governance` y la memoria universal. El núcleo MUST estar en la sesión normal, en la del orquestador y en la de un especialista; si el especialista no carga `CLAUDE.md` ni `AGENTS.md`, las reglas obligatorias y `governance` MUST viajar en su encargo.
 
 #### Scenario: Sesión normal recibe el núcleo
 
@@ -16,11 +16,11 @@ El sistema SHALL entregar en toda sesión un núcleo que no depende de la acció
 - **THEN** el agente recibe el núcleo obligatorio
 - **AND** no recibe los módulos asociados a una acción concreta
 
-#### Scenario: El núcleo incluye governance y la regla corta de memoria
+#### Scenario: El núcleo incluye governance y la memoria universal
 
 - **WHEN** se compone el núcleo para cualquier acción y cualquier rol
-- **THEN** contiene el modelo de `governance` y la regla corta de memoria
-- **AND** no contiene el protocolo detallado de memoria
+- **THEN** contiene los niveles de `governance` y las reglas universales de memoria de la matriz común
+- **AND** no contiene ningún módulo, incluido `engram-opsx`
 
 #### Scenario: El especialista conserva las reglas que le aplican
 
@@ -36,7 +36,7 @@ El sistema SHALL entregar en toda sesión un núcleo que no depende de la acció
 
 ### Requirement: Referencia de invocación por cliente
 
-La referencia del núcleo para invocar al orquestador SHALL redactarse por cliente, con la invocación explícita que cada uno documenta: en Claude Code, `/nombre`; en Codex, `$nombre` en CLI e IDE y `@` en la app de ChatGPT. La referencia MUST NOT fijar una sola sintaxis para los dos clientes ni fijar `claude --agent`; el nombre y la forma final del orquestador los definen 03 y 04 (`design.md` — D21).
+La referencia del núcleo para invocar al orquestador SHALL redactarse por cliente, con la invocación explícita acordada para 03 y 04: `/sdd-orchestrator` en Claude Code y `$sdd-orchestrator` en Codex CLI e IDE, con `/skills` como alternativa, y `@` en la app de ChatGPT. La referencia MUST NOT fijar una sola sintaxis para los dos clientes ni fijar `claude --agent`; el texto lo escriben 03 y 04 (`design.md` — D21).
 
 #### Scenario: Referencia de invocación por cliente
 
@@ -46,7 +46,7 @@ La referencia del núcleo para invocar al orquestador SHALL redactarse por clien
 
 ### Requirement: Módulos resueltos por acción activa
 
-El sistema SHALL resolver qué módulos de instrucción se entregan a partir de la acción activa, y no a partir de una selección fijada en el momento de la instalación. Las acciones SHALL ser las del ciclo OPSX: explore, propose, apply, verify y archive. Cada módulo MUST declarar en el catálogo las acciones en que es obligatorio y aquellas en que es opcional.
+El sistema SHALL resolver qué módulos de instrucción se entregan a partir de la acción activa, y no a partir de una selección fijada en el momento de la instalación. Las acciones SHALL ser las del ciclo OPSX: explore, propose, apply, verify y archive. Cada módulo MUST declarar en el catálogo las acciones en que es obligatorio, aquellas en que es opcional y si el especialista lo recibe en el encargo (`design.md` — D19).
 
 #### Scenario: Una acción sin requisito de TDD no recibe el módulo de TDD
 
@@ -57,12 +57,27 @@ El sistema SHALL resolver qué módulos de instrucción se entregan a partir de 
 #### Scenario: Una acción que delega recibe su módulo
 
 - **WHEN** la acción activa coordina subagentes
-- **THEN** el módulo de delegación y coordinación se entrega en esa sesión junto con el de routing de modelos
+- **THEN** el módulo `delegation` se entrega en esa sesión junto con `model-assignments`
+- **AND** en Codex, mientras `model-assignments` se omita, la ausencia queda declarada como límite del cliente
 
-#### Scenario: El protocolo detallado de memoria al inicio y al cierre
+#### Scenario: El módulo de memoria OPSX al inicio y al cierre
 
-- **WHEN** empieza o cierra cualquier acción
-- **THEN** el agente recibe el protocolo detallado de memoria
+- **WHEN** empieza o cierra cualquier acción con el toggle de memoria activo
+- **THEN** el agente recibe el módulo `engram-opsx`
+
+#### Scenario: Resumen acotado en las acciones que producen evidencia
+
+- **WHEN** la acción activa es `apply` o `verify`
+- **THEN** el módulo `bounded-command-output` se entrega como obligatorio
+
+### Requirement: La tabla de carga se genera desde el catálogo
+
+La tabla acción → módulos que lee la skill del orquestador SHALL generarse desde el catálogo y MUST NOT mantenerse a mano, porque el agente no lee el catálogo embebido en el binario.
+
+#### Scenario: Tabla generada desde el catálogo
+
+- **WHEN** se compone la skill del orquestador para Claude o para Codex
+- **THEN** la tabla acción → módulos del `SKILL.md` coincide byte a byte con la generada desde el catálogo
 
 ### Requirement: Un módulo obligatorio ausente detiene la acción
 
@@ -71,7 +86,7 @@ Cuando una acción declara un módulo como obligatorio y ese módulo no puede en
 #### Scenario: Módulo obligatorio no disponible
 
 - **WHEN** la acción `verify` requiere el módulo de delegación y el módulo no está disponible en la instalación
-- **THEN** el sistema informa qué módulo falta y qué acción queda detenida
+- **THEN** el sistema informa qué módulo falta y qué acción queda detenida, con la línea de forma fija `missing module: <id> — <action> stopped`
 - **AND** la acción no se ejecuta
 
 #### Scenario: Las tareas que no dependen del módulo siguen
@@ -89,7 +104,7 @@ Cuando una acción declara un módulo como obligatorio y ese módulo no puede en
 #### Scenario: Módulo opcional no disponible
 
 - **WHEN** una acción distinta de `verify` decide delegar y el módulo de delegación no está disponible
-- **THEN** el sistema avisa que el módulo falta
+- **THEN** el sistema avisa que el módulo falta, con la línea de forma fija `missing optional module: <id> — continuing without it`
 - **AND** resuelve la acción directo, sin delegar
 
 #### Scenario: Superficie sin subagentes
@@ -97,6 +112,36 @@ Cuando una acción declara un módulo como obligatorio y ese módulo no puede en
 - **WHEN** la acción `verify` se pide en una superficie que no documenta subagentes
 - **THEN** el sistema informa que la superficie no puede entregar el módulo de delegación obligatorio
 - **AND** la acción queda detenida como límite declarado de esa superficie
+
+### Requirement: Un módulo vacío cuenta como ausente
+
+Un módulo cuyo archivo existe sin texto (cero bytes o solo espacios) SHALL tratarse como ausente, en la sesión y en la verificación de la instalación (medido: `entrega-03-04.md` §5, C13 y R3).
+
+#### Scenario: Módulo obligatorio vacío
+
+- **WHEN** el archivo de un módulo obligatorio existe pero no tiene texto
+- **THEN** el sistema lo trata como ausente y detiene la acción que lo requiere
+- **AND** la verificación de la instalación falla nombrando el módulo
+
+### Requirement: Módulos releídos después de compactar
+
+Cuando la sesión se compacta o se reanuda durante una acción, el coordinador SHALL volver a invocar la skill y releer los módulos de la acción en curso antes de continuarla, porque la compactación saca del contexto el cuerpo de la skill y los módulos leídos (medido: `entrega-03-04.md` §5, C11).
+
+#### Scenario: Acción que sigue después de compactar
+
+- **WHEN** la sesión se compacta en medio de `apply`
+- **THEN** antes de seguir, el coordinador invoca la skill otra vez y relee los módulos de `apply`
+- **AND** no continúa la acción con reglas que ya no están en su contexto
+
+### Requirement: Modo legado declarado
+
+En una instalación en modo legado, sin skill ni módulos (Claude Code anterior a la versión mínima de la 03), el sistema SHALL declarar como límite que los módulos de esta ficha no se entregan, y todo resultado de `apply` o `verify` en esa instalación SHALL quedar *sin verificar*.
+
+#### Scenario: Instalación en modo legado
+
+- **WHEN** el instalador deja el coordinador como bloque único por versión insuficiente del cliente
+- **THEN** la paridad por cliente registra que los módulos de contexto no se entregan
+- **AND** un resultado de `apply` o `verify` en esa instalación figura *sin verificar*
 
 ### Requirement: Resolución determinista
 

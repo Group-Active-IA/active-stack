@@ -28,7 +28,7 @@ El catálogo SHALL declarar, para cada clase de tarea, qué herramientas base co
 
 ### Requirement: Nivel de control declarado por cliente
 
-El catálogo SHALL declarar, por integración opcional y por cliente, en qué nivel queda no habilitada: (a) una instrucción pide no usarla; (b) su descripción no se carga en el contexto; (c) el cliente no permite invocarla, con los mecanismos que documenta cada cliente (`design.md` — D18). El nivel (a) MUST NOT presentarse como aislamiento, y un mecanismo que solo preaprueba, como `allowed-tools`, MUST NOT contarse como (c). Lo que un cliente no alcance por acción MUST declararse como límite.
+El catálogo SHALL declarar, por integración opcional y por cliente, en qué nivel queda no habilitada: (a) *solo recomendada*; (b) *fuera del contexto*; (c) *restringida por el cliente*, con los mecanismos que documenta cada cliente (`design.md` — D18). El nivel (a) MUST NOT presentarse como aislamiento, y un mecanismo que solo preaprueba, como `allowed-tools`, MUST NOT contarse como (c). Lo que un cliente no alcance por acción MUST declararse como límite.
 
 #### Scenario: MCP por acción en Codex
 
@@ -49,8 +49,18 @@ El catálogo SHALL declarar, por integración opcional y por cliente, en qué ni
 #### Scenario: Uso de una integración no habilitada al nivel (a)
 
 - **WHEN** el agente invoca una integración que la acción activa no habilita y el control declarado es solo (a)
-- **THEN** la invocación queda registrada como uso fuera de clase
+- **THEN** la invocación queda registrada como uso fuera de clase con `out-of-class use: <integration> in <action>`
 - **AND** el reporte no presenta la integración como bloqueada
+
+### Requirement: Recomendadas y restringidas documentadas
+
+La documentación generada desde el catálogo SHALL mostrar, por integración opcional y por cliente, si queda solo recomendada, fuera del contexto o restringida por el cliente.
+
+#### Scenario: Documentación de recomendadas y restringidas
+
+- **WHEN** se genera la documentación de herramientas desde el catálogo
+- **THEN** cada integración opcional figura, por cliente, como *solo recomendada*, *fuera del contexto* o *restringida por el cliente*
+- **AND** ninguna figura como restringida sin un mecanismo del cliente que lo impida
 
 ### Requirement: Integración opcional desactivada por defecto
 
@@ -63,7 +73,7 @@ Toda integración declarada como opcional SHALL estar desactivada mientras no se
 
 ### Requirement: Degradación declarada cuando falta una integración
 
-Cuando una integración habilitada para la clase de tarea no está disponible, el sistema SHALL informar qué capacidad queda sin cubrir y cuál es el camino alternativo si existe. El sistema MUST NOT presentar el resultado como equivalente al obtenido con la integración.
+Cuando una integración habilitada para la clase de tarea no está disponible, el sistema SHALL informar qué capacidad queda sin cubrir y cuál es el camino alternativo si existe, con la línea de forma fija `unavailable: <integration> — uncovered: <capability>; alternative: <path | none>`. El sistema MUST NOT presentar el resultado como equivalente al obtenido con la integración.
 
 #### Scenario: Integración habilitada pero ausente
 
@@ -79,7 +89,7 @@ Cuando una integración habilitada para la clase de tarea no está disponible, e
 
 ### Requirement: Invocación repetida registrada
 
-El agente SHALL registrar como llamada innecesaria toda invocación de una herramienta o integración con la misma entrada cuyo resultado ya está disponible en la sesión, sin que haya cambiado el estado que observa. La invocación repetida MUST NOT bloquearse, salvo el sondeo de una integración ya informada como no disponible, que MUST NOT repetirse en la misma tarea.
+El agente SHALL registrar como llamada innecesaria, con la línea de forma fija `unnecessary call: <tool> <input>`, toda invocación de una herramienta o integración con la misma entrada cuyo resultado ya está disponible en la sesión, sin que haya cambiado el estado que observa. La invocación repetida MUST NOT bloquearse, salvo el sondeo de una integración ya informada como no disponible, que MUST NOT repetirse en la misma tarea.
 
 #### Scenario: Integración consultada dos veces por lo mismo
 
