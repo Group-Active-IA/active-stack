@@ -1,0 +1,77 @@
+{
+  "id": "directorio-ajeno",
+  "descripcion": "Producido en un directorio distinto del worktree del change (propuesta de partida: rechazado; (TBD) con 05).",
+  "requisito": "R1",
+  "recibos": [
+    {
+      "corrida": "r-001",
+      "arbol": {
+        "directorio": "/otro/directorio",
+        "commit": "7a600895e8f1fe1f3728cffa1fcb57dca5663a59"
+      },
+      "comando": "go test ./...",
+      "resultado": {
+        "codigo_de_salida": 0,
+        "marca_de_tiempo": "2026-11-13T12:00:00Z"
+      },
+      "requisitos": [
+        "R1"
+      ],
+      "salida": {
+        "truncada": false,
+        "huella": {
+          "algorithm": "sha256",
+          "value": "7b7bf2b126155ef1a1da274bcc53d808c63bac04ea4ebd8034801321ce7a9b63"
+        },
+        "captura": {
+          "fuente": "arnés",
+          "redactor": "redactor-del-arnes (ilustrativo)",
+          "cliente": "claude-code",
+          "interfaz": "cli",
+          "sistema": "windows/amd64",
+          "version": "(ilustrativa)",
+          "codigo_de_salida": 0,
+          "cobertura": "demostrada",
+          "redacciones": {
+            "token": 1,
+            "ruta-home": 1
+          }
+        }
+      }
+    }
+  ],
+  "entorno": {
+    "directorio": "/work/active-stack-06",
+    "commit": "7a600895e8f1fe1f3728cffa1fcb57dca5663a59",
+    "copias": {
+      "r-001": "copias/go-test-ok.txt"
+    },
+    "vencidas": [],
+    "corroboracion": [
+      {
+        "corrida": "r-001",
+        "comando": "go test ./...",
+        "directorio": "/otro/directorio",
+        "commit": "7a600895e8f1fe1f3728cffa1fcb57dca5663a59",
+        "codigo_de_salida": 0,
+        "fuente": "fuente-independiente (ilustrativa)",
+        "veredicto": "confirma"
+      }
+    ],
+    "suficiencia": [
+      {
+        "corrida": "r-001",
+        "requisito": "R1",
+        "comando": "go test ./...",
+        "veredicto": "suficiente"
+      }
+    ],
+    "detalle_descartado_necesario": []
+  },
+  "esperado": {
+    "estado": "rechazado",
+    "integridad": "aprobada",
+    "procedencia": "corroborada",
+    "suficiencia": "suficiente"
+  }
+}
