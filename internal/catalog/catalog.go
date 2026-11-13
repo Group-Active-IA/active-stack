@@ -18,6 +18,10 @@ type Catalog struct {
 	Harnesses []model.Harness  `yaml:"harnesses"`
 	Starters  []model.Starter  `yaml:"starters"`
 
+	// TaskContext son las declaraciones de opsx-task-context (taskcontext.yaml).
+	// Load() las carga y valida; parse() (usado por ParseForTest) no las toca.
+	TaskContext *TaskContext `yaml:"-"`
+
 	index        map[string]model.Harness
 	starterIndex map[string]model.Starter
 }
@@ -25,7 +29,21 @@ type Catalog struct {
 // Load parses the embedded catalog and validates it. It is the single entry
 // point: a malformed catalog is a build/release error, so this fails loudly.
 func Load() (*Catalog, error) {
-	return parse(rawCatalog)
+	c, err := parse(rawCatalog)
+	if err != nil {
+		return nil, err
+	}
+	tc, err := ParseTaskContext(rawTaskContext)
+	if err != nil {
+		return nil, err
+	}
+	if h, ok := c.ByID("sdd-orchestrator"); ok {
+		if err := tc.validateAgainst(h.Toggles); err != nil {
+			return nil, err
+		}
+	}
+	c.TaskContext = tc
+	return c, nil
 }
 
 func parse(data []byte) (*Catalog, error) {

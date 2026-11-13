@@ -32,8 +32,8 @@ Ficha original: [CHANGES.md § 05](../../../CHANGES.md#change-05).
 - **NUNCA escribir contenido en `internal/harness/config/assets/*/sdd-orchestrator.md`** →
   ese archivo lo tocan seis fichas (02, 03, 04, 05, 07, 09) y no tiene dueño declarado. Su
   partición en capas es de 03 y 04 (matriz común). Esta ficha **redacta sus cuatro módulos** en
-  `entrega-03-04.md` (en código, `internal/harness/config/assets/modules/` en apply) y genera la
-  tabla de carga, y los entrega a 03 y 04 (`design.md` — D23).
+  `entrega-03-04.md` (en código, `internal/harness/config/assets/modules/` en apply) y propone la
+  tabla de carga, para acordarla con 03, 04 y 07, y los entrega a 03 y 04 (`design.md` — D23).
 - **NUNCA adoptar 1.500 tokens ni 40 líneas como criterio de diseño** → el informe
   ejecutivo los marcó como presupuestos no validados. La frontera núcleo/módulo se define
   **por consecuencia**, no por tamaño (`design.md` — D2). Como hipótesis a medir con 02, sí.

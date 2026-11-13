@@ -150,7 +150,7 @@ El resumen SHALL declarar como fallo únicamente lo que la salida original regis
 #### Scenario: Ruido que imita el formato de un fallo
 
 - **WHEN** la salida original contiene líneas que imitan el formato de un error pero el comando terminó con código cero y sin fallos
-- **THEN** el resumen no declara ningún fallo
+- **THEN** el resumen no declara ningún fallo: su única línea de fallo es la forma fija `failure: none`, sin agregados
 - **AND** informa el código de salida cero
 
 #### Scenario: Fallo real entre ruido que lo imita

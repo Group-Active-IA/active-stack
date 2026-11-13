@@ -1,0 +1,2 @@
+{"type":"thread.started","thread_id":"thr_FICTICIO"}
+{"type":"item.completed","item":{"id":"item_1","type":"command_execution","command":"go test -v ./mini/","aggregated_output":"=== RUN   TestMini\nline 02 padding\nline 03 padding\n--- FAIL: TestMini (0.00s)\nline 05 padding\nFAIL\tmini\t0.100s\n","exit_code":1,"status":"failed"}}

@@ -1,0 +1,424 @@
+{
+  "measured_on": "2026-11-13",
+  "unit": "bytes de SKILL.md",
+  "skills": [
+    {
+      "id": "active-orchestrator",
+      "repo": "Group-Active-IA/active-orchestrator",
+      "declared_ref": "63c5131c3abfa28f266b0b763e3587fc64b50502",
+      "path": "",
+      "resolved_sha": "63c5131c3abfa28f266b0b763e3587fc64b50502",
+      "skill_md_bytes": 38606,
+      "skill_md_lines": 540,
+      "status": "medido"
+    },
+    {
+      "id": "kb-creator",
+      "repo": "Group-Active-IA/kb-creator",
+      "declared_ref": "latest",
+      "path": "",
+      "resolved_sha": "0f73e9b86af8e034a8cb1250d87b4a7e65e6ac3d",
+      "skill_md_bytes": 9575,
+      "skill_md_lines": 179,
+      "status": "medido"
+    },
+    {
+      "id": "roadmap-generator",
+      "repo": "Group-Active-IA/roadmap-generator",
+      "declared_ref": "latest",
+      "path": "",
+      "resolved_sha": "deaabe9d88b413a7a7996633cd12638a55041fc6",
+      "skill_md_bytes": 12384,
+      "skill_md_lines": 264,
+      "status": "medido"
+    },
+    {
+      "id": "agent-instruction",
+      "repo": "JuanCruzRobledo/agent-instruction",
+      "declared_ref": "latest",
+      "path": "",
+      "resolved_sha": "1f7922f976e52eafce45f45d3684e1b9404319f3",
+      "skill_md_bytes": 8243,
+      "skill_md_lines": 136,
+      "status": "medido"
+    },
+    {
+      "id": "skill-registry",
+      "repo": "JuanCruzRobledo/skill-registry",
+      "declared_ref": "latest",
+      "path": "",
+      "resolved_sha": "78434d8f1de7cba177db55293a06ee649ff3167f",
+      "skill_md_bytes": 7702,
+      "skill_md_lines": 201,
+      "status": "medido"
+    },
+    {
+      "id": "web-scraper",
+      "repo": "Group-Active-IA/web-scraper",
+      "declared_ref": "latest",
+      "path": "",
+      "resolved_sha": "1ac73c20ed21814d504f768f2ec6956dd060ac12",
+      "skill_md_bytes": 5079,
+      "skill_md_lines": 88,
+      "status": "medido"
+    },
+    {
+      "id": "discovery-research",
+      "repo": "Group-Active-IA/discovery-research",
+      "declared_ref": "latest",
+      "path": "",
+      "resolved_sha": "dd7efb7d044ea3a683b6665a3df9d949856b417f",
+      "skill_md_bytes": 6148,
+      "skill_md_lines": 109,
+      "status": "medido"
+    },
+    {
+      "id": "find-skill",
+      "repo": "vercel-labs/skills",
+      "declared_ref": "latest",
+      "path": "skills/find-skills",
+      "resolved_sha": "b716f9dc2ba36b6aa8f0080615e5a3a6caeac63b",
+      "skill_md_bytes": 5472,
+      "skill_md_lines": 141,
+      "status": "medido"
+    },
+    {
+      "id": "skill-creator",
+      "repo": "anthropics/skills",
+      "declared_ref": "latest",
+      "path": "skills/skill-creator",
+      "resolved_sha": "2c5958ecac7cee2b583967a2c4981d0f4a75c579",
+      "skill_md_bytes": 33168,
+      "skill_md_lines": 485,
+      "status": "medido"
+    },
+    {
+      "id": "emil-design-eng",
+      "repo": "emilkowalski/skills",
+      "declared_ref": "e8a175de22ae1e49370fc144c1f3bb9aeedf988d",
+      "path": "skills/emil-design-eng",
+      "resolved_sha": "e8a175de22ae1e49370fc144c1f3bb9aeedf988d",
+      "skill_md_bytes": 27123,
+      "skill_md_lines": 674,
+      "status": "medido"
+    },
+    {
+      "id": "design-taste-frontend-v1",
+      "repo": "Leonxlnx/taste-skill",
+      "declared_ref": "b482f7a970abb98c4108d4a9f761e458c64cefc8",
+      "path": "skills/taste-skill-v1",
+      "resolved_sha": "b482f7a970abb98c4108d4a9f761e458c64cefc8",
+      "skill_md_bytes": 21195,
+      "skill_md_lines": 226,
+      "status": "medido"
+    },
+    {
+      "id": "fastapi-domain-service",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/fastapi-domain-service",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 12746,
+      "skill_md_lines": 420,
+      "status": "medido"
+    },
+    {
+      "id": "alembic-migrations",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/alembic-migrations",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 5577,
+      "skill_md_lines": 141,
+      "status": "medido"
+    },
+    {
+      "id": "zustand-store-pattern",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/zustand-store-pattern",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 9024,
+      "skill_md_lines": 311,
+      "status": "medido"
+    },
+    {
+      "id": "react19-form-pattern",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/react19-form-pattern",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 8734,
+      "skill_md_lines": 266,
+      "status": "medido"
+    },
+    {
+      "id": "dashboard-crud-page",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/dashboard-crud-page",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 12759,
+      "skill_md_lines": 399,
+      "status": "medido"
+    },
+    {
+      "id": "ws-frontend-subscription",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/ws-frontend-subscription",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 9677,
+      "skill_md_lines": 262,
+      "status": "medido"
+    },
+    {
+      "id": "help-system-content",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/help-system-content",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 8039,
+      "skill_md_lines": 224,
+      "status": "medido"
+    },
+    {
+      "id": "monorepo-scaffold",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/monorepo-scaffold",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 10079,
+      "skill_md_lines": 307,
+      "status": "medido"
+    },
+    {
+      "id": "rubrica-builder",
+      "repo": "JuanCruzRobledo/rubrica-builder",
+      "declared_ref": "latest",
+      "path": "",
+      "resolved_sha": "253c454f584caaa06315a5e9a7e7b14dcbdd4ea0",
+      "skill_md_bytes": 35164,
+      "skill_md_lines": 616,
+      "status": "medido"
+    },
+    {
+      "id": "tup-campus-navigator",
+      "repo": "Group-Active-IA/Skill-Moodle",
+      "declared_ref": "latest",
+      "path": "",
+      "resolved_sha": "2530ac78522ba548db7324695ee66dacb990da76",
+      "skill_md_bytes": 60699,
+      "skill_md_lines": 924,
+      "status": "medido"
+    },
+    {
+      "id": "postgresql-table-design",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/postgresql-table-design",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 16082,
+      "skill_md_lines": 202,
+      "status": "medido"
+    },
+    {
+      "id": "tailwind-design-system",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/tailwind-design-system",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 15730,
+      "skill_md_lines": 565,
+      "status": "medido"
+    },
+    {
+      "id": "typescript-advanced-types",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/typescript-advanced-types",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 16806,
+      "skill_md_lines": 717,
+      "status": "medido"
+    },
+    {
+      "id": "interface-design",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/interface-design",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 14925,
+      "skill_md_lines": 310,
+      "status": "medido"
+    },
+    {
+      "id": "clean-architecture",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/clean-architecture",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 7397,
+      "skill_md_lines": 113,
+      "status": "medido"
+    },
+    {
+      "id": "fastapi-code-review",
+      "repo": "Group-Active-IA/active-skills",
+      "declared_ref": "latest",
+      "path": "skills/fastapi-code-review",
+      "resolved_sha": "782565f7a9d0c65c3753faaee94dacd55f7322ad",
+      "skill_md_bytes": 3686,
+      "skill_md_lines": 79,
+      "status": "medido"
+    },
+    {
+      "id": "test-driven-development",
+      "repo": "obra/superpowers",
+      "declared_ref": "latest",
+      "path": "skills/test-driven-development",
+      "resolved_sha": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "skill_md_bytes": 9578,
+      "skill_md_lines": 330,
+      "status": "medido"
+    },
+    {
+      "id": "systematic-debugging",
+      "repo": "obra/superpowers",
+      "declared_ref": "latest",
+      "path": "skills/systematic-debugging",
+      "resolved_sha": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "skill_md_bytes": 9530,
+      "skill_md_lines": 283,
+      "status": "medido"
+    },
+    {
+      "id": "requesting-code-review",
+      "repo": "obra/superpowers",
+      "declared_ref": "latest",
+      "path": "skills/requesting-code-review",
+      "resolved_sha": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "skill_md_bytes": 2974,
+      "skill_md_lines": 95,
+      "status": "medido"
+    },
+    {
+      "id": "receiving-code-review",
+      "repo": "obra/superpowers",
+      "declared_ref": "latest",
+      "path": "skills/receiving-code-review",
+      "resolved_sha": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "skill_md_bytes": 6203,
+      "skill_md_lines": 205,
+      "status": "medido"
+    },
+    {
+      "id": "code-review-excellence",
+      "repo": "wshobson/agents",
+      "declared_ref": "latest",
+      "path": "skills/code-review-excellence",
+      "resolved_sha": "9c61ab243def98f72da12abd41cfcf5bcd91af9d",
+      "status": "sin SKILL.md en la ruta"
+    },
+    {
+      "id": "agile-product-owner",
+      "repo": "alirezarezvani/claude-skills",
+      "declared_ref": "latest",
+      "path": "skills/agile-product-owner",
+      "resolved_sha": "08cd8a9fc86cc370e2c0d448e8171fbcfdbc5a30",
+      "status": "sin SKILL.md en la ruta"
+    },
+    {
+      "id": "fastapi-templates",
+      "repo": "wshobson/agents",
+      "declared_ref": "latest",
+      "path": "skills/fastapi-templates",
+      "resolved_sha": "9c61ab243def98f72da12abd41cfcf5bcd91af9d",
+      "status": "sin SKILL.md en la ruta"
+    },
+    {
+      "id": "python-testing-patterns",
+      "repo": "wshobson/agents",
+      "declared_ref": "latest",
+      "path": "skills/python-testing-patterns",
+      "resolved_sha": "9c61ab243def98f72da12abd41cfcf5bcd91af9d",
+      "status": "sin SKILL.md en la ruta"
+    },
+    {
+      "id": "postgresql-optimization",
+      "repo": "github/awesome-copilot",
+      "declared_ref": "latest",
+      "path": "skills/postgresql-optimization",
+      "resolved_sha": "222eba62d518c27317e917c92e3ec1a7e6729455",
+      "skill_md_bytes": 11368,
+      "skill_md_lines": 404,
+      "status": "medido"
+    },
+    {
+      "id": "api-security-best-practices",
+      "repo": "sickn33/antigravity-awesome-skills",
+      "declared_ref": "latest",
+      "path": "skills/api-security-best-practices",
+      "resolved_sha": "560b762c309d6b96315855d7968727d3bca7df20",
+      "skill_md_bytes": 11267,
+      "skill_md_lines": 215,
+      "status": "medido"
+    },
+    {
+      "id": "multi-stage-dockerfile",
+      "repo": "github/awesome-copilot",
+      "declared_ref": "latest",
+      "path": "skills/multi-stage-dockerfile",
+      "resolved_sha": "222eba62d518c27317e917c92e3ec1a7e6729455",
+      "skill_md_bytes": 2314,
+      "skill_md_lines": 46,
+      "status": "medido"
+    },
+    {
+      "id": "redis-best-practices",
+      "repo": "Mindrally/skills",
+      "declared_ref": "latest",
+      "path": "redis-best-practices",
+      "resolved_sha": "7682ca77710e0971eab4e0ae5dddfa281aea0ba5",
+      "skill_md_bytes": 8526,
+      "skill_md_lines": 441,
+      "status": "medido"
+    },
+    {
+      "id": "websocket-engineer",
+      "repo": "Jeffallan/claude-skills",
+      "declared_ref": "latest",
+      "path": "skills/websocket-engineer",
+      "resolved_sha": "078a25cc5bfd8011459be7b91d004e900c1d02d3",
+      "skill_md_bytes": 6586,
+      "skill_md_lines": 173,
+      "status": "medido"
+    },
+    {
+      "id": "vercel-react-best-practices",
+      "repo": "vercel-labs/agent-skills",
+      "declared_ref": "latest",
+      "path": "skills/vercel-react-best-practices",
+      "resolved_sha": "1a2c79d4e6c4a2283dc2c614b6538cbe1ed5ca62",
+      "status": "sin SKILL.md en la ruta"
+    },
+    {
+      "id": "playwright-best-practices",
+      "repo": "currents-dev/playwright-skills",
+      "declared_ref": "latest",
+      "path": "skills/playwright-best-practices",
+      "resolved_sha": "32a1b130d7ca1609062878dc6ae87ce153edd335",
+      "status": "sin SKILL.md en la ruta"
+    },
+    {
+      "id": "pwa-development",
+      "repo": "alinaqi/claude-bootstrap",
+      "declared_ref": "latest",
+      "path": "skills/pwa-development",
+      "resolved_sha": "55aabe2493627e1de9cd09459d555181d66f3111",
+      "skill_md_bytes": 25315,
+      "skill_md_lines": 960,
+      "status": "medido"
+    }
+  ]
+}

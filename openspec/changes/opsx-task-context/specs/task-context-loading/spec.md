@@ -115,7 +115,7 @@ Cuando una acción declara un módulo como obligatorio y ese módulo no puede en
 
 ### Requirement: Un módulo vacío cuenta como ausente
 
-Un módulo cuyo archivo existe sin texto (cero bytes o solo espacios) SHALL tratarse como ausente, en la sesión y en la verificación de la instalación (medido: `entrega-03-04.md` §5, C13 y R3).
+Un módulo cuyo archivo existe sin texto (cero bytes o solo espacios) SHALL tratarse como ausente, en la sesión y en la verificación de la instalación (medido: `entrega-03-04.md` §5, C15 y R3; la 03 ya tiene la regla en su `SKILL.md` y la 04 la detecta en su verify, R4).
 
 #### Scenario: Módulo obligatorio vacío
 

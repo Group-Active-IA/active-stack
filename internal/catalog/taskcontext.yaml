@@ -1,0 +1,288 @@
+# Active Stack — Declaraciones del change opsx-task-context (ficha 05).
+# Se embebe junto a harnesses.yaml y catalog.Load() las valida (taskcontext.go).
+# Fuente de verdad de: umbrales de salida y de lectura, lista de patrones de valor
+# sensibles, patrones de fallo por herramienta, condiciones de lectura completa,
+# tabla de herramientas por acción y tabla de carga de módulos por acción.
+# Cada bloque cita la decisión de design.md que lo fija.
+
+# D3 — cuándo se resume una salida de comando: 300 líneas O 10.000 caracteres,
+# lo que ocurra primero. Es condición de entrada, no tope de recorte.
+output_threshold:
+  lines: 300
+  characters: 10000
+
+# D11 — umbral de lectura completa de un archivo. Regla distinta de la anterior
+# aunque compartan las 300 líneas. Unidad: líneas.
+read_threshold:
+  unit: lines
+  value: 300
+
+# D15 — lista CERRADA de condiciones para leer un archivo completo.
+full_read_conditions:
+  - within-threshold
+  - rewrite-whole-file
+  - action-artifact
+  - empty-bounded-read
+  - no-range-covers
+
+# D3 — patrones de fallo por herramienta (regex de Go). El código de salida
+# distinto de cero es siempre un fallo, con o sin patrón.
+failure_patterns:
+  - tool: go test
+    patterns:
+      - '^\s*--- FAIL'
+      - '^FAIL\t'
+      - '^panic:'
+  - tool: go build
+    patterns:
+      - '^\S+\.go:\d+:\d+:'
+  - tool: go vet
+    patterns:
+      - '^\S+\.go:\d+:\d+:'
+
+# D14 — lista única de patrones de valor sensibles. Dueña: ficha 05.
+# kind line: regex con el grupo `secret` (o todo el match) que se reemplaza.
+# kind block: begin/end; las líneas de adentro se reemplazan una a una.
+# covers: qué del piso de permisos de Claude cubre el patrón (ver el test).
+sensitive_patterns:
+  - id: env-assignment
+    category: env-file
+    kind: line
+    regex: '(?m)^\s*(?:export\s+)?[A-Z][A-Z0-9]*_[A-Z0-9_]*=(?P<secret>\S+)'
+    covers: [".env", ".env.*"]
+  - id: env-var-value
+    category: env-var
+    kind: line
+    regex: '(?i)(?:\bprintenv\s+|\$env:)[A-Z_][A-Z0-9_]*\s*[=:]\s*"?(?P<secret>[^\s"]+)'
+    covers: []
+  - id: token
+    category: token
+    kind: line
+    regex: '(?i)\b(?:bearer|token)\s*[:=]?\s*(?P<secret>[A-Za-z0-9._~+/\-]{20,}=*)'
+    covers: []
+  - id: api-key
+    category: api-key
+    kind: line
+    regex: '(?i)\bapi[_-]?key\b["'']?\s*[:=]\s*["'']?(?P<secret>[A-Za-z0-9._\-]{16,})'
+    covers: []
+  - id: cloud-credential
+    category: cloud
+    kind: line
+    regex: '\b(?P<secret>(?:AKIA|ASIA)[A-Z0-9]{16})\b|(?i:aws_secret_access_key)\s*[=:]\s*(?P<secret2>\S{20,})'
+    covers: []
+  - id: ssh-private-key
+    category: ssh-key
+    kind: block
+    begin: '-----BEGIN [A-Z0-9 ]*PRIVATE KEY-----'
+    end: '-----END [A-Z0-9 ]*PRIVATE KEY-----'
+    covers: ["*.pem"]
+  - id: home-path
+    category: home-path
+    kind: line
+    regex: '(?i)(?:\b[A-Z]:\\Users\\|/home/|/Users/)(?P<secret>[^\\/\s"'']+)'
+    covers: []
+  - id: account-id
+    category: account
+    kind: line
+    regex: '(?i)\baccount[_-]?id\b["'']?\s*[:=]\s*["'']?(?P<secret>[A-Za-z0-9\-]{6,})'
+    covers: []
+  - id: account-uuid
+    category: account
+    kind: line
+    regex: '(?i)\baccount[_-]?uuid\b["'']?\s*[:=]\s*["'']?(?P<secret>[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})'
+    covers: []
+  - id: email
+    category: account
+    kind: line
+    regex: '(?P<secret>[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})'
+    covers: []
+
+# D18 — herramientas por acción. Toda integración opcional está apagada por
+# defecto; la tabla solo dice cuáles corresponden a cada acción. `label` es el
+# texto exacto que el módulo task-tool-selection muestra en esa celda.
+tool_selection:
+  actions:
+    - id: explore
+      base: [directed reading, search]
+      optional:
+        - { integration: context7, label: Context7 }
+    - id: propose
+      base: [directed reading, OpenSpec CLI]
+      optional:
+        - { integration: context7, label: Context7 }
+    - id: apply
+      base: [editing, tests]
+      optional:
+        - { integration: context7, label: Context7 }
+        - { integration: domain-skills, label: domain skills from the registry }
+        - { integration: playwright, label: Playwright only if the action touches UI }
+    - id: verify
+      base: [tests, directed reading]
+      optional:
+        - { integration: playwright, label: Playwright only if there is UI }
+    - id: archive
+      base: [OpenSpec CLI]
+      optional: []
+  # Nivel alcanzable POR ACCIÓN dentro de una sesión, por cliente (D18):
+  #   a = solo recomendada, b = fuera del contexto, c = restringida por el cliente.
+  integrations:
+    - id: context7
+      default: disabled
+      actions: [explore, propose, apply]
+      kind: mcp
+      levels:
+        claude:
+          level: a
+          mechanism: "CLAUDE.md o cuerpo de la skill (as context, not enforced); level c solo si la acción corre en un subagente con mcpServers o disallowedTools propios"
+        codex:
+          level: a
+          mechanism: "AGENTS.md o cuerpo de la skill; el archivo de un rol no fija mcp_servers, así que el control por acción de un MCP es solo recomendado"
+    - id: playwright
+      default: disabled
+      actions: [apply, verify]
+      kind: mcp
+      levels:
+        claude:
+          level: a
+          mechanism: "CLAUDE.md o cuerpo de la skill; level c solo en un subagente con mcpServers o disallowedTools propios"
+        codex:
+          level: a
+          mechanism: "AGENTS.md o cuerpo de la skill; el archivo de un rol no fija mcp_servers"
+    - id: domain-skills
+      default: disabled
+      actions: [apply]
+      kind: skill
+      levels:
+        claude:
+          level: b
+          mechanism: "skill con disable-model-invocation: true (oculta hasta invocarla)"
+        codex:
+          level: a
+          mechanism: "policy.allow_implicit_invocation: false deja nombre y descripción listados (medido X9, X11): no es fuera del contexto completo; skills.config en un rol da level c"
+    - id: stitch
+      default: disabled
+      actions: [propose, apply, verify]
+      kind: mcp
+      requires_harness: design-mockups
+      levels:
+        claude:
+          level: a
+          mechanism: "habilitada solo con el harness design-mockups activo; CLAUDE.md o cuerpo de la skill"
+        codex:
+          level: a
+          mechanism: "habilitada solo con el harness design-mockups activo; AGENTS.md o cuerpo de la skill"
+    - id: emil-design-eng
+      default: disabled
+      actions: [propose, apply, verify]
+      kind: skill
+      requires_harness: design-mockups
+      levels:
+        claude:
+          level: b
+          mechanism: "skill con disable-model-invocation: true"
+        codex:
+          level: a
+          mechanism: "policy.allow_implicit_invocation: false deja nombre y descripción listados"
+    - id: design-taste-frontend-v1
+      default: disabled
+      actions: [propose, apply, verify]
+      kind: skill
+      requires_harness: design-mockups
+      levels:
+        claude:
+          level: b
+          mechanism: "skill con disable-model-invocation: true"
+        codex:
+          level: a
+          mechanism: "policy.allow_implicit_invocation: false deja nombre y descripción listados"
+
+# D19 / entrega-03-04 §3 — carga de módulos por acción.
+# Valores por acción: mandatory | optional. condition: texto exacto de la
+# celda. optional_via: delegate-row | session-row (la fila propia donde el
+# SKILL.md lista su carga opcional). specialist: si el especialista lo recibe
+# en el encargo y en qué acciones. toggle: el toggle del orquestador que lo
+# activa (vacío = siempre figura).
+module_order:
+  - artifacts
+  - delegation
+  - model-assignments
+  - directed-code-reading
+  - bounded-command-output
+  - tdd
+  - task-tool-selection
+  - concise-agent-reporting
+  - engram-opsx
+
+modules:
+  - id: artifacts
+    actions: { propose: mandatory, apply: mandatory, archive: mandatory }
+    specialist: { receives: true, note: "sí, en el encargo" }
+  - id: delegation
+    toggle: delegation
+    actions: { verify: mandatory }
+    optional_via: delegate-row
+    specialist: { receives: true, note: "sí, cuando se delega" }
+  - id: model-assignments
+    toggle: model-routing
+    actions: { verify: mandatory }
+    optional_via: delegate-row
+    omitted_in: [codex]
+    with: delegation
+    specialist: { receives: false, note: "no" }
+  - id: directed-code-reading
+    actions: { explore: optional, propose: optional, apply: optional, verify: optional }
+    specialist: { receives: true, note: "sí, si lee código" }
+  - id: bounded-command-output
+    actions:
+      explore: optional
+      apply: mandatory
+      verify: mandatory
+    conditions: { explore: "if you run commands" }
+    specialist: { receives: true, note: "sí, si corre comandos" }
+  - id: tdd
+    toggle: tdd
+    actions: { apply: mandatory }
+    conditions: { apply: "when Strict TDD is on and a test runner exists" }
+    requires_flag: strict-tdd
+    specialist: { receives: true, actions: [apply], note: "sí, en apply" }
+  - id: task-tool-selection
+    actions: { explore: optional, propose: optional, apply: optional, verify: optional, archive: optional }
+    specialist: { receives: false, note: "no: el coordinador le pasa la lista" }
+  - id: concise-agent-reporting
+    actions: { explore: optional, propose: optional, apply: optional, verify: optional, archive: optional }
+    specialist: { receives: true, note: "sí" }
+  - id: engram-opsx
+    toggle: engram
+    actions: {}
+    optional_via: session-row
+    specialist: { receives: false, note: "no" }
+
+# D19, tarea 6.8 — paridad por cliente y superficie. Las superficies son las de
+# codex-native-opsx/design.md:59-63 (04). Un módulo que un cliente no puede
+# recibir figura aquí como límite con su motivo, no como entrega.
+parity:
+  surfaces:
+    - { id: cli, name: "CLI Windows / Linux" }
+    - { id: ide, name: "Extensión IDE Windows / Linux" }
+    - { id: desktop-cloud, name: "Escritorio / cloud" }
+  limits:
+    - modules: [delegation]
+      client: claude
+      scope: no-subagents
+      reason: "superficie sin subagentes: verify queda detenida como límite de la superficie"
+    - modules: [delegation]
+      client: codex
+      scope: no-subagents
+      reason: "superficie sin subagentes: verify queda detenida como límite de la superficie"
+    - modules: [model-assignments]
+      client: codex
+      scope: all
+      reason: "omitido en Codex hasta la 09: límite declarado, no ausencia"
+    - modules: [directed-code-reading, bounded-command-output, task-tool-selection, concise-agent-reporting]
+      client: claude
+      scope: legacy-mode
+      reason: "modo legado (Claude anterior a 2.1.110): no hay skill ni tabla; todo resultado de apply o verify queda sin verificar"
+  pending:
+    - client: codex
+      task: "tarea 2.5 de la 04"
+      what: "verificar en Codex la paridad por superficie (verify y contrato de evidencia por acción); la tabla de superficies ya está declarada"
