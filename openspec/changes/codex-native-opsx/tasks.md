@@ -1,6 +1,6 @@
 # Tasks · Codex Native OPSX
 
-Todas las tareas de implementación quedan pendientes. Matías confirmó Machine inicial, snapshot persistente protegido por ruta y avance de tareas independientes con integración de evidencia sujeta a 05/06. El alcance concreto está en design. Cada tarea espera sólo los pendientes que afectan sus rutas y contratos. Las tareas independientes pueden avanzar dentro del alcance aprobado. Matías aprobó el alcance ALTO descrito en design y autorizó iniciar las tareas independientes el 13/11/2026. Antes de editar producción, ejecutar safety net del área y seguir RED → GREEN → triangulación → refactor con evidencia por tarea. Las pruebas se ejecutan en perfiles aislados. El registro de código probado debe identificar también cambios sin commit. No ejecutar build sin pedido explícito.
+Las tareas marcadas están implementadas y probadas en perfiles aislados; continúan pendientes los contratos compartidos y la aceptación real por interfaz. Matías confirmó Machine inicial, snapshot persistente protegido por ruta y avance de tareas independientes con integración de evidencia sujeta a 05/06. El alcance concreto está en design. Cada tarea espera sólo los pendientes que afectan sus rutas y contratos. Las tareas independientes pueden avanzar dentro del alcance aprobado. Matías aprobó el alcance ALTO descrito en design y autorizó iniciar las tareas independientes el 13/11/2026. Antes de editar producción, ejecutar safety net del área y seguir RED → GREEN → triangulación → refactor con evidencia por tarea. Las pruebas se ejecutan en perfiles aislados. El registro de código probado debe identificar también cambios sin commit. No ejecutar build sin pedido explícito.
 
 ## 1. Contratos y comprobaciones previas
 
@@ -12,7 +12,7 @@ Todas las tareas de implementación quedan pendientes. Matías confirmó Machine
 ## 2. Entrega y composición
 
 - [x] 2.1 Capturar safety net de model, adapters y config. Caracterizar consumidores Claude/OpenCode/Antigravity y design-mockups antes de cambiar despacho. Registrar tests existentes y fallos preexistentes.
-- [ ] 2.2 Implementar la entrega y las rutas acordadas en P1 mediante el adapter, preservando el valor cero de ConfigDelivery. Probar ruta Machine, error por interfaz opcional ausente y el diagnóstico de Project legado.
+- [x] 2.2 Implementar la entrega y las rutas acordadas en P1 mediante el adapter, preservando el valor cero de ConfigDelivery. Probar ruta Machine, error por interfaz opcional ausente y el diagnóstico de Project legado.
 - [x] 2.3 Componer skill con agents/openai.yaml, bloque universal y módulos de apoyo. Probar política allow_implicit_invocation falsa, mapa de toggles, ausencia de referencias a módulos omitidos y ausencia de aliases de modelos de Claude.
 - [ ] 2.4 Entregar especialistas según la sonda P2 con los módulos y reglas del encargo. Probar TOML cuando corresponda, rutas con espacios y Windows, y fallback genérico con el sobre de 07/06.
 - [ ] 2.5 Integrar verify y el contrato de evidencia requerido por acción. Probar apply directo, verificación breve independiente, revisor ausente y evidencia autoconsistente sin corroboración que quede sin verificar.
@@ -47,6 +47,7 @@ Todas las tareas de implementación quedan pendientes. Matías confirmó Machine
 - 3.3 completada: primer snapshot persistente, dos actualizaciones, publicación atómica, listado existente y restauración protegida desde disco. Ver informe de lifecycle y verificación final.
 - 03 mantiene pendiente el contrato común de entrega y matriz final. 05/06 mantienen pendiente la integración de captura y recibos corroborados.
 - 1.2 y 4.2 requieren clientes CLI/IDE Windows/Linux. Ver sonda local en `informes/apply-2026-11-13-sonda-local.md`.
+- El protocolo pendiente de ejecución para esas celdas está en [plan de aceptación de clientes](informes/plan-aceptacion-clientes-04.md); su preparación no marca tareas de aceptación como completas.
 
 
 ## Integración del 13 de noviembre
@@ -57,5 +58,6 @@ La evidencia por tarea está en `informes/apply-lifecycle-2026-11-13.md` y `info
 - 3.5 reutiliza el replay de update por install. Las pruebas dirigidas de update preservan la configuración sin registro; el recorrido nativo de instalación prueba reaplicación y actualización de módulos.
 - 3.6 y 4.1 prueban retiro por archivo y estructura, ownership y policy. No equivalen a aceptación del comportamiento del modelo.
 - 4.5 actualiza README, arquitectura y el bloque correspondiente de AGENTS/CLAUDE en espejo.
-- 2.2 conserva pendiente la alineación de entrega con 03 y el diagnóstico del legado Project en la sesión real. 2.4 espera sondas de roles. 2.5 espera contratos/captura corregidos de 05/06.
+- 2.2 completada en el instalador: entrega Machine, error de capacidad opcional ausente y diagnóstico stderr de Project legado, sin cambiar su comportamiento ni etiquetarlo degradado. La alineación compartida con 03 sigue en 1.1/4.6; la aceptación de clientes reales, en 1.2/4.2. Ver `informes/avance-paralelo-04-2026-11-13.md`. 2.4 espera sondas de roles. 2.5 espera contratos/captura corregidos de 05/06.
 - 4.4 sigue pendiente: la suite completa tiene fallos reproducidos en main; el detalle y los comandos están en el informe final. CLI/IDE Windows/Linux y comparación modular siguen pendientes en 1.2, 4.2 y 4.3.
+- Revisión independiente de preservación y diagnóstico, con corrección del retorno parcial tras fallo de un adapter posterior y regresión de rollback: `informes/revision-independiente-04-2026-11-13.md`. La tanda final conserva los mismos fallos globales conocidos; el conteo de tareas permanece 11/21.

@@ -203,6 +203,9 @@ func (s *configStep) Run() error {
 		}
 	}
 	result, err := configInstallFn(s.h, cfg, s.homeDir)
+	for _, warning := range result.Warnings {
+		fmt.Fprintln(os.Stderr, warning)
+	}
 	s.managedWrites = result.ManagedWrites
 	for path := range s.managedWrites {
 		s.rememberManagedParents(path)

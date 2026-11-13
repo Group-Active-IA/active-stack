@@ -91,3 +91,8 @@ La nueva entrega SHALL migrar únicamente la instalación Machine y MUST informa
 #### Scenario: Perfil Machine aislado
 - **WHEN** se instala la entrega nueva en un perfil sin coordinación Project legada
 - **THEN** se verifica la activación explícita y el retiro Machine con sus rutas administradas
+
+#### Scenario: Instalación Codex Project con entrega legada
+- **WHEN** se instala o reaplica el harness de Codex con target Project
+- **THEN** el resultado y la salida del instalador informan que conserva la entrega legada y que la nueva migración corresponde a Machine
+- **AND** los archivos Project conservan su estrategia de instalación anterior

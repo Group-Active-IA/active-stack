@@ -20,7 +20,7 @@ El paquete contiene `SKILL.md`, `agents/openai.yaml`, módulos de apoyo y, donde
 
 ### Matriz común de reglas
 
-La fuente es `openspec/matriz-reglas-opsx.md` de 03, revisión `b472ac9`, publicada el 12/11. Esta propuesta consume sus capas y completa la entrega Codex a continuación. El archivo compartido se integra y actualiza junto con 03 al resolver P1. No se copia una segunda matriz completa.
+La fuente es `openspec/matriz-reglas-opsx.md` publicada por 03 y consultada en `ed37113`. El 04 completa únicamente su columna Codex y documenta la salvedad de evidencia directa. La columna Claude conserva el contenido de referencia. La compatibilidad de código de ambas entregas requiere seleccionar el recorrido por cliente al combinar los PR.
 
 | Filas de la matriz común | Entrega Codex |
 |---|---|
@@ -85,7 +85,7 @@ Matías confirmó las tres recomendaciones en esta conversación el 13 de noviem
 | P1 · Alcance | Machine inicial y módulos dentro de la skill. Project se difiere. | Alinear con 03 los IDs de módulos, el contrato del adapter y la fila de evidencia directa en la matriz. |
 | P2 · Compatibilidad | CLI y extensión IDE en Windows/Linux como matriz objetivo. | Sondas aisladas antes de afirmar versión mínima y capacidades por celda. macOS local sirve para preparación. |
 | P3 · Reversión | Snapshot persistente con estado esperado por ruta, preservación de ediciones posteriores y conservación de la primera copia previa. | Revisar plan de escritura y probar restauración de un manifiesto recargado, reinicios y actualizaciones sucesivas. |
-| P4 · Secuencia | Avanzar composición y migración independientes. La integración de evidencia espera contratos corregidos de 05/06. | Consumir sobre de 07 en `dde9d7b`, estructura de 05 en `f372681` y matriz de 03 en `b472ac9`. El recibo de 06 en `f3f005e` aún requiere corrección. |
+| P4 · Secuencia | Avanzar composición y migración independientes. La integración de evidencia espera contratos corregidos de 05/06. | Consumir sobre de 07 en `dde9d7b`, estructura de 05 en `f372681` y matriz de 03 en `ed37113`. El recibo de 06 en `f3f005e` aún requiere corrección. |
 
 La aceptación completa exige las pruebas funcionales y las dependencias aplicables. Una tarea independiente puede avanzar con su contrato definido; una acción que necesita evidencia o protección ausente queda detenida con el límite informado.
 

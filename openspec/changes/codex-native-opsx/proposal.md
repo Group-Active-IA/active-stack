@@ -2,7 +2,7 @@
 
 **Responsable** · Matías. **Revisión** · 13 de noviembre de 2026.
 
-Esta revisión incorpora el informe unificado del equipo del 10/11, la matriz compartida publicada por 03 en `b472ac9` y la base de implementación `origin/main` en `35a89f8`. Los informes de intentos anteriores se conservan como antecedentes. El estado vigente se describe en estos cuatro artefactos.
+Esta revisión incorpora el informe unificado del equipo del 10/11, la matriz compartida publicada por 03 en `ed37113` y la base de implementación `origin/main` en `35a89f8`. Los informes de intentos anteriores se conservan como antecedentes. El estado vigente se describe en estos cuatro artefactos.
 
 ## Why
 

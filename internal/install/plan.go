@@ -575,6 +575,8 @@ type projectTargetAdapter struct {
 	base string
 }
 
+func (a projectTargetAdapter) InstallTarget() model.InstallTarget { return model.Project }
+
 func (a projectTargetAdapter) ConfigDelivery() model.ConfigDelivery {
 	if a.Agent() == model.AgentCodex {
 		return model.ConfigDeliveryInstructions
