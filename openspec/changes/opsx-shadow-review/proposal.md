@@ -3,6 +3,7 @@
 > Change `opsx-shadow-review` · ficha 10 del roadmap · Responsable: Neyen · Agentes: Claude y Codex · Prioridad P3 · Gobernanza MEDIO
 > Base revisada: `1b4639b`. Depende de 08 (`opsx-native-controls`) y 09 (`opsx-model-cache-pilots`, `89f1fa5`); usa el protocolo de 02 (`240e1b2`) y toma como referencia el contrato de 06 (`opsx-verifiable-evidence`).
 > Revisión 2 (10/11/2026): incorpora la auditoría técnica del 10/11 y la decisión confirmada de alcance de la primera ronda; ver `design.md`, "Cambios por la auditoría".
+> Revisión 3 (13/11/2026): actualizada sobre `7a60089`. 02 ya está en `main` con el fixture de revisión sembrada (`eval/baseline/fixtures/revision/`) y la regla de emparejamiento (`eval/baseline/review`), que los casos preparados reutilizan. Borrador de la tarea 1.1 en `muestra-candidatos.md`. 08 y 09 siguen sin cambios desde el 10/11.
 > Esta ronda es solo `propose`: todas las tareas de implementación quedan pendientes. El piloto no modifica el instalador.
 
 ## Why

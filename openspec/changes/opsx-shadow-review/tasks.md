@@ -11,8 +11,8 @@
 
 ## 1. Muestra
 
-- [ ] 1.1 Mapear los commits `fix` de `main` al commit que introdujo cada defecto; descartar los que no se puedan ubicar. Aceptación: tabla fix → origen → archivos → requisito afectado.
-- [ ] 1.2 Construir casos preparados reutilizando la familia "Revisión de un diff sembrado" de 02 (fixtures, rúbrica y regla de emparejamiento) y sumando los rechazos de 06 (recibo falso con hash correcto, mismo HEAD con diff distinto, salida truncada sin original, tests verdes sin cubrir el requisito) y defectos de lógica con ubicación conocida.
+- [ ] 1.1 Mapear los commits `fix` de `main` al commit que introdujo cada defecto; descartar los que no se puedan ubicar. Aceptación: tabla fix → origen → archivos → requisito afectado. Borrador SZZ en `muestra-candidatos.md` (40 fixes: 6 en estrato A, 14 en B, el resto descartado o en suspenso); falta la confirmación manual por fila y la columna de requisito afectado.
+- [ ] 1.2 Construir casos preparados reutilizando la familia "Revisión de un diff sembrado" de 02, ya en `main` (formato de `eval/baseline/fixtures/revision/` y regla de `eval/baseline/review`) y sumando los rechazos de 06 (recibo falso con hash correcto, mismo HEAD con diff distinto, salida truncada sin original, tests verdes sin cubrir el requisito) y defectos de lógica con ubicación conocida.
 - [ ] 1.3 Armar controles: inspeccionar manualmente los changes candidatos y construir fixtures limpios. Un change sin fixes posteriores no entra como control sin inspección.
 - [ ] 1.4 Doble etiquetado independiente + resolución por tercero; calcular acuerdo. Congelar la muestra en un commit.
 - [ ] 1.5 Armar cada paquete histórico desde el estado previo al fix y verificar que no contiene el fix, sus mensajes, referencias, texto posterior, ramas ni etiquetas.
