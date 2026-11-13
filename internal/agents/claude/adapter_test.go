@@ -101,3 +101,25 @@ func TestClaudeAdapter_PathMethods(t *testing.T) {
 		})
 	}
 }
+
+// TestClaudeAdapter_ConfigDelivery_ManagedSkill (claude-native-opsx 3.1): Claude
+// delivers the coordinator as a managed skill, not as a flat instructions block.
+func TestClaudeAdapter_ConfigDelivery_ManagedSkill(t *testing.T) {
+	a := claude.NewAdapter()
+	if got := a.ConfigDelivery(); got != model.ConfigDeliveryManagedSkill {
+		t.Errorf("ConfigDelivery() = %v, want ConfigDeliveryManagedSkill (%v)", got, model.ConfigDeliveryManagedSkill)
+	}
+}
+
+// TestClaudeAdapter_SkillsDir_ByTarget (3.1): the skills directory resolves to
+// <home>/.claude/skills for Machine and <root>/.claude/skills for Project.
+func TestClaudeAdapter_SkillsDir_ByTarget(t *testing.T) {
+	a := claude.NewAdapter()
+	root := "/project/myapp"
+	if got, want := a.PathsFor(testHome, model.Machine).SkillsDir, filepath.Join(testHome, ".claude", "skills"); got != want {
+		t.Errorf("Machine SkillsDir = %q, want %q", got, want)
+	}
+	if got, want := a.PathsFor(root, model.Project).SkillsDir, filepath.Join(root, ".claude", "skills"); got != want {
+		t.Errorf("Project SkillsDir = %q, want %q", got, want)
+	}
+}

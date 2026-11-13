@@ -136,4 +136,12 @@ Resolver pendientes aplicables, aprobar el diff de escritura, caracterizar consu
 
 Decision: no (no UI)
 
+## Integración de la base tras PR #8
+
+El 13/11/2026 se incorporó main `7a600895e8f1fe1f3728cffa1fcb57dca5663a59`, que ya contiene la entrega Claude `01f944c`, mediante merge sobre la rama publicada de 04. No se implementaron funciones nuevas de 03. El enum `ConfigDeliveryManagedSkill` permanece único y conserva su valor 2; los valores anteriores siguen siendo 0 y 1.
+
+La interfaz común de configuración conserva la compatibilidad con adapters sin `SkillsDir`: cada recorrido nativo comprueba localmente esa capacidad. `Install` conserva el wrapper a `InstallWith`; sus opciones de versión, composición, home y shadowing siguen controlando solo la entrega Claude. Codex Machine usa su compositor, inventario y snapshot persistente, mientras Project conserva el recorrido legado y su aviso. El resultado combina `Modes`, `Warnings` y `ManagedWrites`, incluidas las salidas parciales ante error de un adapter posterior.
+
+El despacho de verificación y retiro y la enumeración de rutas de snapshot seleccionan el cliente; los markers siguen siendo propios de cada uno. Los avisos de entrega Claude no se emiten para Codex por compartir el modo `skill`. La conciliación técnica y sus pruebas están en `informes/integracion-main-pr8-2026-11-13.md`; no cierran evidencia directa de 06 ni aceptación humana 03/04 o CLI/IDE real.
+
 Los cambios propuestos de visibilidad de respaldo reutilizan interfaces existentes. Si P3 incorpora una modificación visual, aplicar la política de diseño del proyecto antes de esa tarea.

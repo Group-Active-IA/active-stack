@@ -1,3 +1,4 @@
+<!-- as:universal/governance-levels -->
 ## Agent Governance — Autonomy by Domain
 
 This governance model (from the Active Stack Methodology, Stage 4) defines how much autonomy the agent has based on the criticality of the domain being modified. It applies to **all agents**, regardless of provider.
@@ -11,6 +12,7 @@ This governance model (from the Active Stack Methodology, Stage 4) defines how m
 | **MEDIUM** | Business logic, domain adapters, pipelines | Implement with checkpoints; surface decisions to the user. |
 | **LOW** | Simple CRUDs, catalogs, type definitions, read-only utilities | Full autonomy if tests pass. |
 
+<!-- as:coordinator/governance-apply -->
 ### How to Apply
 
 1. **Before any non-trivial action**, identify the governance level of the domain you are about to modify.

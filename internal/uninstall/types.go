@@ -79,6 +79,9 @@ type Options struct {
 	// RestoreManifest is the install-time backup manifest to use when
 	// Intent.Strategy == StrategyRestore. Ignored for StrategyTargeted.
 	RestoreManifest *backup.Manifest
+	// OverwriteEdited confirms restoring managed files (CLAUDE.md, skill files)
+	// edited after the migration; --yes does not imply it (claude-native-opsx 7.2).
+	OverwriteEdited bool
 }
 
 // Plan is the output of BuildPlan. It combines the pipeline.StagePlan with

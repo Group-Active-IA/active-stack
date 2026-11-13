@@ -94,3 +94,11 @@ Juani declara expresamente **«No se ejecutó Codex real»**. Su prueba no cierr
 - **Helper aditivo de permisos:** Juani confirma que no modifica `WriteFileAtomic`. Evaluar reutilización en integración; no usarla como permiso para corregir la desinstalación de 03 desde esta rama.
 
 La revisión externa apoya la calidad de lo implementado en 04 y confirma dos pendientes de cierre. La respuesta conserva ambos abiertos con condiciones verificables; no archiva, no acepta deuda ni declara conciliados los PR.
+
+## Actualización posterior: PR #8 integrado en main
+
+Matías confirmó continuar después del merge de PR #8. Main `7a600895e8f1fe1f3728cffa1fcb57dca5663a59` ya contiene la entrega Claude `01f944c`. Se incorporó esa base mediante merge sobre la rama publicada de 04, preservando su historia, sin rebase ni force-push. Los apartados anteriores describen la propuesta y el estado previo a este hecho.
+
+La parte técnica de B2 se concilió: enum único y compatible, interfaz opcional de rutas, `InstallWith` y opciones Claude conservadas, resultado combinado con estados parciales, snapshots y despacho específico de install/verify/uninstall. Se probaron ambos clientes seleccionados, ambos órdenes, instalación/reinstalación/actualización, targets Machine/Project, fallbacks de versión Claude, fallos posteriores y retiro independiente. El informe `integracion-main-pr8-2026-11-13.md` fija las revisiones, alcance, resultados y límites; la revisión independiente se registra por separado.
+
+Esto no es aceptación humana final de B2. La revisión compartida de Matías/Juani del árbol integrado sigue en 4.6, dentro del alcance ALTO ya aprobado y la autorización vigente para conciliar la base; la fila de evidencia directa de 06 sigue en 1.1. B1 conserva sus demás pendientes y no se archivó ni aceptó deuda para cerrar el circuito. No se implementaron funciones nuevas de 03 ni se modificaron sus assets.

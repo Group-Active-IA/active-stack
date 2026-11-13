@@ -5,12 +5,16 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
+	"strings"
+	"time"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	"github.com/Group-Active-IA/active-stack/internal/filemerge"
 	"github.com/Group-Active-IA/active-stack/internal/harness/command"
 	"github.com/Group-Active-IA/active-stack/internal/harness/config"
 	"github.com/Group-Active-IA/active-stack/internal/model"
+	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -150,6 +154,15 @@ func (s *markerRemovalStep) setManifest(m *backup.Manifest) { s.manifest = m }
 func (s *markerRemovalStep) Run() error {
 	for _, a := range s.adapters {
 		if s.h.ID == "sdd-orchestrator" && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+			if a.Agent() == model.AgentClaude {
+				if err := s.removeLayered(a); err != nil {
+					return err
+				}
+				continue
+			}
+			if a.Agent() != model.AgentCodex {
+				return fmt.Errorf("managed skill delivery unsupported for agent %q", a.Agent())
+			}
 			if s.nativeRollback == nil {
 				s.nativeRollback = newManagedRollback()
 			}
@@ -188,6 +201,48 @@ func (s *markerRemovalStep) Run() error {
 				return fmt.Errorf("primary-agent removal for harness %q on agent %q: %w", s.h.ID, a.Agent(), err)
 			}
 		}
+	}
+	return nil
+}
+
+// removeLayered reverses the layered Claude delivery (Machine target): it drops
+// the universal block (and any legacy orchestrator section) from the instructions
+// file and deletes the skill directory only when it carries the Active Stack
+// ownership mark. If deleting the skill fails after the block was removed, the
+// instructions file is put back byte for byte and the error names the path.
+func (s *markerRemovalStep) removeLayered(a AgentAdapter) error {
+	path := a.InstructionsPath(s.homeDir)
+	original, readErr := os.ReadFile(path)
+	if readErr != nil && !os.IsNotExist(readErr) {
+		return fmt.Errorf("read instructions file \"%s\": %w", path, readErr)
+	}
+	// WriteFileAtomic forces 0755 on the directory: put ~/.claude back as found.
+	defer config.PreserveDirModes(filepath.Dir(path))()
+	origMode := config.FileModeOr(path, 0o644)
+	if readErr == nil {
+		updated := string(original)
+		for _, id := range []string{config.UniversalSectionID, s.h.ID} {
+			updated = filemerge.InjectMarkdownSection(updated, id, "")
+		}
+		updated = config.PurgeStaleSections(updated)
+		if updated != string(original) {
+			if _, err := filemerge.WriteFileAtomic(path, []byte(updated), origMode); err != nil {
+				return fmt.Errorf("write \"%s\": %w", path, err)
+			}
+		}
+	}
+	skillDir := filepath.Join(a.SkillsDir(s.homeDir), s.h.ID)
+	raw, err := os.ReadFile(filepath.Join(skillDir, "SKILL.md"))
+	if err != nil || !config.HasOwnerMark(string(raw)) {
+		return nil // absent, or not ours: never delete it
+	}
+	if err := skillRemovalFn(skillDir); err != nil {
+		if readErr == nil {
+			if _, werr := filemerge.WriteFileAtomic(path, original, origMode); werr != nil {
+				return fmt.Errorf("remove skill dir \"%s\": %w; additionally the block could not be restored in \"%s\": %v", skillDir, err, path, werr)
+			}
+		}
+		return fmt.Errorf("remove skill dir \"%s\": %w; the universal block was restored in \"%s\"", skillDir, err, path)
 	}
 	return nil
 }
@@ -341,12 +396,111 @@ func (s *permissionsRemovalStep) Rollback() error {
 
 type restoreStep struct {
 	installManifest backup.Manifest
+	home            string
+	overwriteEdited bool
+	// skipPaths are never restored when the manifest is the registered
+	// claude-native-opsx migration one (Claude settings.json: that migration
+	// only reads it). Any other manifest restores them as usual.
+	skipPaths  []string
+	onProgress pipeline.ProgressFunc
 }
 
 func (s *restoreStep) ID() string { return "restore-from-backup" }
 
 func (s *restoreStep) Run() error {
-	return restoreFn(s.installManifest)
+	m := s.installManifest
+	if err := s.guardEdited(m); err != nil {
+		return err
+	}
+	migration, err := registeredMigration(s.home, m)
+	if err != nil {
+		return err
+	}
+	if migration && len(s.skipPaths) > 0 {
+		skip := map[string]bool{}
+		for _, p := range s.skipPaths {
+			skip[filepath.Clean(p)] = true
+		}
+		kept := make([]backup.ManifestEntry, 0, len(m.Entries))
+		for _, e := range m.Entries {
+			if !skip[filepath.Clean(e.OriginalPath)] {
+				kept = append(kept, e)
+			}
+		}
+		m.Entries = kept
+	}
+	return restoreFn(m)
+}
+
+// registeredMigration reports whether m is the manifest registered in
+// claude-migration.json for one of its entries. An unreadable record is an
+// error: the restore fails closed instead of guessing.
+func registeredMigration(home string, m backup.Manifest) (bool, error) {
+	for _, e := range m.Entries {
+		rec, ok, err := config.LoadMigrationRecord(home, e.OriginalPath)
+		if err != nil {
+			return false, fmt.Errorf("not restoring: cannot read the migration record: %w", err)
+		}
+		if ok && filepath.Clean(rec.ManifestDir) == filepath.Clean(m.RootDir) {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// guardEdited applies the hash guard of the layered Claude delivery: for every
+// manifest entry that is an instructions file with a registered migration, the
+// current hash of CLAUDE.md and of each skill file is compared with the hash
+// recorded when the migration finished. A mismatch means the user edited the
+// file since; nothing is written, the current content is saved in a new
+// snapshot, and the error asks for --overwrite-edited. With the flag the
+// snapshot is still taken and the restore proceeds.
+func (s *restoreStep) guardEdited(m backup.Manifest) error {
+	var edited []string
+	for _, e := range m.Entries {
+		rec, ok, err := config.LoadMigrationRecord(s.home, e.OriginalPath)
+		if err != nil {
+			return fmt.Errorf("not restoring: cannot read the migration record: %w", err)
+		}
+		if !ok {
+			continue
+		}
+		if filepath.Clean(rec.ManifestDir) != filepath.Clean(m.RootDir) {
+			s.warn(fmt.Sprintf("warning: \"%s\" is not the registered migration manifest (\"%s\"); the hash guard still applies", m.RootDir, rec.ManifestDir))
+		}
+		expected := map[string]string{filepath.Clean(rec.InstructionsPath): rec.InstructionsSHA256}
+		for p, h := range rec.SkillFiles {
+			expected[filepath.Clean(p)] = h
+		}
+		for p, want := range expected {
+			raw, err := os.ReadFile(p)
+			if err != nil {
+				continue // missing: nothing of the user's to lose
+			}
+			if config.SHA256Hex(raw) != want {
+				edited = append(edited, p)
+			}
+		}
+	}
+	if len(edited) == 0 {
+		return nil
+	}
+	sort.Strings(edited)
+	snap := filepath.Join(s.home, ".active-stack", "backups", fmt.Sprintf("%s-uninstall-edited", time.Now().UTC().Format("20060102-150405.000000000")))
+	if _, err := backup.NewSnapshotter().Create(snap, edited); err != nil {
+		return fmt.Errorf("save the edited files before restoring: %w", err)
+	}
+	if s.overwriteEdited {
+		s.warn(fmt.Sprintf("warning: restoring over files edited after the migration (%s); their current content is saved in %s", strings.Join(edited, ", "), snap))
+		return nil
+	}
+	return fmt.Errorf("not restoring: %s changed after the migration; the current content is saved in %s (manifest %s); rerun with --overwrite-edited to restore anyway (--yes does not skip this guard)", strings.Join(edited, ", "), snap, m.RootDir)
+}
+
+func (s *restoreStep) warn(msg string) {
+	if s.onProgress != nil {
+		s.onProgress(pipeline.ProgressEvent{StepID: s.ID(), Stage: pipeline.StageApply, Status: pipeline.StepStatusDegraded, Err: fmt.Errorf("%s", msg)})
+	}
 }
 
 // restoreStep intentionally does not implement RollbackStep: StrategyRestore

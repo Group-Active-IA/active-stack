@@ -127,3 +127,41 @@ func TestEmbeddedRefreshDetectsRenamedEmptyDirectory(t *testing.T) {
 		t.Fatal("renamed empty directory was considered identical")
 	}
 }
+
+// C4 (PR #8 review): an empty backupDir must not silently skip the snapshot on
+// the production paths (embedded and cloned installs). Only the explicit
+// RefreshManagedDirectory entry point lets a caller snapshot on its own.
+func TestInstallRefusesToReplaceWithoutBackupDir(t *testing.T) {
+	home := t.TempDir()
+	skillsDir := filepath.Join(home, "skills")
+	fs := fstest.MapFS{"skills/guarded/SKILL.md": {Data: []byte("# guarded v1")}}
+	h := makeHarness("guarded", "embed", "", false)
+	adapter := fakeAdapter{agent: model.AgentCodex, skillsDir: skillsDir}
+	installer := skill.NewInstaller(nil, fs)
+	if _, err := installer.Install(context.Background(), h, []skill.AgentAdapter{adapter}, home, t.TempDir()); err != nil {
+		t.Fatal(err)
+	}
+	fs["skills/guarded/SKILL.md"] = &fstest.MapFile{Data: []byte("# guarded v2")}
+	if _, err := installer.Install(context.Background(), h, []skill.AgentAdapter{adapter}, home, ""); err == nil {
+		t.Fatal("replacing an installed skill with backupDir == \"\" must fail")
+	}
+	got, err := os.ReadFile(filepath.Join(skillsDir, "guarded", "SKILL.md"))
+	if err != nil || string(got) != "# guarded v1" {
+		t.Fatalf("the installed skill must stay untouched: %q %v", got, err)
+	}
+}
+
+func TestRefreshManagedDirectoryAllowsCallerSnapshot(t *testing.T) {
+	skillsDir := t.TempDir()
+	populate := func(content string) func(string) error {
+		return func(stage string) error {
+			return os.WriteFile(filepath.Join(stage, "SKILL.md"), []byte(content), 0o644)
+		}
+	}
+	if _, err := skill.RefreshManagedDirectory(skillsDir, "owned", "", populate("one")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := skill.RefreshManagedDirectory(skillsDir, "owned", "", populate("two")); err != nil {
+		t.Fatalf("the managed entry point snapshots in the caller: %v", err)
+	}
+}

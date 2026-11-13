@@ -73,6 +73,7 @@ func RunHeadless(params ParsedFlags, cat install.Catalog, reg install.Registry, 
 		NoSelfInstall:         params.NoSelfInstall,
 		SelfInstallBinaryPath: params.BinaryPath,
 		OnProgress:            progressFn,
+		Lang:                  params.Lang,
 		OnDownload:            params.DownloadEventFn,
 	}
 

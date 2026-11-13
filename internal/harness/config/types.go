@@ -31,6 +31,8 @@ type AgentAdapter interface {
 type Result struct {
 	// Warnings describe supported delivery limitations without failing installation.
 	Warnings []string
+	// Modes records how the managed orchestrator was delivered per agent.
+	Modes map[model.Agent]string
 	// Files lists the instruction files that were written or updated.
 	Files []string
 	// AllAlready is true when every adapter produced byte-identical content

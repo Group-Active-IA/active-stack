@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"strings"
 	"testing"
 	"time"
 
@@ -226,5 +227,53 @@ func TestUpdateLogCreatesDirectoryAndPreservesPreviousRun(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join(home, ".active-stack", "logs", "update.log"))
 	if err != nil || string(data) != "first failure\nnext result\n" {
 		t.Fatalf("log=%q err=%v", data, err)
+	}
+}
+
+// claude-native-opsx 6.9: HOME without installation.json does not write CLAUDE.md and
+// the output names the BREAKING change, /sdd-orchestrator and `active-stack install`.
+func TestSyncWithoutRecordNamesBreakingChangeAndKeepsClaudeMD(t *testing.T) {
+	home := t.TempDir()
+	md := filepath.Join(home, ".claude", "CLAUDE.md")
+	if err := os.MkdirAll(filepath.Dir(md), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	before := []byte("# mine\n<!-- active-stack:sdd-orchestrator -->\nlegacy\n<!-- /active-stack:sdd-orchestrator -->\n")
+	if err := os.WriteFile(md, before, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	if err := syncRecordedInstall(context.Background(), home, "", false, &out); err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"BREAKING", "/sdd-orchestrator", "active-stack install"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("output missing %q:\n%s", want, out.String())
+		}
+	}
+	if after, _ := os.ReadFile(md); !bytes.Equal(before, after) {
+		t.Errorf("CLAUDE.md changed: %q", after)
+	}
+}
+
+// 6.9 (G10): registered projects with the legacy block are warned about, not written.
+func TestWarnLegacyProjectsDoesNotWriteAndGivesMigrationCommand(t *testing.T) {
+	legacy := t.TempDir()
+	clean := t.TempDir()
+	md := filepath.Join(legacy, ".claude", "CLAUDE.md")
+	if err := os.MkdirAll(filepath.Dir(md), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	before := []byte("<!-- active-stack:sdd-orchestrator -->\nlegacy\n<!-- /active-stack:sdd-orchestrator -->\n")
+	if err := os.WriteFile(md, before, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var out bytes.Buffer
+	warnLegacyProjects(update.State{Projects: []string{legacy, clean}}, &out)
+	if !strings.Contains(out.String(), legacy) || !strings.Contains(out.String(), "starter add") || strings.Contains(out.String(), clean) {
+		t.Errorf("want a warning for the legacy project only, with the migration command:\n%s", out.String())
+	}
+	if after, _ := os.ReadFile(md); !bytes.Equal(before, after) {
+		t.Error("the project CLAUDE.md must not be rewritten")
 	}
 }

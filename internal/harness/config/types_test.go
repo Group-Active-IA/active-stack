@@ -76,3 +76,5 @@ func TestResultType(t *testing.T) {
 		}
 	})
 }
+
+func (a fakeAdapter) SkillsDir(string) string { return "" }

@@ -89,3 +89,20 @@ las entregas, instalación, verificación y retiro deben seleccionar el recorrid
 del cliente. La coincidencia del enum no vuelve intercambiables el instalador de
 Claude y el de Codex. La prueba conjunta de ambas ramas queda pendiente de esa
 reconciliación, con independencia del orden en que se integren sus PR.
+
+## Integración de main tras PR #8 · 13 de noviembre de 2026
+
+El PR #8 se integró en main `7a600895` desde la entrega Claude `01f944c`.
+La rama de 04 incorpora esa base mediante merge y concilia el enum único, la
+interfaz opcional de rutas y el despacho por agente en install, verify y uninstall.
+Claude mantiene sus opciones de versión, capas, Project y shadowing; Codex Machine
+mantiene su inventario, snapshot persistente y guardas de escritura. Codex Project
+conserva la entrega legada y su aviso. Los markers son propios de cada cliente:
+`universal-rules` para Claude y `sdd-orchestrator` para Codex.
+
+Las pruebas aisladas de instalación en ambos órdenes, reaplicación, actualización,
+verificación y retiro se registran en el informe de integración de 04. No son
+aceptación de CLI/IDE real ni sustituyen la revisión humana de 03/04. La fila 28 y
+la evidencia directa de 06 siguen pendientes de su contrato corregido. Este
+apartado actualiza el estado técnico; conserva el aporte y pendientes históricos
+anteriores como tales.

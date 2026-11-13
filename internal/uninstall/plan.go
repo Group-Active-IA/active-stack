@@ -2,6 +2,7 @@ package uninstall
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
@@ -50,8 +51,20 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 		if opts.RestoreManifest == nil {
 			return empty, fmt.Errorf("uninstall: StrategyRestore requires RestoreManifest in Options")
 		}
+		var skip []string
+		for _, a := range adapters {
+			if a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+				skip = append(skip, a.SettingsPath(opts.HomeDir))
+			}
+		}
 		applySteps := []pipeline.Step{
-			&restoreStep{installManifest: *opts.RestoreManifest},
+			&restoreStep{
+				installManifest: *opts.RestoreManifest,
+				home:            opts.HomeDir,
+				overwriteEdited: opts.OverwriteEdited,
+				skipPaths:       skip,
+				onProgress:      opts.OnProgress,
+			},
 		}
 		return Plan{
 			StagePlan: pipeline.StagePlan{
@@ -171,7 +184,7 @@ func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []
 				}
 			} else {
 				for _, a := range adapters {
-					if h.ID == "sdd-orchestrator" && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+					if h.ID == "sdd-orchestrator" && a.Agent() == model.AgentCodex && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
 						owned, err := config.ManagedSkillOwnedPaths(a, homeDir, h.ID)
 						if err != nil {
 							return nil, err
@@ -181,6 +194,15 @@ func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []
 						}
 					}
 					add(a.InstructionsPath(homeDir))
+					if h.ID == "sdd-orchestrator" && a.Agent() == model.AgentClaude && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+						dir := filepath.Join(a.SkillsDir(homeDir), h.ID)
+						_ = filepath.WalkDir(dir, func(p string, d os.DirEntry, err error) error {
+							if err == nil {
+								add(p)
+							}
+							return nil
+						})
+					}
 					// Primary-agent delivery also touches the settings JSON, so
 					// snapshot it too for a complete rollback point.
 					if a.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {

@@ -8,6 +8,7 @@ import (
 	"os/exec"
 
 	"github.com/Group-Active-IA/active-stack/internal/harness/external"
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 	"github.com/Group-Active-IA/active-stack/internal/system"
@@ -115,6 +116,8 @@ type Options struct {
 	// OnProgress receives progress events during installation.
 	// When nil no progress events are emitted.
 	OnProgress pipeline.ProgressFunc
+	// Lang is the language of installer notices (zero value = i18n.Default).
+	Lang i18n.Lang
 	// OnDownload receives download lifecycle events from external installers.
 	// Used by the Windows GUI contract to surface richer progress.
 	OnDownload DownloadEventFunc

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
 	"github.com/Group-Active-IA/active-stack/internal/harness/config"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	toml "github.com/pelletier/go-toml/v2"
@@ -96,7 +97,7 @@ func checkSkill(h model.Harness, adapter Adapter, homeDir string) []Check {
 // one the config installer writes (internal/harness/config: Inject uses
 // "sdd-orchestrator" for the orchestrator, installSection uses h.ID).
 func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
-	if h.ID == "sdd-orchestrator" && adapter.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+	if h.ID == "sdd-orchestrator" && adapter.Agent() == model.AgentCodex && adapter.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
 		return []Check{{
 			ID:          fmt.Sprintf("config:%s:%s", h.ID, adapter.Agent()),
 			Description: fmt.Sprintf("managed skill files, ownership and explicit invocation policy for %s", adapter.Agent()),
@@ -109,6 +110,15 @@ func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
 	// such as design-mockups still write a marker to AGENTS.md on OpenCode.
 	if h.ID == "sdd-orchestrator" && adapter.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
 		return checkPrimaryAgentConfig(h, adapter, homeDir)
+	}
+
+	if h.ID == "sdd-orchestrator" && adapter.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+		if adapter.Agent() == model.AgentClaude {
+			return checkManagedSkillConfig(h, adapter, homeDir)
+		}
+		return []Check{{ID: fmt.Sprintf("config:%s:%s", h.ID, adapter.Agent()), Run: func(context.Context) error {
+			return fmt.Errorf("managed skill delivery unsupported for agent %q", adapter.Agent())
+		}}}
 	}
 
 	instrPath := adapter.InstructionsPath(homeDir)
@@ -139,6 +149,110 @@ func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
 		},
 	}
 }
+
+// checkManagedSkillConfig verifies the layered Claude delivery (claude-native-opsx):
+// with a compatible (or unverifiable) version the coordinator is a managed skill
+// plus one universal block; with an insufficient or unknown version it stays as
+// the legacy block and verify only warns. The skills dir is the one the adapter
+// resolves for the target, so a Project adapter looks in <root>/.claude/skills.
+func checkManagedSkillConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
+	instrPath := adapter.InstructionsPath(homeDir)
+	skillDir := filepath.Join(adapter.SkillsDir(homeDir), h.ID)
+	agentID := string(adapter.Agent())
+	version := DetectClaudeVersion()
+
+	readInstr := func() (string, error) {
+		data, err := os.ReadFile(instrPath)
+		if err != nil {
+			return "", fmt.Errorf("read instructions file \"%s\": %w", instrPath, err)
+		}
+		return string(data), nil
+	}
+
+	if version.State == claude.VersionInsufficient || version.State == claude.VersionUnknown {
+		legacyMarker := "<!-- active-stack:" + h.ID + " -->"
+		return []Check{
+			{
+				ID:          fmt.Sprintf("config:%s:%s", h.ID, agentID),
+				Description: fmt.Sprintf("coordinator delivered as the legacy block in %s instructions (legacy mode by version)", agentID),
+				Run: func(_ context.Context) error {
+					content, err := readInstr()
+					if err != nil {
+						return err
+					}
+					if n := strings.Count(content, legacyMarker); n != 1 {
+						return fmt.Errorf("marker %q appears %d times in \"%s\", want exactly once", legacyMarker, n, instrPath)
+					}
+					return nil
+				},
+			},
+			{
+				ID:          fmt.Sprintf("config:%s:%s:version", h.ID, agentID),
+				Description: "layered delivery needs a newer Claude Code",
+				Soft:        true,
+				Run: func(_ context.Context) error {
+					return fmt.Errorf("legacy mode by version: %s (minimum %s)", describeVersion(version), version.Min)
+				},
+			},
+		}
+	}
+
+	checks := []Check{
+		{
+			ID:          fmt.Sprintf("config:%s:%s", h.ID, agentID),
+			Description: fmt.Sprintf("coordinator delivered as a skill (%s) plus one universal block in %s instructions", skillDir, agentID),
+			Run: func(_ context.Context) error {
+				skillMD, err := os.ReadFile(filepath.Join(skillDir, "SKILL.md"))
+				if err != nil {
+					return fmt.Errorf("SKILL.md not found at \"%s\": %w", filepath.Join(skillDir, "SKILL.md"), err)
+				}
+				if !strings.Contains(string(skillMD), "disable-model-invocation: true") {
+					return fmt.Errorf("SKILL.md at \"%s\" does not declare disable-model-invocation: true", skillDir)
+				}
+				for _, module := range config.ExpectedModules(h.Toggles) {
+					p := filepath.Join(skillDir, "modules", module+".md")
+					if _, err := os.Stat(p); err != nil {
+						return fmt.Errorf("module %q missing at \"%s\"", module, p)
+					}
+				}
+				content, err := readInstr()
+				if err != nil {
+					return err
+				}
+				universal := "<!-- active-stack:" + config.UniversalSectionID + " -->"
+				if n := strings.Count(content, universal); n != 1 {
+					return fmt.Errorf("marker %q appears %d times in \"%s\", want exactly once", universal, n, instrPath)
+				}
+				if legacy := "<!-- active-stack:" + h.ID + " -->"; strings.Contains(content, legacy) {
+					return fmt.Errorf("legacy marker %q still present in \"%s\"", legacy, instrPath)
+				}
+				return nil
+			},
+		},
+	}
+	if version.State == claude.VersionAbsent {
+		checks = append(checks, Check{
+			ID:          fmt.Sprintf("config:%s:%s:version", h.ID, agentID),
+			Description: "Claude Code version could not be checked",
+			Soft:        true,
+			Run: func(_ context.Context) error {
+				return fmt.Errorf("version not verified: claude binary not found in PATH")
+			},
+		})
+	}
+	return checks
+}
+
+func describeVersion(v claude.VersionCheck) string {
+	if v.Version != "" {
+		return "claude " + v.Version
+	}
+	return v.Detail
+}
+
+// DetectClaudeVersion reports the installed Claude Code version; a variable so
+// tests can inject a state.
+var DetectClaudeVersion = claude.Detect
 
 // permissionsKeyFor returns the top-level JSON key that the permissions
 // installer writes for the given agent.
