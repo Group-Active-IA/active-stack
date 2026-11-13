@@ -1,6 +1,7 @@
 package permissions
 
 import (
+	"crypto/sha256"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -61,9 +62,9 @@ func Install(homeDir string, adapters []PermissionsAdapter, tier model.Permissio
 	var result Result
 
 	for _, adapter := range adapters {
-		changed, path, err := installOne(homeDir, adapter, tier)
+		changed, path, err := installOne(homeDir, adapter, tier, &result)
 		if err != nil {
-			return Result{}, err
+			return result, err
 		}
 		if changed {
 			result.Changed = true
@@ -74,7 +75,7 @@ func Install(homeDir string, adapters []PermissionsAdapter, tier model.Permissio
 	return result, nil
 }
 
-func installOne(homeDir string, adapter PermissionsAdapter, tier model.PermissionTier) (changed bool, path string, err error) {
+func installOne(homeDir string, adapter PermissionsAdapter, tier model.PermissionTier, result *Result) (changed bool, path string, err error) {
 	settingsPath := adapter.SettingsPath(homeDir)
 	if settingsPath == "" {
 		// Explicit no-op: agent has no injectable settings path.
@@ -85,7 +86,7 @@ func installOne(homeDir string, adapter PermissionsAdapter, tier model.Permissio
 		if err := backupIfExists(homeDir, adapter.Agent(), settingsPath); err != nil {
 			return false, "", err
 		}
-		writeResult, err := mergeCodexTOMLFile(settingsPath, tier)
+		writeResult, err := mergeCodexTOMLFile(settingsPath, tier, result)
 		if err != nil {
 			return false, "", fmt.Errorf("permissions: merge settings for agent %q: %w", adapter.Agent(), err)
 		}
@@ -111,7 +112,7 @@ func installOne(homeDir string, adapter PermissionsAdapter, tier model.Permissio
 	return writeResult.Changed, settingsPath, nil
 }
 
-func mergeCodexTOMLFile(path string, tier model.PermissionTier) (filemerge.WriteResult, error) {
+func mergeCodexTOMLFile(path string, tier model.PermissionTier, result *Result) (filemerge.WriteResult, error) {
 	raw, err := osReadFile(path)
 	if err != nil {
 		return filemerge.WriteResult{}, err
@@ -119,7 +120,7 @@ func mergeCodexTOMLFile(path string, tier model.PermissionTier) (filemerge.Write
 	approval, sandbox := "on-request", "workspace-write"
 	switch tier.Normalize() {
 	case model.TierEstricto:
-		approval, sandbox = "untrusted", "read-only"
+		approval, sandbox = "on-request", "read-only"
 	case model.TierBypass:
 		approval, sandbox = "never", "danger-full-access"
 	}
@@ -138,7 +139,15 @@ func mergeCodexTOMLFile(path string, tier model.PermissionTier) (filemerge.Write
 			return filemerge.WriteResult{}, err
 		}
 	}
-	return filemerge.WriteFileAtomic(path, []byte(merged), 0o644)
+	content := []byte(merged)
+	write, err := filemerge.WriteFileAtomic(path, content, 0o644)
+	if err == nil && write.Changed && tier == model.TierEstricto {
+		if result.CodexStrictWrites == nil {
+			result.CodexStrictWrites = make(map[string][sha256.Size]byte)
+		}
+		result.CodexStrictWrites[path] = sha256.Sum256(content)
+	}
+	return write, err
 }
 
 // backupIfExists creates a snapshot of settingsPath if the file exists.

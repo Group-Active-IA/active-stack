@@ -1,0 +1,6 @@
+{
+  "defects": [
+    {"id": "D1", "file": "internal/catalog/catalog.go", "start_line": 71, "end_line": 71, "mechanism": "id_duplicado_no_detectado"},
+    {"id": "D2", "file": "internal/catalog/catalog.go", "start_line": 115, "end_line": 115, "mechanism": "dependencia_desconocida_aceptada"}
+  ]
+}

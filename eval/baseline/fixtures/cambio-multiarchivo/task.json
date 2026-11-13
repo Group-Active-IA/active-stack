@@ -1,0 +1,16 @@
+{
+  "id": "cambio-multiarchivo-get-existe-v1",
+  "family": "cambio-multiarchivo",
+  "rubric_version": "1",
+  "source": {"kind": "embedded", "dir": "project", "sha256": "b964b99469b06c1dd6e6bbf1b68c3eb9bc762e7ba8cf1f2742228164d1fb4069"},
+  "prompt": {"file": "prompt.md", "sha256": "c43fe1c1b879d00e1716d9394a4ac48a1307ce71bf383b5d3011da721db97385"},
+  "allowed_tools": ["leer archivos", "editar archivos del checkout", "go test"],
+  "limits": {"timeout": "(TBD · D3)", "max_attempts": "(TBD · D3)"},
+  "reference": "reference.patch",
+  "defective": "defective.patch",
+  "criteria": [
+    {"id": "M1", "description": "go test ./... pasa: las llamadas existentes siguen compatibles.", "mandatory": true, "check": "go_test"},
+    {"id": "M2", "description": "Las pruebas ocultas del contrato nuevo y del borde de valor vacío pasan.", "mandatory": true, "check": "pruebas_ocultas", "args": ["hidden"]},
+    {"id": "M3", "description": "Solo se tocaron los archivos permitidos (api/api_test.go no).", "mandatory": true, "check": "archivos_permitidos", "args": ["store/store.go", "store/store_test.go", "api/api.go"]}
+  ]
+}

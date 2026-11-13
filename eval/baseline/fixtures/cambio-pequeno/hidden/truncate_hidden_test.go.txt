@@ -1,0 +1,29 @@
+package texto
+
+import (
+	"testing"
+	"unicode/utf8"
+)
+
+// Prueba oculta del fixture cambio-pequeno: el evaluador la copia sin el
+// sufijo .txt al checkout. No forma parte del prompt.
+func TestHiddenTruncateRunes(t *testing.T) {
+	cases := []struct {
+		s    string
+		n    int
+		want string
+	}{
+		{"ñandú", 3, "ñan"},
+		{"ñandú", 5, "ñandú"},
+		{"ñandú", 9, "ñandú"},
+		{"añoñ", 2, "añ"},
+		{"hola mundo", 4, "hola"},
+		{"x", 0, ""},
+	}
+	for _, c := range cases {
+		got := Truncate(c.s, c.n)
+		if got != c.want || !utf8.ValidString(got) {
+			t.Errorf("Truncate(%q, %d) = %q, want %q", c.s, c.n, got, c.want)
+		}
+	}
+}

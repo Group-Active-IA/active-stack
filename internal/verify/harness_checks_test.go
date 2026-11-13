@@ -3,6 +3,7 @@ package verify_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,6 +17,38 @@ import (
 // ─────────────────────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
+func TestCodexPermissionsReportsLegacyMachinePolicy(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	adapter := newFakeAdapter(t, home, model.AgentCodex)
+	machine := filepath.Join(home, ".codex", "config.toml")
+	if err := os.MkdirAll(filepath.Dir(machine), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	for _, policy := range []string{"untrusted", "on-request"} {
+		config := []byte("approval_policy = \"" + policy + "\"\nsandbox_mode = \"read-only\"\n")
+		if err := os.WriteFile(machine, config, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		h := model.Harness{ID: "permissions", Type: model.HarnessConfig}
+		checks := verify.ChecksForHarness(h, []verify.Adapter{adapter}, home)
+		found := false
+		for _, check := range checks {
+			if err := check.Run(context.Background()); err != nil && strings.Contains(err.Error(), "untrusted") {
+				found = strings.Contains(err.Error(), fmt.Sprintf("%q", machine))
+			}
+		}
+		if found != (policy == "untrusted") {
+			t.Errorf("policy %q: diagnostic present = %v", policy, found)
+		}
+		raw, err := os.ReadFile(machine)
+		if err != nil || string(raw) != string(config) {
+			t.Fatalf("machine config changed: %q, %v", raw, err)
+		}
+	}
+}
 
 // newFakeAdapter builds a fakeAdapter wired to a temp dir.
 func newFakeAdapter(t *testing.T, homeDir string, agent model.Agent) fakeAdapter {

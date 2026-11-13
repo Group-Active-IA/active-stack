@@ -18,7 +18,12 @@ func TestAddToUserPathAlreadyPresent(t *testing.T) {
 
 	os.Setenv("PATH", targetDir+string(os.PathListSeparator)+original)
 
-	err := AddToUserPath(targetDir)
+	err := addToUserPath(targetDir, func(dir string) error {
+		if dir != targetDir {
+			t.Fatalf("persist called with %q", dir)
+		}
+		return nil
+	})
 	if err != nil {
 		t.Fatalf("AddToUserPath returned unexpected error: %v", err)
 	}
@@ -46,7 +51,12 @@ func TestAddToUserPathAddsToProcessEnv(t *testing.T) {
 	// Ensure target is NOT currently in PATH.
 	os.Setenv("PATH", strings.ReplaceAll(original, targetDir, ""))
 
-	err := AddToUserPath(targetDir)
+	err := addToUserPath(targetDir, func(dir string) error {
+		if dir != targetDir {
+			t.Fatalf("persist called with %q", dir)
+		}
+		return nil
+	})
 	if err != nil {
 		t.Fatalf("AddToUserPath returned unexpected error: %v", err)
 	}
@@ -79,7 +89,12 @@ func TestAddToUserPathNoOpOnNonWindows(t *testing.T) {
 	os.Setenv("PATH", strings.ReplaceAll(original, targetDir, ""))
 
 	// Must not error even though powershell is unavailable on Linux/macOS.
-	err := AddToUserPath(targetDir)
+	err := addToUserPath(targetDir, func(dir string) error {
+		if dir != targetDir {
+			t.Fatalf("persist called with %q", dir)
+		}
+		return nil
+	})
 	if err != nil {
 		t.Fatalf("AddToUserPath should be a no-op on non-Windows but returned error: %v", err)
 	}

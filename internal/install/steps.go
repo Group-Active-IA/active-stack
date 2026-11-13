@@ -231,7 +231,12 @@ func (s *permissionsStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *permissionsStep) Run() error {
 	perm := toPermissionsAdapters(s.adapters)
-	_, err := permissionsInstallFn(s.homeDir, perm, s.tier)
+	result, err := permissionsInstallFn(s.homeDir, perm, s.tier)
+	if s.manifest != nil {
+		for path, digest := range result.CodexStrictWrites {
+			s.manifest.GuardRollback(path, digest)
+		}
+	}
 	return err
 }
 

@@ -40,11 +40,11 @@ var tableEN = map[string]string{
 	"windows.dryrun.listed":  "Dry-run step listed.",
 
 	// component.fallback.* — component-description fallbacks.
-	"component.fallback.security":     "Basic protection for safer setup. This is always installed.",
-	"component.fallback.external":     "Downloads and configures an external tool.",
-	"component.fallback.config":       "Applies recommended configuration.",
-	"component.fallback.skill":        "Adds guided workflow helpers.",
-	"component.fallback.generic_fmt":  "Installs %s.",
+	"component.fallback.security":    "Basic protection for safer setup. This is always installed.",
+	"component.fallback.external":    "Downloads and configures an external tool.",
+	"component.fallback.config":      "Applies recommended configuration.",
+	"component.fallback.skill":       "Adds guided workflow helpers.",
+	"component.fallback.generic_fmt": "Installs %s.",
 
 	// mode.{lite,full,custom}.{label,desc,long} — install-mode options.
 	"mode.lite.label": "Quick",
@@ -60,9 +60,11 @@ var tableEN = map[string]string{
 	"mode.custom.long":  "Custom mode lets you hand-pick exactly which harnesses to install, one by one. Nothing outside your selection gets installed, except the mandatory security floor (permissions), which always ships. Use it when you already know your stack and want full control over what stays and what doesn't. If you'd rather have the decision made for you, Quick or Complete are more direct.",
 
 	// tier.{estricto,balanceado,bypass}.{label,desc,long} + tier.bypass.warning.
-	"tier.estricto.label": "Strict",
-	"tier.estricto.desc":  "Agent must ask for every operation. Highest friction, highest security.",
-	"tier.estricto.long":  "Strict configures the agent's permissions to ask for confirmation before every operation. It applies the most restrictive rule set on top of the security floor: nothing runs without your sign-off. It is the highest-friction, highest-security level. Choose it for sensitive projects or when you're starting out and want to review everything before it happens; if it slows you down, Balanced loosens the repetitive parts.",
+	"tier.estricto.label":      "Strict",
+	"tier.estricto.codex.desc": "Codex: Read-only by default",
+	"tier.estricto.codex.long": "Codex runs in read-only mode. Actions that require additional permissions need explicit approval when the interface supports requests. Otherwise, those actions remain blocked.",
+	"tier.estricto.desc":       "Agent must ask for every operation. Highest friction, highest security.",
+	"tier.estricto.long":       "Strict configures the agent's permissions to ask for confirmation before every operation. It applies the most restrictive rule set on top of the security floor: nothing runs without your sign-off. It is the highest-friction, highest-security level. Choose it for sensitive projects or when you're starting out and want to review everything before it happens; if it slows you down, Balanced loosens the repetitive parts.",
 
 	"tier.balanceado.label": "Balanced",
 	"tier.balanceado.desc":  "Curated allow-list for safe, repetitive operations. Recommended starting point.",
