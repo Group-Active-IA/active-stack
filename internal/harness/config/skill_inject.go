@@ -118,7 +118,7 @@ func InjectManagedSkill(skillsDir string, spec SkillSpec, opts SkillInjectOption
 	if opts.ShadowSkillsDir != "" {
 		shadow := filepath.Join(opts.ShadowSkillsDir, spec.ID)
 		if _, err := os.Lstat(shadow); err == nil {
-			warnings = append(warnings, fmt.Sprintf("personal skill %q takes precedence over the project skill \"%s\" (personal over project)", shadow, dest))
+			warnings = append(warnings, fmt.Sprintf("personal skill \"%s\" takes precedence over the project skill \"%s\" (personal over project)", shadow, dest))
 		}
 	}
 

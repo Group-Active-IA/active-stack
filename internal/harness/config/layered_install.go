@@ -120,7 +120,7 @@ func InstallLayered(in LayeredInstall) (LayeredResult, error) {
 	if in.ShadowSkillsDir != "" {
 		shadow := filepath.Join(in.ShadowSkillsDir, in.Skill.ID)
 		if _, err := os.Lstat(shadow); err == nil {
-			res.Warnings = append(res.Warnings, fmt.Sprintf("personal skill %q takes precedence over the project skill \"%s\" (personal over project)", shadow, skillDest))
+			res.Warnings = append(res.Warnings, fmt.Sprintf("personal skill \"%s\" takes precedence over the project skill \"%s\" (personal over project)", shadow, skillDest))
 		}
 	}
 

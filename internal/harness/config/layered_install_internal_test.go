@@ -2,6 +2,7 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -206,7 +207,9 @@ func TestInstallLayered_RollbackDoesNotOverwriteConcurrentEdit(t *testing.T) {
 	if got := readStr(t, e.md); got != other {
 		t.Errorf("rollback overwrote a concurrent edit; CLAUDE.md = %q", got)
 	}
-	if !strings.Contains(err.Error(), e.md) {
+	// GuardRollback (internal/backup, main) formats the path with %q; accept either form so the
+	// assertion holds on Windows, where %q doubles the backslashes.
+	if !strings.Contains(err.Error(), e.md) && !strings.Contains(err.Error(), fmt.Sprintf("%q", e.md)) {
 		t.Errorf("error must name %q, got: %v", e.md, err)
 	}
 	if _, serr := os.Stat(filepath.Join(e.skills, "sdd-orchestrator")); serr == nil {
