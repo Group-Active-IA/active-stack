@@ -129,10 +129,10 @@ func loadManagedState(root, id string) (managedSkillState, bool, error) {
 	}
 	for name, hash := range state.Files {
 		if name == "" || filepath.IsAbs(name) || name == ".." || strings.HasPrefix(filepath.Clean(name), ".."+string(filepath.Separator)) || filepath.Clean(name) != name || name == managedInventory {
-			return state, false, fmt.Errorf("invalid managed file %q", name)
+			return state, false, fmt.Errorf("invalid managed file \"%s\"", name)
 		}
 		if b, err := hex.DecodeString(hash); err != nil || len(b) != sha256.Size {
-			return state, false, fmt.Errorf("invalid hash for %q", name)
+			return state, false, fmt.Errorf("invalid hash for \"%s\"", name)
 		}
 	}
 	return state, true, nil
@@ -141,7 +141,7 @@ func loadManagedState(root, id string) (managedSkillState, bool, error) {
 func checkRegularParents(path, home string) error {
 	relative, err := filepath.Rel(home, path)
 	if err != nil || filepath.IsAbs(relative) || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
-		return fmt.Errorf("managed path %q outside home %q", path, home)
+		return fmt.Errorf("managed path \"%s\" outside home \"%s\"", path, home)
 	}
 	for current := path; current != filepath.Dir(home); current = filepath.Dir(current) {
 		info, err := os.Lstat(current)
@@ -152,10 +152,10 @@ func checkRegularParents(path, home string) error {
 			return err
 		}
 		if info.Mode()&os.ModeSymlink != 0 {
-			return fmt.Errorf("refusing symlink path %q", current)
+			return fmt.Errorf("refusing symlink path \"%s\"", current)
 		}
 		if current != path && !info.IsDir() {
-			return fmt.Errorf("parent %q is not a directory", current)
+			return fmt.Errorf("parent \"%s\" is not a directory", current)
 		}
 	}
 	return nil
@@ -189,7 +189,7 @@ func InstallManagedSkill(h model.Harness, a ManagedSkillAdapter, home string) (R
 	}
 	if !exists {
 		if entries, e := os.ReadDir(root); e == nil && len(entries) > 0 {
-			return Result{}, fmt.Errorf("foreign skill directory %q", root)
+			return Result{}, fmt.Errorf("foreign skill directory \"%s\"", root)
 		} else if e != nil && !os.IsNotExist(e) {
 			return Result{}, e
 		}

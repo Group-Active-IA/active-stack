@@ -30,7 +30,7 @@ func (r *managedRollback) capture(paths []string, home string) error {
 			if _, exists := r.parents[dir]; !exists {
 				info, err := os.Lstat(dir)
 				if err != nil && !os.IsNotExist(err) {
-					return fmt.Errorf("inspect rollback parent %q: %w", dir, err)
+					return fmt.Errorf("inspect rollback parent \"%s\": %w", dir, err)
 				}
 				r.parents[dir] = info
 			}
@@ -77,7 +77,7 @@ func (r *managedRollback) restore(manifest backup.Manifest) error {
 			}
 			now, err := os.Lstat(dir)
 			if err != nil && !os.IsNotExist(err) || err == nil && (before == nil || !os.SameFile(before, now)) {
-				conflicts = errors.Join(conflicts, fmt.Errorf("preserved %q because rollback parent %q changed; backup at %q", path, dir, manifest.RootDir))
+				conflicts = errors.Join(conflicts, fmt.Errorf("preserved \"%s\" because rollback parent \"%s\" changed; backup at \"%s\"", path, dir, manifest.RootDir))
 				valid = false
 				break
 			}
