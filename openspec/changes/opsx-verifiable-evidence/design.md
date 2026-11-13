@@ -8,9 +8,9 @@ El stack instala el orquestador como texto: se compone desde `internal/harness/c
 
 | Change | Rama | Commit |
 |---|---|---|
-| 04 `codex-native-opsx` | `origin/propose/codex-native-opsx` (también existe `origin/feat/codex-native-opsx`) | `9a6eb2a` |
-| 05 `opsx-task-context` | `origin/propose/opsx-task-context` | `f372681` |
-| 07 `opsx-selective-delegation` | `origin/propose/opsx-selective-delegation` | `dde9d7b` |
+| 04 `codex-native-opsx` | `origin/propose/codex-native-opsx` (también existe `origin/feat/codex-native-opsx`) | `91fbb70` |
+| 05 `opsx-task-context` | `origin/propose/opsx-task-context` | `e4ec0f5` |
+| 07 `opsx-selective-delegation` | `origin/propose/opsx-selective-delegation` | `3fb24ee` |
 
 El roadmap apunta a un orquestador de invocación explícita, con módulos independientes (TDD, delegación y coordinación) que se cargan según el rol y la acción. Esta propuesta escribe el contrato para ese modelo. Los puntos que dependen de 03, 04 y 05 están marcados (TBD).
 
@@ -59,11 +59,11 @@ Cada recibo de ejecución describe **una** ejecución de **un** comando. Si un r
 | `comando` | Comando completo, tal como se ejecutó | lo declara el worker; la fuente independiente lo corrobora (D3) |
 | `resultado` | Código de salida y marca de tiempo | declarado; corroborado (D3) |
 | `requisitos` | IDs de requisitos o escenarios del change que dice cubrir | lo declara el worker |
-| `salida` | Referencia a la **copia redactada**: **una** huella de ese archivo (`{algoritmo, valor}`), si fue truncada y el **registro de captura** (qué fuente la capturó y cuándo). Formato de la referencia: 05 | huella sobre los bytes del archivo redactado; registro de captura (TBD, 05) |
+| `salida` | Referencia a la **copia redactada**: **una** huella de ese archivo (`{algoritmo, valor}`), si fue truncada y el **registro de captura** (qué fuente la capturó y cuándo). Formato de la referencia y del registro de captura: 05 (D9, `design.md:142-172`); 06 no define sus campos, solo los estados (D4) | huella sobre los bytes del archivo redactado; registro de captura de 05 D9 |
 
-**Persistencia (lo acordado).** Se persiste solo la copia redactada, con una huella, y el registro de captura. No existe una copia con secretos de la que el recibo de ejecución dependa. **(TBD)**: el mecanismo de captura independiente por interfaz (lo define 05) y la ubicación, el acceso y el vencimiento de la copia redactada (a acordar entre 05 y 06). Esta propuesta no fija una ruta.
+**Persistencia (lo acordado).** Se persiste solo la copia redactada, con una huella, y el registro de captura. No existe una copia con secretos de la que el recibo de ejecución dependa. El **registro de captura** es el de 05 D9 (`design.md:150`): fuente (`arnés`, `cliente:<fuente>` o `agente`), redactor, cliente, interfaz, sistema, versión, código de salida, cobertura previa al truncamiento y conteo de redacciones por categoría. 06 lo referencia y no agrega campos. El mecanismo de captura independiente por interfaz lo define 05 (matriz D22, ver D3). Ubicación, acceso y vencimiento: **propuestos por 05 (D9), 06 propone aceptar; pendiente de confirmación** (ver "Respuesta de 06 a 05"). Esta propuesta no fija una ruta propia.
 
-**Huella del archivo (definición).** Es el **sha256 de los bytes exactos** del archivo redactado, sin conversión de fines de línea ni filtros, y el campo **nombra el algoritmo**: `{algoritmo: "sha256", valor: "<hex>"}`. Así lo hacen 02 (`eval/baseline/record/record.go:48-51`, `Fingerprint{Algorithm, Value}`; su comentario `:7` remite a 06) y 05 (huella `sha256` en su referencia: `origin/propose/opsx-task-context`, `design.md:129` y `specs/bounded-command-output/spec.md:136`). Bytes iguales dan el mismo valor en Windows y en Linux; bytes distintos, incluidos LF frente a CRLF, dan valores distintos. Eso exige que la captura escriba los bytes sin traducir fines de línea.
+**Huella del archivo (definición).** Es el **sha256 de los bytes exactos** del archivo redactado, sin conversión de fines de línea ni filtros, y el campo **nombra el algoritmo**: `{algoritmo: "sha256", valor: "<hex>"}`. Así lo hacen 02 (`eval/baseline/record/record.go:48-51`, `Fingerprint{Algorithm, Value}`; su comentario `:7` remite a 06) y 05, que define el formato de huella de la referencia: `sha256:<hex>`, con el algoritmo nombrado y los bytes sin normalizar fines de línea (`origin/propose/opsx-task-context`, `e4ec0f5`, `design.md:148`; `specs/bounded-command-output/spec.md:186-188`). 06 acepta ese formato; `{algoritmo, valor}` (02) y `sha256:<hex>` (05) son equivalentes y 06 no cambia su definición. Bytes iguales dan el mismo valor en Windows y en Linux; bytes distintos, incluidos LF frente a CRLF, dan valores distintos. Eso exige que la captura escriba los bytes sin traducir fines de línea.
 
 *No se usa `git hash-object` como definición.* Hashea un blob de Git (cabecera `blob <tamaño>\0` más contenido, SHA-1 por defecto) y no un digest del archivo: el valor no se puede recomputar con `sha256sum` ni con `Get-FileHash`, y depende de filtros (`--no-filters`) y del formato de objeto del repositorio.
 
@@ -82,12 +82,21 @@ Para cerrar esta propuesta, Windows y Linux deben figurar como *probadas*. macOS
 ### D3 — Tres controles con resultados separados
 
 - **Integridad.** El archivo conservado no cambió: existe y su huella recomputada coincide con la del recibo de ejecución. Es un control mecánico y **no prueba que la ejecución haya ocurrido**: quien fabrica un recibo de ejecución puede fabricar también la huella.
-- **Procedencia.** La ejecución es real y corresponde al estado del código. Un resultado declarado por el worker queda *sin verificar* hasta que una **fuente independiente** o una **reejecución** corrobora (a) que el comando se ejecutó y su código de salida, y (b) el estado exacto del árbol en que se ejecutó (D2 `arbol`). La verificación puramente mecánica (huella más relato del worker) no es criterio suficiente. *Mecanismo de captura* (arnés o fuente del cliente, antes de cualquier truncamiento): **(TBD)**, lo define 05 al demostrar qué fuente cubre cada interfaz. Mientras no haya fuente demostrada para una interfaz, la corroboración se hace por reejecución o el resultado queda *sin verificar*.
-- **Suficiencia.** El comando ejercita lo que el requisito pide y el resultado respalda el cumplimiento. Cada requisito del change debe nombrar qué evidencia lo satisface; lo que no se pueda evaluar queda *sin verificar*. Quién la evalúa: pregunta abierta, apoyada en el revisor distinto del constructor que 04 ya especifica (D8).
+- **Procedencia.** La ejecución es real y corresponde al estado del código. Un resultado declarado por el worker queda *sin verificar* hasta que una **fuente independiente** o una **reejecución** corrobora (a) que el comando se ejecutó y su código de salida, y (b) el estado exacto del árbol en que se ejecutó (D2 `arbol`). La verificación puramente mecánica (huella más relato del worker) no es criterio suficiente. *Mecanismo de captura* (arnés o fuente del cliente, antes de cualquier truncamiento): lo define 05. **Estado actual según 05** (`origin/propose/opsx-task-context`, `e4ec0f5`, D22 `design.md:344-367`, citado, no decidido por 06):
+  - Solo el **arnés** es referencia por construcción.
+  - Claude Code CLI en Windows con comando fallido: salida **truncada**, sin fuente completa.
+  - Codex CLI en Windows con `codex exec --json`: **probada como sonda (n=1)**; falta la tarea 8.1 de 05.
+  - Codex IDE: **no disponible** como fuente externa.
+  - Linux: **no probada**.
+
+  *Consecuencia que escribe 06:* sin una fuente independiente demostrada para la interfaz, un resultado declarado queda *sin verificar*, salvo reejecución por otra parte con captura (05 D20, `design.md:324-336`).
+- **Suficiencia.** El comando ejercita lo que el requisito pide y el resultado respalda el cumplimiento. Cada requisito del change debe nombrar qué evidencia lo satisface; lo que no se pueda evaluar queda *sin verificar*. Quién la evalúa: pregunta abierta (Open Questions, 3). 04 (informe `analisis-dependencias-05-06-2026-11-13.md`) y 05 (D20) esperan de 06 un criterio identificable. Propuesta de partida, **de 06 y pendiente de confirmación**: el revisor distinto del constructor que 04 ya especifica (D8) y que cada requisito nombre su evidencia.
 
 Los tres resultados se informan por separado. Integridad aprobada no implica procedencia, y procedencia aprobada no implica suficiencia (tests verdes con un requisito incumplido).
 
-*Coherencia del código de salida.* Como la salida se redacta al capturar, la coherencia entre el código declarado y el contenido se comprueba sobre la copia redactada; 05 exige que la redacción conserve la línea y su posición (`origin/propose/opsx-task-context`, `specs/bounded-command-output/spec.md:174`, requisito "Datos sensibles redactados al capturar"). Que alcance para decidir el código de salida se confirma con un fixture (TBD, tarea 5.1).
+*Coherencia del código de salida.* El código de salida lo escribe **quien captura**, en el registro de captura de 05 D9 (`design.md:150`), no el worker. El código declarado por el worker se compara con ese valor y con la copia redactada. Como la redacción se hace al capturar, 05 exige que conserve la línea y su posición (`origin/propose/opsx-task-context`, `e4ec0f5`, `specs/bounded-command-output/spec.md:241-243`). Que la copia redactada alcance para decidir el código de salida se confirma con un fixture (TBD, tarea 5.1).
+
+*Un detalle redactado no alcanza para verificar.* 06 referencia, sin redefinir, el requisito de 05 "Un detalle redactado no alcanza para verificar" (`specs/bounded-command-output/spec.md:273-281`): si verificar un requisito exige un detalle que la redacción descartó, el recibo queda *sin verificar* y no se persiste el original para evitarlo (tarea 4.12).
 
 ### D4 — Tres estados, con la duda hacia "sin verificar"
 
@@ -100,7 +109,7 @@ El texto de **rechazado** es el de la ficha 06 del roadmap (`CHANGES.md:192`, "A
   3. comando **insuficiente** (no ejercita el requisito declarado);
   4. salida **truncada sin original**: aplica cuando la salida truncada **nunca tuvo** referencia a una copia redactada. Si la referencia existía y la copia venció, es el caso "copia vencida" (más abajo, estado (TBD), propuesta de partida: *sin verificar*);
   5. requisito **incumplido con tests verdes**.
-  *Detalle operativo (no cambia la ficha):* un recibo falso solo puede rechazarse como "inventado" cuando algo lo contradice; sin contradicción ni corroboración queda *sin verificar* (acuerdo 05/06). **(TBD)**: si un recibo de **directorio ajeno** (producido fuera del repositorio o worktree del change) es *rechazado* o *sin verificar*, y lo mismo para una **copia vencida** (retención de 05): la ficha no los menciona. Propuesta de partida: ajeno = rechazado, vencida = sin verificar; se acuerda con 05.
+  *Detalle operativo (no cambia la ficha):* un recibo falso solo puede rechazarse como "inventado" cuando algo lo contradice; sin contradicción ni corroboración queda *sin verificar* (acuerdo 05/06). **(TBD)**: si un recibo de **directorio ajeno** (producido fuera del repositorio o worktree del change) es *rechazado* o *sin verificar*, y lo mismo para una **copia vencida** (retención de 05): la ficha no los menciona. Propuesta de partida: ajeno = rechazado, vencida = sin verificar; se acuerda con 05. El vencimiento concreto lo propone 05 (D9) y 06 solo exige que la referencia lo informe.
 - **Sin verificar:** recibo **incompleto** (ficha), falta la copia redactada por indisponibilidad (ver TBD de vencida), no hay corroboración independiente (acuerdo 05/06), no se pudo evaluar, o no hay ningún recibo de ejecución para el requisito. Es el estado por defecto y, a diferencia de un `skipped` en los health checks, **no cuenta como aprobado**. Un conjunto vacío de recibos de ejecución nunca produce *verificado*.
 
 Un recibo de ejecución falso con la huella correcta pasa integridad; sin corroboración queda *sin verificar*, y si la reejecución o la fuente independiente lo contradicen, *rechazado*.
@@ -147,9 +156,9 @@ Si el módulo requerido no está disponible en una sesión, el coordinador infor
 
 ### D6 — Sobre de retorno y qué se guarda
 
-**Sobre.** 07 es dueña del sobre de retorno (`origin/propose/opsx-selective-delegation`, `dde9d7b`, `design.md` D6 `:114-125`): `estado`, `partida`, `modificados`, `hallazgos`, `recibos`, `pendiente`. 06 define solo el **contenido** del campo `recibos`: una lista de recibos de ejecución, uno por comando ejecutado. Esta propuesta no define un sobre propio ni atribuye el recibo de ejecución a una sección de retorno de 04 (04 ya referencia el sobre de 07 y no crea otro: `design.md:51`). Si hacen falta otros campos, se piden a 07. 07 valida los recibos "según 06" como tercer paso (`:127`) y pide el mismo paso de revisión cuando la acción es directa (`:129`); coincide con D5.
+**Sobre.** 07 es dueña del sobre de retorno (`origin/propose/opsx-selective-delegation`, `3fb24ee`, `design.md` D6 `:115-130`): `estado`, `partida`, `modificados`, `hallazgos`, `recibos`, `pendiente`. 06 define solo el **contenido** del campo `recibos`: una lista de recibos de ejecución, uno por comando ejecutado. Esta propuesta no define un sobre propio ni atribuye el recibo de ejecución a una sección de retorno de 04 (04 ya referencia el sobre de 07 y no crea otro: `design.md:51`). Si hacen falta otros campos, se piden a 07. 07 valida los recibos "según 06" como tercer paso (`:127`) y pide el mismo paso de revisión cuando la acción es directa (`:129`); coincide con D5.
 
-**Qué se guarda.** Se persiste solo la copia redactada (D2). 05 (D9 de `opsx-task-context`) redacta al capturar y es dueña del formato de la referencia. Su ubicación, acceso y vencimiento son **(TBD)** con 05. Hoy 05 propone el original fuera del repo con retención hasta archivar el change más siete días, valor que 05 declara arbitrario y que esta propuesta no adopta como firme. Si la copia vence, la referencia informa que ya no está disponible y el recibo queda *sin verificar* (D4, TBD sobre "vencida").
+**Qué se guarda.** Se persiste solo la copia redactada (D2). 05 (D9 de `opsx-task-context`) redacta al capturar y es dueña del formato de la referencia. Ubicación y acceso: **propuestos por 05 (D9, `design.md:152` y `:156`); 06 propone aceptar; pendiente de confirmación** ("Respuesta de 06 a 05"). Vencimiento: 05 propone archivo del change más siete días (D9, `design.md:154`), que 05 declara **supuesto sin medición**; 06 lo acepta como provisorio, solo exige que la referencia informe el vencimiento y no lo adopta como firme. Si la copia vence, la referencia informa que ya no está disponible y el recibo queda *sin verificar* (D4, TBD sobre "vencida").
 
 **Qué se versiona (TBD).** Propuesta de partida: se versiona el texto del recibo de ejecución (campos de D2, sin la salida) y ninguna salida completa. 05 recomienda "nada versionado"; si eso incluye los recibos de ejecución, se acuerda en el grupo. Dónde viven dentro del change (la propuesta previa era `openspec/changes/<change>/evidence/`) queda (TBD) hasta confirmar que OpenSpec tolera la carpeta (tarea 1.4). Lo que no cambia: tras una corrida, ninguna salida completa aparece en `git status`.
 
@@ -161,16 +170,25 @@ Los cambios en los assets de Claude y de Codex se prueban con golden files de co
 
 En `origin/main` `7a60089`, el asset legado de Codex no lista `verify` (`internal/harness/config/assets/codex/sdd-orchestrator.md:38-50`, el flujo, y `:85-92`, la tabla de acciones), mientras el de Claude sí lo incluye (`.../claude/sdd-orchestrator.md:71`, `openspec-verify`).
 
-**04 lo cubre**, con PR todavía pendiente de merge (`origin/propose/codex-native-opsx`, `9a6eb2a`):
+**04 lo cubre**, con PR todavía pendiente de merge (`origin/propose/codex-native-opsx`, `91fbb70`):
 
 - **Spec:** `openspec/changes/codex-native-opsx/specs/codex-opsx-delivery/spec.md:47-57`, requisito "Verify con independencia obligatoria": la acción `verify` revisa recibos y cumplimiento y, cuando se requiere independencia, el revisor es distinto del constructor (`:49`), incluso en una verificación breve (`:51-53`); sin revisor habilitado se detiene esa verificación (`:55-57`).
 - **SKILL:** `internal/harness/config/assets/codex/native/SKILL.md:12` (carga la skill instalada para `verify`), `:16` (el revisor debe ser distinto del constructor cuando verify requiere independencia) y `:18` (las acciones que requieren evidencia cargan el contrato en ejecución directa y delegada; sin contrato corregido o captura independiente, el resultado queda sin verificar y la acción se detiene).
 
-06 no agrega la acción ni decide quién revisa: consume ese paso para revisar los recibos de ejecución y evaluar la suficiencia (D3). Hasta que el PR de 04 esté en `main`, la paridad de Codex (D7) se prueba solo en lo que no depende de `verify` y la suficiencia en Codex queda *sin verificar* (TBD, 04). Nota: 04 declara que el texto actual de 06 "aún requiere correcciones" (`design.md:53`, `:88`); esta ronda las incorpora.
+06 no agrega la acción ni decide quién revisa: consume ese paso para revisar los recibos de ejecución y evaluar la suficiencia (D3). Hasta que el PR de 04 esté en `main`, la paridad de Codex (D7) se prueba solo en lo que no depende de `verify` y la suficiencia en Codex queda *sin verificar* (TBD, 04). Nota: 04 declara que "el texto actual de 06 aún requiere correcciones para cumplir el informe unificado" (`design.md:53`) y que el recibo de 06 "en `f3f005e` aún requiere corrección" (`design.md:88`, que cita un borrador viejo de 06). Esta ronda las incorpora; el informe `informes/respuesta-a-04-y-05-2026-11-13.md` las contesta punto por punto.
 
 ### D9 — Hooks: complemento, no registro
 
 Los hooks del cliente (08) pueden dejar rastro de ciertas ejecuciones y sirven para corroborar. **Complementan la evidencia pero no son un registro exhaustivo**: no cubren todas las interfaces ni todos los comandos, y su silencio no prueba que algo no se ejecutó. La ausencia de un rastro en un hook no verifica ni rechaza un recibo de ejecución por sí sola. Qué fuente cubre cada interfaz lo demuestra 05 (D3).
+
+### Respuesta de 06 a 05 (propuesta, pendiente de confirmación de Gianfranco)
+
+05 pide a 06 cuatro respuestas (`origin/propose/opsx-task-context`, `e4ec0f5`, D9 `design.md:142-172`, D19 `:308`, D20 `:324-336`, "Puntos de grupo" `:443-463`). Lo que sigue es **propuesta de 06, pendiente de confirmación de Gianfranco**; no es un acuerdo del grupo.
+
+- **(a) Ubicación y acceso.** Se propone aceptar `<UserCacheDir>/active-stack/runs/<change>/<id de corrida>/` y el acceso local de 05 D9 (`design.md:152`, `:156`).
+- **(b) Vencimiento.** Se propone aceptar archivo del change más siete días como valor provisorio (05 lo declara supuesto sin medición, `:154`). 06 solo exige que la referencia informe el vencimiento (D6); el estado de la copia vencida sigue en D4.
+- **(c) Lista sensible y registro de captura.** Se propone aceptar la lista sensible de 05 D14 (`design.md:221`) y el registro de captura de D9 (`:150`). 06 no agrega categorías ni campos.
+- **(d) Contrato en `apply` y `verify`.** 05 propone que se cargue el contrato `bounded-command-output` en `apply` y `verify`, directo o delegado (D19, `design.md:312`). Coincide con el módulo `evidence` de D5; sigue **pendiente de acuerdo con 03 y 04**.
 
 ## Risks / Trade-offs
 
@@ -193,10 +211,10 @@ No hay migración de datos: el contrato es texto nuevo en los assets. Quien rein
 Se eliminaron las resueltas o pasadas a otro change: *agentes incluidos* (roadmap, `CHANGES.md:3` y `:182`), *plataformas mínimas* (decidido, D2), *verify en Codex* (cubierto por 04, D8), *dueño del sobre de retorno* (07, D6), *algoritmo de la huella del archivo* (sha256, D2) y *redacción y retención de las salidas* (05).
 
 1. **Módulo `evidence` y texto del extracto `## Evidence Contract`** (PROPUESTA D5, TBD con 03 y 04): aceptar o ajustar los ocho cambios de la lista de D5. Decide: el grupo, con Juani (03) y Matías (04). 06 redacta el texto.
-2. **Mecanismo de captura y fuente independiente por interfaz** (arnés o fuente del cliente, antes del truncamiento). Lo define Emiliano (05); lo consume Gianfranco (06). (TBD)
-3. **Quién evalúa la suficiencia.** Se apoya en el revisor distinto del constructor que 04 especifica (D8). Decide: el grupo; lo que 07 pueda exigir depende de esto.
+2. **Mecanismo de captura y fuente independiente por interfaz** (arnés o fuente del cliente, antes del truncamiento). Lo define Emiliano (05); el estado actual es la matriz D22 de 05 (D3). Lo consume Gianfranco (06).
+3. **Quién evalúa la suficiencia.** Abierta. 04 y 05 (D20) esperan de 06 un criterio identificable. Propuesta de partida de 06, pendiente de confirmación: el revisor distinto del constructor de 04 (D8) y que cada requisito nombre su evidencia. Decide: el grupo; lo que 07 pueda exigir depende de esto.
 4. **Huella del estado probado: conjunto de archivos y mecanismo** (cálculo alineado con `TreeHash` frente al árbol de un índice temporal; D2). Decide: Gianfranco con Emiliano (05), con una prueba en Windows y Linux.
-5. **Ubicación, acceso y vencimiento de la copia redactada, y qué se versiona** (D6). (TBD) Decide: el grupo, entre Emiliano (05) y Gianfranco (06).
+5. **Ubicación, acceso y vencimiento de la copia redactada, y qué se versiona** (D6). Ubicación, acceso y vencimiento: propuestos por 05 (D9), 06 propone aceptar; pendiente de confirmación. Qué se versiona: (TBD). Decide: el grupo, entre Emiliano (05) y Gianfranco (06).
 6. **Que la salida redactada alcance como evidencia** del código de salida (D3). Decide: Gianfranco con Emiliano (05), con un fixture.
 7. **Casos fuera de la ficha:** directorio ajeno y copia vencida, ¿rechazado o sin verificar? (D4, TBD con 05).
 8. **Por qué el reporte de `verify-hook` quedó con cero checks** en el caso del 02/11 (no investigado). No es una decisión: es la tarea 1.5, de Gianfranco; el resultado informa a 01, 04 y 08.

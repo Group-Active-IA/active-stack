@@ -163,6 +163,11 @@ A truncated or bounded output SHALL keep a reference to the complete stored copy
 - **WHEN** a command output contains a value of a sensitive class and is captured
 - **THEN** the stored copy is already redacted, and the execution receipt records its reference, one fingerprint of that copy and the capture record, and integrity passes over that copy
 
+#### Scenario: Redacted detail is not enough to verify
+
+- **WHEN** verifying a requirement needs a detail that the redaction of proposal 05 discarded (requirement "Un detalle redactado no alcanza para verificar" of proposal 05, referenced and not redefined here)
+- **THEN** the execution receipt is "unverified" and the unredacted original is not persisted to avoid that outcome
+
 #### Scenario: Retention expired
 
 - **WHEN** the stored copy is no longer available because the expiry (to be agreed with proposal 05) has passed

@@ -1,7 +1,7 @@
 # Proposal: opsx-verifiable-evidence
 
 > Change `opsx-verifiable-evidence` · ficha 06 del roadmap · Responsable: Gianfranco · Agentes: Claude y Codex · Prioridad P1 · Gobernanza MEDIO
-> Base revisada: `7a60089` (`origin/main`, con 02 y 03 mergeados; PR #8). Depende de 03 (`claude-native-opsx`, **mergeada en `main`**, citada contra `main`) y 04 (`codex-native-opsx`, **pendiente**, citada contra `origin/propose/codex-native-opsx` `9a6eb2a`). Habilita 07 y 08.
+> Base revisada: `7a60089` (`origin/main`, con 02 y 03 mergeados; PR #8). Depende de 03 (`claude-native-opsx`, **mergeada en `main`**, citada contra `main`) y 04 (`codex-native-opsx`, **pendiente**, citada contra `origin/propose/codex-native-opsx` `91fbb70`). Habilita 07 y 08.
 > Esta ronda es solo `propose`: todas las tareas de implementación quedan pendientes.
 
 ## Why
@@ -26,7 +26,7 @@ Las propuestas 07 (delegar con contrato) y 08 (controles nativos) dependen de es
 - Tres estados: **verificado**, **rechazado** y **sin verificar**. *Rechazado* es el texto de la ficha del roadmap (`CHANGES.md:192`): recibos inventados o viejos, comandos insuficientes, salidas truncadas sin original y requisitos incumplidos con tests verdes. Un recibo de ejecución incompleto o sin corroboración queda *sin verificar*; una ejecución sin recibos nunca queda *verificada*. Esto invierte a propósito la semántica de `skipped` de los health checks.
 - El contrato se carga **cuando la acción requiere evidencia**, tanto en ejecución directa como delegada, con **el mismo paso de revisión de recibos** en ambas. En delegación, un extracto (`## Evidence Contract`) viaja además en el encargo. No es una regla universal de `CLAUDE.md` (todo lo que queda ahí llega también a los especialistas, 03 D0). **Propuesta (pendiente de acuerdo con 03 y 04):** un módulo propio `evidence`, cargado en `apply` y `verify` y no atado al toggle `delegation`, porque hoy la matriz de 03 (fila 28) lo ubica en `delegation`, que solo existe con su toggle. El design (D5) lista los cambios exactos que implicaría; esta ronda no edita archivos de 03 ni de 04. Claude y Codex reciben el mismo contenido y la misma aceptación.
 - **Sobre de retorno:** 07 es dueña del sobre (`opsx-selective-delegation` D6). 06 define solo el campo `recibos` (una lista de recibos de ejecución, uno por comando).
-- Se persiste solo la **copia redactada** de la salida. Su ubicación, acceso y vencimiento son (TBD) a acordar con 05; esta propuesta no fija una ruta. La política de redacción y retención es de 05 (design D6).
+- Se persiste solo la **copia redactada** de la salida. Ubicación, acceso y vencimiento: propuestos por 05 (D9), 06 propone aceptar; pendiente de confirmación. Esta propuesta no fija una ruta propia. La política de redacción, el registro de captura y la huella `sha256:<hex>` son de 05 (design D6).
 - **Huella:** sha256 de los bytes, con el algoritmo nombrado en el campo (como 02 y 05); no `git hash-object`. El estado probado con cambios sin confirmar se alinea con `TreeHash(dir)` de `eval/baseline/fixture/load.go`; el índice temporal de Git queda como alternativa a evaluar (design D2).
 - Plataformas: Windows y Linux son el mínimo. La matriz distingue plataformas **distribuidas** (`release.yml:71-76`), **declaradas** (`CLAUDE.md:21`) y **probadas** (design D2).
 - Los hooks complementan la evidencia pero no son un registro exhaustivo de ejecuciones (design D9).
