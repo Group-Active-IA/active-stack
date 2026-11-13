@@ -1,207 +1,93 @@
 ## Purpose
 
-Define cómo Active Stack migra una configuración de Codex que trae el bloque SDD administrado hacia la entrega nativa, y cómo se revierte sin perder instrucciones ni archivos del usuario. Cubre reinstalación idempotente, rollback ante fallo, propiedad de archivos, punto de reversión, actualización desde instalaciones anteriores y desinstalación.
-
-> Borrador condicionado a G1–G13 y a la rama D6 de `design.md`. Los dos requisitos de reversión (G12-a y G12-b) son excluyentes: cuando el grupo decida G12, se conserva solo el elegido.
+Define migración, actualización y retiro de las piezas administradas de Codex con preservación de contenido propio, respaldo y restauración protegida frente a ediciones posteriores.
 
 ## ADDED Requirements
 
-### Requirement: La migración reemplaza solo el bloque administrado
+### Requirement: Preflight y propiedad
 
-Al instalar `sdd-orchestrator` para Codex, el instalador SHALL reemplazar por el arranque el contenido de todos los bloques del ID `sdd-orchestrator`, tanto bajo el prefijo actual como bajo los heredados (`jr-stack:`), aunque coexistan. El resultado debe ser una sola sección con el prefijo actual. El contenido del usuario y las secciones de otros harnesses MUST quedar intactos.
-
-#### Scenario: Bloque anterior con contenido del usuario alrededor
-
-- **GIVEN** un `~/.codex/AGENTS.md` con:
-  - reglas del usuario antes y después del bloque `active-stack:sdd-orchestrator` anterior, que pesa 18.010 bytes con los cinco toggles;
-  - una sección `active-stack:design-mockups`
-- **WHEN** el usuario ejecuta `active-stack install --agent codex --mode full`
-- **THEN** los bytes del usuario antes y después del bloque son idénticos a los originales
-- **AND** la sección `design-mockups` es idéntica a la original
-- **AND** la sección `sdd-orchestrator` contiene solo el arranque
-
-#### Scenario: Marker heredado aislado
-
-- **GIVEN** un `AGENTS.md` con el bloque bajo `<!-- jr-stack:sdd-orchestrator -->`
-- **WHEN** se instala para Codex
-- **THEN** el bloque heredado desaparece
-- **AND** queda una sola sección con el prefijo `active-stack:`
-
-#### Scenario: Markers actual y heredado coexistentes
-
-- **GIVEN** un `AGENTS.md` con un bloque `active-stack:sdd-orchestrator` y otro `jr-stack:sdd-orchestrator` de 18 KB
-- **WHEN** se instala para Codex
-- **THEN** no queda ningún marker `jr-stack:sdd-orchestrator`
-- **AND** hay exactamente una sección `active-stack:sdd-orchestrator` con el arranque
-- **AND** el contenido del usuario queda intacto
-
-#### Scenario: Snapshot antes de escribir
-
-- **WHEN** la migración modifica `AGENTS.md`
-- **THEN** existe un snapshot con el contenido previo, creado antes de la escritura
-
-#### Scenario: Falla del snapshot
-
-- **GIVEN** un snapshot que no se puede crear
-- **WHEN** se intenta la migración
-- **THEN** la instalación devuelve un error
-- **AND** `AGENTS.md`, las skills y los roles quedan sin cambios
-
-### Requirement: La reinstalación es idempotente
-
-Reinstalar `sdd-orchestrator` para Codex con la misma selección SHALL dejar exactamente un marker del arranque. Un archivo administrado cuyo contenido no cambió MUST NOT reescribirse.
-
-#### Scenario: Segunda instalación
-
-- **GIVEN** una instalación ya migrada
-- **WHEN** se repite la misma instalación
-- **THEN** ningún archivo administrado cambia de bytes ni de fecha de modificación
-- **AND** el resultado informa que ya estaba instalado
-
-#### Scenario: Cambio de toggles entre versiones del catálogo
-
-- **GIVEN** una instalación migrada hecha con una versión del binario cuyo catálogo incluye el toggle `tdd`
-- **WHEN** el usuario ejecuta `active-stack update` y la versión nueva trae un catálogo sin `tdd` (los toggles no se exponen al usuario)
-- **THEN** el módulo TDD administrado se retira, con snapshot previo
-- **AND** las demás piezas quedan idénticas
-
-### Requirement: Un fallo durante la instalación revierte la configuración
-
-Si falla un paso posterior a la migración, como la escritura de un rol o una verificación dura, el pipeline SHALL restaurar el estado previo:
-
-- `AGENTS.md` vuelve byte a byte;
-- los archivos y directorios creados se eliminan;
-- los que ya existían se conservan.
-
-#### Scenario: Falla al escribir un rol
-
-- **GIVEN** un `AGENTS.md` con contenido del usuario y el bloque anterior, y un directorio de skills con una skill del usuario
-- **WHEN** la escritura de un archivo administrado falla después de haber reescrito `AGENTS.md`
-- **THEN** tras el rollback, `AGENTS.md` es idéntico al original
-- **AND** no queda ninguna skill, módulo ni rol administrado nuevo
-- **AND** la skill del usuario sigue intacta
-
-#### Scenario: Falla de verificación dura
-
-- **WHEN** la verificación post-instalación encuentra que falta un módulo de un toggle activo
-- **THEN** el hook de verificación dispara el rollback
-- **AND** se restaura el estado previo
-
-### Requirement: No se sobrescriben archivos que Active Stack no administra
-
-Antes de cualquier paso de escritura, el instalador SHALL comprobar que cada destino administrado (skill, módulo o rol) no existe o lleva la marca de propiedad de Active Stack. Si existe sin la marca, la instalación MUST fallar sin ejecutar ningún paso de escritura y MUST nombrar la ruta en conflicto.
+Antes de escribir, el instalador SHALL resolver rutas mediante adapters y comprobar propiedad de cada pieza existente. Una colisión con archivo ajeno o una configuración inválida SHALL detener el paquete sin modificar archivos. Cada nueva pieza SHALL tener propiedad reconocible.
 
 #### Scenario: Skill homónima del usuario
+- **WHEN** existe una skill o rol homónimo sin marca de Active Stack
+- **THEN** se informa la ruta y no se modifica ni esa pieza ni las instrucciones de usuario
 
-- **GIVEN** un `<skills-dir>/sdd-orchestrator/SKILL.md` creado por el usuario, sin marca de propiedad
-- **WHEN** se instala `sdd-orchestrator` para Codex
-- **THEN** la instalación falla con un error que nombra esa ruta
-- **AND** ningún archivo, ni `AGENTS.md`, queda modificado
+#### Scenario: Configuración inválida
+- **WHEN** una configuración que debe actualizarse no se puede interpretar de forma segura
+- **THEN** se conserva intacta y se informa el error
 
-#### Scenario: Rol homónimo del usuario
+### Requirement: Migración acotada e idempotente
 
-- **GIVEN** un archivo de rol del usuario con el mismo nombre que un especialista, sin marca de propiedad
-- **WHEN** se instala
-- **THEN** la instalación falla y nombra el archivo
-- **AND** el archivo del usuario queda idéntico
+La migración SHALL respaldar antes de escribir y reemplazar únicamente las secciones administradas del orquestador por las capas nuevas. SHALL retirar copias heredadas reconocidas, preservar bytes propios y secciones hermanas y evitar reescrituras o duplicados al reinstalar.
 
-### Requirement: El punto de reversión previo a la migración sobrevive a reinstalaciones (G12-a)
+#### Scenario: Markers actuales y heredados coexistentes
+- **WHEN** coexisten bloques administrados actuales y heredados
+- **THEN** queda una entrega vigente coherente, sin coordinación global legada y con contenido propio y design-mockups conservados
 
-Solo aplica si G12 = (a). La primera vez que se detecta el bloque anterior, el instalador SHALL crear, antes de migrar, un snapshot de migración dedicado con sello de tiempo en un directorio propio. Ninguna instalación ni actualización posterior MUST sobrescribirlo. El snapshot MUST figurar en la pantalla de backups.
+#### Scenario: Reinstalación con notas propias
+- **WHEN** se reinstala el mismo paquete y hay notas del usuario dentro del directorio de skill
+- **THEN** los archivos administrados idénticos no se reescriben y las notas quedan intactas
 
-#### Scenario: Update con dos corridas de install conserva el punto previo
+#### Scenario: Fallo de respaldo
+- **WHEN** falla el snapshot previo
+- **THEN** se informa el fallo y no se inicia la escritura
 
-- **GIVEN** un home con recibo de Codex en modo Full con harnesses Custom extra, de modo que `update` lanza dos `install` seguidos, y el bloque anterior en `AGENTS.md`
-- **WHEN** el usuario ejecuta `active-stack update`
-- **THEN** existe exactamente un snapshot de migración
-- **AND** al restaurarlo, `AGENTS.md` contiene el bloque anterior byte a byte
+### Requirement: Rollback de una operación
 
-#### Scenario: Reinstalar tras migrar no pierde el punto de reversión
+Un fallo parcial de instalación SHALL restaurar las rutas de la operación cuando su estado coincide con lo escrito por ella. Si una ruta cambió después, SHALL preservarse y reportar el conflicto junto al respaldo recuperable.
 
-- **GIVEN** una instalación migrada con su snapshot de migración
-- **WHEN** el usuario reinstala dos veces
-- **THEN** el snapshot de migración sigue intacto
-- **AND** no se crea otro snapshot de migración
+#### Scenario: Fallo después de migrar instrucciones
+- **WHEN** falla la escritura de un módulo después de migrar AGENTS.md
+- **THEN** se recupera el estado previo en rutas sin cambios posteriores y se retiran sólo las piezas creadas por la operación
 
-#### Scenario: Restauración del snapshot de migración
+#### Scenario: Edición concurrente durante rollback
+- **WHEN** una ruta fue editada después de escribirla el instalador
+- **THEN** se preserva la edición y se informa la restauración incompleta y el respaldo disponible
 
-- **WHEN** el usuario restaura el snapshot de migración desde la pantalla de backups de la TUI
-- **THEN** `AGENTS.md` vuelve a contener el bloque anterior byte a byte
-- **AND** las piezas creadas por la migración se eliminan
+### Requirement: Reversión posterior protegida
 
-#### Scenario: Reinstalar tras revertir
-
-- **GIVEN** la restauración anterior
-- **WHEN** el usuario vuelve a instalar
-- **THEN** el resultado es igual al de la primera migración
-- **AND** se crea un nuevo snapshot de migración, sin borrar el anterior
-
-### Requirement: La reversión solo es posible hasta la siguiente instalación (G12-b)
-
-Solo aplica si G12 = (b). El instalador SHALL informar, en la salida de la instalación que migra el bloque, que el snapshot de instalación permite revertir solo hasta la próxima instalación o actualización. La documentación MUST declarar el mismo límite. Ninguna salida ni documento MUST prometer una reversión posterior.
-
-#### Scenario: Aviso al migrar
-
-- **GIVEN** un `AGENTS.md` con el bloque anterior
-- **WHEN** se instala para Codex
-- **THEN** la salida de la instalación contiene el aviso del límite de reversión
-
-#### Scenario: Reinstalación reemplaza el punto de reversión
-
-- **GIVEN** una instalación migrada
-- **WHEN** se reinstala
-- **THEN** el snapshot de instalación contiene el estado ya migrado, tal como documenta el límite
-- **AND** no se emite otro aviso, porque ya no hay bloque anterior
-
-### Requirement: La actualización migra las instalaciones con recibo
-
-Cuando el estado registrado incluye Codex, `active-stack update` SHALL aplicar la migración, con los mismos requisitos de backup, idempotencia y rollback, porque lo hace reaplicando la instalación. Sin recibo de selección, MUST NOT modificar `AGENTS.md` y MUST informar cómo migrar.
-
-#### Scenario: Actualización con recibo
-
-- **GIVEN** un home con estado registrado para Codex y el bloque anterior en `~/.codex/AGENTS.md`
-- **WHEN** el usuario ejecuta `active-stack update`
-- **THEN** la sección `sdd-orchestrator` queda migrada al arranque
-- **AND** existen la skill, los módulos y los roles que prevé la rama D6
-- **AND** la verificación pasa
-
-#### Scenario: Actualización sin recibo
-
-- **GIVEN** una instalación anterior sin estado registrado y el bloque anterior en `AGENTS.md`
-- **WHEN** el usuario ejecuta `active-stack update`
-- **THEN** `AGENTS.md` queda idéntico
-- **AND** la salida indica que la configuración se migra ejecutando `install` con el modo actual
+El punto de migración para reversión posterior SHALL conservar la primera copia previa y sobrevivir reinstalaciones y actualizaciones. La restauración SHALL comprobar estado esperado persistente y preservar cambios posteriores y archivos ajenos. La interfaz SHALL explicar el alcance y los conflictos antes de reemplazar contenido.
 
 #### Scenario: Actualización repetida
+- **WHEN** se migra y luego se reinstala o actualiza dos veces
+- **THEN** se conserva el punto original de reversión y se puede identificar qué estado esperaba restaurar
 
-- **WHEN** se ejecuta `active-stack update` dos veces seguidas con recibo
-- **THEN** la segunda corrida no reescribe archivos administrados de Codex
+#### Scenario: Edición posterior del usuario
+- **WHEN** se solicita revertir un manifiesto cargado desde disco y un archivo difiere del estado esperado
+- **THEN** ese archivo se conserva y el usuario recibe el conflicto y la ruta del respaldo
 
-### Requirement: La desinstalación retira solo las piezas administradas
+### Requirement: Update según registro de instalación
 
-Desinstalar `sdd-orchestrator` para Codex en máquina SHALL retirar:
+La actualización SHALL reaplicar una selección registrada mediante el mismo plan de propiedad y migración. Si falta el registro de instalación, SHALL informar adopción explícita y conservar la configuración existente. El registro de instalación SHALL distinguirse de los recibos de ejecución.
 
-- la sección del arranque;
-- uno por uno, los archivos con marca de propiedad (skill, módulos y roles);
-- un directorio administrado, solo si queda vacío.
+#### Scenario: Update con registro
+- **WHEN** se reaplica Codex registrado
+- **THEN** se usa el plan de migración con los mismos respaldos, controles y garantías de reinstalación
 
-Antes de retirar, MUST tomar un snapshot que incluya cada archivo administrado. MUST preservar el contenido del usuario, las secciones de otros harnesses y todo archivo sin marca, también dentro de un directorio administrado.
+#### Scenario: Update sin registro
+- **WHEN** no hay selección registrada para migrar
+- **THEN** se informa la acción explícita necesaria y no se adopta ni sobrescribe la configuración silenciosamente
 
-#### Scenario: Desinstalación completa
+### Requirement: Retiro de archivos propios
 
-- **GIVEN** una instalación migrada, con reglas del usuario en `AGENTS.md` y una skill propia del usuario
-- **WHEN** el usuario desinstala `sdd-orchestrator` para Codex
-- **THEN** no quedan la sección `sdd-orchestrator` ni las piezas administradas
-- **AND** las reglas del usuario, la sección `design-mockups` y la skill del usuario quedan intactas
+Uninstall SHALL retirar sólo secciones y archivos administrados y eliminar directorios únicamente si quedan vacíos. La entrega nueva SHALL limitarse a Machine, con preservación de instrucciones y archivos de otros agentes. El diagnóstico SHALL identificar una instalación Project legada que siga aportando coordinación.
 
-#### Scenario: Archivo del usuario dentro de un directorio administrado
+#### Scenario: Archivo propio dentro de la skill
+- **WHEN** se desinstala y existe un archivo del usuario junto a módulos administrados
+- **THEN** el archivo y su directorio quedan conservados y sólo se retiran piezas propias
 
-- **GIVEN** un archivo `notas.md` del usuario dentro de `<skills-dir>/sdd-orchestrator/`
-- **WHEN** se desinstala y, en otra corrida, se fuerza un fallo que dispara el rollback del uninstall
-- **THEN** en ambos casos `notas.md` queda intacto
-- **AND** tras el uninstall exitoso el directorio sigue existiendo y solo contiene `notas.md`
+#### Scenario: Target no disponible
+- **WHEN** se solicita retiro de un target fuera del alcance implementado
+- **THEN** se informa el límite y las instrucciones de limpieza segura sin afirmar que fue retirado
 
-#### Scenario: Desinstalación sin piezas
+### Requirement: Alcance Machine de la migración
 
-- **WHEN** se desinstala en un home donde las piezas no existen
-- **THEN** la operación termina sin error y no modifica archivos
+La nueva entrega SHALL migrar únicamente la instalación Machine y MUST informar si una configuración Project legada impide demostrar una sesión normal libre de coordinación.
+
+#### Scenario: Proyecto con instrucciones legadas
+- **WHEN** se comprueba la entrega Machine desde un proyecto con coordinación legada propia
+- **THEN** se identifica la fuente Project y la limitación de la aceptación sin modificarla automáticamente
+
+#### Scenario: Perfil Machine aislado
+- **WHEN** se instala la entrega nueva en un perfil sin coordinación Project legada
+- **THEN** se verifica la activación explícita y el retiro Machine con sus rutas administradas

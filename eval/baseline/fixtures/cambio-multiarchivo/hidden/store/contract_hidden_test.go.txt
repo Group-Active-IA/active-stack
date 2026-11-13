@@ -1,0 +1,19 @@
+package store
+
+import "testing"
+
+// Prueba oculta del fixture cambio-multiarchivo (contrato nuevo y borde).
+func TestHiddenGetDistinguishesMissingFromEmpty(t *testing.T) {
+	s := New()
+	s.Set("a", "1")
+	s.Set("vacio", "")
+	if v, ok := s.Get("a"); v != "1" || !ok {
+		t.Errorf("Get(a) = (%q, %v), want (\"1\", true)", v, ok)
+	}
+	if v, ok := s.Get("vacio"); v != "" || !ok {
+		t.Errorf("Get(vacio) = (%q, %v), want (\"\", true)", v, ok)
+	}
+	if v, ok := s.Get("nada"); v != "" || ok {
+		t.Errorf("Get(nada) = (%q, %v), want (\"\", false)", v, ok)
+	}
+}

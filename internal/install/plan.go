@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
+	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
 	"github.com/Group-Active-IA/active-stack/internal/harness/external"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
@@ -307,6 +309,21 @@ func collectWritePaths(adapters []AgentAdapter, effectiveBase string, target mod
 		case model.HarnessConfig:
 			for _, a := range adapters {
 				addFile(resolvedInstructionsPath(a, effectiveBase, target))
+				if target == model.Machine && h.ID == "sdd-orchestrator" && a.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+					paths, err := cfginstaller.ManagedSkillOperationPaths(h, a, effectiveBase)
+					if err == nil {
+						root := filepath.Join(a.SkillsDir(effectiveBase), h.ID)
+						for _, path := range paths {
+							addFile(path)
+							relative, relErr := filepath.Rel(root, path)
+							if relErr == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+								for dir := filepath.Dir(path); dir != filepath.Dir(root); dir = filepath.Dir(dir) {
+									addDir(dir)
+								}
+							}
+						}
+					}
+				}
 			}
 		case model.HarnessSkill:
 			for _, a := range adapters {
@@ -556,6 +573,13 @@ func buildHarnessStep(h model.Harness, adapters []AgentAdapter, opts Options, ef
 type projectTargetAdapter struct {
 	AgentAdapter
 	base string
+}
+
+func (a projectTargetAdapter) ConfigDelivery() model.ConfigDelivery {
+	if a.Agent() == model.AgentCodex {
+		return model.ConfigDeliveryInstructions
+	}
+	return a.AgentAdapter.ConfigDelivery()
 }
 
 func (a projectTargetAdapter) paths() model.AgentPaths {

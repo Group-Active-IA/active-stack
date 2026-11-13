@@ -198,7 +198,7 @@ func RunWindowsOptions(cat install.Catalog, agents []model.Agent, lang i18n.Lang
 		CustomComponents:  make([]windowsComponentOption, 0, len(customHarnesses)),
 		TierCapable:       model.TierCapable(agents),
 		TierCapableAgents: tierCapableAgentIDs(agents),
-		PermissionTiers:   windowsPermissionTiers(lang),
+		PermissionTiers:   windowsPermissionTiers(lang, agents),
 	}
 
 	seen := make(map[string]bool, len(customHarnesses))
@@ -572,13 +572,22 @@ func tierCapableAgentIDs(agents []model.Agent) []string {
 // the i18n tables so they stay language-consistent (D5, i18n-engine-locales):
 // under en the labels are Strict/Balanced/Bypass; under es they are
 // Estricto/Balanceado/Bypass. Tier ids never change.
-func windowsPermissionTiers(lang i18n.Lang) []windowsPermissionTier {
+func windowsPermissionTiers(lang i18n.Lang, agents []model.Agent) []windowsPermissionTier {
+	strictDescription := i18n.T(lang, "tier.estricto.desc")
+	strictLongDescription := i18n.T(lang, "tier.estricto.long")
+	for _, agent := range agents {
+		if agent == model.AgentCodex {
+			strictDescription = i18n.T(lang, "tier.estricto.codex.desc")
+			strictLongDescription = i18n.T(lang, "tier.estricto.codex.long")
+			break
+		}
+	}
 	return []windowsPermissionTier{
 		{
 			ID:              string(model.TierEstricto),
 			Label:           i18n.T(lang, "tier.estricto.label"),
-			Description:     i18n.T(lang, "tier.estricto.desc"),
-			LongDescription: i18n.T(lang, "tier.estricto.long"),
+			Description:     strictDescription,
+			LongDescription: strictLongDescription,
 		},
 		{
 			ID:              string(model.TierBalanceado),

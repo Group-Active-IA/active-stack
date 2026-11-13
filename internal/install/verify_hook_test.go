@@ -2,6 +2,8 @@ package install_test
 
 import (
 	"errors"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
@@ -9,6 +11,49 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
+
+func TestCodexStrictRollbackPreservesLaterEdits(t *testing.T) {
+	for _, edit := range []bool{false, true} {
+		home := t.TempDir()
+		adapter := fakeAdapter{agent: model.AgentCodex}
+		path := adapter.SettingsPath(home)
+		initial := []byte("approval_policy = \"untrusted\"\n")
+		if err := os.WriteFile(path, initial, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		h := model.Harness{ID: "permissions", Type: model.HarnessConfig, InstallModes: []model.InstallMode{model.ModeLite}}
+		cat := &fakeCatalog{harnesses: []model.Harness{h}}
+		reg := &fakeRegistry{adapters: map[model.Agent]install.AgentAdapter{model.AgentCodex: adapter}}
+		want := string(initial)
+		hook := func() error {
+			raw, err := os.ReadFile(path)
+			if err != nil || !strings.Contains(string(raw), "on-request") {
+				t.Fatalf("strict config was not installed: %s (%v)", raw, err)
+			}
+			if edit {
+				want = string(raw) + "model = \"personal\"\n"
+				if err := os.WriteFile(path, []byte(want), 0o600); err != nil {
+					t.Fatal(err)
+				}
+			}
+			return errors.New("forced verify failure")
+		}
+		opts := buildOptions(home, reg, hook)
+		opts.NoSelfInstall = true
+		plan, err := install.BuildPlan(cat, install.Intent{Agents: []model.Agent{model.AgentCodex}, Mode: model.ModeLite, Tier: model.TierEstricto}, opts)
+		if err != nil {
+			t.Fatal(err)
+		}
+		result := pipeline.NewOrchestrator(pipeline.DefaultRollbackPolicy()).Execute(plan.StagePlan)
+		if result.Err == nil || result.Rollback.Success == edit {
+			t.Fatalf("edit=%v: unexpected rollback result: %+v", edit, result.Rollback)
+		}
+		raw, err := os.ReadFile(path)
+		if err != nil || string(raw) != want {
+			t.Fatalf("edit=%v: config = %q, want %q (%v)", edit, raw, want, err)
+		}
+	}
+}
 
 // TestVerifyHookStepRunsAfterApply verifies that when Options.VerifyHook is
 // provided, the plan includes a "verify-hook" step as the last Apply step and

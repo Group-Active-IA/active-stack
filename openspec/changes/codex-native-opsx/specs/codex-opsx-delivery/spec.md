@@ -1,295 +1,97 @@
 ## Purpose
 
-Define cómo Active Stack materializa el flujo OPSX en Codex. Una sesión normal no carga el bloque de coordinación. El orquestador arranca solo cuando se lo invoca explícitamente. Los especialistas y los módulos por acción se entregan por separado, con sus reglas. Cada superficie declarada documenta su invocación, el contexto de cada rol y la alternativa.
-
-> Borrador condicionado a G1–G13 y a la rama D6 de `design.md`. Las frases "según G…" y "según el spike" se reemplazan por la decisión registrada antes de `apply`.
+Define la activación explícita de OPSX dentro de la sesión actual de Codex, las reglas por rol y acción y los límites comprobables de cada interfaz.
 
 ## ADDED Requirements
 
-### Requirement: La sesión normal de Codex no recibe el bloque de coordinación
+### Requirement: Activación explícita en la sesión actual
 
-Cuando se instala `sdd-orchestrator` para Codex, todo bloque del ID `sdd-orchestrator` en el archivo de instrucciones que resuelve el adapter SHALL contener como máximo un arranque breve dentro del presupuesto de G7. Cuentan tanto el bloque bajo el prefijo actual como cualquier prefijo heredado. El arranque no lleva reglas de coordinación, delegación, TDD, governance, Engram ni asignación de modelos. El contenido del usuario fuera de esos markers MUST quedar intacto.
+El instalador SHALL entregar la skill `sdd-orchestrator` con selección implícita deshabilitada. Una sesión normal SHALL conservar reglas universales sin iniciar coordinación. La invocación explícita SHALL continuar en el hilo actual y consultar el estado de OpenSpec antes de actuar.
 
-#### Scenario: Instalación limpia en máquina
+#### Scenario: Pedido relacionado sin invocación
+- **WHEN** en CLI o extensión IDE declarada se pide proponer un change sin invocar la skill
+- **THEN** no se activa implícitamente `sdd-orchestrator` y las reglas universales siguen disponibles
 
-- **GIVEN** un home de prueba sin `~/.codex/AGENTS.md`
-- **WHEN** el usuario ejecuta `active-stack install --agent codex --mode lite`
-- **THEN** `~/.codex/AGENTS.md` contiene el marker `active-stack:sdd-orchestrator` exactamente una vez
-- **AND** no contiene ningún marker `jr-stack:sdd-orchestrator`
-- **AND** la sección no supera el presupuesto de bytes acordado
-- **AND** la sección no contiene ninguno de los títulos de firma del bloque anterior: `## Delegation Rules`, `## OPSX Workflow`, `## Model Assignments`, `Strict TDD Mode`, `## Agent Governance`, `## Engram Persistent Memory`
+#### Scenario: Invocación manual
+- **WHEN** se invoca `$sdd-orchestrator` en cada interfaz declarada
+- **THEN** el hilo conserva el contexto previo, consulta OpenSpec y carga los módulos correspondientes a la acción
 
-#### Scenario: Sin arranque en un home sin AGENTS.md (si G7 elige "sin arranque")
+#### Scenario: Reanudación
+- **WHEN** se reanuda una sesión coordinada en una interfaz soportada
+- **THEN** se restablecen la acción y los módulos requeridos antes de continuar, sin inferir estado de artefactos
 
-- **GIVEN** un home de prueba sin `~/.codex/AGENTS.md`
-- **WHEN** se instala para Codex
-- **THEN** no se crea `~/.codex/AGENTS.md`
+### Requirement: Reglas por rol y acción
 
-#### Scenario: Contenido del usuario preservado en instalación limpia
+La entrega SHALL aplicar la matriz compartida de 03/04 y el corte por acción de 05. El especialista SHALL recibir el encargo, las reglas universales aplicables y los módulos requeridos. El rol coordinador SHALL quedar reservado a la skill invocada.
 
-- **GIVEN** un `~/.codex/AGENTS.md` con reglas del usuario y sin markers de Active Stack
-- **WHEN** se instala `sdd-orchestrator` para Codex
-- **THEN** los bytes del usuario se conservan idénticos antes de la sección
-- **AND** se crea un snapshot antes de la escritura
-
-#### Scenario: Títulos de firma en contenido del usuario
-
-- **GIVEN** un `AGENTS.md` cuyo contenido del usuario, fuera de los markers, contiene `## Delegation Rules` y `## OPSX Workflow`
-- **WHEN** se instala y después corre la verificación
-- **THEN** la verificación pasa
-- **AND** los bytes del usuario quedan intactos
-
-#### Scenario: Sesión normal en una superficie declarada
-
-- **GIVEN** una instalación completa en una superficie declarada en G1, con la versión objetivo de Codex `(TBD)`
-- **WHEN** el usuario abre una sesión sin invocar al orquestador y pide una tarea común
-- **THEN** las instrucciones efectivas de la sesión no contienen los títulos de firma, observadas con el método que fije el spike y medidas con el protocolo de 02
-- **AND** no queda registrada ninguna invocación del orquestador
-
-#### Scenario: Composición fuera de presupuesto
-
-- **WHEN** el arranque compuesto supera el presupuesto acordado o contiene un título de firma
-- **THEN** la composición falla con un error que nombra la causa
-- **AND** no se escribe ningún archivo
-
-### Requirement: El orquestador se instala para invocación explícita
-
-El instalador SHALL instalar el orquestador `sdd-orchestrator` como skill de Codex en el directorio de skills que resuelve el adapter. La skill MUST incluir el rol de coordinador, la consulta de estado al CLI de OpenSpec y la tabla que asigna módulos a cada acción. Cuando el spike confirme que el cliente permite deshabilitar la invocación implícita, la skill MUST declararlo.
-
-#### Scenario: Skill del orquestador instalada
-
-- **WHEN** se instala `sdd-orchestrator` para Codex en máquina
-- **THEN** existe `<skills-dir>/sdd-orchestrator/SKILL.md` con frontmatter `name: sdd-orchestrator`, una descripción no vacía y la marca de propiedad de Active Stack
-
-#### Scenario: Invocación explícita activa el coordinador
-
-- **GIVEN** una instalación completa en una superficie declarada
-- **WHEN** el usuario invoca `$sdd-orchestrator`, o el mecanismo explícito que indica la matriz para esa superficie
-- **THEN** la sesión ejecuta `openspec list --json` antes de actuar sobre un change
-- **AND** la telemetría o la transcripción registra una invocación explícita del orquestador
-
-#### Scenario: Skill del orquestador ausente
-
-- **GIVEN** una instalación en la que falta `<skills-dir>/sdd-orchestrator/SKILL.md`
-- **WHEN** corre la verificación post-instalación
-- **THEN** el chequeo del orquestador de Codex falla con un error que nombra la ruta esperada
-
-### Requirement: El orquestador no se activa por pedidos implícitos
-
-En una sesión normal, el orquestador SHALL NOT activarse sin una invocación explícita. Si el cliente admite deshabilitar la invocación implícita, se usa ese mecanismo. Si no, la skill MUST tener una descripción que no corresponda a pedidos comunes, y esa protección MUST verificarse con pedidos implícitos medidos. Si la medición falla, se pasa a la alternativa de arranque acordada en G2.
-
-#### Scenario: Pedido implícito con la invocación implícita deshabilitada
-
-- **GIVEN** que el spike confirmó el mecanismo para deshabilitar la invocación implícita
-- **WHEN** en una sesión normal el usuario escribe "proponé un change" sin invocar al orquestador
-- **THEN** no queda registrada ninguna invocación implícita de `sdd-orchestrator`
-
-#### Scenario: Cliente sin mecanismo para deshabilitar la invocación implícita
-
-- **GIVEN** que el spike no encontró un mecanismo para deshabilitar la invocación implícita
-- **WHEN** en la aceptación 11.1 se envía, en sesiones normales, el conjunto acordado de pedidos implícitos, incluidos "proponé un change", "implementá las tareas" y "archivá el change"
-- **THEN** ninguno registra una invocación de `sdd-orchestrator`
-- **AND** si alguno la registra, la aceptación de esa superficie falla y el arranque pasa a la alternativa de G2
-
-### Requirement: Los especialistas reciben sus reglas y su contrato de retorno
-
-Cada especialista acordado en G6 SHALL recibir, como rol nativo o mediante la alternativa de la rama D6, una descripción y unas instrucciones con:
-
-- el encargo;
-- los módulos que le aplican;
-- la sección de retorno.
-
-Las instrucciones MUST NOT incluir reglas que no le apliquen.
-
-#### Scenario: Rol nativo bien formado (ramas D6-a y D6-b)
-
-- **WHEN** se instala `sdd-orchestrator` para Codex
-- **THEN** cada archivo de rol se parsea como TOML válido
-- **AND** su `name` coincide con el nombre acordado
-- **AND** `name`, `description` y `developer_instructions` no están vacíos (esquema [DOC], confirmado en el spike)
-
-#### Scenario: Sin roles nativos (rama D6-c)
-
-- **GIVEN** que el spike concluyó que ninguna superficie declarada admite roles nativos
-- **WHEN** se instala `sdd-orchestrator` para Codex
-- **THEN** no se escribe ningún archivo de rol
-- **AND** la verificación no espera archivos de rol
-- **AND** el orquestador contiene, por cada especialista, el encargo, las reglas y los módulos que debe pasarle a un subagente genérico
-
-#### Scenario: Especialista recibe sus reglas
-
-- **GIVEN** el orquestador invocado en una superficie declarada
-- **WHEN** delega una tarea a un especialista que requiere el módulo TDD
-- **THEN** el especialista informa en su retorno los módulos que cargó, y el TDD figura entre ellos
-- **AND** las reglas generales del usuario siguen vigentes, observado con el método del spike
-
-#### Scenario: Superficie sin roles nativos
-
-- **GIVEN** una superficie declarada en la que el spike no confirmó roles nativos
-- **WHEN** el orquestador necesita un especialista
-- **THEN** usa la alternativa documentada en la matriz: un subagente genérico que recibe en el mensaje el encargo, las reglas del rol y los módulos
-- **AND** informa al usuario que usó esa alternativa
-
-#### Scenario: Rol con campo faltante
-
-- **GIVEN** un archivo de rol administrado sin `developer_instructions`, en las ramas D6-a o D6-b
-- **WHEN** corre la verificación post-instalación
-- **THEN** el chequeo del especialista falla con un error que nombra el archivo y el campo
-
-### Requirement: Los módulos siguen un mapeo explícito de toggle a módulo
-
-El instalador SHALL instalar los módulos según el mapeo acordado en G5. La propuesta actual es:
-
-| Toggle | Módulos |
-|---|---|
-| `tdd` | TDD |
-| `delegation` | delegación + coordinación de subagentes |
-| `governance` | governance |
-| `engram` | Engram |
-| `model-routing` | ninguno en Codex hasta 09 (G9) |
-
-Un toggle inactivo MUST omitir sus módulos y sus referencias. El orquestador MUST cargar solo los módulos que requiere la acción activa.
-
-#### Scenario: Toggles completos
-
-- **WHEN** se instala `sdd-orchestrator` con los toggles `tdd, engram, model-routing, delegation, governance`
-- **THEN** existen los módulos de TDD, delegación, coordinación de subagentes, governance y Engram, cada uno con su marca de propiedad
-- **AND** no existe un módulo de model routing
-- **AND** la tabla de acción a módulos del orquestador menciona cada módulo instalado
+#### Scenario: Especialista de implementación
+- **WHEN** se delega apply con TDD habilitado
+- **THEN** el especialista recibe TDD, reglas de autonomía y memoria aplicables, encargo y contrato de evidencia, y no recibe obligaciones exclusivas del coordinador
 
 #### Scenario: Toggle inactivo
+- **WHEN** se compone el paquete con un toggle inactivo
+- **THEN** se omiten sus módulos y referencias y se informa cualquier acción que no pueda cumplir sus requisitos obligatorios
 
-- **WHEN** se instala con todos los toggles salvo `tdd`
-- **THEN** no existe el módulo TDD
-- **AND** ni el orquestador ni los especialistas lo mencionan
+### Requirement: Evidencia directa y delegada
 
-#### Scenario: Sin delegation
+Una acción que requiere evidencia SHALL cargar el contrato de 06 tanto al ejecutarse directamente como al delegarse. Los retornos delegados SHALL usar el sobre de 07 y su campo de recibos de 06. Un resultado declarado SHALL permanecer sin verificar hasta corroborar ejecución y estado del código y revisar suficiencia.
 
-- **WHEN** se instala con todos los toggles salvo `delegation`
-- **THEN** no existen los módulos de delegación ni de coordinación de subagentes
-- **AND** el orquestador indica que trabaja sin delegar
+#### Scenario: Apply directo
+- **WHEN** se implementa directamente una tarea que exige evidencia
+- **THEN** se generan y revisan sus recibos con los mismos criterios de corroboración y suficiencia que en ejecución delegada
 
-#### Scenario: model-routing activo en Codex
+#### Scenario: Retorno autoconsistente sin corroboración
+- **WHEN** el worker entrega salida y huella coherentes pero no hay fuente independiente ni reejecución que acredite la ejecución
+- **THEN** el resultado queda sin verificar y no acredita aceptación del requisito
 
-- **WHEN** se instala con `model-routing` activo
-- **THEN** ningún asset de Codex contiene asignaciones de modelo ni los nombres `opus`, `sonnet` o `haiku`
-- **AND** la verificación no espera un módulo de model routing
+### Requirement: Verify con independencia obligatoria
 
-#### Scenario: Acción que requiere TDD
+La acción OPSX verify SHALL revisar recibos y cumplimiento. Cuando se requiere independencia, el revisor SHALL ser distinto del constructor y recibir sus reglas y evidencia aplicables.
 
-- **GIVEN** el orquestador invocado con el toggle `tdd` activo
-- **WHEN** el usuario pide aplicar las tareas de un change
-- **THEN** el orquestador carga el módulo TDD y lo pasa al especialista constructor antes de delegar
+#### Scenario: Verificación breve
+- **WHEN** una verificación breve requiere independencia
+- **THEN** su tamaño no elimina el requisito de revisor distinto del constructor
 
-#### Scenario: Acción de exploración no carga TDD
+#### Scenario: Delegación desactivada o revisor ausente
+- **WHEN** verify requiere independencia y no hay revisor habilitado o falta delegación
+- **THEN** se detiene esa verificación, se explica el motivo y se conservan las acciones que sí pueden completarse
 
-- **GIVEN** el orquestador invocado
-- **WHEN** el usuario pide explorar un tema
-- **THEN** el módulo TDD no se carga en esa acción, según registra el método del spike
+### Requirement: Controles y módulos faltantes
 
-### Requirement: Un módulo obligatorio faltante detiene la acción que lo requiere
+La sesión SHALL detener sólo la acción que depende de un módulo o control obligatorio ausente. SHALL explicar el requisito faltante y permitir retomarla con protección equivalente comprobada o en una superficie compatible. La ausencia de un control opcional SHALL informarse como aviso.
 
-Si falta un módulo que la acción activa requiere, el orquestador y los especialistas SHALL informar cuál falta y detener esa acción, sin continuar con un sustituto implícito. La verificación post-instalación MUST fallar cuando falta un módulo de un toggle activo.
+#### Scenario: Módulo obligatorio ausente
+- **WHEN** falta el módulo de TDD requerido para apply o el contrato de evidencia requerido por la acción
+- **THEN** esa acción se detiene indicando qué pieza falta y cómo puede restablecerse
 
-#### Scenario: Módulo TDD borrado
+#### Scenario: Protección equivalente comprobada
+- **WHEN** una protección equivalente cubre el requisito obligatorio de la acción
+- **THEN** la acción puede retomarse registrando la protección efectiva
 
-- **GIVEN** una instalación con el toggle `tdd` activo y el módulo TDD borrado del disco
-- **WHEN** el usuario pide al orquestador aplicar tareas
-- **THEN** el orquestador informa que falta el módulo TDD y la ruta donde lo esperaba
-- **AND** no delega la construcción
+#### Scenario: Control opcional ausente
+- **WHEN** falta un control opcional para una acción cuyos requisitos obligatorios están cubiertos
+- **THEN** se continúa con aviso del límite
 
-#### Scenario: Verificación detecta el módulo faltante
+### Requirement: Soporte y fallback por interfaz
 
-- **GIVEN** el mismo estado
-- **WHEN** corre la verificación post-instalación
-- **THEN** el chequeo del módulo falla, nombra el módulo y la ruta
-- **AND** el resultado global queda en falla
+La aceptación SHALL cubrir CLI y extensión IDE en Windows y Linux por separado, con versión y permisos efectivos registrados. Cada fallback SHALL declarar sus capacidades conservadas y faltantes y aplicar las precondiciones de la acción. Una terminal integrada que ejecuta CLI SHALL contabilizarse como CLI.
 
-### Requirement: La verificación post-instalación comprueba la entrega nativa de Codex
+#### Scenario: Subagente genérico equivalente
+- **WHEN** no hay rol personalizado pero la superficie permite un subagente con reglas, módulos e independencia requeridos
+- **THEN** se declara la alternativa, se pasa el encargo completo y se valida el retorno según 07/06
 
-La verificación SHALL comprobar las piezas Codex instaladas:
+#### Scenario: Skills OpenSpec sin garantías suficientes
+- **WHEN** se ofrece una skill OpenSpec y no puede proveer un módulo, control o independencia obligatorio
+- **THEN** se describe lo que sí permite y se detiene la acción afectada sin presentarla como coordinación completa
 
-- el marker actual del arranque, una vez o ninguna según G7;
-- ningún bloque `sdd-orchestrator` heredado;
-- ningún título de firma dentro de esos bloques;
-- la skill;
-- los módulos del mapeo;
-- los roles según D6.
+#### Scenario: Superficie fuera del soporte comprobado
+- **WHEN** se intenta coordinar en una versión o interfaz sin cobertura declarada
+- **THEN** se informa el límite y la superficie compatible disponible, si existe
 
-Las rutas MUST resolverse vía adapter. Una falla dura MUST disparar el rollback del hook.
+### Requirement: Verificación estructural y funcional diferenciadas
 
-#### Scenario: Instalación correcta
+Verify de instalación SHALL comprobar archivos administrados, política de invocación, referencias y toggles. La aceptación con cliente SHALL comprobar activación y contexto efectivo por interfaz. El reporte SHALL distinguir ambos alcances y preservar el comportamiento de otros agentes y design-mockups.
 
-- **WHEN** corre la verificación tras una instalación completa de Codex
-- **THEN** todos los chequeos de la entrega nativa pasan
-
-#### Scenario: Bloque anterior remanente
-
-- **GIVEN** un `AGENTS.md` cuya sección `sdd-orchestrator` todavía contiene `## Delegation Rules`
-- **WHEN** corre la verificación
-- **THEN** el chequeo del arranque falla e indica que queda contenido del bloque anterior
-
-#### Scenario: Bloque heredado remanente
-
-- **GIVEN** un `AGENTS.md` con un arranque válido bajo `active-stack:` y un bloque `jr-stack:sdd-orchestrator`
-- **WHEN** corre la verificación
-- **THEN** el chequeo falla y nombra el marker heredado
-
-#### Scenario: Objetivo de proyecto (solo si G10 = sí)
-
-- **GIVEN** `install.Options{Target: Project}` sobre `<root>`, porque la CLI de `install` no tiene `--project`
-- **WHEN** se instala y se verifica para Codex
-- **THEN** la verificación busca el arranque en `<root>/AGENTS.md` y las piezas en las rutas de proyecto que resuelve el adapter
-
-#### Scenario: Coinstalación Codex y Antigravity en proyecto (solo si G10 = sí)
-
-- **GIVEN** Codex y Antigravity seleccionados con objetivo de proyecto, ambos sobre `<root>/AGENTS.md`
-- **WHEN** se instala
-- **THEN** el resultado coincide con la resolución acordada en G10
-- **AND** la verificación de ambos agentes pasa sin que ninguno pise la entrega del otro
-
-### Requirement: Cada superficie declarada documenta invocación, contexto por rol y alternativa
-
-Para cada superficie de Codex acordada en G1, la documentación SHALL indicar:
-
-- cómo se invoca el orquestador;
-- qué instrucciones y módulos recibe cada rol;
-- qué alternativa explícita mantiene OPSX disponible.
-
-Una superficie no soportada MUST declarar el límite y su alternativa, si existe.
-
-#### Scenario: Superficie soportada
-
-- **WHEN** un usuario consulta la matriz para la CLI de Codex
-- **THEN** encuentra el mecanismo de invocación, el contexto por rol y la versión verificada
-- **AND** encuentra la evidencia de la corrida de aceptación de esa superficie
-
-#### Scenario: Superficie no soportada
-
-- **WHEN** un usuario consulta la matriz para una superficie excluida en G1
-- **THEN** encuentra el motivo del límite y la alternativa explícita, o la indicación de que no hay alternativa
-
-#### Scenario: Alternativa sin orquestador
-
-- **GIVEN** un proyecto inicializado con `openspec init --tools codex`, que instala `openspec-propose` y las demás skills en `<root>/.agents/skills/`
-- **WHEN** el usuario invoca `$openspec-propose` sin el orquestador
-- **THEN** el flujo de propuesta de OpenSpec sigue disponible
-
-### Requirement: La entrega de los demás agentes no cambia
-
-El cambio de entrega SHALL limitarse a Codex. Se mantiene lo siguiente:
-
-- Claude y Antigravity MUST seguir recibiendo el bloque compuesto en su archivo de instrucciones.
-- OpenCode MUST seguir registrándolo como agente primario.
-- Los bytes compuestos para todas las variantes de asset distintas de Codex MUST coincidir con los de la revisión de partida.
-
-#### Scenario: Regresión de Claude y Antigravity
-
-- **WHEN** se compone `sdd-orchestrator` para `claude` y `antigravity` con los toggles del catálogo
-- **THEN** el contenido coincide byte a byte con el golden fijado en `bd63543`
-
-#### Scenario: Regresión de OpenCode
-
-- **WHEN** se instala `sdd-orchestrator` para OpenCode
-- **THEN** `opencode.json` contiene `agent.sdd-orchestrator` con `mode: primary`
-- **AND** el `AGENTS.md` de OpenCode no contiene la sección del orquestador
+#### Scenario: Archivos correctos sin aceptación del IDE
+- **WHEN** pasan chequeos estáticos pero no se probó la extensión IDE
+- **THEN** sólo se acredita la estructura instalada y se deja pendiente la aceptación funcional de esa interfaz

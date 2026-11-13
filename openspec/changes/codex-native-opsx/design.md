@@ -1,381 +1,139 @@
-# Design — codex-native-opsx
-
-> Motivación y alcance: ver `proposal.md`. Requisitos: `specs/codex-opsx-delivery/spec.md` y `specs/codex-sdd-migration/spec.md`.
-> Las citas `archivo:línea` son de `bd63543` y siguen idénticas en HEAD `1b4639b` para `internal/` y `cmd/`.
-> Etiquetas de evidencia:
-> - **[EV]** observado en el código o con un comando.
-> - **[DOC]** documentación de Codex rust-v0.165.0 según el informe del orquestador; no ejecutado.
-> - **[SUP]** suposición sin verificar.
-> - **R*n*** evidencia del informe `informes/propose-1-plan-reviewer.md`.
-
-> **Puerta B2.** Antes de compartir esta propuesta como final y antes de `apply`, el grupo tiene que cerrar G1–G13 y la rama D6 (a/b/c). CHANGES.md "Cómo trabajar" §4 lo exige porque estas decisiones cambian alcance, diseño o aceptación. Mientras sigan abiertas, este documento es un borrador condicional: no decide ninguna.
+# Design · Codex Native OPSX
 
 ## Context
 
-### Recorrido actual: adapter → plantilla → archivos efectivos
+Base de código `35a89f8`. `internal/agents/codex/adapter.go` devuelve `ConfigDeliveryInstructions`, resuelve instrucciones de máquina y proyecto y usa `.agents/skills`. `internal/harness/config/install.go` despacha el bloque completo mediante `Compose` e `Inject`.
 
-1. **Adapter de Codex** (`internal/agents/codex/adapter.go`) **[EV]**
-   - Máquina:
-     - `InstructionsPath` = `~/.codex/AGENTS.md` (:18-20)
-     - `SkillsDir` = `~/.agents/skills` (:22-24)
-     - `SettingsPath` = `~/.codex/config.toml` (:30-32)
-     - sin directorio de comandos (:26-28)
-   - Proyecto: `<root>/AGENTS.md`, `<root>/.agents/skills`, `<root>/.codex/config.toml` (:44-53).
-   - Entrega: `ConfigDeliveryInstructions` (:64-66).
-2. **Instalador de config** (`internal/harness/config/install.go`) **[EV]**
-   - Rama por defecto (:63-78): `Compose(h.Toggles, "codex")` → `Inject` → `InjectSection(path, "sdd-orchestrator", …)` (`inject.go:85-87`).
-   - `InjectSection` hace, en orden: backup (:107-111), purga de lo no propio (:119), inyección (:122) y escritura atómica sin reescritura si no hay cambios (:125).
-   - Los directorios de backup son **fijos** y se sobrescriben en cada corrida:
-     - `install.go:35-36` → `backups/sdd-orchestrator-<agent>`
-     - `install/plan.go:141` → `backups/install` (R6)
-3. **Composición** (`compose.go:34-106`) **[EV]**
-   - Parte de la base `assets/codex/sdd-orchestrator.md`.
-   - Quita las secciones de delegación y de modelos según los toggles (:57-64).
-   - Agrega governance, Engram y TDD (:66-103).
-   - Con los cinco toggles (`harnesses.yaml:70`) suma **18.010 bytes**. Es aritmética de tamaños, consistente según R17; `Compose` no se ejecutó.
-4. **Plantilla de Codex** (181 líneas) **[EV]**
-   - :3 dice "Bind this to the dedicated `sdd-orchestrator` agent only", pero ese agente no existe.
-   - :17-36 delegación con umbral fijo.
-   - :63-67 `/opsx:*`.
-   - :71-83 consulta de estado.
-   - :87-92 tabla de acción → skill.
-   - :94 `$HOME/.agents/skills`.
-   - :100 Skill Resolver.
-   - :129-159 Engram.
-   - :169-181 modelos de Claude (`opus`/`sonnet`/`haiku`, :174-179).
-5. **Lo que existe para Codex en un proyecto** **[EV]**
-   - Dos sondas independientes de `openspec init --tools codex` con OpenSpec 1.16.0 (planner 13:08:47Z y R3, 13:25:23Z):
-     - 6 skills en `<proj>/.agents/skills/`
-     - "Commands skipped for: codex (uses skills)"
-     - invocación `$openspec-propose` (CLI/IDE) o selector de Skills en la app
-   - Active Stack no instala esas skills:
-     - el harness `openspec` es solo npm (`harnesses.yaml:16-22`);
-     - `assets/skills/openspec-*` son placeholders.
-   - **Tener los archivos instalados no activa OPSX.**
-6. **Carga de instrucciones en Codex** **[DOC]**
-   - `AGENTS.md` por árbol.
-   - `developer_instructions` se suma; `model_instructions_file` reemplaza.
-   - Precedencia de config: managed > `-c` > proyecto > perfil > usuario > cloud > sistema.
-   - Skills: `SKILL.md` + `openai.yaml`.
-   - Telemetría `codex.skill_invocation`.
-   - Subagentes: spawn / `wait_agent` / `close_agent`.
-   - **No confirmado [SUP]:**
-     - descubrimiento y esquema de roles TOML;
-     - selección de rol al hacer spawn;
-     - si un subagente recibe `AGENTS.md`;
-     - clave para deshabilitar la invocación implícita;
-     - feature flags;
-     - si la metadata de skills aparece en toda sesión.
-7. **Objetivo de proyecto** **[EV, R9/R10]**
-   - `install` no tiene `--project` (`headless/flags.go:134-145`).
-   - `Target: model.Project` solo llega desde `starter add`, y ningún starter incluye `sdd-orchestrator`.
-   - En proyecto, Codex y Antigravity resuelven el **mismo** `<root>/AGENTS.md` y el **mismo** `<root>/.agents/skills` (`antigravity/adapter.go:61-62` frente a `codex/adapter.go:47-48`).
-8. **Uninstall** **[EV, R11]**
-   - Es solo de máquina: no tiene wrapper de proyecto (`uninstall/types.go:48-62`).
-   - `skillRemovalStep` hace `os.RemoveAll(SkillsDir/<id>)` (`uninstall/steps.go:199-205`).
-9. **Backups visibles al usuario** **[EV]**
-   - La TUI lista todo subdirectorio de `~/.active-stack/backups/` que tenga `manifest.json` (`internal/tui/backups_screen.go:32` → `backup.ListManifests`, `retention.go:175-181`).
-   - La GUI de Windows lista solo los slots fijos `install` y `uninstall` (`cmd/active-stack/headless/windows_backups.go:24`).
-   - `backup.Prune` no tiene llamadores en código de producción (grep, 2026-11-06), así que no hay retención automática.
-
-### Consumidores del recorrido (todos [EV])
-
-| Consumidor | Dónde | Qué asume hoy |
-|---|---|---|
-| Snapshot de install | `install/plan.go:141-160`, `:307-310` | Un harness `config` escribe solo `InstructionsPath`; el directorio del snapshot es fijo. |
-| Wrapper de proyecto (install) | `install/plan.go:556-575` | Sin directorio de roles. |
-| Verify | `verify/harness_checks.go:97-131` | El marker actual aparece exactamente una vez (`:106,:120`) y solo se cuenta el prefijo actual (R8). |
-| Verify de proyecto | `cmd/active-stack/main.go:333-346` | Mismas rutas que el wrapper de install. |
-| Uninstall (solo máquina) | `uninstall/plan.go:162-176`, `:229-241`; `steps.go:199-205` | Snapshot de `InstructionsPath`; retiro del marker; `RemoveAll` del directorio de la skill. |
-| Update | `cmd/active-stack/update.go:353-413` | Reaplica `install --home` según el recibo, a veces **dos veces** (`installRuns`, :362-368, R7). Sin recibo, solo muestra un mensaje (:375-377). |
-| Refresco de skills | `internal/update/skills.go:97` | Filtra `h.Type != HarnessSkill`; nunca toca `sdd-orchestrator` (R12). |
-| Purga y markers | `inject.go:34-72`; `section.go:127-139` | La purga salta los IDs propios. `locateSection` prefiere el prefijo actual, de modo que un `jr-stack:` coexistente **sobrevive** (R8). Así lo fija `section_test.go:122-131`. |
-| Backup | `snapshot.go:117-160`, `restore.go:35-104` | Un directorio existente se restaura como NO-OP. Cada archivo nuevo dentro de `~/.agents/skills` necesita su propia entrada (R5). |
-| Escritura | `filemerge/writer.go:16-45` | Crea el archivo aunque el contenido esté vacío y aplica `chmod 0755` al directorio padre (R15). |
-| Precedente | `primary_agent.go:43-122`, `model/harness.go:68-89` | OpenCode ya resolvió la misma fuga con una entrega propia. |
+Main ya integra 01 y parte de 02. `internal/backup/restore.go` incorpora guardas de rollback en memoria, pero un manifiesto cargado posteriormente carece de esas guardas. La reversión posterior requiere identidad persistente del estado esperado. No alcanza con asumir que la corrección de 01 cubre los archivos de 04.
 
 ## Goals / Non-Goals
 
-**Goals:**
-
-- Entrega nativa de Codex en cuatro piezas, seleccionada por el adapter y sin rutas hardcodeadas.
-- Reutilizar `internal/backup`, `internal/filemerge` e `internal/pipeline` **sin modificarlos**.
-- Una única fuente de verdad para las rutas administradas, compartida por install, verify y uninstall.
-- Que la aceptación por superficie se pueda ejecutar con el protocolo de 02.
-
-**Non-Goals:**
-
-- La entrega de Claude (03), OpenCode, Antigravity y las demás variantes de asset.
-- El contrato estructurado de retorno (06), la lectura dirigida (05), la delegación selectiva (07) y el model routing para Codex (09).
-- Exponer toggles en la UI.
-- Editar la política de permisos (01).
-- Agregar objetivo de proyecto a `install` o `uninstall`, salvo que G10 lo apruebe como alcance.
-- El `chmod 0755` del directorio padre (`writer.go:39-42`). Es una observación preexistente que se deriva a 01/08 sin corregirse acá (m12).
+La entrega debe preservar reglas obligatorias, iniciar coordinación sólo por pedido explícito y mantener el contrato en ejecución directa y delegada. La matriz de soporte distingue distribución, declaración y prueba efectiva. Escritorio y cloud quedan fuera de la primera aceptación acordada; se documenta el límite.
 
 ## Decisions
 
-### D1 · Una entrega propia para Codex, con nombre y contrato según G13
+### Activación y rutas
 
-El adapter de Codex declara una entrega distinta de `ConfigDeliveryInstructions`, y `config.Install` despacha según esa entrega, igual que con `ConfigDeliveryPrimaryAgent` (`install.go:43-61`).
+La skill conserva el hilo actual y se instala en la ruta que resuelve el adapter. Su `agents/openai.yaml` declara `policy.allow_implicit_invocation: false`. La política está documentada y debe verificarse en cada versión y superficie aceptada. Una descripción restrictiva por sí sola no satisface el requisito de activación explícita. [Metadata de skills](https://learn.chatgpt.com/docs/build-skills#optional-metadata)
 
-El nombre y el contrato los acuerdan 03 y 04 en **G13** antes de la tarea 3.1. Opciones:
+El paquete contiene `SKILL.md`, `agents/openai.yaml`, módulos de apoyo y, donde sea viable, roles nativos. Se propone una estrategia de entrega propia para Codex mediante interfaz opcional de rutas. La estructura de skill administrada está confirmada. El contrato técnico compartido con 03 se alinea antes de modificar tipos o despacho. Los roles y sus permisos efectivos deben comprobarse con el cliente. Escribir “solo lectura” en el prompt no configura un sandbox. [Subagentes de Codex](https://learn.chatgpt.com/docs/agent-configuration/subagents)
 
-- **(a)** `ConfigDeliveryCodexNative`: específico, sin riesgo de que 03 lo reutilice para Claude y termine en el instalador de Codex.
-- **(b)** `ConfigDeliveryNativeRoles` neutral, con un contrato en el que el adapter provee el paquete de piezas y sus rutas, de modo que el instalador no sabe de Codex.
+### Matriz común de reglas
 
-Recomendación: (b) si 03 también adopta una entrega nativa, para compartir install, verify y uninstall; (a) si 03 no la adopta o no hay acuerdo antes de `apply`. **Sin fundar del todo**: depende del diseño de 03, que todavía no existe.
+La fuente es `openspec/matriz-reglas-opsx.md` de 03, revisión `b472ac9`, publicada el 12/11. Esta propuesta consume sus capas y completa la entrega Codex a continuación. El archivo compartido se integra y actualiza junto con 03 al resolver P1. No se copia una segunda matriz completa.
 
-Alternativas rechazadas:
+| Filas de la matriz común | Entrega Codex |
+|---|---|
+| 1, 2 | Reglas del usuario y permisos efectivos heredados de la superficie. El encargo incluye las reglas aplicables cuyo acceso del worker no esté demostrado. |
+| 3, 6, 8, 15, 18, 20, 22 | Bloque universal administrado en `AGENTS.md`. Estado OpenSpec, reglas de autonomía por dominio y protocolo universal de memoria según toggles. El contenido propio queda intacto. |
+| 5, 7, 9, 11–13, 16, 19, 23 | Cuerpo de la skill coordinadora, incluida la regla breve de selección de delegación de 07. |
+| 10, 14, 21, 24–26 | Archivos de apoyo `delegation`, `artifacts`, `engram-opsx` y `tdd`, con el corte por toggle de la matriz. |
+| 17 | Asignaciones de modelo de Claude omitidas en Codex hasta 09. |
+| 27 | Módulos de contexto y captura definidos por 05. Su ubicación se acuerda con 03. |
+| 28 | Contrato de evidencia de 06 requerido por la acción, incluso sin delegación. Ajuste coordinado pendiente de la fila común, que hoy lo ubica en `delegation`. |
+| 29, 30 | Sobre de retorno de 07 en los encargos delegados. Gates visuales en su sección propia, conservada. |
 
-- `if agent == codex` dentro de la rama por defecto: acopla el instalador al agente.
-- Un harness de catálogo por pieza: duplica toggles que no se exponen en la UI (ARCHITECTURE.md §2.1) y cambia el picker de Custom.
+El bloque universal puede incluir governance y memoria, conforme a la matriz común. Se retiran sólo las obligaciones de coordinación globales. Los antiguos tests que prohibían todo título de governance o Engram en la sesión normal se sustituyen por aserciones sobre reglas y capas concretas.
 
-### D2 · Interfaces opcionales estrechas para las rutas nuevas
+| Acción | Contenido requerido |
+|---|---|
+| explore | Reglas universales y módulos de contexto de 05 que correspondan. |
+| propose | `artifacts`, reglas aplicables y módulos de contexto. |
+| apply | `artifacts`, `tdd` si está habilitado y contrato de evidencia por la acción. |
+| verify | Contrato de evidencia y delegación cuando exige revisor independiente. El constructor no verifica su propio trabajo en ese caso. |
+| archive | `artifacts` y comprobación del estado de aceptación registrado. |
+| delegar | `delegation`, encargo acotado, reglas aplicables y sobre de 07 con campo `recibos` de 06. |
 
-`config.AgentAdapter` (`types.go:8-28`) no expone `SkillsDir`. Se define una interfaz opcional `{ SkillsDir(home) string; RolesDir(home) string }` que se resuelve con type assertion. Si el adapter declara la entrega nativa y no implementa la interfaz, el instalador devuelve un **error explícito**.
+Un toggle inactivo retira módulos y referencias de su alcance, pero no permite saltar un requisito obligatorio. Si verify exige independencia y no hay revisor habilitado, se detiene esa verificación con el motivo. Se conservan las acciones que sí pueden completarse.
 
-Cambios de soporte:
+### Evidencia y retorno
 
-- `model.AgentPaths` gana `RolesDir`.
-- Si G10 = sí, `projectTargetAdapter` (`plan.go:556-575`) y `projectVerifyAdapter` (`main.go:333-346`) implementan `RolesDir`.
-- **Uninstall es solo de máquina** (R11). Su adapter recibe `RolesDir` mediante la misma interfaz opcional, sin wrapper de proyecto. Un objetivo de proyecto en uninstall sería alcance nuevo, fuera de este change.
+07 define el sobre `estado`, `partida`, `modificados`, `hallazgos`, `recibos`, `pendiente`. 06 define los recibos. 04 referencia ambos contratos y no crea un tercer formato. Se distingue **registro de instalación** (update y ownership) de **recibo de ejecución** (evidencia de comandos).
 
-Alternativa rechazada: agregar `RolesDir` a todas las interfaces. Obliga a tocar los 4 adapters (`agents/factory.go:16-46`, R14) y todos los fakes de test.
+Aplicar directamente una tarea no elimina la obligación de evidencia ni su revisión. La integridad de un archivo no acredita por sí sola la ejecución. La procedencia y el estado exacto del código deben corroborarse mediante fuente independiente o reejecución, y la evidencia debe cubrir el requisito. El texto actual de 06 aún requiere correcciones para cumplir el informe unificado. Hasta recibirlas, se mantiene esta condición normativa y se declara la dependencia.
 
-### D3 · Arranque bajo el marker `sdd-orchestrator`, con retiro de copias heredadas
+05 define captura independiente antes del truncamiento y política de datos. Por defecto sólo se persiste la copia redactada y su huella con registro de captura. Si falta un detalle necesario descartado, el requisito queda sin verificar. La ubicación y el vencimiento se consumen de la versión acordada entre 05 y 06.
 
-El arranque reemplaza el contenido de la sección actual mediante `InjectSection`, que ya hace backup, purga e idempotencia.
+### Superficies y fallback
 
-**Corrección M1.** Antes de inyectar, el instalador nativo retira, en bucle y dentro del paquete config, todas las ocurrencias del ID `sdd-orchestrator` bajo cualquier prefijo reconocido: llama a `InjectMarkdownSection(…, "")` hasta que `MarkedSectionIDs` no lo devuelva. Después inyecta una sola sección actual. Con esto, `filemerge` y `section_test.go:122` no cambian.
+| Superficie | Objetivo de aceptación | Alternativa y límite |
+|---|---|---|
+| CLI Windows / Linux | Skill explícita y módulos, especialistas según versión, verify y reinstalación comprobados por separado. | Si no hay roles personalizados pero sí subagentes, usar especialista genérico con encargo completo, conservando independencia y permisos efectivos. |
+| Extensión IDE Windows / Linux | Mismos escenarios en la extensión real. Una terminal integrada ejecutando CLI pertenece a CLI. | Usar el mecanismo explícito confirmado en esa extensión. Si falta una capacidad, informar exactamente la acción afectada. |
+| Escritorio / cloud | Sin promesa inicial de aceptación de 04. | Informar límite y ofrecer ejecutar la acción en una superficie compatible con sus precondiciones. |
 
-**G7 = "sin arranque" (m11).** Si `AGENTS.md` no existe, no se escribe (`WriteFileAtomic` crearía un archivo vacío, R15). Si existe, se retiran los bloques del ID y no se agrega ninguno.
+Las skills `$openspec-*` sólo ofrecen las acciones que realmente estén instaladas. No garantizan coordinación, evidencia o revisor independiente por su nombre. La alternativa verifica reglas, módulos, evidencia y controles de la acción antes de ejecutarla. Si falta un obligatorio, detiene sólo esa acción y explica la ruta o protección faltante. Una protección equivalente debe estar comprobada. La ausencia de un control opcional permite continuar con aviso. No se restaura silenciosamente el bloque coordinador global.
 
-Borrador del arranque, 273 bytes según R17:
+La versión local `0.167.0-alpha.3.2` en macOS demuestra disponibilidad del binario en este entorno. No acredita aceptación de Windows, Linux o IDE. La versión mínima, edición de extensión y flags por celda se fijan mediante P2 y la matriz del manifiesto de 02.
 
-```
-OPSX está disponible bajo demanda; esta sesión no es coordinadora.
-Para coordinar un change, invocá `$sdd-orchestrator`.
-Sin orquestador: `$openspec-propose`, `$openspec-apply-change`, `$openspec-archive-change`
-(requieren `openspec init --tools codex` en el proyecto).
-```
+### Instalación y ciclo de vida
 
-Alternativa rechazada: un marker nuevo. Exige otra sección propia y otra ruta de migración, sin beneficio.
+Alcance confirmado por Matías el 13/11/2026: Machine para la entrega nueva, con rutas administradas enumeradas por el adapter y colisiones detectadas antes de toda escritura. La migración de Project se difiere a una decisión posterior por la coinstalación con Antigravity y su ciclo de retiro. Las instalaciones de proyecto preexistentes requieren diagnóstico visible si siguen cargando coordinación legada; la aceptación de sesión normal limpia se realiza en perfiles sin ese legado o con su tratamiento explícitamente registrado.
 
-### D4 · Orquestador como skill de invocación explícita
+Preflight valida configuración, propiedad de cada archivo y módulos disponibles. Snapshot antes de escribir. Retirar todas las ocurrencias administradas del ID `sdd-orchestrator`, incluidas heredadas; conservar contenido propio y `design-mockups`. Escribir bloque universal, skill y módulos con operaciones atómicas y propiedad reconocible. Reinstalar no reescribe bytes idénticos. Un archivo homónimo ajeno bloquea el paquete antes de migrar.
 
-- La skill vive en `<skills-dir>/sdd-orchestrator/SKILL.md`, con frontmatter `name`, `description`, `metadata.managed-by: active-stack` y la versión del asset.
-- La política de invocación va en `<skills-dir>/sdd-orchestrator/agents/openai.yaml` **[SUP: archivo y clave, a confirmar en el spike]**.
-- Contenido, derivado de la plantilla:
-  - rol y principios (:5-15) y flujo (:38-53);
-  - estado (:71-83), ciclo de vida y CLI (:102-127), reglas (:161-168);
-  - la tabla de acción → skill corregida: `$openspec-*`, sin `/opsx:*`, buscando las skills en el proyecto y en la máquina;
-  - la tabla de acción → módulos;
-  - la regla "si falta un módulo requerido, informar la ruta esperada y detener la acción".
+Se incluye snapshot de migración dedicado y persistente, conservado al reinstalar y actualizar, más huellas esperadas persistentes por ruta. Durante rollback se reutiliza la guarda vigente de 01 donde corresponda. Para restauración posterior, si una ruta difiere del estado esperado, preservarla y comunicar conflicto con el respaldo disponible. No retirar árboles completos que puedan contener archivos nuevos del usuario. La primera copia previa a la migración se conserva; el estado esperado por ruta se actualiza sólo tras una escritura administrada exitosa. El historial identifica cada operación y las rutas creadas. Los manifiestos anteriores sin estado esperado requieren un conflicto explícito y recuperación revisada. La visibilidad del respaldo se integra en los mecanismos existentes.
 
-**Rama sin mecanismo implícito (M5).** Si el spike no confirma cómo deshabilitar la invocación implícita:
+Update con registro de instalación reaplica mediante el mismo plan. Sin registro, informa adopción explícita y no migra silenciosamente. Verify de instalación comprueba estructura y propiedad; la aceptación con cliente confirma activación y carga efectiva. Uninstall retira sólo entradas y archivos propios y elimina directorios sólo si quedan vacíos.
 
-- la `description` de la skill se redacta para no corresponder a pedidos comunes; por ejemplo: "Solo cuando el usuario invoca explícitamente $sdd-orchestrator";
-- la aceptación 11.1 la mide con un conjunto fijo de pedidos implícitos;
-- si alguno la activa, la superficie falla y se pasa a la alternativa de arranque de G2 (perfil `-p`).
+## Decisiones confirmadas y condiciones pendientes
 
-Alternativas evaluadas:
+Matías confirmó las tres recomendaciones en esta conversación el 13 de noviembre de 2026.
 
-- **Perfil de config** (`[profiles.opsx]`, `codex -p opsx`): escribe en `config.toml`, que comparten 01 y 08. Queda como alternativa de G2.
-- **Mantener el orquestador en `AGENTS.md`**: es justamente el problema que este change corrige.
+| Tema | Decisión confirmada | Condición técnica que conserva |
+|---|---|---|
+| P1 · Alcance | Machine inicial y módulos dentro de la skill. Project se difiere. | Alinear con 03 los IDs de módulos, el contrato del adapter y la fila de evidencia directa en la matriz. |
+| P2 · Compatibilidad | CLI y extensión IDE en Windows/Linux como matriz objetivo. | Sondas aisladas antes de afirmar versión mínima y capacidades por celda. macOS local sirve para preparación. |
+| P3 · Reversión | Snapshot persistente con estado esperado por ruta, preservación de ediciones posteriores y conservación de la primera copia previa. | Revisar plan de escritura y probar restauración de un manifiesto recargado, reinicios y actualizaciones sucesivas. |
+| P4 · Secuencia | Avanzar composición y migración independientes. La integración de evidencia espera contratos corregidos de 05/06. | Consumir sobre de 07 en `dde9d7b`, estructura de 05 en `f372681` y matriz de 03 en `b472ac9`. El recibo de 06 en `f3f005e` aún requiere corrección. |
 
-### D5 · Módulos por acción y mapeo de toggles (M6)
+La aceptación completa exige las pruebas funcionales y las dependencias aplicables. Una tarea independiente puede avanzar con su contrato definido; una acción que necesita evidencia o protección ausente queda detenida con el límite informado.
 
-| Toggle | Módulo(s) | Fuente | El orquestador lo carga en | Lo recibe el especialista |
-|---|---|---|---|---|
-| `tdd` | TDD | `assets/strict-tdd.md` | apply | constructor |
-| `delegation` | Delegación | plantilla :17-36 | toda acción coordinada | — |
-| `delegation` | Coordinación de subagentes | plantilla :94-100 + spawn / `wait_agent` / `close_agent` **[DOC]** | toda delegación | — |
-| `governance` | Governance | `assets/governance.md` | propose, apply | constructor (G4) |
-| `engram` | Engram | plantilla :129-159 + `assets/engram-protocol.md` | inicio y cierre de acción | (G4) |
-| `model-routing` | ninguno en Codex hasta 09 (G9) | plantilla :169-181 no se porta | — | — |
+## Alcance de producción aprobado para apply
 
-Sin `delegation`, el orquestador trabaja sin subagentes y lo declara.
+### Rutas y componentes
 
-**Ubicación (G5).** Recomendación: archivos `sdd-orchestrator/modules/<id>.md` dentro de la skill. La premisa "no se listan como skills en la sesión normal" es **[SUP]** y la confirma el spike.
+| Área | Cambio previsto | Aceptación necesaria |
+|---|---|---|
+| `internal/model/harness.go`, `internal/agents/codex/adapter.go`, contratos de `internal/harness/config/` | Declarar entrega de skill administrada y resolver instrucciones, skill, módulos y roles mediante adapter. Acordar interfaz compartida con 03. | Valor cero compatible, rutas Machine, paths con espacios y Windows y regresiones de los demás adapters. |
+| `internal/harness/config/assets/codex/` y composición | Skill con `agents/openai.yaml`, política explícita, bloque universal y archivos de apoyo por acción/toggle. | Sesión normal, activación manual, módulos requeridos, toggles, continuidad y mapa de reglas. |
+| `internal/harness/config/`, `internal/install/` | Preflight, ownership, snapshot previo y migración de markers actuales y heredados. | Colisión o configuración inválida sin escritura; contenido propio y sección visual conservados; reinstalación idéntica; fallo parcial recuperable. |
+| `internal/backup/` y registro de migración | Persistir identidad, primera copia previa, estado esperado por ruta y estado de cada operación. Reutilizar backup existente y añadir el mínimo soporte necesario. | Snapshot original conservado tras actualización doble; manifiesto recargado; archivo nuevo, editado o eliminado por usuario preservado como conflicto; fallo de escritura consistente y reintento seguro. |
+| `internal/verify/harness_checks.go`, `internal/uninstall/`, integración de update | Chequeo estructural, retiro por archivo propio y replay según registro de instalación. Revisar callbacks de `cmd/active-stack/` sólo donde el recorrido lo requiera. | Componentes ausentes detectados; notas propias conservadas; update sin registro exige adopción explícita; directorios sólo se eliminan vacíos. |
+| Interfaces de respaldo existentes y documentación | Exponer respaldo y conflictos mediante mecanismos existentes. Actualizar README, arquitectura y AGENTS/CLAUDE en espejo. | Recuperación identificable y límites por interfaz/target. Si una modificación visual fuera necesaria, revisar su alcance y política de diseño antes de esa tarea. |
 
-**Referencia a módulos desde los especialistas (m6).**
+### Escrituras sobre el perfil destino
 
-- **Opción 1:** rutas relativas al directorio de skills que resuelve el adapter, expresadas como `<skills-dir>/sdd-orchestrator/modules/<id>.md` con `~` en máquina.
-- **Opción 2:** rutas absolutas resueltas al instalar.
+Las rutas exactas se obtienen del adapter y del sistema de backups, y se muestran en el plan previo.
 
-Recomendación: `~` o relativas, para que un objetivo de proyecto (si G10 = sí) no versione el home ni el nombre del usuario. Que Codex expanda `~` dentro de `developer_instructions` es **[SUP]**: la ruta es texto que el modelo lee, no la resuelve el cliente, y se confirma en el spike. Se serializa con `go-toml/v2` y se prueba con rutas Windows.
+- Archivo de instrucciones de máquina de Codex, normalmente `~/.codex/AGENTS.md`: modificar sólo secciones administradas y conservar el contenido del usuario.
+- Directorio de skill resuelto por el adapter, normalmente `~/.agents/skills/sdd-orchestrator/`: escribir sólo archivos propios inventariados, incluida política y módulos. Una colisión se detecta antes de migrar.
+- Snapshot y registro de migración en el almacén de respaldo del instalador: conservar primera copia y persistir estado esperado, ownership y operación.
+- Roles de Codex y su registro sólo si la sonda determina el mecanismo compatible. Cualquier cambio de `config.toml` necesita enumeración exacta de claves, respaldo y revisión coordinada con 01/08 antes de esa tarea.
 
-Al cambiar el catálogo entre versiones (m13), los módulos de toggles inactivos se retiran, con snapshot.
+### Orden de ejecución y límites de aceptación
 
-### D6 · Especialistas: tres ramas según el spike (M8)
+1. Alinear contrato y matriz con 03 y realizar sondas por celda. Registrar qué capacidades están demostradas.
+2. Implementar composición, rutas y preflight con safety net y TDD. Implementar snapshot persistente y migración después de revisar este plan de escritura.
+3. Integrar update, verify de instalación y retiro. Probar fallos, reintentos, reinstalación y ediciones posteriores.
+4. Integrar evidencia y revisión independiente cuando 05/06 entreguen contratos y captura suficientes. Hasta entonces, preservar explícitamente el estado sin verificar y detener la acción afectada.
+5. Completar aceptación CLI/IDE Windows/Linux y comparación modular con 02. Revisar en conjunto con 03 antes de promover la migración.
 
-Contenido de cada rol:
-
-- `name` / `description` / `developer_instructions`, esquema **[DOC]**;
-- marca `# managed-by: active-stack (sdd-orchestrator)`;
-- el encargo, los módulos que le aplican y una sección de retorno mínima (estado, hallazgos, evidencia, módulos cargados), que reemplazará el contrato de 06.
-
-La convención `name = "sdd_explorer"` es **[SUP]**.
-
-| Rama | Condición del spike | Install | Verify | Riesgo |
-|---|---|---|---|---|
-| **D6-a** | Roles descubiertos por directorio (`~/.codex/agents/`) | Escribe solo archivos propios | Parseo y campos | Medio |
-| **D6-b** | Roles registrados en `config.toml` (`[agents.<name>]` con `config_file`) **[SUP]** | `filemerge.UpsertTOMLSection` + backup, coordinado con 01/08 | Parseo + entrada en `config.toml` | Alto; el plan vuelve a revisión |
-| **D6-c** | Ninguna superficie declarada admite roles nativos | No escribe roles | No espera roles | Bajo. Los especialistas viven en el orquestador como plantillas de mensaje para subagentes genéricos. |
-
-"No modifiques" es una instrucción, no un sandbox. El control efectivo corresponde a 08.
-
-### D7 · Propiedad de archivos con preflight en Prepare (m4)
-
-El preflight de propiedad corre como **paso de Prepare antes del snapshot**, dentro del plan de install (`plan.go:151-160`). Si una ruta administrada existe **sin** marca, el plan falla antes de cualquier paso Apply, así que no se escribe nada.
-
-Que el pipeline aborte sin ejecutar Apply cuando falla Prepare es **[SUP]**: `internal/pipeline` no fue leído, y se confirma en la tarea 6.4. El preflight también se repite dentro del instalador nativo, como defensa para llamadores directos.
-
-Criterio análogo: `update.preflightRecordedSkills` (`update.go:416-418`).
-
-Alternativa rechazada: saltar los conflictos con una advertencia. Deja el orquestador a medio instalar.
-
-### D8 · Fuente única de rutas administradas
-
-Una función pura del paquete config devuelve la **unión para todos los toggles** y la rama D6. La usan:
-
-- `install.collectWritePaths` (`plan.go:307-310`): cada archivo como entrada propia y los directorios administrados nuevos como dir hint;
-- uninstall: snapshot y retiro archivo por archivo;
-- verify.
-
-Hay una deriva preexistente del `SettingsPath` de OpenCode en install (`plan.go:307-310` frente a `uninstall/plan.go:172-174`). Es una observación fuera de alcance.
-
-### D9 · Update sin código nuevo
-
-La migración llega por el replay de `install` (`update.go:399-405`). Sin recibo, se mantiene `update.go:375-377`. `refreshSkills` no toca `sdd-orchestrator` **[EV]**: `update/skills.go:97` filtra `h.Type != HarnessSkill` (R12). El test de regresión se conserva igual.
-
-### D10 · Verify (M2)
-
-El alcance del chequeo de títulos de firma es **todo bloque del ID `sdd-orchestrator` bajo cualquier prefijo**, nunca el archivo entero. El contenido del usuario fuera de los markers no se inspecciona.
-
-Chequeos duros:
-
-- marker actual exactamente una vez, o ausencia según G7;
-- ningún bloque con prefijo heredado (M1);
-- arranque dentro del presupuesto y sin títulos de firma;
-- skill del orquestador con su marca;
-- módulos según el mapeo D5;
-- roles según la rama D6.
-
-La activación real en el cliente no se prueba acá; queda para la aceptación por superficie.
-
-### D11 · Uninstall archivo por archivo (M3)
-
-- Para cada ruta administrada de D8 en máquina, el retiro borra solo los archivos que llevan la marca.
-- Después elimina cada directorio administrado **solo si quedó vacío**.
-- No se usa `RemoveAll` sobre `sdd-orchestrator/`.
-- El snapshot incluye cada archivo administrado, así el rollback los restaura.
-- Los archivos del usuario dentro del directorio nunca se tocan, así que no necesitan restaurarse.
-
-### D12 · Punto de reversión según G12 (B1)
-
-Evidencia:
-
-- los snapshots de install y de `InjectSection` se sobrescriben en cada corrida (R6);
-- un `update` puede encadenar dos `install` (R7);
-- la TUI lista cualquier subdirectorio con manifiesto (`backups_screen.go:32`);
-- la GUI de Windows lista solo `install` y `uninstall` (`windows_backups.go:24`);
-- no hay retención automática (`Prune` sin llamadores).
-
-Opciones:
-
-- **G12-a · Snapshot de migración dedicado.**
-  - Cuándo: solo si se detecta el bloque anterior, es decir, una sección del ID con títulos de firma o con un prefijo heredado.
-  - Qué hace: antes de migrar, el paquete config crea `~/.active-stack/backups/codex-migration-<UTC-timestamp>/` con `backup.NewSnapshotter().Create`, sin modificar `internal/backup`.
-  - Cobertura: `AGENTS.md` y todas las rutas de D8.
-  - Las corridas siguientes no lo recrean ni lo sobrescriben, porque ya no detectan el bloque.
-  - Aparece en la TUI sin cambios. Para que aparezca en la GUI de Windows hay que agregar un slot o un listado por prefijo en `windows_backups.go`; si no se hace, se documenta el límite.
-  - Costo: un directorio por migración, sin poda. Se crea una sola vez por migración real.
-- **G12-b · Límite documentado.** La reversión solo es posible hasta la próxima instalación o actualización. Se avisa en la salida de la instalación que migra y en la guía. No hay código de retención.
-
-**Recomendación: G12-a.** Es lo único que cumple el "admite rollback" de CHANGES.md ("Comportamiento objetivo") para el caso real (R7), sin tocar `internal/backup` y con visibilidad inmediata en la TUI. Sigue abierto, para que el grupo decida, si se cubre también la GUI de Windows.
-
-Los specs tienen un requisito por rama y las tareas 5.4 y 5.5 tienen un RED por rama; al decidir G12 se borran el requisito y la tarea de la rama descartada.
-
-### Matriz de reglas compartidas con 03 (borrador para G4)
-
-| Pieza / regla | Sesión normal | Orquestador | Especialista | Codex (este change) | Claude (03) |
-|---|---|---|---|---|---|
-| Reglas del usuario (fuera de markers) | sí | sí | sí **[SUP, spike]** | `AGENTS.md` por árbol | `(TBD con 03)` |
-| Permisos / sandbox | config del cliente | igual | heredado **[SUP]** | `config.toml` (01) | `settings.json` |
-| Arranque breve | sí | sí | no | marker `sdd-orchestrator` | `(TBD con 03)` |
-| Rol coordinador | no | sí | no | skill `sdd-orchestrator` | `(TBD con 03)` |
-| Delegación + coordinación de subagentes | no | sí | no | módulos (`delegation`) | `(TBD con 03)` |
-| TDD | no | apply | constructor | módulo (`tdd`) | `(TBD con 03)` |
-| Governance | **G4** (`governance.md:3`: "applies to all agents") | sí | constructor | módulo o universal | `(TBD con 03)` |
-| Engram | **G4** (`engram-protocol.md:4`: "MANDATORY and ALWAYS ACTIVE") | sí | **G4** | módulo o universal | `(TBD con 03)` |
-| `design-mockups` | sí (sección propia) | sí | **G4** | sección en `AGENTS.md` | sección en `CLAUDE.md` |
-| Model routing | no | **G9** | — | — | `(TBD con 03/09)` |
-
-### Matriz por superficie (borrador para G1/G2)
-
-| Superficie | Lee `~/.codex/AGENTS.md` | Skills | Roles nativos | Invocación explícita | Recomendación |
-|---|---|---|---|---|---|
-| CLI | **[DOC]** | **[DOC]** | spike | `$sdd-orchestrator` | Soportar |
-| Extensión IDE | **[SUP]** | **[EV indirecta]** (texto de OpenSpec, R3) | spike | `$sdd-orchestrator` | Soportar si el spike lo confirma |
-| App de escritorio | **[SUP]** | **[EV indirecta]** (selector de Skills) | spike | selector | Condicional |
-| Cloud | **[SUP]** no ve el home | solo el repo | spike | — | Excluir con el límite documentado. La alternativa por proyecto depende de G10. |
-
-### Decisiones de grupo pendientes (bloquean la propuesta final y `apply`)
-
-| ID | Decisión | Opciones | Recomendación (fundamento) | Afecta |
-|---|---|---|---|---|
-| G1 | Superficies soportadas | CLI / +IDE / +app / +cloud | CLI e IDE; app condicional; cloud excluido. *Parcial*: CLI [DOC], IDE y app [EV indirecta], cloud [SUP]. | aceptación, docs |
-| G2 | Arranque del coordinador | skill explícita · perfil `-p` · `AGENTS.md` de proyecto | Skill explícita; perfil si falla la rama M5 (D4). *[SUP]* | D4 |
-| G3 | Fallback | `$openspec-*` · restaurar el bloque · ninguno | `$openspec-*`. *[EV]*: R3 y la sonda del planner. | spec |
-| G4 | Reglas universales frente a módulo (governance, Engram, design-mockups) | universal · módulo · híbrido | Híbrido, sujeto a la medición de 02. *[SUP]*: 02 no existe. | 03, 05 |
-| G5 | Inventario y ubicación de módulos | archivos en la skill · skills separadas | Archivos en la skill (D5). *[SUP]*: listado de metadata. | 03, 05, 07 |
-| G6 | Inventario de especialistas | por acción OPSX · cinco roles lean · mínimo | Alinear con 03; si no hay acuerdo, por acción OPSX. *[EV]*: plantilla :87-92. | 03, 06, 07 |
-| G7 | Arranque | ninguno · ≤ 1 KiB · ≤ 2 KiB | ≤ 1 KiB. *[EV]*: el borrador mide 273 B (R17). | spec, verify |
-| G8 | Versión de Codex y flags experimentales | — | **Referenciar la decisión de 01** sobre versiones y entornos, sin duplicarla. No habilitar flags sin acuerdo. | spike, 01 |
-| G9 | Model routing en Codex | omitir hasta 09 · mapear a modelos de Codex | Omitir. *[EV]*: :174-179 usa nombres de Claude. | 09, D5 |
-| G10 | Objetivo de proyecto | sí, con resolución de la colisión con Antigravity · no (límite declarado) | **Recomendación previa retirada por no fundada** (R9, R10): `install` no tiene `--project` y la colisión con Antigravity rompe el requisito de no regresión. Si "sí": alcance nuevo (flag o starter) y una regla de coinstalación. Si "no": quitar las tareas 3.3 y 5.3 y los escenarios condicionales. | spec, tests |
-| G11 | Instalaciones sin recibo | solo mensaje · + aviso blando en verify · migración automática | Mensaje + aviso blando. *[EV]*: `update.go:375-377`, R12. | update, verify |
-| G12 | Retención del punto de reversión | (a) snapshot de migración dedicado · (b) límite documentado | (a) (D12). *[EV]*: R6, R7, `backups_screen.go:32`. Sub-decisión: cobertura en la GUI de Windows. | spec, 5.4/5.5, docs |
-| G13 | Nombre y contrato de la entrega, compartido con 03 | (a) `ConfigDeliveryCodexNative` · (b) neutral con paquete provisto por el adapter | Según la adopción de 03 (D1). *Sin fundar*: 03 no existe. **Bloquea la tarea 3.1.** | 03, D1 |
-| D6 | Rama de especialistas | a · b · c | La decide el spike. b vuelve a revisión. | spec, 4.1, 7.1 |
+Matías aprobó este alcance y autorizó iniciar las tareas independientes el 13/11/2026. Las comprobaciones pendientes de producción y las dependencias externas permanecen identificadas.
 
 ## Risks / Trade-offs
 
-- **[Comportamiento de Codex no verificado]** → Spike obligatorio. La tarea 1.3 actualiza specs, design y tasks, y la re-revisión del plan es **obligatoria**.
-- **[BREAKING: sin coordinación implícita]** → El arranque indica cómo invocar, más README, matriz, fallback `$openspec-*` y punto de reversión (G12).
-- **[Pérdida del punto de reversión]** (R6, R7) → G12; ambas ramas tienen requisito y RED.
-- **[Bloque heredado coexistente sigue cargando 18 KB]** (R8) → D3 (bucle) y D10 (detección), con mutante.
-- **[Falso positivo por títulos del usuario]** → Alcance por bloque del ID (D10), con escenario.
-- **[Pérdida de contenido del usuario en uninstall]** → D11 archivo por archivo, con escenario y mutante.
-- **[Rollback incompleto en directorios existentes]** (R5) → D8, con test end-to-end.
-- **[Edición de `config.toml` en D6-b]** → Vuelta a revisión, coordinación con 01/08, `ValidateTOML`.
-- **[Choque con 03 en install y verify]** (M7) → G13 resuelto antes de la tarea 3.1, más revisión conjunta.
-- **[Colisión con Antigravity en proyecto]** (R9) → G10; fuera de alcance salvo decisión.
-- **[Ahorro sin medir]** → Solo se afirma lo que mida 02.
-- **[Engram y governance salen de la sesión normal]** → G4.
+- Cambios de comportamiento entre interfaces requieren evidencia por celda y un límite visible.
+- Reglas universales demasiado reducidas pueden perder governance o memoria. Comparar contra filas concretas de la matriz compartida.
+- Una skill descubierta por otro agente puede colisionar con archivos propios. Preflight y ownership se prueban antes de migrar.
+- Restaurar un snapshot antiguo puede borrar ediciones nuevas. Persistir estado esperado y preservar conflictos.
 
 ## Migration Plan
 
-1. **Install o update con recibo:**
-   1. Prepare: preflight de propiedad (D7).
-   2. Prepare: snapshot del pipeline con todas las rutas de D8.
-   3. Apply: si G12 = a y se detecta el bloque anterior, snapshot de migración dedicado.
-   4. Apply: retiro de los bloques del ID bajo todo prefijo e inyección del arranque (D3).
-   5. Apply: skill, módulos y roles según D6; retiro de los módulos inactivos.
-   6. Verify duro. Si algo falla, el pipeline hace rollback al snapshot del paso 2.
-2. **Reinstalación:** no escribe archivos sin cambios y no crea otro snapshot de migración.
-3. **Reversión explícita:**
-   - G12-a: restaurar `codex-migration-<ts>` desde la TUI de backups (y desde la GUI de Windows, si se cubre).
-   - G12-b: restaurar el snapshot `install` solo antes de la siguiente instalación; el límite queda documentado.
-4. **Sin recibo:** sin cambios; el mensaje existente indica cómo migrar.
-5. **Promoción:** después de la aceptación por superficie y de la revisión conjunta con 03.
+Resolver pendientes aplicables, aprobar el diff de escritura, caracterizar consumidores y seguir TDD. Validar instalación limpia, legado, update, reinstalación, rollback y retiro. Comparar la sesión normal y coordinada con el protocolo de 02 por interfaz. Promover la migración después de revisión conjunta 03/04.
 
-## Open Questions
+## UI Mockups
 
-Preguntas que no cambian specs ni tareas:
+Decision: no (no UI)
 
-- El nombre del campo de versión del asset en el frontmatter.
-- La ruta de la guía en `docs/`.
-
-Todo lo que sí cambia el plan es G1–G13 y D6, y bloquea según la puerta B2.
+Los cambios propuestos de visibilidad de respaldo reutilizan interfaces existentes. Si P3 incorpora una modificación visual, aplicar la política de diseño del proyecto antes de esa tarea.

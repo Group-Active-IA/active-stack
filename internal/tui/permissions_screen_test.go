@@ -4,9 +4,19 @@ import (
 	"strings"
 	"testing"
 
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Group-Active-IA/active-stack/internal/model"
+	tea "github.com/charmbracelet/bubbletea"
 )
+
+func TestStrictPermissionDescriptionForCodex(t *testing.T) {
+	for _, agent := range []model.Agent{model.AgentCodex, model.AgentClaude} {
+		m := Model{Selection: Selection{Agents: []model.Agent{agent}}}
+		view := m.viewPermissions()
+		if got := strings.Contains(view, "Codex: Read-only by default"); got != (agent == model.AgentCodex) {
+			t.Errorf("agent %s: unexpected permission view %q", agent, view)
+		}
+	}
+}
 
 // ── Task 5.2: anyTierCapable ─────────────────────────────────────────────────
 
@@ -106,7 +116,7 @@ func TestScreenPermissionsAppearsForCustomWithTierCapableAgent(t *testing.T) {
 	m.Selection.Mode = model.ModeCustom
 	m.AvailableHarnesses = []model.Harness{
 		{ID: "h1", Name: "H1", Type: model.HarnessExternal,
-			External: &model.External{Method: "npm"},
+			External:     &model.External{Method: "npm"},
 			InstallModes: []model.InstallMode{model.ModeFull}},
 	}
 

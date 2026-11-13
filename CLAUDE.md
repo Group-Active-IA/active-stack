@@ -76,8 +76,12 @@ Detalle real en `internal/model/harness.go`. Tipos clave:
 
 **El harness `sdd-orchestrator` es clave**: es de tipo `config` y se compone a
 partir de **toggles modulares** (`tdd`, `engram`, `model-routing`, `delegation`,
-`governance`). El resultado es el bloque de instrucciones del orquestador que se
-inyecta en `CLAUDE.md`/`AGENTS.md` del proyecto destino.
+`governance`). Codex Machine entrega una skill administrada `$sdd-orchestrator`
+de invocación explícita en la sesión actual y un bloque universal en `AGENTS.md`.
+Los módulos se componen por acción dentro de la skill. Project conserva la entrega
+legada y su diagnóstico. Los demás agentes conservan su estrategia de entrega.
+La aceptación funcional de CLI/IDE Windows/Linux y los contratos de 03/05/06 se
+registran en `openspec/changes/codex-native-opsx/`.
 
 Los toggles del `sdd-orchestrator` **no se exponen en la TUI ni en la GUI** (salen
 literales del catálogo); los harnesses sí. Por eso las capacidades opt-in se

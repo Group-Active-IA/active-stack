@@ -34,4 +34,12 @@ type Result struct {
 	// AllAlready is true when every adapter produced byte-identical content
 	// and no files were changed.
 	AllAlready bool
+	// ManagedWrites records post-operation states used to protect pipeline rollback.
+	ManagedWrites map[string]ManagedWriteState
+}
+
+// ManagedWriteState identifies the state written by the installer.
+type ManagedWriteState struct {
+	Exists bool
+	Hash   [32]byte
 }

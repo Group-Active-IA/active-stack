@@ -37,6 +37,13 @@ func (s BackupSource) Label() string {
 }
 
 type Manifest struct {
+	rollbackGuards map[string]*rollbackGuard
+
+	// RestoreGuards persists installed file hashes for guarded later restoration.
+	// Version 1 requires a hash for every file entry. Legacy manifests omit both fields.
+	RestoreGuards       map[string][32]byte `json:"restore_guards,omitempty"`
+	RestoreGuardVersion int                 `json:"restore_guard_version,omitempty"`
+
 	ID        string          `json:"id"`
 	CreatedAt time.Time       `json:"created_at"`
 	RootDir   string          `json:"root_dir"`

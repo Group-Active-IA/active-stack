@@ -71,8 +71,14 @@ Es un harness de **configuración** que arma el orquestador SDD con piezas
 - Governance por dominio (sí/no)
 - … (extensible)
 
-El resultado es el bloque de instrucciones del orquestador que se inyecta en
-`CLAUDE.md` / `AGENTS.md`, compuesto a partir de los toggles elegidos.
+En Codex Machine, el resultado se entrega como skill administrada de invocación
+explícita `$sdd-orchestrator`, con política en `agents/openai.yaml`, módulos por
+acción y reglas universales en `AGENTS.md`. La instalación Project conserva su
+entrega legada. El adapter resuelve las rutas de destino. El ciclo de migración
+mantiene un punto persistente de reversión con estado esperado por archivo; una
+edición posterior genera un conflicto recuperable. Los demás agentes conservan
+su estrategia de entrega. La aceptación por cliente e interfaz se registra en el
+change `codex-native-opsx`.
 
 > Hoy los toggles salen del catálogo (`toggles:` en `harnesses.yaml`): el usuario
 > **no** los elige en la TUI/GUI, que solo muestran harnesses. Por eso una capacidad

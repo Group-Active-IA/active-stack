@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	cmdinstaller "github.com/Group-Active-IA/active-stack/internal/harness/command"
@@ -182,10 +183,12 @@ var configInstallFn = func(
 }
 
 type configStep struct {
-	h        model.Harness
-	adapters []AgentAdapter
-	homeDir  string
-	manifest *backup.Manifest
+	h              model.Harness
+	adapters       []AgentAdapter
+	homeDir        string
+	manifest       *backup.Manifest
+	managedWrites  map[string]cfginstaller.ManagedWriteState
+	managedParents map[string]os.FileInfo
 }
 
 func (s *configStep) ID() string                     { return "config:" + s.h.ID }
@@ -193,7 +196,26 @@ func (s *configStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *configStep) Run() error {
 	cfg := toConfigAdapters(s.adapters)
-	_, err := configInstallFn(s.h, cfg, s.homeDir)
+	s.managedParents = map[string]os.FileInfo{}
+	if s.manifest != nil {
+		for _, entry := range s.manifest.Entries {
+			s.rememberManagedParents(entry.OriginalPath)
+		}
+	}
+	result, err := configInstallFn(s.h, cfg, s.homeDir)
+	s.managedWrites = result.ManagedWrites
+	for path := range s.managedWrites {
+		s.rememberManagedParents(path)
+	}
+	if s.manifest != nil {
+		for path, state := range result.ManagedWrites {
+			if state.Exists {
+				s.manifest.GuardRollback(path, state.Hash)
+			} else {
+				s.manifest.GuardRollbackAbsent(path)
+			}
+		}
+	}
 	return err
 }
 
@@ -201,7 +223,71 @@ func (s *configStep) Rollback() error {
 	if s.manifest == nil {
 		return nil
 	}
+	for path := range s.managedWrites {
+		for dir := filepath.Dir(path); dir != s.homeDir && dir != filepath.Dir(dir); dir = filepath.Dir(dir) {
+			previous, ok := s.managedParents[dir]
+			if !ok {
+				continue
+			}
+			current, err := os.Lstat(dir)
+			if err != nil || !current.IsDir() || !os.SameFile(previous, current) {
+				s.manifest.GuardRollback(path, [32]byte{})
+				break
+			}
+		}
+	}
+	// A shared snapshot can contain a newly created skills directory. Protect
+	// unrecorded files before legacy restore considers deleting that directory.
+	known := map[string]bool{}
+	for _, entry := range s.manifest.Entries {
+		if !entry.IsDir {
+			known[filepath.Clean(entry.OriginalPath)] = true
+		}
+	}
+	for path := range s.managedWrites {
+		known[filepath.Clean(path)] = true
+	}
+	for _, entry := range s.manifest.Entries {
+		if !entry.IsDir || entry.Existed {
+			continue
+		}
+		directory := filepath.Clean(entry.OriginalPath)
+		relevant := false
+		for path := range s.managedWrites {
+			relative, err := filepath.Rel(directory, path)
+			if err == nil && relative != ".." && !strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
+				relevant = true
+				break
+			}
+		}
+		if !relevant {
+			continue
+		}
+		err := filepath.WalkDir(directory, func(path string, info fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && !known[filepath.Clean(path)] {
+				s.manifest.GuardRollback(path, [32]byte{})
+			}
+			return nil
+		})
+		if err != nil && !os.IsNotExist(err) {
+			s.manifest.GuardRollback(directory, [32]byte{})
+		}
+	}
 	return restoreFn(*s.manifest)
+}
+
+func (s *configStep) rememberManagedParents(path string) {
+	for dir := filepath.Dir(path); dir != s.homeDir && dir != filepath.Dir(dir); dir = filepath.Dir(dir) {
+		if _, ok := s.managedParents[dir]; ok {
+			continue
+		}
+		if info, err := os.Lstat(dir); err == nil {
+			s.managedParents[dir] = info
+		}
+	}
 }
 
 // ─────────────────────────────────────────────────────────────────
@@ -231,7 +317,12 @@ func (s *permissionsStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *permissionsStep) Run() error {
 	perm := toPermissionsAdapters(s.adapters)
-	_, err := permissionsInstallFn(s.homeDir, perm, s.tier)
+	result, err := permissionsInstallFn(s.homeDir, perm, s.tier)
+	if s.manifest != nil {
+		for path, digest := range result.CodexStrictWrites {
+			s.manifest.GuardRollback(path, digest)
+		}
+	}
 	return err
 }
 

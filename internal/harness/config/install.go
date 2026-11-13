@@ -30,6 +30,7 @@ func Install(h model.Harness, adapters []AgentAdapter, homeDir string) (Result, 
 
 	var written []string
 	allAlready := true
+	managedWrites := map[string]ManagedWriteState{}
 
 	for _, adapter := range adapters {
 		snapshotDir := filepath.Join(homeDir, ".active-stack", "backups",
@@ -41,6 +42,26 @@ func Install(h model.Harness, adapters []AgentAdapter, homeDir string) (Result, 
 		)
 
 		switch adapter.ConfigDelivery() {
+		case model.ConfigDeliveryManagedSkill:
+			native, ok := adapter.(ManagedSkillAdapter)
+			if !ok {
+				return Result{}, fmt.Errorf("managed skill adapter %q does not expose skill paths", adapter.Agent())
+			}
+			result, err := InstallManagedSkill(h, native, homeDir)
+			if err != nil {
+				for path, state := range result.ManagedWrites {
+					managedWrites[path] = state
+				}
+				return Result{Files: append(written, result.Files...), ManagedWrites: managedWrites}, err
+			}
+			written = append(written, result.Files...)
+			if !result.AllAlready {
+				allAlready = false
+			}
+			for path, state := range result.ManagedWrites {
+				managedWrites[path] = state
+			}
+			continue
 		case model.ConfigDeliveryPrimaryAgent:
 			// Register as a tab-able primary agent in the settings JSON, and
 			// clean any orchestrator section out of the instructions file so it
@@ -85,8 +106,9 @@ func Install(h model.Harness, adapters []AgentAdapter, homeDir string) (Result, 
 	}
 
 	return Result{
-		Files:      written,
-		AllAlready: allAlready && len(written) == 0,
+		Files:         written,
+		AllAlready:    allAlready && len(written) == 0,
+		ManagedWrites: managedWrites,
 	}, nil
 }
 

@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Group-Active-IA/active-stack/internal/harness/config"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	toml "github.com/pelletier/go-toml/v2"
 )
@@ -95,6 +96,15 @@ func checkSkill(h model.Harness, adapter Adapter, homeDir string) []Check {
 // one the config installer writes (internal/harness/config: Inject uses
 // "sdd-orchestrator" for the orchestrator, installSection uses h.ID).
 func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
+	if h.ID == "sdd-orchestrator" && adapter.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
+		return []Check{{
+			ID:          fmt.Sprintf("config:%s:%s", h.ID, adapter.Agent()),
+			Description: fmt.Sprintf("managed skill files, ownership and explicit invocation policy for %s", adapter.Agent()),
+			Run: func(_ context.Context) error {
+				return config.VerifyManagedSkill(h, adapter, homeDir)
+			},
+		}}
+	}
 	// Only the orchestrator is delivered as a primary agent. Section harnesses
 	// such as design-mockups still write a marker to AGENTS.md on OpenCode.
 	if h.ID == "sdd-orchestrator" && adapter.ConfigDelivery() == model.ConfigDeliveryPrimaryAgent {
@@ -184,6 +194,9 @@ func checkPermissions(h model.Harness, adapter Adapter, homeDir string) []Check 
 							return fmt.Errorf("expected key %q not found in %q", expected, settingsPath)
 						}
 					}
+					if root["approval_policy"] == "untrusted" {
+						return fmt.Errorf("legacy approval_policy %q in %q is rejected by current Codex CLI versions", "untrusted", settingsPath)
+					}
 					return nil
 				}
 				var raw map[string]json.RawMessage
@@ -202,10 +215,38 @@ func checkPermissions(h model.Harness, adapter Adapter, homeDir string) []Check 
 			machineConfig := filepath.Join(home, ".codex", "config.toml")
 			if filepath.Clean(settingsPath) != filepath.Clean(machineConfig) {
 				checks = append(checks, checkCodexProjectTrust(settingsPath, machineConfig))
+				checks = append(checks, checkCodexMachinePolicy(machineConfig))
 			}
 		}
 	}
 	return checks
+}
+
+func checkCodexMachinePolicy(path string) Check {
+	return Check{
+		ID:          "codex:machine-policy:" + path,
+		Description: "Codex machine configuration has no legacy approval policy",
+		Soft:        true,
+		Run: func(context.Context) error {
+			raw, err := os.ReadFile(path)
+			if os.IsNotExist(err) {
+				return nil
+			}
+			if err != nil {
+				return fmt.Errorf("effective Codex policy unverified: read machine config %q: %w", path, err)
+			}
+			var config struct {
+				ApprovalPolicy string `toml:"approval_policy"`
+			}
+			if err := toml.Unmarshal(raw, &config); err != nil {
+				return fmt.Errorf("effective Codex policy unverified: parse machine config %q: %w", path, err)
+			}
+			if config.ApprovalPolicy == "untrusted" {
+				return fmt.Errorf("legacy approval_policy %q in machine config %q can prevent Codex from loading; effective policy unverified", config.ApprovalPolicy, path)
+			}
+			return nil
+		},
+	}
 }
 
 func checkCodexProjectTrust(projectConfig, machineConfig string) Check {
