@@ -50,7 +50,7 @@ hasta que las tareas 1.x las comprueben en la versión fijada.
 | Ubicación: `~/.claude/skills/<id>/SKILL.md` (personal) y `.claude/skills/<id>/SKILL.md` (proyecto). Con el mismo nombre, "personal over project". | En target Project, una skill Machine con el mismo ID tapa a la del proyecto (D5, colisiones). |
 | `disable-model-invocation: true`: Claude no la invoca solo, su descripción no entra al contexto, el usuario sí la invoca, y no se puede precargar en subagentes. | La sesión normal no se vuelve coordinador por un pedido OPSX, y el coordinador no puede correr como subagente. Desaparece el problema B1 de la versión anterior (G9). |
 | Sin `context: fork`, el contenido entra a la conversación como un mensaje y queda ahí en los turnos siguientes. | El coordinador sigue en el hilo actual. No hay forma documentada de "salir" del rol salvo una sesión nueva o `/clear` (D3). |
-| Tras la compactación automática, Claude Code vuelve a adjuntar la invocación más reciente de cada skill "keeping the first 5,000 tokens of each", con 25.000 tokens entre todas. | El `SKILL.md` del coordinador tiene que entrar en ese presupuesto, con lo crítico primero, y los módulos van aparte (D10). |
+| Tras la compactación automática, Claude Code vuelve a adjuntar la invocación más reciente de cada skill "keeping the first 5,000 tokens of each", con 25.000 tokens entre todas. | Documentado, pero medido con 2.1.318 (Linux, terminal, `claude -p`): tras `/compact` el cuerpo NO se reengancha. El `SKILL.md` se mantiene chico por criterio de tamaño y el bloque universal indica reinvocar (D10). |
 | Los subagentes reciben su propio prompt más `CLAUDE.md`; no ven la conversación ni las skills invocadas por el padre. Explore y Plan arrancan sin `CLAUDE.md`. | El rol de coordinador no llega a los especialistas. Los módulos les llegan sólo si el coordinador los pega en el encargo. Para Explore y Plan, el encargo repite las reglas obligatorias (igual que propone 05 D21). |
 | Un subagente puede lanzar subagentes hasta tres niveles (configurable). | Corrige una suposición de la versión anterior. La regla "no delegar más abajo" es del módulo de delegación (07), no del mecanismo. |
 | `allowed-tools` en una skill sólo preaprueba herramientas; no restringe. La allowlist `Agent(tipo)` sólo aplica a un agente que corre como hilo principal con `--agent`. | La skill no puede limitar qué tipos de subagente se lanzan. Esa restricción de la versión anterior se pierde (D3). |
@@ -260,9 +260,11 @@ ficha o arreglo global del writer) es G6.
 
 ### D7. Versión mínima y plataformas
 
-Se declara una versión mínima de Claude Code en el adapter: la primera con skills de usuario,
-`disable-model-invocation` y el reenganche de skills tras la compactación (tarea 1.4). El valor es
-`(TBD · tarea 1.4)`. La versión, la interfaz y la plataforma de cada prueba salen del manifiesto de
+Se declara una versión mínima de Claude Code en el adapter (`claude.MinVersion`): **2.1.110**.
+Fuente: CHANGELOG oficial de Claude Code. `${CLAUDE_SKILL_DIR}` llega en 2.1.69 y en 2.1.110 se
+arregla el fallo de `disable-model-invocation` al invocar `/<skill>`. Verificado con 2.1.318 en Linux,
+terminal, `claude -p`. (El reenganche del cuerpo tras compactar ya no es criterio: no ocurre, ver D10.)
+La versión, la interfaz y la plataforma de cada prueba salen del manifiesto de
 02 (D10 de 02: "única fuente de versión, interfaz, tier y permisos"); esta ficha no fija una
 versión propia.
 
@@ -302,16 +304,19 @@ opt-ins de contenido de 02 (D7 y D10 de 02).
 
 ### D10. Continuidad: compactación y reanudación
 
-- **Presupuesto.** El cuerpo de `SKILL.md` tiene que entrar en los primeros 5.000 tokens que Claude
-  Code reengancha tras compactar. Con el asset partido, el coordinador sale de los 8.899 B de la
+- **Presupuesto.** El cuerpo de `SKILL.md` se mantiene bajo el umbral de 4000 tokens (criterio de
+  tamaño; el reenganche tras compactar no ocurre, ver abajo). Con el asset partido, el coordinador sale de los 8.899 B de la
   base menos lo que pasa a universal y módulos; los módulos (hasta ~11 KB) quedan fuera del
   presupuesto porque son archivos aparte. Test sin modelo: el tamaño del `SKILL.md` compuesto con
   todos los toggles queda bajo el umbral (4000 tokens, estimados como bytes/4; 02 no dejó un contador en `main`). Orden: rol, reglas obligatorias y tabla acción → módulos primero.
-- **Compactación.** Después de `/compact` o de la compactación automática, el testigo del
-  coordinador sigue en el contexto y el coordinador vuelve a leer el módulo de la acción en curso
-  en lugar de suponerlo cargado.
-- **Reanudación.** Con `claude --continue` o `--resume` sobre una sesión donde se invocó la skill,
-  el rol sigue activo (tarea 1.14 lo verifica). Si no sigue, la salida documentada es volver a
+- **Compactación (medido).** Con Claude Code 2.1.318 (Linux, terminal, `claude -p`, skill en target
+  Project con testigos), después de `/compact` el cuerpo del `SKILL.md` NO se reengancha: la
+  transcripción tiene `compact_boundary` y luego sólo el resumen, y el modelo dice que no tiene las
+  instrucciones. Por eso el sistema indica cómo recuperarlo: el bloque universal (siempre cargado)
+  dice que, tras compactar, hay que volver a invocar `/sdd-orchestrator` antes de seguir con trabajo
+  OPSX. Al reinvocar, el coordinador vuelve a leer el módulo de la acción en curso.
+- **Reanudación.** Con `--resume` sin compactar la skill sí sigue activa (medido en 2.1.318; tarea 1.14
+  completa la matriz). Si no sigue, la salida documentada es volver a
   invocar `/sdd-orchestrator`, y el bloque universal lo recuerda.
 
 ### D11. Control o módulo obligatorio ausente
@@ -406,8 +411,8 @@ ciclo de artefactos en el módulo `artifacts`.
 ## Risks / Trade-offs
 
 - [BREAKING: la sesión normal deja de coordinar] → aviso en install/update, nota en README.
-- [El coordinador se trunca tras compactar] → presupuesto de `SKILL.md`, módulos aparte, relectura
-  del módulo en curso (D10).
+- [El coordinador se pierde tras compactar] → medido: no se reengancha; el bloque universal indica
+  reinvocar `/sdd-orchestrator` (D10).
 - [El rol no sobrevive a la reanudación] → tarea 1.14; si falla, volver a invocar y documentarlo.
 - [No hay salida del rol dentro de la sesión] → documentado (D3).
 - [Se pierde la allowlist de tipos de subagente] → G13 con 08.
@@ -440,6 +445,5 @@ ciclo de artefactos en el módulo `artifacts`.
 ## Open Questions
 
 - Si la reanudación con `--resume` conserva la skill invocada (tarea 1.14).
-- Si el reenganche tras compactar mantiene también los archivos de módulo leídos o sólo el cuerpo
-  de `SKILL.md` (tarea 1.11).
+- (Resuelta 2026-11-13) El cuerpo de `SKILL.md` no se reengancha tras compactar; no hay módulos que conservar (D10).
 - Ubicación de la matriz común con 04 (archivo en `openspec/` o sección de `CHANGES.md`).

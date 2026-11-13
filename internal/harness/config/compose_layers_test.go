@@ -337,3 +337,13 @@ func TestComposeLayers_SkillMDFitsReattachBudget(t *testing.T) {
 		t.Errorf("SKILL.md is ~%d tokens (%d bytes), budget %d", tokens, len(md), skillTokenBudget)
 	}
 }
+
+// Measured with Claude Code 2.1.318 (terminal, claude -p): after /compact the
+// SKILL.md body is NOT re-attached, so the universal block must tell the user to
+// invoke /sdd-orchestrator again before continuing OPSX work.
+func TestComposeLayers_UniversalTellsToReinvokeAfterCompaction(t *testing.T) {
+	u := mustLayers(t, nil).Universal
+	if !strings.Contains(u, "After compacting") || !strings.Contains(u, "invoke `/sdd-orchestrator` again before continuing OPSX work") {
+		t.Errorf("universal must instruct re-invoking /sdd-orchestrator after compaction:\n%.400s", u)
+	}
+}

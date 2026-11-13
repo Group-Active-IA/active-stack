@@ -38,11 +38,11 @@ type VersionProbe struct {
 	Output   func(path string, args ...string) ([]byte, error)
 }
 
-// MinVersion is the first Claude Code version with user skills,
-// disable-model-invocation and skill re-attachment after compaction.
-// TBD tarea 1.4: the real value comes from the real-session evidence; until
-// then "0.0.0" accepts every parseable version.
-const MinVersion = "0.0.0"
+// MinVersion is the first Claude Code release where the layered delivery works:
+// ${CLAUDE_SKILL_DIR} arrives in 2.1.69 and 2.1.110 fixes the
+// disable-model-invocation failure when invoking /<skill> (official changelog).
+// Verified with 2.1.318 on Linux, terminal, claude -p.
+const MinVersion = "2.1.110"
 
 var versionRe = regexp.MustCompile(`(\d+)\.(\d+)\.(\d+)`)
 

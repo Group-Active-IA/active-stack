@@ -57,3 +57,14 @@ func TestDetectVersion_NonCompatibleStatesExplainThemselves(t *testing.T) {
 		t.Errorf("insufficient result needs Detail and Min, got %+v", got)
 	}
 }
+
+// MinVersion is 2.1.110: ${CLAUDE_SKILL_DIR} arrives in 2.1.69 and 2.1.110 fixes
+// disable-model-invocation when invoking /<skill> (official changelog).
+func TestMinVersionIsFirstFixedRelease(t *testing.T) {
+	if claude.MinVersion != "2.1.110" {
+		t.Errorf("MinVersion = %q, want 2.1.110", claude.MinVersion)
+	}
+	if got := claude.DetectVersion(claude.MinVersion, probe("2.1.109 (Claude Code)", nil)); got.State != claude.VersionInsufficient {
+		t.Errorf("2.1.109 must be insufficient, got %v", got.State)
+	}
+}

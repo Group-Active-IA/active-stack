@@ -62,11 +62,11 @@ reinvocar.
 
 #### Scenario: El SKILL.md entra en el presupuesto de reenganche
 - **WHEN** se compone el `SKILL.md` del coordinador con los cinco toggles activos
-- **THEN** su tamaño queda bajo el umbral de tokens fijado en la tarea 1.4 (menor que los 5.000 que Claude Code reengancha por skill), verificable sin modelo
+- **THEN** su tamaño queda bajo el umbral de 4000 tokens, verificable sin modelo (criterio de tamaño; no afirma que Claude Code reenganche el cuerpo tras compactar)
 
 #### Scenario: Compactación
-- **WHEN** se invocó `/sdd-orchestrator`, la sesión se compacta (`/compact`) y el usuario pide continuar con la acción en curso
-- **THEN** el registro de contexto posterior a la compactación contiene el testigo del coordinador, y antes de seguir la acción el coordinador vuelve a leer el módulo de esa acción (su testigo aparece después de la compactación)
+- **WHEN** se invocó `/sdd-orchestrator` y la sesión se compacta (`/compact`)
+- **THEN** el cuerpo del `SKILL.md` no se reengancha (medido con Claude Code 2.1.318), y el sistema indica cómo recuperarlo: el bloque universal, que sí está en el contexto posterior a la compactación, contiene la instrucción de volver a invocar `/sdd-orchestrator` antes de seguir con trabajo OPSX
 
 #### Scenario: Reanudación
 - **WHEN** se invocó `/sdd-orchestrator` en una sesión y se reanuda con `claude --continue` o `--resume`
