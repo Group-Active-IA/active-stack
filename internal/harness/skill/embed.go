@@ -20,7 +20,7 @@ func embedInstaller(embeddedFS fs.FS, skillID, skillsDir, backupDir string) (Res
 		return Result{}, fmt.Errorf("skill %q: embedded SKILL.md is empty", skillID)
 	}
 
-	return refreshSkillDirectory(skillsDir, skillID, backupDir, func(stage string) error {
+	return refreshSkillDirectory(skillsDir, skillID, backupDir, false, func(stage string) error {
 		return fs.WalkDir(embeddedFS, "skills/"+skillID, func(path string, d fs.DirEntry, walkErr error) error {
 			if walkErr != nil {
 				return walkErr

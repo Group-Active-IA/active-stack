@@ -86,6 +86,12 @@ const (
 	// agent.<id> with mode:primary), so the host TUI exposes it as a tab-able
 	// agent instead of folding it into the shared instructions.
 	ConfigDeliveryPrimaryAgent
+	// ConfigDeliveryManagedSkill delivers the orchestrator in layers: a minimal
+	// universal block in the instructions file plus a user-invoked skill
+	// (<skills>/<id>/SKILL.md with modules/) owned by Active Stack. Added by the
+	// claude-native-opsx change (D1); appended last so existing values keep
+	// their numbering.
+	ConfigDeliveryManagedSkill
 )
 
 // Source locates a skill harness in a git repository.

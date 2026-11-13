@@ -21,6 +21,9 @@ type AgentAdapter interface {
 	// is ConfigDeliveryPrimaryAgent. An empty string means the agent has no
 	// settings file and primary-agent delivery is skipped.
 	SettingsPath(homeDir string) string
+	// SkillsDir returns the agent's skills directory. Used only when
+	// ConfigDelivery is ConfigDeliveryManagedSkill (claude-native-opsx).
+	SkillsDir(homeDir string) string
 	// ConfigDelivery reports how this agent expects a config-type harness to
 	// materialize: injected into the instructions file (default) or registered
 	// as a primary agent in the settings JSON.
@@ -29,6 +32,12 @@ type AgentAdapter interface {
 
 // Result describes the outcome of a config harness installation.
 type Result struct {
+	// Warnings are non-fatal findings the installer surfaces to the user
+	// (unclosed markers, skill precedence, legacy mode, replaced skill).
+	Warnings []string
+	// Modes records, per agent, how the orchestrator was delivered when the
+	// agent uses ConfigDeliveryManagedSkill: "skill" or "legacy".
+	Modes map[model.Agent]string
 	// Files lists the instruction files that were written or updated.
 	Files []string
 	// AllAlready is true when every adapter produced byte-identical content

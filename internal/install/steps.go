@@ -7,12 +7,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Group-Active-IA/active-stack/internal/agents/claude"
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	cmdinstaller "github.com/Group-Active-IA/active-stack/internal/harness/command"
 	cfginstaller "github.com/Group-Active-IA/active-stack/internal/harness/config"
 	perminstaller "github.com/Group-Active-IA/active-stack/internal/harness/config/permissions"
 	extinstaller "github.com/Group-Active-IA/active-stack/internal/harness/external"
 	skillinstaller "github.com/Group-Active-IA/active-stack/internal/harness/skill"
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 	"github.com/Group-Active-IA/active-stack/internal/system"
@@ -177,15 +179,29 @@ var configInstallFn = func(
 	h model.Harness,
 	adapters []cfginstaller.AgentAdapter,
 	homeDir string,
+	opts cfginstaller.InstallOptions,
 ) (cfginstaller.Result, error) {
-	return cfginstaller.Install(h, adapters, homeDir)
+	return cfginstaller.InstallWith(h, adapters, homeDir, opts)
 }
+
+// claudeDetectFn reports the installed Claude Code version for the layered
+// delivery. Production uses claude.Detect; tests inject a fixed result so the
+// install does not depend on the claude binary of the machine.
+var claudeDetectFn = claude.Detect
 
 type configStep struct {
 	h        model.Harness
 	adapters []AgentAdapter
 	homeDir  string
 	manifest *backup.Manifest
+	// Layered Claude delivery (claude-native-opsx): the real home (backups and
+	// migration record), the target, the Machine skills dirs that could shadow a
+	// Project skill, and the output channel and language for notices.
+	realHome   string
+	target     model.InstallTarget
+	shadow     map[model.Agent]string
+	onProgress pipeline.ProgressFunc
+	lang       i18n.Lang
 }
 
 func (s *configStep) ID() string                     { return "config:" + s.h.ID }
@@ -193,8 +209,47 @@ func (s *configStep) setManifest(m *backup.Manifest) { s.manifest = m }
 
 func (s *configStep) Run() error {
 	cfg := toConfigAdapters(s.adapters)
-	_, err := configInstallFn(s.h, cfg, s.homeDir)
-	return err
+	res, err := configInstallFn(s.h, cfg, s.homeDir, cfginstaller.InstallOptions{
+		Home: s.realHome, Target: s.target, ShadowSkillsDir: s.shadow, DetectVersion: claudeDetectFn,
+	})
+	if err != nil {
+		return err
+	}
+	s.report(res)
+	return nil
+}
+
+// report surfaces the installer warnings and, for the layered Claude delivery,
+// the BREAKING notice (and the manual cleanup hint for a Project target).
+func (s *configStep) report(res cfginstaller.Result) {
+	for _, w := range res.Warnings {
+		s.notice("warning: " + w)
+	}
+	for _, a := range s.adapters {
+		if res.Modes[a.Agent()] != "skill" {
+			continue
+		}
+		s.notice(i18n.T(s.lang, "claude.breaking.notice"))
+		if s.target == model.Project {
+			skill := filepath.Join(a.SkillsDir(s.homeDir), s.h.ID)
+			s.notice(i18n.Tf(s.lang, "install.project.manual_cleanup", skill, a.InstructionsPath(s.homeDir)))
+		}
+	}
+}
+
+// notice emits a non-fatal message through the progress channel (stderr when
+// there is none), the same way best-effort steps do.
+func (s *configStep) notice(msg string) {
+	if s.onProgress != nil {
+		s.onProgress(pipeline.ProgressEvent{
+			StepID: s.ID(),
+			Stage:  pipeline.StageApply,
+			Status: pipeline.StepStatusDegraded,
+			Err:    fmt.Errorf("%s", msg),
+		})
+		return
+	}
+	fmt.Fprintln(os.Stderr, msg)
 }
 
 func (s *configStep) Rollback() error {
