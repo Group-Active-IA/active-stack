@@ -13,6 +13,7 @@
   ALTO o CRITICAL; (4) resultados de 1.4, 1.10, 1.11 y 1.14 antes de cerrar los escenarios de
   continuidad.
 - 2026-11-12: Juani autorizó empezar el apply de las tareas no bloqueadas sin esperar la sección 2; la aprobación ALTO de 2.7 quedó dada por Juani el 2026-11-13.
+- 2026-11-13: decisiones G1-G13 y aprobación ALTO registradas (design.md, proposal.md). Implementadas 3, 4, 5, 6, 7 y 9; quedan 2.3 (textos de 05, 06 y 07), 2.6, la sección 1 y la 8 (las corre Juani con Claude real) y la 10. `MinVersion` = 2.1.110 (Juani, pruebas con 2.1.318); tras `/compact` el cuerpo de la skill no se reengancha, el bloque universal indica reinvocar.
 - Cierre: implementar, archivar y abrir PR hacia `main` declarando qué entrega, cómo se comprueba
   y qué queda pendiente. Revisa el responsable del change anterior (circuito del grupo: contrato,
   evidencia, decisión).
@@ -157,8 +158,10 @@ interfaz, plataforma, permisos efectivos).
 
 ## 9. Documentación (Knowledge Base Impact)
 
-- [ ] 9.1 Reescribir `ARCHITECTURE.md` (líneas 56-75), `README.md` (línea 214 y tabla), `CLAUDE.md:9` y la sección 2 del repo, y `AGENTS.md:148-149` (espejo), con la invocación `/sdd-orchestrator`, cómo salir del modo coordinador, el comportamiento tras compactar y reanudar, el límite del contenido del usuario, el orden de precedencia medido, el modo legado por versión, la nota BREAKING, el manifiesto de migración y `--overwrite-edited`, y la limpieza manual en target Project. Verificación: los comandos documentados corren tal cual en el entorno de 8.1.
-- [ ] 9.2 Actualizar la ficha 03 de `CHANGES.md` (skill invocable en lugar de orquestador registrado) y el responsable de 04.
+- [x] 9.1 Reescribir `ARCHITECTURE.md` (líneas 56-75), `README.md` (línea 214 y tabla), `CLAUDE.md:9` y la sección 2 del repo, y `AGENTS.md:148-149` (espejo), con la invocación `/sdd-orchestrator`, cómo salir del modo coordinador, el comportamiento tras compactar y reanudar, el límite del contenido del usuario, el orden de precedencia medido, el modo legado por versión, la nota BREAKING, el manifiesto de migración y `--overwrite-edited`, y la limpieza manual en target Project. Verificación: los comandos documentados corren tal cual en el entorno de 8.1.
+  - Evidencia: Reescritos `ARCHITECTURE.md` (§2.1), `README.md` (nueva subsección "Claude: el coordinador es una skill": invocación, salida del modo, compactación medida en 2.1.318, límite del contenido del usuario, precedencia, modo legado desde 2.1.110, BREAKING, manifiesto de migración y `claude-migration.json`, `--overwrite-edited`, limpieza manual en Project, permisos), `CLAUDE.md` (nota inicial y §2) y `AGENTS.md` (§2 y §6, espejo). Pendiente de la tarea 8.1 (la corre Juani): ejecutar los comandos documentados contra un Claude real; el orden de precedencia queda declarado como "documentado, medición pendiente (1.5)", no como medido.
+- [x] 9.2 Actualizar la ficha 03 de `CHANGES.md` (skill invocable en lugar de orquestador registrado) y el responsable de 04.
+  - Evidencia: `CHANGES.md`: ficha 03 pasa de "Registrá el orquestador nativo" a "Entregá el coordinador como skill invocable"; responsable de 04 actualizado a Matías (tabla y ficha).
 
 ## DEUDA registrada por el plan
 
