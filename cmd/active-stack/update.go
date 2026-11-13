@@ -17,6 +17,8 @@ import (
 	"github.com/Group-Active-IA/active-stack/assets"
 	"github.com/Group-Active-IA/active-stack/internal/agents"
 	"github.com/Group-Active-IA/active-stack/internal/catalog"
+	"github.com/Group-Active-IA/active-stack/internal/filemerge"
+	"github.com/Group-Active-IA/active-stack/internal/i18n"
 	"github.com/Group-Active-IA/active-stack/internal/install"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/planner"
@@ -374,11 +376,13 @@ func syncRecordedInstall(ctx context.Context, home, project string, adoptLegacy 
 	}
 	if len(state.Agents) == 0 {
 		fmt.Fprintln(out, "Instalación anterior sin registro de selección: se actualizan las skills detectadas. Para actualizar configuraciones, ejecutá install una vez con tu modo actual.")
+		fmt.Fprintln(out, i18n.T(i18n.LangES, "update.breaking.nosync"))
 		return refreshSkills(ctx, home, project, adoptLegacy, out)
 	}
 	if err := preflightRecordedSkills(home, state, adoptLegacy); err != nil {
 		return err
 	}
+	warnLegacyProjects(state, out)
 	exe, err := os.Executable()
 	if err != nil {
 		return err
@@ -592,4 +596,31 @@ func refreshSkills(ctx context.Context, home, project string, adoptLegacy bool, 
 	}
 	fmt.Fprintf(out, "Skills: %d actualizadas, %d sin cambios, %d con errores.\n", updated, unchanged, len(failures))
 	return errors.Join(failures...)
+}
+
+// warnLegacyProjects tells, for each registered project that still has the legacy
+// coordinator block in its Claude instructions file, that update did not rewrite
+// it and how to migrate it (claude-native-opsx G10: warn, do not migrate).
+func warnLegacyProjects(state update.State, out io.Writer) {
+	reg, err := agents.NewDefaultRegistry()
+	if err != nil {
+		return
+	}
+	adapter, ok := reg.Get(model.AgentClaude)
+	if !ok {
+		return
+	}
+	for _, root := range state.Projects {
+		path := adapter.PathsFor(root, model.Project).InstructionsPath
+		raw, err := os.ReadFile(path)
+		if err != nil {
+			continue
+		}
+		for _, id := range filemerge.MarkedSectionIDs(string(raw)) {
+			if id == "sdd-orchestrator" {
+				fmt.Fprintln(out, i18n.Tf(i18n.LangES, "update.project.legacy", root, path, root))
+				break
+			}
+		}
+	}
 }

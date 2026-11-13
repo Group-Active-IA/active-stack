@@ -30,6 +30,10 @@ type ParsedUninstallFlags struct {
 	// Yes means "confirm without prompting" (--yes / -y).
 	Yes bool
 
+	// OverwriteEdited (--overwrite-edited) confirms restoring managed files that
+	// were edited after the Claude migration. --yes never implies it.
+	OverwriteEdited bool
+
 	// RestoreManifestPath is the path supplied via --restore-manifest.
 	// Only meaningful when Intent.Strategy == StrategyRestore.
 	RestoreManifestPath string
@@ -68,6 +72,7 @@ func ParseUninstallFlags(args []string) (ParsedUninstallFlags, error) {
 		yShort          bool
 		home            string
 		lang            string
+		overwriteEdited bool
 	)
 
 	fs.StringVar(&mode, "mode", "", "uninstall mode: lite|full|custom")
@@ -80,6 +85,7 @@ func ParseUninstallFlags(args []string) (ParsedUninstallFlags, error) {
 	fs.BoolVar(&yShort, "y", false, "alias for --yes")
 	fs.StringVar(&home, "home", "", "override home directory (default: os.UserHomeDir())")
 	fs.StringVar(&lang, "lang", "", "output language: en|es (default: en)")
+	fs.BoolVar(&overwriteEdited, "overwrite-edited", false, i18n.T(langFromArgs(args), "uninstall.flag.overwrite_edited"))
 
 	if err := fs.Parse(args); err != nil {
 		return ParsedUninstallFlags{}, err
@@ -171,6 +177,7 @@ func ParseUninstallFlags(args []string) (ParsedUninstallFlags, error) {
 		Yes:                 yes,
 		HomeDir:             homeDir,
 		RestoreManifestPath: restoreManifest,
+		OverwriteEdited:     overwriteEdited,
 		Lang:                resolvedLang,
 		Intent: uninstall.Intent{
 			Mode:     installMode,

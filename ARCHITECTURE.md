@@ -71,8 +71,15 @@ Es un harness de **configuración** que arma el orquestador SDD con piezas
 - Governance por dominio (sí/no)
 - … (extensible)
 
-El resultado es el bloque de instrucciones del orquestador que se inyecta en
-`CLAUDE.md` / `AGENTS.md`, compuesto a partir de los toggles elegidos.
+El resultado depende del agente. Para **Claude** (`ConfigDeliveryManagedSkill`) es una
+entrega por capas: la skill `/sdd-orchestrator` (rol coordinador y `modules/` por acción,
+sólo los de toggles activos, con `disable-model-invocation: true` y marca de propiedad) y
+un bloque universal mínimo en `CLAUDE.md` (`active-stack:universal-rules`). La partición
+sigue `openspec/matriz-reglas-opsx.md`. Con una versión de Claude Code menor que la mínima
+(2.1.110) o no verificable, rige el **modo legado**: el bloque único de siempre en
+`CLAUDE.md`, idéntico byte a byte. Para el resto de los agentes sigue siendo el bloque de
+instrucciones que se inyecta en `AGENTS.md` / `opencode.json`, compuesto a partir de los
+toggles elegidos.
 
 > Hoy los toggles salen del catálogo (`toggles:` en `harnesses.yaml`): el usuario
 > **no** los elige en la TUI/GUI, que solo muestran harnesses. Por eso una capacidad

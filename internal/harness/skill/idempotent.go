@@ -14,7 +14,12 @@ import (
 // refreshSkillDirectory stages a complete skill, compares every file, then
 // snapshots and swaps the managed directory. A removed upstream file is removed
 // from the installed copy; no partial source tree is written in place.
-func refreshSkillDirectory(skillsDir, skillID, backupDir string, populate func(stage string) error) (Result, error) {
+//
+// An empty backupDir is only valid when callerSnapshots is true (the caller
+// already saved the directory in its own manifest). Otherwise replacing an
+// existing directory is refused, so no production path skips the snapshot by
+// accident.
+func refreshSkillDirectory(skillsDir, skillID, backupDir string, callerSnapshots bool, populate func(stage string) error) (Result, error) {
 	if err := os.MkdirAll(skillsDir, 0o755); err != nil {
 		return Result{}, fmt.Errorf("skill %q: create skills dir: %w", skillID, err)
 	}
@@ -47,8 +52,13 @@ func refreshSkillDirectory(skillsDir, skillID, backupDir string, populate func(s
 		if identical {
 			return Result{SkillPath: dest, AlreadyInstalled: true}, nil
 		}
-		if err := snapshotSkillDir(backupDir, skillsDir, skillID); err != nil {
-			return Result{}, err
+		if backupDir == "" && !callerSnapshots {
+			return Result{}, fmt.Errorf("skill %q: refusing to replace %q without a backup dir", skillID, dest)
+		}
+		if backupDir != "" {
+			if err := snapshotSkillDir(backupDir, skillsDir, skillID); err != nil {
+				return Result{}, err
+			}
 		}
 	}
 
@@ -160,4 +170,12 @@ func snapshotSkillDir(backupDir, skillsDir, skillID string) error {
 		return fmt.Errorf("skill %q: snapshot: %w", skillID, err)
 	}
 	return nil
+}
+
+// RefreshManagedDirectory exposes the staged-compare-swap used for embedded and
+// cloned skills to other installers (claude-native-opsx D1). populate fills the
+// staging directory; an empty backupDir skips the internal snapshot because the
+// caller snapshots in its own manifest.
+func RefreshManagedDirectory(skillsDir, skillID, backupDir string, populate func(stage string) error) (Result, error) {
+	return refreshSkillDirectory(skillsDir, skillID, backupDir, true, populate)
 }

@@ -4,11 +4,13 @@
 > Espejo de `AGENTS.md`: **si modificás uno, actualizás el otro.**
 > Leé este archivo antes de cualquier acción no trivial.
 
-> **Nota sobre el orquestador SDD.** El orquestador SDD global (coordinación,
-> delegación a sub-agentes, model-routing por fase, protocolo Engram, governance)
-> ya vive en tu `~/.claude/CLAUDE.md`. **Este archivo NO lo duplica.** Si necesitás
-> el detalle del orquestador, referenciá ese archivo global. Acá viven solo las
-> reglas **específicas de este proyecto**.
+> **Nota sobre el orquestador SDD.** En Claude, `active-stack install` entrega el
+> coordinador SDD como la skill `/sdd-orchestrator` (en `~/.claude/skills/` o
+> `.claude/skills/` según el target) y deja en `CLAUDE.md` sólo el bloque de reglas
+> universales (`active-stack:universal-rules`). **Este archivo NO duplica ninguno de
+> los dos.** Si necesitás el detalle, mirá `internal/harness/config/assets/` y
+> `openspec/matriz-reglas-opsx.md`. Acá viven solo las reglas **específicas de este
+> proyecto**.
 
 ---
 
@@ -76,8 +78,10 @@ Detalle real en `internal/model/harness.go`. Tipos clave:
 
 **El harness `sdd-orchestrator` es clave**: es de tipo `config` y se compone a
 partir de **toggles modulares** (`tdd`, `engram`, `model-routing`, `delegation`,
-`governance`). El resultado es el bloque de instrucciones del orquestador que se
-inyecta en `CLAUDE.md`/`AGENTS.md` del proyecto destino.
+`governance`). El resultado depende del agente: para Claude es una skill invocable
+(`/sdd-orchestrator`, con `modules/` por acción) más un bloque universal mínimo en
+`CLAUDE.md`; para Codex, Antigravity y OpenCode sigue siendo el bloque de instrucciones
+que se inyecta en `AGENTS.md`/`opencode.json` del proyecto destino.
 
 Los toggles del `sdd-orchestrator` **no se exponen en la TUI ni en la GUI** (salen
 literales del catálogo); los harnesses sí. Por eso las capacidades opt-in se

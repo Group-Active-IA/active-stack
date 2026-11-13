@@ -1,0 +1,10 @@
+{
+  "entry": {"file": "internal/catalog/catalog.go", "symbol": "parse"},
+  "files": [
+    "internal/catalog/catalog.go",
+    "internal/model/harness.go"
+  ],
+  "effects": [
+    "Parsea el YAML y valida los harnesses."
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "revision-catalogo-validacion-v1",
+  "family": "revision",
+  "rubric_version": "1",
+  "source": {"kind": "git", "revision": "1b4639b537a4d0c04dc8c25c0220732095a772d3", "patch": "seeded.patch", "sha256": "42152bc69b1c23ae8b54a5e5393f99e8f5766fa25955d92592d1347f188648f4"},
+  "prompt": {"file": "prompt.md", "sha256": "8d872abbe90a54ebdc75c9ec27d2d39852b4e5adbcadbeb2cef2da37f84acaf0"},
+  "allowed_tools": ["leer archivos", "buscar en archivos"],
+  "limits": {"timeout": "(TBD · D3)", "max_attempts": "(TBD · D3)"},
+  "key": "key.json",
+  "reference": "reference.json",
+  "defective": "defective.json",
+  "criteria": [
+    {"id": "R1", "description": "Ningún defecto sembrado queda omitido (regla de emparejamiento de review.Match).", "mandatory": true, "check": "rev_sin_omisiones"},
+    {"id": "R2", "description": "Cada verdadero positivo trae evidencia.", "mandatory": true, "check": "rev_evidencia"},
+    {"id": "R3", "description": "Ningún hallazgo sin emparejar queda rechazado por el revisor (falso positivo) ni sin decidir.", "mandatory": true, "check": "rev_sin_falsos_positivos"},
+    {"id": "R4", "description": "El checkout queda intacto.", "mandatory": true, "check": "checkout_intacto"}
+  ]
+}

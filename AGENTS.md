@@ -70,8 +70,10 @@ Detalle real en `internal/model/harness.go`. Tipos clave:
 
 **El harness `sdd-orchestrator` es clave**: es de tipo `config` y se compone a
 partir de **toggles modulares** (`tdd`, `engram`, `model-routing`, `delegation`,
-`governance`). El resultado es el bloque de instrucciones del orquestador que se
-inyecta en `CLAUDE.md`/`AGENTS.md` del proyecto destino.
+`governance`). El resultado depende del agente: para Claude es una skill invocable
+(`/sdd-orchestrator`, con `modules/` por acción) más un bloque universal mínimo en
+`CLAUDE.md`; para Codex, Antigravity y OpenCode sigue siendo el bloque de instrucciones
+que se inyecta en `AGENTS.md`/`opencode.json` del proyecto destino.
 
 Los toggles del `sdd-orchestrator` **no se exponen en la TUI ni en la GUI** (salen
 literales del catálogo); los harnesses sí. Por eso las capacidades opt-in se
@@ -145,8 +147,10 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
 
 ## 6. Notas
 
-- El orquestador SDD global (coordinación, delegación, model-routing) vive en el
-  `~/.claude/CLAUDE.md` del usuario. Este proyecto NO lo duplica.
+- En Claude, el orquestador SDD (coordinación, delegación, model-routing) se entrega como
+  la skill `/sdd-orchestrator` más un bloque universal en `CLAUDE.md`. Este proyecto NO
+  los duplica; el detalle está en `internal/harness/config/assets/` y en
+  `openspec/matriz-reglas-opsx.md`.
 - `openspec/` se versiona en Git. Compartí la rama de propuesta con sus artefactos para revisión.
 - Antes de crear una rama, leé [CHANGES.md](CHANGES.md) y la ficha del change asignado.
   La ronda actual se limita a `propose`. Creá una rama `propose/<nombre-del-change>`,

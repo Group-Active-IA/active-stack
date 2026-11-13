@@ -26,7 +26,7 @@ El reparto está propuesto por afinidad entre cambios. Las dependencias ordenan 
 | 01 | [Compatibilidad del tier estricto](#change-01) | Juan Cruz | P0 | Alto | — |
 | 02 | [Medición de referencia](#change-02) | Matías | P1 | Bajo | [01](#change-01) |
 | 03 | [Roles nativos en Claude](#change-03) | Juani | P1 | Alto | [02](#change-02) |
-| 04 | [Roles nativos en Codex](#change-04) | Giuliano | P1 | Alto | [02](#change-02) |
+| 04 | [Roles nativos en Codex](#change-04) | Matías | P1 | Alto | [02](#change-02) |
 | 05 | [Lectura dirigida y herramientas por tarea](#change-05) | Emiliano | P1 | Medio | [03](#change-03), [04](#change-04) |
 | 06 | [Evidencia ligada a la ejecución](#change-06) | Gianfranco | P1 | Medio | [03](#change-03), [04](#change-04) |
 | 07 | [Delegación selectiva con contrato](#change-07) | Neyen | P1 | Medio | [05](#change-05), [06](#change-06) |
@@ -107,11 +107,13 @@ El caso registrado en el informe se reproduce con `codex -c 'approval_policy="un
 
 **Change** `claude-native-opsx` · **Responsable** Juani · **Cliente** Claude · **Dependencias** [02](#change-02)
 
+**BREAKING.** El coordinador deja de vivir en `CLAUDE.md` y pasa a la skill `/sdd-orchestrator`, que se invoca a mano; reinstalar migra el bloque administrado.
+
 **Problema.** Las instrucciones compartidas de Claude mezclan reglas universales con el rol de coordinador. Eso dificulta saber qué contexto recibe cada especialista.
 
 **Qué buscar.** Seguí `InstallSDD` o el punto equivalente del adapter hasta los archivos que ve Claude. Identificá alcance, precedencia y contenido efectivo en sesión y en especialistas. Investigá qué nombres y ubicaciones soporta la versión objetivo. Documentá la matriz de reglas compartidas con 04.
 
-**Qué se implementaría.** Registrá el orquestador nativo para invocación explícita y separá las reglas universales, la definición del rol y los módulos por acción. Planificá la migración del bloque administrado en `CLAUDE.md` y de cualquier activación automática administrada por el stack. Conservá las preferencias del usuario y el rollback.
+**Qué se implementaría.** Entregá el coordinador como skill invocable (`/sdd-orchestrator`, sólo por el usuario) y separá las reglas universales, la definición del rol y los módulos por acción. Planificá la migración del bloque administrado en `CLAUDE.md` y de cualquier activación automática administrada por el stack. Conservá las preferencias del usuario y el rollback.
 
 **Qué acordar en grupo.** Dónde se instala cada pieza, cómo se invoca el coordinador y qué reglas necesitan los especialistas. Coordiná con 04 el inventario de módulos, quién los carga y cuándo se aplican.
 
@@ -130,7 +132,7 @@ El caso registrado en el informe se reproduce con `codex -c 'approval_policy="un
 
 ### 04 · Roles nativos en Codex
 
-**Change** `codex-native-opsx` · **Responsable** Giuliano · **Cliente** Codex · **Dependencias** [02](#change-02)
+**Change** `codex-native-opsx` · **Responsable** Matías · **Cliente** Codex · **Dependencias** [02](#change-02)
 
 **Problema.** La plantilla de Codex presupone un coordinador dedicado, pero la entrega actual como instrucciones compartidas no registra ese rol ni demuestra cómo se activa en cada superficie.
 

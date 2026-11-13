@@ -17,6 +17,10 @@ import (
 // to the current process PATH). This is safe to call on all platforms since the
 // binary is cross-compiled — build tags are NOT used.
 func AddToUserPath(dir string) error {
+	return addToUserPath(dir, persistUserPath)
+}
+
+func addToUserPath(dir string, persist func(string) error) error {
 	if runtime.GOOS != "windows" {
 		// Still add to the current process PATH on non-Windows (harmless for callers).
 		return addToProcessPath(dir)
@@ -36,6 +40,10 @@ func AddToUserPath(dir string) error {
 		return err
 	}
 
+	return persist(dir)
+}
+
+func persistUserPath(dir string) error {
 	// 2. Persist via PowerShell: modifies the user-scoped PATH in the registry.
 	//    This change survives terminal restarts and applies to all future processes
 	//    for this user without requiring admin privileges.
