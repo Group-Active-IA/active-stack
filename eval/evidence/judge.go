@@ -1,6 +1,9 @@
 package evidence
 
-import "strings"
+import (
+	"path"
+	"strings"
+)
 
 // Status es el estado de un requisito (design.md D4).
 type Status string
@@ -13,11 +16,18 @@ const (
 
 // Corroboration es lo que dijo una fuente independiente o una reejecución sobre un recibo.
 // Vacía = nadie corroboró.
+//
+// Una reejecución solo cuenta como fuente independiente si tiene captura propia de una fuente
+// independiente (05 D20). La reejecución del coordinador sin esa captura no corrobora ni
+// contradice: queda como si nadie hubiera corroborado.
 type Corroboration string
 
 const (
-	Confirms    Corroboration = "confirma"
-	Contradicts Corroboration = "contradice"
+	Confirms          Corroboration = "confirma"                              // fuente independiente
+	Contradicts       Corroboration = "contradice"                            // fuente independiente
+	ReexecConfirms    Corroboration = "reejecucion confirma"                  // reejecución con captura independiente
+	ReexecContradicts Corroboration = "reejecucion contradice"                // reejecución con captura independiente
+	ReexecUncaptured  Corroboration = "reejecucion sin captura independiente" // no cuenta
 )
 
 // Sufficiency es el juicio del revisor sobre si el comando respalda el requisito (D3).
@@ -134,19 +144,19 @@ func evaluateReceipt(r Receipt, env Env) Verdict {
 
 	// Procedencia: la ejecución es real y corresponde al estado del código.
 	switch {
-	case env.Corroboration[r.Run] == Contradicts:
+	case env.Corroboration[r.Run] == Contradicts || env.Corroboration[r.Run] == ReexecContradicts:
 		v.Provenance = provBad
 		rejected = append(rejected, "la fuente independiente o la reejecución lo contradicen")
 	case r.Result.ExitCode != nil && r.Output.Capture.ExitCode != nil && *r.Result.ExitCode != *r.Output.Capture.ExitCode:
 		v.Provenance = provBad
 		rejected = append(rejected, "el código de salida declarado difiere del registro de captura")
-	case env.Corroboration[r.Run] == Confirms:
+	case env.Corroboration[r.Run] == Confirms || env.Corroboration[r.Run] == ReexecConfirms:
 		v.Provenance = provOK
 	default:
 		v.Provenance = provNone
 		unverified = append(unverified, "sin fuente independiente ni reejecución")
 	}
-	if r.Tree.Dir != env.Dir {
+	if !sameDir(r.Tree.Dir, env.Dir) {
 		rejected = append(rejected, "directorio ajeno")
 	}
 	if r.Tree.Commit != env.Commit || !sameFP(r.Tree.Fingerprint, env.StateFP) {
@@ -190,4 +200,18 @@ func sameFP(a, b *Fingerprint) bool {
 		return a == nil && b == nil
 	}
 	return *a == *b
+}
+
+// sameDir compara directorios sin importar el estilo del separador ni la barra final. Se normaliza
+// a mano (no con filepath) para que el veredicto sea el mismo en Windows y en Linux: en Linux
+// filepath no trata la barra invertida como separador.
+//
+// Límite (TBD): la comparación distingue mayúsculas y minúsculas, y no resuelve enlaces
+// simbólicos ni nombres cortos 8.3 de Windows.
+func sameDir(a, b string) bool {
+	return normDir(a) == normDir(b)
+}
+
+func normDir(p string) string {
+	return path.Clean(strings.ReplaceAll(p, "\\", "/"))
 }
