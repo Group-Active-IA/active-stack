@@ -1,0 +1,72 @@
+{
+  "id": "mismo-head-otro-diff",
+  "descripcion": "Mismo HEAD, pero la huella del estado probado difiere de la del estado actual.",
+  "requisito": "R1",
+  "recibos": [
+    {
+      "corrida": "r-001",
+      "arbol": {
+        "directorio": "/work/active-stack-06",
+        "commit": "7a600895e8f1fe1f3728cffa1fcb57dca5663a59",
+        "huella": {
+          "algorithm": "sha256",
+          "value": "55423afde95e46b67dea40e6e85ac7719f6c7bb8b5dff3c7229e0e36ff8355a5"
+        }
+      },
+      "comando": "go test ./...",
+      "resultado": {
+        "codigo_de_salida": 0,
+        "marca_de_tiempo": "2026-11-13T12:00:00Z"
+      },
+      "requisitos": [
+        "R1"
+      ],
+      "salida": {
+        "truncada": false,
+        "huella": {
+          "algorithm": "sha256",
+          "value": "7b7bf2b126155ef1a1da274bcc53d808c63bac04ea4ebd8034801321ce7a9b63"
+        },
+        "captura": {
+          "fuente": "arnés",
+          "redactor": "redactor-del-arnes (ilustrativo)",
+          "cliente": "claude-code",
+          "interfaz": "cli",
+          "sistema": "windows/amd64",
+          "version": "(ilustrativa)",
+          "codigo_de_salida": 0,
+          "cobertura": "demostrada",
+          "redacciones": {
+            "token": 1,
+            "ruta-home": 1
+          }
+        }
+      }
+    }
+  ],
+  "entorno": {
+    "directorio": "/work/active-stack-06",
+    "commit": "7a600895e8f1fe1f3728cffa1fcb57dca5663a59",
+    "copias": {
+      "r-001": "copias/go-test-ok.txt"
+    },
+    "vencidas": [],
+    "corroboracion": {
+      "r-001": "confirma"
+    },
+    "suficiencia": {
+      "r-001": "suficiente"
+    },
+    "detalle_descartado_necesario": [],
+    "huella_estado": {
+      "algorithm": "sha256",
+      "value": "0293e149f20dc9bd3b0b9d694a9db9c46dc6ac431ccb3ac1b1a0cfe5d9452a54"
+    }
+  },
+  "esperado": {
+    "estado": "rechazado",
+    "integridad": "aprobada",
+    "procedencia": "corroborada",
+    "suficiencia": "suficiente"
+  }
+}

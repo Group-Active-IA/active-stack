@@ -1,0 +1,21 @@
+{
+  "id": "cero-recibos",
+  "descripcion": "El requisito no tiene ningún recibo: nunca queda verificado.",
+  "requisito": "R1",
+  "recibos": [],
+  "entorno": {
+    "directorio": "/work/active-stack-06",
+    "commit": "7a600895e8f1fe1f3728cffa1fcb57dca5663a59",
+    "copias": {},
+    "vencidas": [],
+    "corroboracion": {},
+    "suficiencia": {},
+    "detalle_descartado_necesario": []
+  },
+  "esperado": {
+    "estado": "sin verificar",
+    "integridad": "no aplica",
+    "procedencia": "no aplica",
+    "suficiencia": "no aplica"
+  }
+}
