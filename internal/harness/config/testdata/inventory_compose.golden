@@ -1,0 +1,33 @@
+# Inventario de Compose (opsx-task-context, tareas 1.1 y 1.2)
+# bytes y líneas (wc -l: cantidad de saltos de línea) del bloque compuesto.
+# Regenerar: go test ./internal/harness/config -run TestInventory_ComposeGolden -update
+
+## Paridad: combinaciones acumulativas de toggles
+# variant	toggles	bytes	lines
+claude	none	7116	188
+claude	+delegation	8121	210
+claude	+model-routing	8899	226
+claude	+governance	10175	246
+claude	+engram	16268	365
+claude	+tdd	20065	448
+codex	none	5543	147
+codex	+delegation	6394	168
+codex	+model-routing	6844	181
+codex	+governance	8120	201
+codex	+engram	14213	320
+codex	+tdd	18010	403
+
+## Referencia: demás variantes (fuera del alcance de paridad)
+# variant	scope	bytes	lines
+antigravity	none	4923	134
+antigravity	all	18102	397
+cursor	none	5579	147
+cursor	all	18556	411
+gemini	none	5525	147
+gemini	all	17992	403
+generic	none	5461	154
+generic	all	17847	408
+opencode	none	7371	187
+opencode	all	20320	447
+windsurf	none	5794	149
+windsurf	all	18677	418

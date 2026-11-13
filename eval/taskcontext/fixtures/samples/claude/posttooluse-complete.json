@@ -1,0 +1,1 @@
+{"hook_event_name":"PostToolUse","tool_name":"Bash","tool_input":{"command":"go test ./mini/"},"tool_response":{"stdout":"=== RUN   TestOk\nline 02 padding\nok  \tmini\t0.100s\n","stderr":"","interrupted":false,"isImage":false},"tool_use_id":"toolu_FICTICIO_0002"}
