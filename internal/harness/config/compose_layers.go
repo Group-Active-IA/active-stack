@@ -290,3 +290,22 @@ func joinBlocks(blocks ...string) string {
 	}
 	return strings.Join(out, "\n\n") + "\n"
 }
+
+// ExpectedModules lists the module names ComposeLayers produces for the given
+// toggles (artifacts always), so verify can check that none is missing.
+func ExpectedModules(toggles []string) []string {
+	names := []string{"artifacts"}
+	for _, t := range toggles {
+		switch t {
+		case "delegation":
+			names = append(names, "delegation")
+		case "model-routing":
+			names = append(names, "model-assignments")
+		case "engram":
+			names = append(names, "engram-opsx")
+		case "tdd":
+			names = append(names, "tdd")
+		}
+	}
+	return names
+}

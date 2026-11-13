@@ -56,6 +56,9 @@ func RenderSkillMD(spec SkillSpec) string {
 	return b.String()
 }
 
+// HasOwnerMark reports whether SKILL.md content carries the Active Stack ownership mark.
+func HasOwnerMark(content string) bool { return hasOwnerMark(content) }
+
 // hasOwnerMark reports whether SKILL.md content carries the ownership mark in
 // its frontmatter.
 func hasOwnerMark(content string) bool {

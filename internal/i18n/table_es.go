@@ -80,6 +80,7 @@ var tableES = map[string]string{
 	"update.breaking.nosync":           "Claude: esta instalación no tiene registro de selección, así que no se modificó CLAUDE.md. Cambio BREAKING: el coordinador OPSX ahora es la skill /sdd-orchestrator. Ejecutá `active-stack install` una vez con tu modo actual para migrar.",
 	"update.project.legacy":            "El proyecto %s todavía tiene el bloque legado del coordinador en %s; no se reescribió. Migralo con: active-stack starter add <starter> --project %s",
 	"install.project.manual_cleanup":   "Instalación de proyecto de Claude: para quitarla a mano, borrá %s y la sección active-stack:universal-rules de %s (el uninstall de proyecto todavía no está soportado).",
+	"uninstall.flag.overwrite_edited":  "con --strategy restore, restaura CLAUDE.md y los archivos de la skill aunque se hayan editado después de la migración (antes guarda su contenido actual; --yes no lo implica)",
 
 	// strategy.{targeted,restore}.{label,desc,long} — uninstall strategies.
 	"strategy.targeted.label": "Dirigida",
