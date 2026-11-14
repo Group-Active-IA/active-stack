@@ -1,0 +1,30 @@
+{
+  "id": "archivo-caliente-patron",
+  "descripcion": "Dos subtareas escriben sdd-orchestrator.md de clientes distintos: el patrón caliente no se reparte entre workers concurrentes.",
+  "tarea": {
+    "accion": "apply",
+    "revision_independiente": false,
+    "delegation_activo": true,
+    "modulo_disponible": true,
+    "escritura": [
+      "internal/harness/config/assets/claude/sdd-orchestrator.md"
+    ],
+    "encargos_abiertos": [
+      [
+        "internal/harness/config/assets/codex/sdd-orchestrator.md"
+      ]
+    ],
+    "breve": false,
+    "depende_del_contexto_vivo": false,
+    "relee_el_resultado": false,
+    "lineas_de_salida": 0,
+    "solo_conclusion": false,
+    "paralelizable": false
+  },
+  "esperado": {
+    "accion": "apply",
+    "paso": 2,
+    "senal": "conflicto de archivos",
+    "modalidad": "serializado"
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "id": "recibo-corroborado-falla",
+  "descripcion": "El recibo del requisito queda corroborado (captura independiente y reejecución que confirma), pero el comando terminó con código 1: los tests del encargo fallan de verdad. Igual que en la combinación, un resultado real que falla se rechaza aunque el coordinador haya marcado los criterios.",
+  "encargo": {
+    "id": "A",
+    "partida": {
+      "commit": "1111111111111111111111111111111111111111",
+      "huella": {
+        "algorithm": "sha256",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "escritura": [
+      "internal/x/**"
+    ],
+    "requisitos": [
+      "R-comb"
+    ],
+    "intento": 1,
+    "historial": []
+  },
+  "retorno": {
+    "status": "completed",
+    "start": {
+      "commit": "1111111111111111111111111111111111111111",
+      "huella": {
+        "algorithm": "sha256",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
+    },
+    "modified": [
+      {
+        "ruta": "internal/x/x.go",
+        "tipo": "modified"
+      }
+    ],
+    "findings": [],
+    "receipts": [
+      {
+        "corrida": "r-int",
+        "arbol": {
+          "directorio": "/work/as-07-integracion",
+          "commit": "4444444444444444444444444444444444444444"
+        },
+        "comando": "go test ./internal/...",
+        "resultado": {
+          "codigo_de_salida": 1,
+          "marca_de_tiempo": "2026-11-13T18:00:00Z"
+        },
+        "requisitos": [
+          "R-comb"
+        ],
+        "salida": {
+          "truncada": false,
+          "huella": {
+            "algorithm": "sha256",
+            "value": "60c38b2063e67a4497ac1e94a2131e144b6a834d0bc2162f1b5d5970c17a121a"
+          },
+          "captura": {
+            "fuente": "arnés",
+            "redactor": "redactor-del-arnes (ilustrativo)",
+            "cliente": "claude-code",
+            "interfaz": "cli",
+            "sistema": "windows/amd64",
+            "version": "(ilustrativa)",
+            "codigo_de_salida": 1,
+            "cobertura": "demostrada",
+            "redacciones": {}
+          }
+        }
+      }
+    ],
+    "pending": "—"
+  },
+  "observado": {
+    "en_partida": [],
+    "final": [
+      {
+        "ruta": "internal/x/x.go",
+        "tipo": "modified"
+      }
+    ],
+    "criterios_cumplidos": true,
+    "evidencia": {
+      "directorio": "/work/as-07-integracion",
+      "commit": "4444444444444444444444444444444444444444",
+      "copias": {
+        "r-int": "copias/go-test-fail.txt"
+      },
+      "vencidas": [],
+      "corroboracion": [
+        {
+          "corrida": "r-int",
+          "comando": "go test ./internal/...",
+          "directorio": "/work/as-07-integracion",
+          "commit": "4444444444444444444444444444444444444444",
+          "codigo_de_salida": 1,
+          "fuente": "arnés (captura de integración)",
+          "veredicto": "reejecucion confirma"
+        }
+      ],
+      "suficiencia": [
+        {
+          "corrida": "r-int",
+          "requisito": "R-comb",
+          "comando": "go test ./internal/...",
+          "veredicto": "suficiente"
+        }
+      ],
+      "detalle_descartado_necesario": []
+    }
+  },
+  "esperado": {
+    "estado": "rechazado",
+    "paso": "recibos",
+    "accion": "reintentar"
+  }
+}

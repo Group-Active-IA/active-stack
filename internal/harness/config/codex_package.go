@@ -89,12 +89,18 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 		pkg.Files["SKILL.md"] += "\n" + coordinator
 		pkg.Files["modules/engram-opsx.md"] = opsx + "\n" + sync
 	}
+	// opsx-selective-delegation (07): same rule and module text as Claude.
+	rule, err := delegationRule(active["delegation"])
+	if err != nil {
+		return CodexPackage{}, err
+	}
+	pkg.Files["SKILL.md"] += "\n" + rule
 	if active["delegation"] {
-		delegation, err := fs.ReadFile(embeddedAssets, "assets/codex/native/delegation.md")
+		delegation, err := delegationModule()
 		if err != nil {
 			return CodexPackage{}, err
 		}
-		pkg.Files["modules/delegation.md"] = string(delegation)
+		pkg.Files["modules/delegation.md"] = delegation
 	}
 	if active["tdd"] {
 		tdd, err := loadFragment("strict-tdd.md")

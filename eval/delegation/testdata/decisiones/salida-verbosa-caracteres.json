@@ -1,0 +1,25 @@
+{
+  "id": "salida-verbosa-caracteres",
+  "descripcion": "Pocas líneas pero más de 10.000 caracteres de salida (líneas muy largas): también es salida verbosa según 05 D3 y se delega.",
+  "tarea": {
+    "accion": "verify",
+    "revision_independiente": false,
+    "delegation_activo": true,
+    "modulo_disponible": true,
+    "escritura": [],
+    "encargos_abiertos": [],
+    "breve": false,
+    "depende_del_contexto_vivo": false,
+    "relee_el_resultado": false,
+    "lineas_de_salida": 40,
+    "caracteres_de_salida": 25000,
+    "solo_conclusion": false,
+    "paralelizable": false
+  },
+  "esperado": {
+    "accion": "verify",
+    "paso": 4,
+    "senal": "salida verbosa",
+    "modalidad": "delegado"
+  }
+}

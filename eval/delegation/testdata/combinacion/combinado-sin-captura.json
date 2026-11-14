@@ -1,0 +1,116 @@
+{
+  "id": "combinado-sin-captura",
+  "descripcion": "La reejecución de integración corre sin captura independiente: no corrobora y no se integra.",
+  "encargos": [
+    {
+      "id": "A",
+      "partida": {
+        "commit": "1111111111111111111111111111111111111111"
+      },
+      "escritura": [
+        "internal/x/**"
+      ],
+      "requisitos": [
+        "R1"
+      ],
+      "intento": 1,
+      "historial": []
+    },
+    {
+      "id": "B",
+      "partida": {
+        "commit": "1111111111111111111111111111111111111111"
+      },
+      "escritura": [
+        "internal/y/**"
+      ],
+      "requisitos": [
+        "R1"
+      ],
+      "intento": 1,
+      "historial": []
+    }
+  ],
+  "integracion": {
+    "final": [
+      {
+        "ruta": "internal/x/x.go",
+        "tipo": "modified"
+      },
+      {
+        "ruta": "internal/y/y.go",
+        "tipo": "modified"
+      }
+    ],
+    "escenarios": [
+      "R-comb"
+    ],
+    "recibos": [
+      {
+        "corrida": "r-int",
+        "arbol": {
+          "directorio": "/work/as-07-integracion",
+          "commit": "4444444444444444444444444444444444444444"
+        },
+        "comando": "go test ./internal/...",
+        "resultado": {
+          "codigo_de_salida": 0,
+          "marca_de_tiempo": "2026-11-13T18:00:00Z"
+        },
+        "requisitos": [
+          "R-comb"
+        ],
+        "salida": {
+          "truncada": false,
+          "huella": {
+            "algorithm": "sha256",
+            "value": "7b7bf2b126155ef1a1da274bcc53d808c63bac04ea4ebd8034801321ce7a9b63"
+          },
+          "captura": {
+            "fuente": "arnés",
+            "redactor": "redactor-del-arnes (ilustrativo)",
+            "cliente": "claude-code",
+            "interfaz": "cli",
+            "sistema": "windows/amd64",
+            "version": "(ilustrativa)",
+            "codigo_de_salida": 0,
+            "cobertura": "demostrada",
+            "redacciones": {}
+          }
+        }
+      }
+    ],
+    "evidencia": {
+      "directorio": "/work/as-07-integracion",
+      "commit": "4444444444444444444444444444444444444444",
+      "copias": {
+        "r-int": "copias/go-test-ok.txt"
+      },
+      "vencidas": [],
+      "corroboracion": [
+        {
+          "corrida": "r-int",
+          "comando": "go test ./internal/...",
+          "directorio": "/work/as-07-integracion",
+          "commit": "4444444444444444444444444444444444444444",
+          "codigo_de_salida": 0,
+          "fuente": "coordinador",
+          "veredicto": "reejecucion sin captura independiente"
+        }
+      ],
+      "suficiencia": [
+        {
+          "corrida": "r-int",
+          "requisito": "R-comb",
+          "comando": "go test ./internal/...",
+          "veredicto": "suficiente"
+        }
+      ],
+      "detalle_descartado_necesario": []
+    }
+  },
+  "esperado": {
+    "estado": "sin verificar",
+    "integrar": false
+  }
+}
