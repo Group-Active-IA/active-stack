@@ -2,6 +2,7 @@ package delegation
 
 import (
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/Group-Active-IA/active-stack/eval/evidence"
@@ -79,13 +80,26 @@ func JudgeReturn(a Assignment, raw []byte, obs Observed) ReturnVerdict {
 		return a.close(Unverified, StepEnvelope, err.Error())
 	}
 
-	// 1. La partida declarada es la registrada (commit y huella del estado, 06 D2).
+	// 1. La partida declarada es la registrada (commit y huella del estado, 06 D2). Sin la huella
+	// del estado de trabajo no se distingue un árbol limpio de uno con cambios sin confirmar: la
+	// partida no es comprobable y el retorno queda sin verificar.
+	if a.Start.Fingerprint == nil || e.Start.Fingerprint == nil {
+		return a.close(Unverified, StepStart, "partida sin huella del estado de trabajo")
+	}
 	if e.Start.Commit != a.Start.Commit || !sameFP(e.Start.Fingerprint, a.Start.Fingerprint) {
 		return a.close(Unverified, StepStart, "partida declarada distinta de la registrada")
 	}
 
 	// 2. Propiedad (D4): lo atribuible es lo que cambió desde la partida; fuera del conjunto de
-	// escritura es out_of_scope aunque esté confirmado y los tests pasen.
+	// escritura es out_of_scope aunque esté confirmado y los tests pasen. Un cambio que ya estaba
+	// en la partida sólo se excluye si se puede comparar su contenido.
+	if blind := uncomparable(obs.AtStart, obs.Final); len(blind) > 0 {
+		var reasons []string
+		for _, p := range blind {
+			reasons = append(reasons, "no comprobable: "+p+" ya estaba cambiado en la partida y falta la huella de su contenido")
+		}
+		return a.close(Unverified, StepOwner, reasons...)
+	}
 	attr := Attributable(obs.AtStart, obs.Final)
 	if out := Outside(Touched(attr), a.WriteSet); len(out) > 0 {
 		var reasons []string
@@ -102,6 +116,12 @@ func JudgeReturn(a Assignment, raw []byte, obs Observed) ReturnVerdict {
 	worst, reasons := Verified, []string(nil)
 	for _, req := range a.Requirements {
 		v := evidence.EvaluateRequirement(req, e.Receipts, obs.Evidence)
+		if v.Status == Verified && fails(req, e.Receipts) {
+			// El resultado es real y es un fallo: igual que en la combinación, se rechaza.
+			worst = Rejected
+			reasons = append(reasons, req+": el recibo corroborado terminó con código de salida distinto de cero")
+			continue
+		}
 		if rank(v.Status) > rank(worst) {
 			worst = v.Status
 		}
@@ -149,16 +169,50 @@ func (a Assignment) close(s evidence.Status, step string, reasons ...string) Ret
 	return v
 }
 
-// Attributable devuelve los cambios finales que no estaban, idénticos, en la partida.
+// Reverted es el tipo de un cambio de la partida que ya no está en el estado final: el worker
+// devolvió la ruta al estado del commit base.
+const Reverted = "reverted"
+
+// Attributable devuelve los cambios entre la partida y el estado final: los cambios finales que
+// no estaban, idénticos, en la partida, y los de la partida que ya no están en el estado final
+// (el worker los revirtió), con tipo Reverted.
 func Attributable(atStart, final []Change) []Change {
 	pre := map[string]bool{}
 	for _, c := range atStart {
 		pre[key(c, true)] = true
 	}
 	var out []Change
+	present := map[string]bool{}
 	for _, c := range final {
+		for _, p := range Touched([]Change{c}) {
+			present[p] = true
+		}
 		if !pre[key(c, true)] {
 			out = append(out, c)
+		}
+	}
+	for _, c := range atStart {
+		if !present[c.Path] {
+			out = append(out, Change{Path: c.Path, Kind: Reverted})
+		}
+	}
+	return out
+}
+
+// uncomparable devuelve las rutas cambiadas en la partida que siguen en el estado final con el
+// mismo tipo de cambio y cuyo contenido no se puede comparar porque falta la huella en alguno de
+// los dos lados. Si el tipo cambió (por ejemplo, el worker borró el archivo), el cambio ya es
+// distinto sin mirar el contenido; un borrado no tiene contenido que comparar.
+func uncomparable(atStart, final []Change) []string {
+	var out []string
+	for _, s := range atStart {
+		for _, f := range final {
+			if key(f, false) != key(s, false) || s.Kind == "deleted" {
+				continue
+			}
+			if s.Fingerprint == nil || f.Fingerprint == nil {
+				out = append(out, s.Path)
+			}
 		}
 	}
 	return out
@@ -187,7 +241,12 @@ func Outside(paths, writeSet []string) []string {
 	return out
 }
 
+// covered: una ruta no normalizada (con `.` o `..`), absoluta o que sale del repositorio no la
+// cubre ningún conjunto de escritura: el prefijo no dice dónde termina.
 func covered(p string, writeSet []string) bool {
+	if p != path.Clean(p) || path.IsAbs(p) || p == ".." || strings.HasPrefix(p, "../") {
+		return false
+	}
 	for _, w := range writeSet {
 		if overlap(w, p) {
 			return true

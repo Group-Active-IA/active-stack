@@ -142,6 +142,10 @@ func ComposeLayers(toggles []string) (Layers, error) {
 	if roleParts[0], err = replaceOnce(roleParts[0], roleDelegateOld, roleDelegateNew); err != nil {
 		return Layers{}, err
 	}
+	// "not an executor" contradicts the rule's "work directly" (PR #13 review).
+	if roleParts[0], err = replaceOnce(roleParts[0], roleExecutorOld, roleExecutorNew); err != nil {
+		return Layers{}, err
+	}
 	rule, err := delegationRule(active["delegation"])
 	if err != nil {
 		return Layers{}, err
@@ -243,6 +247,8 @@ const (
 
 // Text changes of opsx-selective-delegation (07) on the layered coordinator.
 const (
+	roleExecutorOld    = "You are a COORDINATOR, not an executor."
+	roleExecutorNew    = "You are a COORDINATOR."
 	roleDelegateOld    = "delegate real work to sub-agents via the **Agent tool**"
 	roleDelegateNew    = "decide per action whether to work directly or delegate to sub-agents via the **Agent tool**"
 	alwaysDelegateRule = "- NEVER do apply or propose work inline — ALWAYS delegate via Agent tool\n"

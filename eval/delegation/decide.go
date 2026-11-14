@@ -27,6 +27,12 @@ var HotFiles = []string{
 // MaxWriters es el tope de workers con escritura en paralelo (D5).
 const MaxWriters = 2
 
+// Umbral de salida verbosa de 05 D3 (módulo bounded-command-output).
+const (
+	VerboseLines = 300
+	VerboseChars = 10000
+)
+
 // Task describe una acción a decidir con la regla de assets/opsx/delegation-rule.md.
 type Task struct {
 	Action            string     `json:"accion"`
@@ -39,6 +45,7 @@ type Task struct {
 	DependsOnLive     bool       `json:"depende_del_contexto_vivo"`
 	ReadsFullResult   bool       `json:"relee_el_resultado"`
 	OutputLines       int        `json:"lineas_de_salida"`
+	OutputChars       int        `json:"caracteres_de_salida"`
 	ConclusionOnly    bool       `json:"solo_conclusion"`
 	Parallelizable    bool       `json:"paralelizable"`
 }
@@ -103,9 +110,10 @@ func Decide(t Task) Decision {
 		return set(3, "relectura completa", Direct)
 	}
 
-	// 4. Señales: delegar. El umbral de salida verbosa es el de 05 D19.
+	// 4. Señales: delegar. El umbral de salida verbosa es el de 05 D3: más de 300 líneas o más de
+	// 10.000 caracteres, lo que ocurra primero.
 	switch {
-	case t.OutputLines > 300:
+	case t.OutputLines > VerboseLines || t.OutputChars > VerboseChars:
 		return set(4, "salida verbosa", Delegated)
 	case t.ConclusionOnly:
 		return set(4, "exploración con conclusión", Delegated)

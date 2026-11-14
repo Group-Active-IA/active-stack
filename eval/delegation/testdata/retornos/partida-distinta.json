@@ -4,7 +4,11 @@
   "encargo": {
     "id": "A",
     "partida": {
-      "commit": "1111111111111111111111111111111111111111"
+      "commit": "1111111111111111111111111111111111111111",
+      "huella": {
+        "algorithm": "sha256",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
     },
     "escritura": [
       "internal/x/**"
@@ -18,7 +22,11 @@
   "retorno": {
     "status": "completed",
     "start": {
-      "commit": "3333333333333333333333333333333333333333"
+      "commit": "3333333333333333333333333333333333333333",
+      "huella": {
+        "algorithm": "sha256",
+        "value": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+      }
     },
     "modified": [
       {

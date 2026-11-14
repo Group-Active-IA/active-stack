@@ -38,7 +38,7 @@ Fuera de la independencia obligatoria, el coordinador SHALL serializar o redefin
 
 #### Scenario: Tarea con salida verbosa se delega
 
-- **WHEN** la tarea requiere correr una suite cuya salida supera el umbral de salida verbosa de 05 (más de 300 líneas)
+- **WHEN** la tarea requiere correr una suite cuya salida supera el umbral de salida verbosa de 05 (más de 300 líneas o más de 10.000 caracteres)
 - **THEN** el coordinador delega y recibe sólo el resumen acotado y los recibos
 - **AND** el registro contiene la señal "salida verbosa"
 

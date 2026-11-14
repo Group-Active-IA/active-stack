@@ -99,6 +99,37 @@ func TestSelectiveDelegation_RuleOrderWithToggle(t *testing.T) {
 	}
 }
 
+// PR #13 review: the verbose-output signal uses the full threshold of the
+// bounded-command-output module of 05 (D3): 300 lines or 10,000 characters.
+func TestSelectiveDelegation_VerboseSignalMatchesBoundedOutput(t *testing.T) {
+	bodies := map[string]string{
+		"claude": mustLayers(t, allToggles).Skill.Body,
+		"codex":  codexDelivery(t, allToggles).Files["SKILL.md"],
+	}
+	for client, body := range bodies {
+		for _, want := range []string{"more than 300 lines", "more than 10,000 characters"} {
+			if !strings.Contains(body, want) {
+				t.Errorf("%s coordinator rule lacks %q", client, want)
+			}
+		}
+	}
+}
+
+// PR #13 review: the layered coordinator no longer says it is "not an
+// executor" next to a rule that tells it to work directly. The legacy single
+// block keeps the original sentence (03 golden).
+func TestSelectiveDelegation_RoleDoesNotContradictRule(t *testing.T) {
+	for _, toggles := range [][]string{nil, allToggles} {
+		body := mustLayers(t, toggles).Skill.Body
+		if strings.Contains(body, "not an executor") {
+			t.Errorf("layered coordinator (toggles=%v) still says \"not an executor\"", toggles)
+		}
+		if !strings.Contains(body, "You are a COORDINATOR. Maintain") {
+			t.Errorf("layered coordinator (toggles=%v) lost its role sentence", toggles)
+		}
+	}
+}
+
 // 2.2 / D8: without delegation the coordinator works directly and stops only
 // an action that requires independent review.
 func TestSelectiveDelegation_RuleWithoutToggle(t *testing.T) {

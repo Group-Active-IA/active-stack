@@ -47,7 +47,7 @@ La decisión se evalúa en este orden. El primer paso que aplica la cierra.
 
 | Señal | Qué la dispara | Por qué justifica delegar |
 |---|---|---|
-| S1 salida verbosa | la tarea va a producir más de 300 líneas de salida (tests, build, logs), umbral de 05 D19; supuesto a calibrar con los fixtures de salida de 02/05 | el contexto principal recibe sólo el resumen acotado y el recibo |
+| S1 salida verbosa | la tarea va a producir más de 300 líneas o más de 10.000 caracteres de salida (tests, build, logs), umbral de 05 D3; supuesto a calibrar con los fixtures de salida de 02/05 | el contexto principal recibe sólo el resumen acotado y el recibo |
 | S2 exploración con conclusión | la respuesta es una conclusión (dónde está X, qué rompe Y) y no el contenido leído | el principal no necesita los archivos, sólo el hallazgo |
 | S3 trabajo paralelizable | dos o más subtareas cumplen D4 | gana tiempo de espera; el consumo se mide aparte |
 | S4 separación de rol | la acción exige que quien revisa no sea quien construyó | independencia, no ahorro; tiene prioridad |
@@ -242,7 +242,7 @@ Decision: no (no UI) — 2026-11-10. El change no agrega ni modifica pantalla.
 
 | Observación | Dónde se incorporó |
 |---|---|
-| S1 apuntaba a un "presupuesto de 05" que no existe | D1 tabla de señales y escenario de salida verbosa: más de 300 líneas (05 D19), como supuesto a calibrar |
+| S1 apuntaba a un "presupuesto de 05" que no existe | D1 tabla de señales y escenario de salida verbosa: más de 300 líneas o más de 10.000 caracteres (05 D3), como supuesto a calibrar |
 | Prevención de escrituras fuera de alcance sin dueño | D4 "Prevención sin dueño todavía"; tarea 0.2 |
 | Tres formatos de retorno (04, 06, 07) | D6 "Dueño del sobre" |
 | Qué configuración recibe 09 como A0 | D9 tabla "Qué recibe 09"; tarea 6.3 |

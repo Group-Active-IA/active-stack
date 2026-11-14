@@ -79,6 +79,11 @@ func TestFixtures_CoverTasks(t *testing.T) {
 			"prosa-libre", "partida-distinta", "ajeno-en-partida", "confirmado-fuera-de-alcance",
 			"renombre-fuera-de-alcance", "nuevo-fuera-de-alcance", "modificados-incompleto",
 			"tope-agotado", "sin-escritura",
+			// Revisión del PR #13: bordes de la propiedad contra la partida y del juicio de recibos.
+			"revierte-ajeno-en-partida", "revierte-propio-en-partida", "revierte-propio-sin-declarar",
+			"borra-ajeno-en-partida",
+			"ajeno-en-partida-sin-huella", "partida-sin-huella", "ruta-no-normalizada",
+			"recibo-corroborado-falla",
 		},
 		"decisiones": {
 			"verificacion-breve-independencia", "independencia-delegation-apagado", "modulo-ausente",

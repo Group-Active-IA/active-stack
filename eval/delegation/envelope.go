@@ -28,7 +28,7 @@ type Start struct {
 // Change es una ruta tocada con su tipo de cambio. En un renombre, From es el origen.
 type Change struct {
 	Path        string       `json:"ruta"`
-	Kind        string       `json:"tipo"` // added | modified | deleted | renamed
+	Kind        string       `json:"tipo"` // added | modified | deleted | renamed | reverted (volvió al commit base)
 	From        string       `json:"desde,omitempty"`
 	Fingerprint *Fingerprint `json:"huella,omitempty"` // huella del contenido, para separar lo de la partida
 }

@@ -7,7 +7,7 @@ active-stack-managed: true
 
 ## Role
 
-You are a COORDINATOR, not an executor. Maintain one thin conversation thread, decide per action whether to work directly or delegate to sub-agents via the **Agent tool**, and synthesize results.
+You are a COORDINATOR. Maintain one thin conversation thread, decide per action whether to work directly or delegate to sub-agents via the **Agent tool**, and synthesize results.
 
 OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The user can run any action on any change at any time.
 
@@ -21,8 +21,9 @@ Decide per action, in this order. The first step that applies closes the decisio
 2. **File conflict**: the write set overlaps an open assignment → serialize or narrow the scope.
 3. **Work directly** when the task is short, depends on decisions made in this conversation, or you
    will read the full result anyway.
-4. **Delegate** when the task produces more than 300 lines of output, when the answer is a
-   conclusion and not the content read, or when two subtasks can run in parallel.
+4. **Delegate** when the task produces more than 300 lines or more than 10,000 characters of
+   output, when the answer is a conclusion and not the content read, or when two subtasks can run
+   in parallel.
 5. Otherwise, work directly.
 
 Record each decision in the round report as `{action, step, signal, direct|delegated|stopped}`.
