@@ -10,6 +10,12 @@
 > (`fix(codex): preserve literal paths in managed diagnostics`); 42 en total. SZZ corrido el 13/11 con el
 > mismo script: ambos van al estrato B (abajo). Falta la confirmación manual por fila, como el resto.
 
+> **Actualización 14/11 sobre `8bfca74` (07, 08 y 09 integradas):** `main` tiene 48 `fix`. Se mapearon
+> los seis que faltaban (`4074694`, `06216ba`, `25ad5c2` de 05; `41d7cb6`, `d3ab8b3` de 06; `f3a4e89`
+> de 07) con el mismo script. En los seis, el fix y su origen entran a `main` por el **mismo merge**
+> (`b27b8e0` #10, `0005a6f` #12, `ad74451` #13): son correcciones de la revisión del PR y el defecto
+> nunca llegó a `main` sin corregir. No son «defectos que el flujo dejó pasar» (D2) y van a la sección 3.
+
 ## Método
 
 SZZ simple. Para cada commit no-merge de `main` cuyo asunto empieza con `fix` (40 en total):
@@ -84,6 +90,7 @@ origen** (es lo que un revisor habría visto) y el defecto queda localizado. Má
 | No ubicable: el fix sólo agrega o sólo toca tests/docs | `12ddeb7`, `91bbee6`, `e9c69ce`, `25b8f5a`, `56190a2` |
 | Blame de una o dos líneas, origen sin señal | `fd01e84`, `ff66ec4`, `3092573`, `574f5e0`, `ff53e8b`, `fddde4d`, `093ee5d` |
 | Instalador gráfico de Windows en C# (`installer/windows/ui`), otro lenguaje y otro revisor | `b9e5f0d`, `c5d580e`, `401f105`, `c7bbf59`, `4585400`, `ce7ac1a`, `b0833c2`, `0b8648d` — **(TBD)**: el grupo decide si es un estrato propio o queda fuera de la primera ronda |
+| Fix de revisión dentro del mismo PR: fix y origen entran por el mismo merge, el defecto no llegó a `main` (origen SZZ entre paréntesis) | `4074694` (`325aebc`, 40), `06216ba` (`325aebc`, 31; toca `internal/catalog`), `25ad5c2` (`06216ba`, 11), `41d7cb6` (`f9ae80c`, 125), `d3ab8b3` (`41d7cb6`, 5), `f3a4e89` (`6b882e1`, 29) — **(TBD)**: el grupo decide si sirven como casos preparados (defecto ubicado que la referencia sí atrapó) |
 | Origen es un rebrand masivo (`2f8336e`), no introduce defecto | aparece como origen secundario; no se usa |
 
 ## 4. Riesgos de esta preparación

@@ -1,9 +1,11 @@
 // Package shadow es el material del piloto en sombra del change opsx-shadow-review (ficha 10):
 // el paquete de un caso armado por lista de inclusión y con huella (tarea 3.1), el examen previo
-// de todo el paquete antes de cualquier envío (3.2) y la muestra preparada (1.2).
+// de todo el paquete antes de cualquier envío (3.2), la muestra preparada (1.2), el registro de
+// envío (3.3), el almacén del custodio (4.2), el prompt fijo y el formato de hallazgo (4.3) y los
+// criterios de entrada de candidatos (4.4).
 //
 // Igual que el resto de eval/, es externo al binario: no lo importan cmd/ ni internal/. No envía
-// nada a ningún proveedor; el envío, el registro de envío y el arnés son tareas posteriores.
+// nada a ningún proveedor ni corre ningún juez.
 package shadow
 
 import (
