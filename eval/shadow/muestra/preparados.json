@@ -1,0 +1,56 @@
+{
+  "descripcion": "Muestra preparada del piloto en sombra (10, tarea 1.2). Referencia fixtures de 02 y 06 sin copiarlos; las huellas fijan su contenido. No es la muestra congelada: falta el doble etiquetado de 1.4.",
+  "casos": [
+    {
+      "id": "prep-02-revision-catalogo",
+      "fuente": "02",
+      "clase": "diff sembrado",
+      "fixture": "eval/baseline/fixtures/revision",
+      "huellas": {
+        "eval/baseline/fixtures/revision/task.json": "ba6013508244af15bcd483e75337d9c9d26c7e00ea9113157d35b4ae787aeb32",
+        "eval/baseline/fixtures/revision/prompt.md": "8d872abbe90a54ebdc75c9ec27d2d39852b4e5adbcadbeb2cef2da37f84acaf0",
+        "eval/baseline/fixtures/revision/seeded.patch": "b3610bb21a19aa1fdfbd605896777c19597e69984e3dfc67ba2a90d4a66f54a1",
+        "eval/baseline/fixtures/revision/key.json": "83b7494cd0eb40a0d84ddb1679630ad586618f607ce7be69977c530a6c2c406d"
+      }
+    },
+    {
+      "id": "prep-06-a",
+      "fuente": "06",
+      "clase": "recibo falso con hash correcto",
+      "fixture": "eval/evidence/testdata/casos/falso-huella-correcta-reejecucion-contradice.json",
+      "huellas": {
+        "eval/evidence/testdata/casos/falso-huella-correcta-reejecucion-contradice.json": "a5eef897087dcf97ba9f979999c202fe7baa8eefbe72d17a4eb8e7db5b635e05",
+        "eval/evidence/testdata/copias/go-test-ok.txt": "7b7bf2b126155ef1a1da274bcc53d808c63bac04ea4ebd8034801321ce7a9b63"
+      }
+    },
+    {
+      "id": "prep-06-b",
+      "fuente": "06",
+      "clase": "mismo HEAD con diff distinto",
+      "fixture": "eval/evidence/testdata/casos/mismo-head-otro-diff.json",
+      "huellas": {
+        "eval/evidence/testdata/casos/mismo-head-otro-diff.json": "64c70eaa004e3dbf87c25bf2c6585b05ab0a030dd21fa9c839de0d12fd11dddc",
+        "eval/evidence/testdata/copias/go-test-ok.txt": "7b7bf2b126155ef1a1da274bcc53d808c63bac04ea4ebd8034801321ce7a9b63"
+      }
+    },
+    {
+      "id": "prep-06-c",
+      "fuente": "06",
+      "clase": "salida truncada sin original",
+      "fixture": "eval/evidence/testdata/casos/truncado-sin-original.json",
+      "huellas": {
+        "eval/evidence/testdata/casos/truncado-sin-original.json": "02619967409ffe65996c873c79288167a3e7797b38ab4fadbbfefb2426ec2ed4"
+      }
+    },
+    {
+      "id": "prep-06-d",
+      "fuente": "06",
+      "clase": "tests verdes sin cubrir el requisito",
+      "fixture": "eval/evidence/testdata/casos/tests-verdes-requisito-incumplido.json",
+      "huellas": {
+        "eval/evidence/testdata/casos/tests-verdes-requisito-incumplido.json": "b62c64228bb034ea7fadcc3552c3ca193dff67faa96ea76557bdff335ad1b0f8",
+        "eval/evidence/testdata/copias/go-test-ok.txt": "7b7bf2b126155ef1a1da274bcc53d808c63bac04ea4ebd8034801321ce7a9b63"
+      }
+    }
+  ]
+}
