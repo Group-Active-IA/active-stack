@@ -1,0 +1,25 @@
+{
+  "id": "salida-en-el-umbral",
+  "descripcion": "Exactamente 300 líneas y 10.000 caracteres: no supera el umbral de salida verbosa; sin otra señal, por defecto directo.",
+  "tarea": {
+    "accion": "verify",
+    "revision_independiente": false,
+    "delegation_activo": true,
+    "modulo_disponible": true,
+    "escritura": [],
+    "encargos_abiertos": [],
+    "breve": false,
+    "depende_del_contexto_vivo": false,
+    "relee_el_resultado": false,
+    "lineas_de_salida": 300,
+    "caracteres_de_salida": 10000,
+    "solo_conclusion": false,
+    "paralelizable": false
+  },
+  "esperado": {
+    "accion": "verify",
+    "paso": 5,
+    "senal": "por defecto",
+    "modalidad": "directo"
+  }
+}

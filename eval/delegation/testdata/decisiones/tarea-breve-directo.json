@@ -1,0 +1,27 @@
+{
+  "id": "tarea-breve-directo",
+  "descripcion": "Corregir un mensaje y su test en un solo paquete, sin revisión independiente: directo.",
+  "tarea": {
+    "accion": "apply",
+    "revision_independiente": false,
+    "delegation_activo": true,
+    "modulo_disponible": true,
+    "escritura": [
+      "internal/x/msg.go",
+      "internal/x/msg_test.go"
+    ],
+    "encargos_abiertos": [],
+    "breve": true,
+    "depende_del_contexto_vivo": false,
+    "relee_el_resultado": false,
+    "lineas_de_salida": 0,
+    "solo_conclusion": false,
+    "paralelizable": false
+  },
+  "esperado": {
+    "accion": "apply",
+    "paso": 3,
+    "senal": "tarea breve",
+    "modalidad": "directo"
+  }
+}

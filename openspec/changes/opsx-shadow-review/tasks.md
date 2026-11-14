@@ -19,7 +19,7 @@
 
 ## 2. Referencia
 
-- [ ] 2.1 Definir la revisión de referencia por caso: requisitos y escenarios, recibos de ejecución ficticios de 06 con su estado por requisito, la tabla de cobertura de 08 aplicada a las acciones del caso y decisión humana.
+- [ ] 2.1 Definir la revisión de referencia por caso: requisitos y escenarios, recibos de ejecución ficticios de 06 con su estado por requisito, la tabla de cobertura de 08 aplicada a las acciones del caso y decisión humana. *Estado 14/11: 08 integrado en `main` (`3e0564e`) con alcance parcial y sin matriz medida (deuda D08-0204: toda acción figura como no controlada o no probada). Se puede fijar la estructura con el formato D13 de `openspec/specs/native-controls-pilot/spec.md`; la columna de cobertura queda «no probada» hasta que 08 entregue la matriz.*
 - [ ] 2.2 Medir la referencia contra las etiquetas congeladas (VP, FP, FN por severidad).
 
 ## 3. Datos
@@ -35,7 +35,7 @@
 - [ ] 4.2 Almacén fuera del árbol, con huella y acceso restringido al custodio; apertura sólo con caso cerrado definitivamente. RED: intento de lectura anticipada desde el rol de referencia o etiquetado debe denegarse y registrarse.
 - [ ] 4.3 Prompt de revisión fijo y versionado; formato de hallazgo de D4.
 - [ ] 4.4 Verificar criterios de entrada por candidato; registrar descartes.
-- [ ] 4.5 Calibrar cada candidato con un conjunto propio fuera de la muestra (prompt, modelo y esfuerzo según 02 y 09).
+- [ ] 4.5 Calibrar cada candidato con un conjunto propio fuera de la muestra (prompt, modelo y esfuerzo según 02 y 09). *Estado 14/11: 09 integrado en `main` (`8bfca74`) sólo con la parte offline (`eval/modelcache`: protocolo, contrastes y reporte de costo por aceptada). Sin parámetros calibrados ni corridas reales (09 tareas 1.3, 2.2, 3.2 y 4.3 abiertas); el costo de 5.4 puede reutilizar su contabilidad de intentos y preparación, no sus valores.*
 
 ## 5. Corridas y métricas
 

@@ -1,0 +1,4 @@
+=== RUN   TestParse
+--- PASS: TestParse (0.00s)
+ok  	example.invalid/pkg	0.012s
+token=[redactado:token] home=[redactado:ruta-home]

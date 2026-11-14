@@ -1,0 +1,24 @@
+{
+  "id": "por-defecto-directo",
+  "descripcion": "Ninguna señal ni contraseñal aplica: directo por defecto.",
+  "tarea": {
+    "accion": "explore",
+    "revision_independiente": false,
+    "delegation_activo": true,
+    "modulo_disponible": true,
+    "escritura": [],
+    "encargos_abiertos": [],
+    "breve": false,
+    "depende_del_contexto_vivo": false,
+    "relee_el_resultado": false,
+    "lineas_de_salida": 0,
+    "solo_conclusion": false,
+    "paralelizable": false
+  },
+  "esperado": {
+    "accion": "explore",
+    "paso": 5,
+    "senal": "por defecto",
+    "modalidad": "directo"
+  }
+}

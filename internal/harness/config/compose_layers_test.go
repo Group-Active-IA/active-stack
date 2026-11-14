@@ -113,7 +113,7 @@ func TestComposeLayers_ModulesFollowToggles(t *testing.T) {
 func TestComposeLayers_ModuleContents(t *testing.T) {
 	m := mustLayers(t, allToggles).Modules
 	heads := map[string]string{
-		"artifacts": "## Artifact Lifecycle", "delegation": "## Delegation Rules",
+		"artifacts": "## Artifact Lifecycle", "delegation": "## Delegation\n\nLoad this module only when the delegation rule decided to delegate.",
 		"model-assignments": "## Model Assignments", "tdd": "Strict TDD Mode: enabled",
 		"engram-opsx": "### OPSX wiring",
 	}
@@ -134,8 +134,16 @@ func TestComposeLayers_ModuleContents(t *testing.T) {
 }
 
 // droppedLines are original lines the layered delivery eliminates (matrix: the
-// asset title, like row 4).
-var droppedLines = map[string]bool{"# OPSX Orchestrator Instructions": true}
+// asset title, like row 4) and the delegation obligations that
+// opsx-selective-delegation (07) replaces with its rule and module (matrix rows
+// 10 and 29; the legacy single block keeps them).
+var droppedLines = map[string]bool{
+	"# OPSX Orchestrator Instructions": true,
+	"**Delegate, don't inflate.** If work inflates your context without need → delegate it to a sub-agent via the Agent tool.": true,
+	"## Delegation Rules":                                                      true,
+	"### For each action, delegate to a sub-agent:":                            true,
+	"- NEVER do apply or propose work inline — ALWAYS delegate via Agent tool": true,
+}
 
 // structuralHeadings group content and repeat in every layer that has content
 // below them ("Estructura no es regla").
@@ -217,8 +225,10 @@ func TestComposeLayers_StructuralHeadingsAndNumbering(t *testing.T) {
 		!strings.Contains(l.Universal, "\n\n2. **Engram persists context.**") || strings.Contains(l.Universal, "3. **Engram") {
 		t.Errorf("universal must list Core Principles 1 and 2:\n%.600s", l.Universal)
 	}
-	if !strings.Contains(md, "## Core Principles\n\n1. **Delegate, don't inflate.**") || strings.Contains(md, "2. **Delegate") {
-		t.Error("SKILL.md must list Core Principles with the Delegate item as 1")
+	// 07 replaces the only coordinator principle ("Delegate, don't inflate") with
+	// the delegation rule, so SKILL.md has no Core Principles heading.
+	if strings.Contains(md, "## Core Principles") || !strings.Contains(md, "## Direct or delegated\n\n") {
+		t.Error("SKILL.md must carry the delegation rule instead of a Core Principles list")
 	}
 	if !strings.Contains(md, "## Rules\n\n- NEVER block on phase gates") {
 		t.Error("SKILL.md NEVER bullets must sit under their own ## Rules")

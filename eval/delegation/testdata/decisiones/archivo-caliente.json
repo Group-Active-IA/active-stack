@@ -1,0 +1,31 @@
+{
+  "id": "archivo-caliente",
+  "descripcion": "Dos subtareas necesitan escribir internal/catalog/harnesses.yaml: se serializan.",
+  "tarea": {
+    "accion": "apply",
+    "revision_independiente": false,
+    "delegation_activo": true,
+    "modulo_disponible": true,
+    "escritura": [
+      "internal/catalog/harnesses.yaml"
+    ],
+    "encargos_abiertos": [
+      [
+        "internal/catalog/harnesses.yaml",
+        "internal/catalog/catalog.go"
+      ]
+    ],
+    "breve": false,
+    "depende_del_contexto_vivo": false,
+    "relee_el_resultado": false,
+    "lineas_de_salida": 2000,
+    "solo_conclusion": false,
+    "paralelizable": false
+  },
+  "esperado": {
+    "accion": "apply",
+    "paso": 2,
+    "senal": "conflicto de archivos",
+    "modalidad": "serializado"
+  }
+}

@@ -1,0 +1,599 @@
+{
+  "protocol": {
+    "version": "modelcache/v1",
+    "phase": "calibration",
+    "baseline_revision": "d5e95bd81d3bbab2d54a39d1c07d1256954b5384",
+    "delegation_revision": "4922498f8fa6ed5d77a82bda32001535977898fe",
+    "baseline_stable": false,
+    "delegation_result": "repeat",
+    "baseline": {
+      "protocol_version": "synthetic-02",
+      "rubric_version": "synthetic-rubric",
+      "fixture_revision": "synthetic-fixture",
+      "prompt": {
+        "id": "",
+        "fingerprint": ""
+      },
+      "active_stack_revision": "",
+      "variant": "synthetic",
+      "profile": {
+        "name": "",
+        "config_fingerprint": ""
+      },
+      "seed": 0,
+      "limits": {
+        "max_attempts": 0,
+        "timeout_seconds": 0
+      },
+      "cohorts": [
+        {
+          "id": "c",
+          "cell": {
+            "client": "codex",
+            "version": "1.0.0",
+            "min_version": "1.0.0",
+            "os": "linux",
+            "interface": "terminal",
+            "modality": "api",
+            "models": null,
+            "effort": "",
+            "tools": null,
+            "tier": "",
+            "permissions": {
+              "mode": "synthetic",
+              "flags": null
+            },
+            "observed": {
+              "permissions": {
+                "mode": "synthetic",
+                "flags": null
+              },
+              "settings": null,
+              "cli_in_ide_terminal": false
+            }
+          },
+          "tasks": [
+            {
+              "task_id": "task",
+              "weight": 1
+            }
+          ]
+        }
+      ]
+    },
+    "arms": [
+      {
+        "id": "A0",
+        "pilot": "A",
+        "factor": "control",
+        "requested": {
+          "models": {
+            "worker": "synthetic-control"
+          },
+          "effort": {
+            "worker": "synthetic-level"
+          }
+        },
+        "effective": {
+          "models": {
+            "worker": "synthetic-control"
+          },
+          "effort": {
+            "worker": "synthetic-level"
+          }
+        },
+        "layout": {
+          "source_scope": "materialized-prompt",
+          "files": [
+            {
+              "path": "p",
+              "fingerprint": {
+                "algorithm": "sha256",
+                "value": "721967fb7fd9f346d20833536b34a1c1a903dbdb2f6842f4a4614f9b3a802491"
+              }
+            }
+          ],
+          "fingerprint": {
+            "algorithm": "sha256",
+            "value": "c2e409ec9b2382676c6660a16c9eb26809e1a14329f1aea6bbac1baa095c6bad"
+          },
+          "observed_client_load": false
+        },
+        "cache_policy": "synthetic-cold",
+        "delegation_policy": "synthetic-direct"
+      },
+      {
+        "id": "candidate",
+        "pilot": "A",
+        "factor": "model",
+        "role": "worker",
+        "control_id": "A0",
+        "requested": {
+          "models": {
+            "worker": "synthetic-other"
+          },
+          "effort": {
+            "worker": "synthetic-level"
+          }
+        },
+        "effective": {
+          "models": {
+            "worker": "synthetic-other"
+          },
+          "effort": {
+            "worker": "synthetic-level"
+          }
+        },
+        "layout": {
+          "source_scope": "materialized-prompt",
+          "files": [
+            {
+              "path": "p",
+              "fingerprint": {
+                "algorithm": "sha256",
+                "value": "721967fb7fd9f346d20833536b34a1c1a903dbdb2f6842f4a4614f9b3a802491"
+              }
+            }
+          ],
+          "fingerprint": {
+            "algorithm": "sha256",
+            "value": "c2e409ec9b2382676c6660a16c9eb26809e1a14329f1aea6bbac1baa095c6bad"
+          },
+          "observed_client_load": false
+        },
+        "cache_policy": "synthetic-cold",
+        "delegation_policy": "synthetic-direct"
+      },
+      {
+        "id": "B0",
+        "pilot": "B",
+        "factor": "control",
+        "requested": {
+          "models": {
+            "worker": "synthetic-control"
+          },
+          "effort": {
+            "worker": "synthetic-level"
+          }
+        },
+        "effective": {
+          "models": {
+            "worker": "synthetic-control"
+          },
+          "effort": {
+            "worker": "synthetic-level"
+          }
+        },
+        "layout": {
+          "source_scope": "materialized-prompt",
+          "files": [
+            {
+              "path": "p",
+              "fingerprint": {
+                "algorithm": "sha256",
+                "value": "721967fb7fd9f346d20833536b34a1c1a903dbdb2f6842f4a4614f9b3a802491"
+              }
+            },
+            {
+              "path": "q",
+              "fingerprint": {
+                "algorithm": "sha256",
+                "value": "4a974c7eb3893e8c6a0fa473b0563c3486b576afd8b7d840bedd24296f7b9da9"
+              }
+            }
+          ],
+          "fingerprint": {
+            "algorithm": "sha256",
+            "value": "6998cf102b5f3b197ec9e8f39f25b8712b44e2c100d220afed9d6faa45727a9b"
+          },
+          "observed_client_load": false
+        },
+        "cache_policy": "synthetic-cold",
+        "delegation_policy": "synthetic-direct",
+        "semantic_review_ref": "synthetic-only-not-a-review-receipt"
+      },
+      {
+        "id": "B-prefix",
+        "pilot": "B",
+        "factor": "prefix",
+        "role": "worker",
+        "control_id": "B0",
+        "requested": {
+          "models": {
+            "worker": "synthetic-control"
+          },
+          "effort": {
+            "worker": "synthetic-level"
+          }
+        },
+        "effective": {
+          "models": {
+            "worker": "synthetic-control"
+          },
+          "effort": {
+            "worker": "synthetic-level"
+          }
+        },
+        "layout": {
+          "source_scope": "materialized-prompt",
+          "files": [
+            {
+              "path": "q",
+              "fingerprint": {
+                "algorithm": "sha256",
+                "value": "4a974c7eb3893e8c6a0fa473b0563c3486b576afd8b7d840bedd24296f7b9da9"
+              }
+            },
+            {
+              "path": "p",
+              "fingerprint": {
+                "algorithm": "sha256",
+                "value": "721967fb7fd9f346d20833536b34a1c1a903dbdb2f6842f4a4614f9b3a802491"
+              }
+            }
+          ],
+          "fingerprint": {
+            "algorithm": "sha256",
+            "value": "2315ec5f76e67fc32f68b718c96df7194b778e6e91713a823855fd41c27965e5"
+          },
+          "observed_client_load": false
+        },
+        "cache_policy": "synthetic-cold",
+        "delegation_policy": "synthetic-direct",
+        "semantic_review_ref": "synthetic-only-not-a-review-receipt"
+      }
+    ],
+    "decisions": null
+  },
+  "runs": [
+    {
+      "id": "run-A0",
+      "arm_id": "A0",
+      "cohort_id": "c",
+      "task_id": "task",
+      "repetition": 1,
+      "pair_id": "pair",
+      "block_id": "block",
+      "fixture_revision": "synthetic-fixture",
+      "rubric_version": "synthetic-rubric",
+      "cell": {
+        "client": "codex",
+        "version": "1.0.0",
+        "min_version": "1.0.0",
+        "os": "linux",
+        "interface": "terminal",
+        "modality": "api",
+        "models": null,
+        "effort": "",
+        "tools": null,
+        "tier": "",
+        "permissions": {
+          "mode": "synthetic",
+          "flags": null
+        },
+        "observed": {
+          "permissions": {
+            "mode": "synthetic",
+            "flags": null
+          },
+          "settings": null,
+          "cli_in_ide_terminal": false
+        }
+      },
+      "effective": {
+        "models": {
+          "worker": "synthetic-control"
+        },
+        "effort": {
+          "worker": "synthetic-level"
+        }
+      },
+      "status": "aceptada",
+      "quality": [
+        {
+          "ID": "required",
+          "Mandatory": true,
+          "Outcome": "cumplido",
+          "Detail": ""
+        }
+      ],
+      "money_basis": "observed",
+      "money_unit": "synthetic-unit",
+      "quota_unit": "",
+      "attempts": [
+        {
+          "source_id": "event-A0",
+          "tokens": null,
+          "money": {
+            "aggregate": 100,
+            "scope": "incluye_hijos",
+            "expected": null,
+            "components": null
+          },
+          "quota": null,
+          "logical_input": null,
+          "cache_read": null,
+          "cache_write": null,
+          "output": null,
+          "elapsed_ms": null,
+          "human_ms": null
+        }
+      ],
+      "cache": {
+        "expected": "cold",
+        "attribution": "prefix",
+        "prefix_fingerprint": {
+          "algorithm": "sha256",
+          "value": "c2e409ec9b2382676c6660a16c9eb26809e1a14329f1aea6bbac1baa095c6bad"
+        },
+        "read_tokens": 0,
+        "eligible_tokens": 100,
+        "signal_ref": "synthetic-signal",
+        "isolation_ref": "synthetic-isolation",
+        "new_session": false
+      }
+    },
+    {
+      "id": "run-candidate",
+      "arm_id": "candidate",
+      "cohort_id": "c",
+      "task_id": "task",
+      "repetition": 1,
+      "pair_id": "pair",
+      "block_id": "block",
+      "fixture_revision": "synthetic-fixture",
+      "rubric_version": "synthetic-rubric",
+      "cell": {
+        "client": "codex",
+        "version": "1.0.0",
+        "min_version": "1.0.0",
+        "os": "linux",
+        "interface": "terminal",
+        "modality": "api",
+        "models": null,
+        "effort": "",
+        "tools": null,
+        "tier": "",
+        "permissions": {
+          "mode": "synthetic",
+          "flags": null
+        },
+        "observed": {
+          "permissions": {
+            "mode": "synthetic",
+            "flags": null
+          },
+          "settings": null,
+          "cli_in_ide_terminal": false
+        }
+      },
+      "effective": {
+        "models": {
+          "worker": "synthetic-other"
+        },
+        "effort": {
+          "worker": "synthetic-level"
+        }
+      },
+      "status": "aceptada",
+      "quality": [
+        {
+          "ID": "required",
+          "Mandatory": true,
+          "Outcome": "cumplido",
+          "Detail": ""
+        }
+      ],
+      "money_basis": "observed",
+      "money_unit": "synthetic-unit",
+      "quota_unit": "",
+      "attempts": [
+        {
+          "source_id": "event-candidate",
+          "tokens": null,
+          "money": {
+            "aggregate": 50,
+            "scope": "incluye_hijos",
+            "expected": null,
+            "components": null
+          },
+          "quota": null,
+          "logical_input": null,
+          "cache_read": null,
+          "cache_write": null,
+          "output": null,
+          "elapsed_ms": null,
+          "human_ms": null
+        }
+      ],
+      "cache": {
+        "expected": "cold",
+        "attribution": "prefix",
+        "prefix_fingerprint": {
+          "algorithm": "sha256",
+          "value": "c2e409ec9b2382676c6660a16c9eb26809e1a14329f1aea6bbac1baa095c6bad"
+        },
+        "read_tokens": 0,
+        "eligible_tokens": 100,
+        "signal_ref": "synthetic-signal",
+        "isolation_ref": "synthetic-isolation",
+        "new_session": false
+      }
+    },
+    {
+      "id": "run-B0",
+      "arm_id": "B0",
+      "cohort_id": "c",
+      "task_id": "task",
+      "repetition": 1,
+      "pair_id": "B-pair",
+      "block_id": "B-block",
+      "fixture_revision": "synthetic-fixture",
+      "rubric_version": "synthetic-rubric",
+      "cell": {
+        "client": "codex",
+        "version": "1.0.0",
+        "min_version": "1.0.0",
+        "os": "linux",
+        "interface": "terminal",
+        "modality": "api",
+        "models": null,
+        "effort": "",
+        "tools": null,
+        "tier": "",
+        "permissions": {
+          "mode": "synthetic",
+          "flags": null
+        },
+        "observed": {
+          "permissions": {
+            "mode": "synthetic",
+            "flags": null
+          },
+          "settings": null,
+          "cli_in_ide_terminal": false
+        }
+      },
+      "effective": {
+        "models": {
+          "worker": "synthetic-control"
+        },
+        "effort": {
+          "worker": "synthetic-level"
+        }
+      },
+      "status": "aceptada",
+      "quality": [
+        {
+          "ID": "required",
+          "Mandatory": true,
+          "Outcome": "cumplido",
+          "Detail": ""
+        }
+      ],
+      "money_basis": "observed",
+      "money_unit": "synthetic-unit",
+      "quota_unit": "",
+      "attempts": [
+        {
+          "source_id": "event-B0",
+          "tokens": null,
+          "money": {
+            "aggregate": 70,
+            "scope": "incluye_hijos",
+            "expected": null,
+            "components": null
+          },
+          "quota": null,
+          "logical_input": null,
+          "cache_read": null,
+          "cache_write": null,
+          "output": null,
+          "elapsed_ms": null,
+          "human_ms": null
+        }
+      ],
+      "cache": {
+        "expected": "warm",
+        "attribution": "prefix",
+        "prefix_fingerprint": {
+          "algorithm": "sha256",
+          "value": "6998cf102b5f3b197ec9e8f39f25b8712b44e2c100d220afed9d6faa45727a9b"
+        },
+        "read_tokens": 50,
+        "eligible_tokens": 100,
+        "signal_ref": "synthetic-only",
+        "isolation_ref": "synthetic-only",
+        "new_session": false
+      }
+    },
+    {
+      "id": "run-B-prefix",
+      "arm_id": "B-prefix",
+      "cohort_id": "c",
+      "task_id": "task",
+      "repetition": 1,
+      "pair_id": "B-pair",
+      "block_id": "B-block",
+      "fixture_revision": "synthetic-fixture",
+      "rubric_version": "synthetic-rubric",
+      "cell": {
+        "client": "codex",
+        "version": "1.0.0",
+        "min_version": "1.0.0",
+        "os": "linux",
+        "interface": "terminal",
+        "modality": "api",
+        "models": null,
+        "effort": "",
+        "tools": null,
+        "tier": "",
+        "permissions": {
+          "mode": "synthetic",
+          "flags": null
+        },
+        "observed": {
+          "permissions": {
+            "mode": "synthetic",
+            "flags": null
+          },
+          "settings": null,
+          "cli_in_ide_terminal": false
+        }
+      },
+      "effective": {
+        "models": {
+          "worker": "synthetic-control"
+        },
+        "effort": {
+          "worker": "synthetic-level"
+        }
+      },
+      "status": "aceptada",
+      "quality": [
+        {
+          "ID": "required",
+          "Mandatory": true,
+          "Outcome": "cumplido",
+          "Detail": ""
+        }
+      ],
+      "money_basis": "observed",
+      "money_unit": "synthetic-unit",
+      "quota_unit": "",
+      "attempts": [
+        {
+          "source_id": "event-B-prefix",
+          "tokens": null,
+          "money": {
+            "aggregate": 70,
+            "scope": "incluye_hijos",
+            "expected": null,
+            "components": null
+          },
+          "quota": null,
+          "logical_input": null,
+          "cache_read": null,
+          "cache_write": null,
+          "output": null,
+          "elapsed_ms": null,
+          "human_ms": null
+        }
+      ],
+      "cache": {
+        "expected": "warm",
+        "attribution": "prefix",
+        "prefix_fingerprint": {
+          "algorithm": "sha256",
+          "value": "2315ec5f76e67fc32f68b718c96df7194b778e6e91713a823855fd41c27965e5"
+        },
+        "read_tokens": 50,
+        "eligible_tokens": 100,
+        "signal_ref": "synthetic-only",
+        "isolation_ref": "synthetic-only",
+        "new_session": false
+      }
+    }
+  ],
+  "preparation": []
+}

@@ -1,0 +1,25 @@
+{
+  "id": "modulo-ausente",
+  "descripcion": "Revisión independiente exigida con delegation activo pero sin el módulo en la sesión.",
+  "tarea": {
+    "accion": "verify",
+    "revision_independiente": true,
+    "delegation_activo": true,
+    "modulo_disponible": false,
+    "escritura": [],
+    "encargos_abiertos": [],
+    "breve": false,
+    "depende_del_contexto_vivo": false,
+    "relee_el_resultado": false,
+    "lineas_de_salida": 0,
+    "solo_conclusion": false,
+    "paralelizable": false
+  },
+  "esperado": {
+    "accion": "verify",
+    "paso": 1,
+    "senal": "independencia obligatoria",
+    "modalidad": "detenido",
+    "falta": "modules/delegation.md"
+  }
+}

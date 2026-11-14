@@ -1,0 +1,2 @@
+--- FAIL: TestParse (0.00s)
+FAIL	example.invalid/pkg	0.010s
