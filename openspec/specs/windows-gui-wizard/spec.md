@@ -6,7 +6,14 @@ Define the Windows GUI wizard shell (WPF bootstrapper UI) and its operation flow
 
 ### Requirement: Wizard shell hosts logical page navigation
 
-The Windows GUI SHALL present a multi-page wizard hosted by a thin shell (`MainWindow` + `ShellViewModel`) composed of a header (the current page's title and subtitle), a `ContentControl` bound to the current page view-model, and a footer with `Back`, a primary action (`Next` or `Install`), and `Cancel`. Page views SHALL be selected by `DataTemplate` keyed on the page view-model's type (not `Frame`/`NavigationService`). The window SHALL open at 760×560, be resizable (`ResizeMode=CanResize`), and MUST NOT be maximized. The single-screen `MainWindowViewModel` dashboard SHALL be replaced by `ShellViewModel` plus per-page view-models. The shell SHALL open on the Language page (the wizard's first page); the `Back` action SHALL be disabled only on the Language page — the Hub is reachable Back to Language and therefore has `Back` enabled.
+The Windows GUI SHALL present a multi-page wizard hosted by a thin shell (`MainWindow` + `ShellViewModel`) composed of a header (the current page's title and subtitle), a `ContentControl` bound to the current page view-model, and a footer with `Back`, a primary action (`Next` or `Install`), and `Cancel`.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The Windows GUI SHALL present a multi-page wizard hosted by a thin shell (`MainWindow` + `ShellViewModel`) composed of a header (the current page's title and subtitle), a `ContentControl` bound to the current page view-model, and a footer with `Back`, a primary action (`Next` or `Install`), and `Cancel`. Page views SHALL be selected by `DataTemplate` keyed on the page view-model's type (not `Frame`/`NavigationService`). The window SHALL open at 760×560, be resizable (`ResizeMode=CanResize`), and MUST NOT be maximized. The single-screen `MainWindowViewModel` dashboard SHALL be replaced by `ShellViewModel` plus per-page view-models. The shell SHALL open on the Language page (the wizard's first page); the `Back` action SHALL be disabled only on the Language page — the Hub is reachable Back to Language and therefore has `Back` enabled.
 
 #### Scenario: Shell renders the current page and footer
 
@@ -25,7 +32,14 @@ The Windows GUI SHALL present a multi-page wizard hosted by a thin shell (`MainW
 
 ### Requirement: Install flow ordering mirrors the TUI
 
-The Install flow SHALL be driven by pure `WizardFlow.NextPage`/`WizardFlow.PreviousPage` functions computed from the current page, the shared install selection (agents, mode, custom component ids, tier), and the session's tier-capable agents — with no re-query to the engine on selection change. The order SHALL be: Hub → Dependencies → Assistants → InstallType → (Components only when mode is `custom`) → (Permissions only when at least one selected agent is tier-capable) → Review → Installing → Complete. Tier-capability SHALL be the intersection of the session's `TierCapableAgents` with the selected agents.
+The Install flow SHALL be driven by pure `WizardFlow.NextPage`/`WizardFlow.PreviousPage` functions computed from the current page, the shared install selection (agents, mode, custom component ids, tier), and the session's tier-capable agents — with no re-query to the engine on selection change.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The Install flow SHALL be driven by pure `WizardFlow.NextPage`/`WizardFlow.PreviousPage` functions computed from the current page, the shared install selection (agents, mode, custom component ids, tier), and the session's tier-capable agents — with no re-query to the engine on selection change. The order SHALL be: Hub → Dependencies → Assistants → InstallType → (Components only when mode is `custom`) → (Permissions only when at least one selected agent is tier-capable) → Review → Installing → Complete. Tier-capability SHALL be the intersection of the session's `TierCapableAgents` with the selected agents.
 
 #### Scenario: Dependencies page appears right after the Hub
 
@@ -82,7 +96,14 @@ The InstallType page SHALL present lite, full, and custom as selectable cards us
 
 ### Requirement: Components page forces and locks the permissions harness
 
-For `custom` mode, the Components page SHALL list the available components as a single-select `ListBox` whose rows carry a checkbox each, pre-checking recommended items, and SHALL render the security-first `permissions` harness checked and disabled (it cannot be unchecked), showing the engine-provided descriptive copy. The `permissions` id SHALL always be present in the custom component ids sent to the engine. Row selection (which item is focused/highlighted) SHALL be tracked independently of each row's checkbox state: selecting a row SHALL NOT change its checkbox, and toggling a row's checkbox SHALL NOT be required to select that row. The page SHALL render a detail panel showing the long description (falling back to the short description when no long description is present) of the currently selected row.
+For `custom` mode, the Components page SHALL list the available components as a single-select `ListBox` whose rows carry a checkbox each, pre-checking recommended items, and SHALL render the security-first `permissions` harness checked and disabled (it cannot be unchecked), showing the engine-provided descriptive copy.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  For `custom` mode, the Components page SHALL list the available components as a single-select `ListBox` whose rows carry a checkbox each, pre-checking recommended items, and SHALL render the security-first `permissions` harness checked and disabled (it cannot be unchecked), showing the engine-provided descriptive copy. The `permissions` id SHALL always be present in the custom component ids sent to the engine. Row selection (which item is focused/highlighted) SHALL be tracked independently of each row's checkbox state: selecting a row SHALL NOT change its checkbox, and toggling a row's checkbox SHALL NOT be required to select that row. The page SHALL render a detail panel showing the long description (falling back to the short description when no long description is present) of the currently selected row.
 
 #### Scenario: Permissions cannot be unchecked
 
@@ -117,22 +138,31 @@ When shown, the Permissions page SHALL render the tiers from the session's `perm
 
 The Review page SHALL present a read-only summary of the selection (agents,
 install type, chosen components, tier) and the shell's primary action on Review
-SHALL read "Install". Advancing from Review SHALL start the install by invoking
-the engine client's install stream with the full selection (agents, mode, custom
-ids, tier).
+SHALL read "Install".
 
-The components summary SHALL be mode-aware so it reflects what will actually be
-installed regardless of install mode, and SHALL NOT be blank for any mode that
-installs components:
+#### Scenario: Detailed contract
 
-- In `custom` mode the components summary SHALL be derived from the selection's
-  custom component ids (which include the forced `permissions` id and the user's
-  picks).
-- In a non-custom mode (`lite` or `full`), where the Components page is skipped
-  and the custom component ids are legitimately empty, the components summary
-  SHALL instead be derived from the session's forced components together with the
-  session's custom components marked as included in the mode's default
-  (recommended) set — never from the empty custom ids.
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The Review page SHALL present a read-only summary of the selection (agents,
+  install type, chosen components, tier) and the shell's primary action on Review
+  SHALL read "Install". Advancing from Review SHALL start the install by invoking
+  the engine client's install stream with the full selection (agents, mode, custom
+  ids, tier).
+
+  The components summary SHALL be mode-aware so it reflects what will actually be
+  installed regardless of install mode, and SHALL NOT be blank for any mode that
+  installs components:
+
+  - In `custom` mode the components summary SHALL be derived from the selection's
+    custom component ids (which include the forced `permissions` id and the user's
+    picks).
+  - In a non-custom mode (`lite` or `full`), where the Components page is skipped
+    and the custom component ids are legitimately empty, the components summary
+    SHALL instead be derived from the session's forced components together with the
+    session's custom components marked as included in the mode's default
+    (recommended) set — never from the empty custom ids.
 
 #### Scenario: Review primary action starts the install with the full selection
 
@@ -236,7 +266,14 @@ The UninstallAgents page SHALL present the agents from the uninstall options' `d
 
 ### Requirement: Uninstall mode and strategy selection
 
-The UninstallMode page SHALL present lite, full, and custom as a single-select (radio) group, and SHALL render a detail panel showing the long description (falling back to the short description when no long description is present) of the currently selected mode. The UninstallStrategy page SHALL present the strategies from the uninstall options as a single-select (radio) group, preselecting the strategy marked default (`targeted`), and SHALL render a detail panel showing the long description (falling back to the short description when no long description is present) of the currently selected strategy. When the selected strategy is `restore` (a strategy whose `requires_manifest` is true), the page SHALL reveal a backup selector populated from `ListBackupsAsync` (rendering each backup by its `display_label`), and SHALL report it cannot advance until a backup is selected. When the strategy does not require a manifest, no backup selector is shown and the page can advance immediately.
+The UninstallMode page SHALL present lite, full, and custom as a single-select (radio) group, and SHALL render a detail panel showing the long description (falling back to the short description when no long description is present) of the currently selected mode.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The UninstallMode page SHALL present lite, full, and custom as a single-select (radio) group, and SHALL render a detail panel showing the long description (falling back to the short description when no long description is present) of the currently selected mode. The UninstallStrategy page SHALL present the strategies from the uninstall options as a single-select (radio) group, preselecting the strategy marked default (`targeted`), and SHALL render a detail panel showing the long description (falling back to the short description when no long description is present) of the currently selected strategy. When the selected strategy is `restore` (a strategy whose `requires_manifest` is true), the page SHALL reveal a backup selector populated from `ListBackupsAsync` (rendering each backup by its `display_label`), and SHALL report it cannot advance until a backup is selected. When the strategy does not require a manifest, no backup selector is shown and the page can advance immediately.
 
 #### Scenario: Targeted strategy needs no backup and can advance
 
@@ -260,7 +297,14 @@ The UninstallMode page SHALL present lite, full, and custom as a single-select (
 
 ### Requirement: Uninstall confirm warns and triggers the uninstall stream
 
-The UninstallConfirm page SHALL present a read-only summary of the selection (agents, mode, strategy, and the chosen backup when restoring) together with a prominent warning matching the TUI ("This will modify your agent configuration."). Advancing from Confirm SHALL start the uninstall by invoking the engine client's uninstall stream with the selected agents, mode, and strategy — and, for the `restore` strategy, the chosen backup's manifest path (threaded through the client's uninstall call so the engine receives `--restore-manifest <path>`). Progress and completion SHALL be rendered by the shared generic progress and complete pages.
+The UninstallConfirm page SHALL present a read-only summary of the selection (agents, mode, strategy, and the chosen backup when restoring) together with a prominent warning matching the TUI ("This will modify your agent configuration.").
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The UninstallConfirm page SHALL present a read-only summary of the selection (agents, mode, strategy, and the chosen backup when restoring) together with a prominent warning matching the TUI ("This will modify your agent configuration."). Advancing from Confirm SHALL start the uninstall by invoking the engine client's uninstall stream with the selected agents, mode, and strategy — and, for the `restore` strategy, the chosen backup's manifest path (threaded through the client's uninstall call so the engine receives `--restore-manifest <path>`). Progress and completion SHALL be rendered by the shared generic progress and complete pages.
 
 #### Scenario: Confirm shows the warning and summary
 
@@ -330,7 +374,14 @@ The Backups page SHALL be a single page (not part of a wizard flow) that lists b
 
 ### Requirement: Backups actions confirm inline with TUI-matching texts
 
-Each Backups action SHALL require an inline confirmation before invoking the engine client's backup action. Restore SHALL show "This will OVERWRITE your current configuration."; Delete SHALL show "This will PERMANENTLY DELETE this backup."; Rename SHALL capture a new description via a text input. Confirming SHALL invoke `RunBackupActionAsync` with the matching action (`restore`, `delete`, `rename`) and the target backup's id (and, for rename, the entered description); cancelling SHALL return to the list without invoking the engine. Only one action confirmation SHALL be active at a time.
+Each Backups action SHALL require an inline confirmation before invoking the engine client's backup action.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  Each Backups action SHALL require an inline confirmation before invoking the engine client's backup action. Restore SHALL show "This will OVERWRITE your current configuration."; Delete SHALL show "This will PERMANENTLY DELETE this backup."; Rename SHALL capture a new description via a text input. Confirming SHALL invoke `RunBackupActionAsync` with the matching action (`restore`, `delete`, `rename`) and the target backup's id (and, for rename, the entered description); cancelling SHALL return to the list without invoking the engine. Only one action confirmation SHALL be active at a time.
 
 #### Scenario: Restore confirmation matches the TUI text and invokes restore
 
@@ -363,7 +414,14 @@ The uninstall and starter flows SHALL render their live progress through the sam
 
 ### Requirement: Wizard opens on the language selection page
 
-The wizard SHALL present a Language page (`WizardPageId.Language`) as its first page, before the Hub. The page SHALL show a fixed bilingual title ("Select your language / Elegí tu idioma") and an extensible single-select list of language choices (English, Español). The initial selection SHALL follow the resolved preselection (persisted preference > OS UI culture > English). `WizardFlow` SHALL advance Language → Hub and go Back Hub → Language. On advancing from the Language page, the `ShellViewModel` SHALL set its `_language`, persist it via `LanguagePreference.Save`, set the engine client's `Language`, and — when the language changed from the previously active one — invalidate the cached `_session`, `_uninstallOptions`, and `_starters` so subsequent flows re-fetch engine data in the new language. The `ShellViewModel` `CanGoBack` SHALL exclude the Language page (not the Hub).
+The wizard SHALL present a Language page (`WizardPageId.Language`) as its first page, before the Hub.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The wizard SHALL present a Language page (`WizardPageId.Language`) as its first page, before the Hub. The page SHALL show a fixed bilingual title ("Select your language / Elegí tu idioma") and an extensible single-select list of language choices (English, Español). The initial selection SHALL follow the resolved preselection (persisted preference > OS UI culture > English). `WizardFlow` SHALL advance Language → Hub and go Back Hub → Language. On advancing from the Language page, the `ShellViewModel` SHALL set its `_language`, persist it via `LanguagePreference.Save`, set the engine client's `Language`, and — when the language changed from the previously active one — invalidate the cached `_session`, `_uninstallOptions`, and `_starters` so subsequent flows re-fetch engine data in the new language. The `ShellViewModel` `CanGoBack` SHALL exclude the Language page (not the Hub).
 
 #### Scenario: Language is the first page and advances to the Hub
 
@@ -392,7 +450,14 @@ The wizard SHALL present a Language page (`WizardPageId.Language`) as its first 
 
 ### Requirement: Shell and pages render their literals from the language string table
 
-The shell footer labels, every page title/subtitle, the XAML section headers, the backups and uninstall warnings, the complete-state label, and the progress step messages SHALL be rendered from `UiStrings` scoped to the shell's active language rather than hardcoded English. Specifically: page titles SHALL be produced via `base(UiStrings.Get(lang, …))`; `MainWindow.xaml` Back/Cancel SHALL bind to `ShellViewModel.BackLabel`/`CancelLabel`; the primary action label (Next / Install / Uninstall overrides) SHALL come from `UiStrings`; the `PageTemplates.xaml` section headers SHALL bind to view-model properties (so they are unit-testable) fed from `UiStrings`; `ProgressPageViewModel.ToFriendlyMessage` SHALL source its own strings from `UiStrings` while engine-provided `phase_started`/`install_finished` messages (already localized by the engine) are shown verbatim; and `CompletePageViewModel` SHALL expose a localized `StateLabel`. The backups Restore/Delete warnings and the uninstall modification warning SHALL come from `UiStrings`.
+The shell footer labels, every page title/subtitle, the XAML section headers, the backups and uninstall warnings, the complete-state label, and the progress step messages SHALL be rendered from `UiStrings` scoped to the shell's active language rather than hardcoded English.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The shell footer labels, every page title/subtitle, the XAML section headers, the backups and uninstall warnings, the complete-state label, and the progress step messages SHALL be rendered from `UiStrings` scoped to the shell's active language rather than hardcoded English. Specifically: page titles SHALL be produced via `base(UiStrings.Get(lang, …))`; `MainWindow.xaml` Back/Cancel SHALL bind to `ShellViewModel.BackLabel`/`CancelLabel`; the primary action label (Next / Install / Uninstall overrides) SHALL come from `UiStrings`; the `PageTemplates.xaml` section headers SHALL bind to view-model properties (so they are unit-testable) fed from `UiStrings`; `ProgressPageViewModel.ToFriendlyMessage` SHALL source its own strings from `UiStrings` while engine-provided `phase_started`/`install_finished` messages (already localized by the engine) are shown verbatim; and `CompletePageViewModel` SHALL expose a localized `StateLabel`. The backups Restore/Delete warnings and the uninstall modification warning SHALL come from `UiStrings`.
 
 #### Scenario: Footer and page titles render in the active language
 
@@ -411,7 +476,14 @@ The shell footer labels, every page title/subtitle, the XAML section headers, th
 
 ### Requirement: Stream failures surface a terminal Error page, never a silent exit
 
-When the shell consumes an install, uninstall, or starter progress stream (`ShellViewModel.RunStreamAndAdvanceToCompleteAsync`), any exception thrown while consuming that stream — a non-zero engine exit, a parse failure, or any other exception — SHALL be caught and converted into navigation to the shared `CompletePageViewModel` in the `CompleteState.Error` terminal state, carrying the failure's message. The exception MUST NOT propagate past the shell (so it can never reach the WPF dispatcher and terminate the process silently). This targeted catch is the primary mechanism; a global unhandled-exception handler is a secondary net and MUST NOT be relied on as the primary path.
+When the shell consumes an install, uninstall, or starter progress stream (`ShellViewModel.RunStreamAndAdvanceToCompleteAsync`), any exception thrown while consuming that stream — a non-zero engine exit, a parse failure, or any other exception — SHALL be caught and converted into navigation to the shared `CompletePageViewModel` in the `CompleteState.Error` terminal state, carrying the failure's message.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  When the shell consumes an install, uninstall, or starter progress stream (`ShellViewModel.RunStreamAndAdvanceToCompleteAsync`), any exception thrown while consuming that stream — a non-zero engine exit, a parse failure, or any other exception — SHALL be caught and converted into navigation to the shared `CompletePageViewModel` in the `CompleteState.Error` terminal state, carrying the failure's message. The exception MUST NOT propagate past the shell (so it can never reach the WPF dispatcher and terminate the process silently). This targeted catch is the primary mechanism; a global unhandled-exception handler is a secondary net and MUST NOT be relied on as the primary path.
 
 #### Scenario: A stream that throws mid-enumeration lands on the Error page
 
@@ -425,7 +497,14 @@ When the shell consumes an install, uninstall, or starter progress stream (`Shel
 
 ### Requirement: List pages wrap content instead of scrolling horizontally
 
-Every `ListBox` in the wizard page templates (`Themes/PageTemplates.xaml`) SHALL disable its horizontal scrollbar (`ScrollViewer.HorizontalScrollBarVisibility="Disabled"`) so long item content wraps within the available width rather than exposing a horizontal scrollbar. This applies uniformly to all list-bearing pages (Language, Hub, InstallType, Components, Permissions, UninstallMode, UninstallStrategy strategy and backup lists, and StarterCatalog), not only the page where the defect was first observed.
+Every `ListBox` in the wizard page templates (`Themes/PageTemplates.xaml`) SHALL disable its horizontal scrollbar (`ScrollViewer.HorizontalScrollBarVisibility="Disabled"`) so long item content wraps within the available width rather than exposing a horizontal scrollbar.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  Every `ListBox` in the wizard page templates (`Themes/PageTemplates.xaml`) SHALL disable its horizontal scrollbar (`ScrollViewer.HorizontalScrollBarVisibility="Disabled"`) so long item content wraps within the available width rather than exposing a horizontal scrollbar. This applies uniformly to all list-bearing pages (Language, Hub, InstallType, Components, Permissions, UninstallMode, UninstallStrategy strategy and backup lists, and StarterCatalog), not only the page where the defect was first observed.
 
 #### Scenario: A long list item wraps rather than scrolling sideways
 
@@ -434,7 +513,14 @@ Every `ListBox` in the wizard page templates (`Themes/PageTemplates.xaml`) SHALL
 
 ### Requirement: Complete page's primary action finishes and closes the wizard
 
-On the terminal Complete page, the shell's primary footer action SHALL be a Finish/Close action, not a navigation "Next". Its label SHALL be the localized `shell.finish` string ("Finish" / "Finalizar") — supplied for both `en` and `es` in `UiStrings` — rather than the generic `shell.next` label. Invoking the primary action while the current page is the `CompletePageViewModel` SHALL cause the wizard window to close, and SHALL NOT route into any flow's navigation. Concretely, `ShellViewModel` SHALL expose a `CloseRequested` event and, in `AdvanceAsync`, SHALL raise `CloseRequested` and return when the current page is the `CompletePageViewModel` — before reaching the operation switch that rebuilds pages via `CreatePage` (which has no Complete case and would otherwise throw). The host (`MainWindow`) SHALL subscribe to `CloseRequested` and close the window; `ShellViewModel` MUST NOT take a dependency on the WPF `Window`. Advancing from the Complete page MUST NOT throw and MUST NOT be silently swallowed by the global dispatcher handler. `CanGoBack` SHALL remain false on the Complete page (Back stays disabled), and the Complete page's `CanAdvance` SHALL remain true so the Finish action is enabled.
+On the terminal Complete page, the shell's primary footer action SHALL be a Finish/Close action, not a navigation "Next".
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  On the terminal Complete page, the shell's primary footer action SHALL be a Finish/Close action, not a navigation "Next". Its label SHALL be the localized `shell.finish` string ("Finish" / "Finalizar") — supplied for both `en` and `es` in `UiStrings` — rather than the generic `shell.next` label. Invoking the primary action while the current page is the `CompletePageViewModel` SHALL cause the wizard window to close, and SHALL NOT route into any flow's navigation. Concretely, `ShellViewModel` SHALL expose a `CloseRequested` event and, in `AdvanceAsync`, SHALL raise `CloseRequested` and return when the current page is the `CompletePageViewModel` — before reaching the operation switch that rebuilds pages via `CreatePage` (which has no Complete case and would otherwise throw). The host (`MainWindow`) SHALL subscribe to `CloseRequested` and close the window; `ShellViewModel` MUST NOT take a dependency on the WPF `Window`. Advancing from the Complete page MUST NOT throw and MUST NOT be silently swallowed by the global dispatcher handler. `CanGoBack` SHALL remain false on the Complete page (Back stays disabled), and the Complete page's `CanAdvance` SHALL remain true so the Finish action is enabled.
 
 #### Scenario: Primary action on Complete raises CloseRequested instead of navigating
 

@@ -121,3 +121,26 @@ func TestReview05TaskContextRejectsSecondYAMLDocument(t *testing.T) {
 		}
 	}
 }
+
+func TestVerifyReviewModes(t *testing.T) {
+	tc := loadTC(t)
+	for _, client := range []string{"claude", "codex"} {
+		for _, delegated := range []bool{false, true} {
+			for _, enabled := range []bool{false, true} {
+				q := Query{Action: "verify", Role: RoleCoordinator, Client: client, Delegating: delegated}
+				if enabled {
+					q.Toggles = []string{"delegation"}
+				}
+				r, err := tc.Resolve(q)
+				if err != nil {
+					t.Fatal(err)
+				}
+				loaded := slices.ContainsFunc(r.Entries, func(e Entry) bool { return e.Module == "delegation" && e.Level == LevelMandatory })
+				blocked := slices.Contains(r.Blocked, "delegation")
+				if loaded != (delegated && enabled) || blocked != (delegated && !enabled) {
+					t.Errorf("%s delegated=%t enabled=%t: %+v", client, delegated, enabled, r)
+				}
+			}
+		}
+	}
+}

@@ -5,7 +5,9 @@ import (
 	"archive/zip"
 	"bytes"
 	"compress/gzip"
+	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -748,4 +750,57 @@ func TestWriteExecutable_ClearsStaleAside(t *testing.T) {
 	if string(aside) != "v1" {
 		t.Errorf(".old = %q, want the displaced v1 (ancient leftover should be cleared)", aside)
 	}
+}
+
+func TestDownloadBinaryRepairsLegacyWindowsEngram(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "engram.exe")
+	if err := os.WriteFile(path, []byte("legacy"), 0755); err != nil {
+		t.Fatal(err)
+	}
+	archive := buildZip(t, "engram.exe", []byte("compatible"))
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/releases") {
+			_ = json.NewEncoder(w).Encode([]map[string]string{{"tag_name": "v3.7.2"}})
+			return
+		}
+		_, _ = w.Write(archive)
+	}))
+	defer server.Close()
+	oldBase, oldClient, oldDir, oldPath, oldRunner := githubBaseURL, httpClient, binaryInstallDirFn, addToUserPath, runner
+	t.Cleanup(func() {
+		githubBaseURL, httpClient, binaryInstallDirFn, addToUserPath, runner = oldBase, oldClient, oldDir, oldPath, oldRunner
+	})
+	githubBaseURL, httpClient = server.URL, server.Client()
+	binaryInstallDirFn = func(string) string { return dir }
+	addToUserPath = func(string) error { return nil }
+	runner = func(_ context.Context, path string, args ...string) ([]byte, error) {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		if string(data) == "legacy" {
+			return []byte("unknown command: hook"), fmt.Errorf("exit status 1")
+		}
+		return []byte("{}"), nil
+	}
+	h := harnessWithMethod("homebrew", "engram", "")
+	h.ID = "engram"
+	h.External.Repo = "Gentleman-Programming/engram"
+	profile := system.PlatformProfile{OS: "windows"}
+	for _, wantReused := range []bool{false, true} {
+		got, reused, err := downloadBinary(context.Background(), h, profile, nil)
+		if err != nil || got != path || reused != wantReused {
+			t.Fatalf("install = %q, %t, %v; want %q, %t, nil", got, reused, err, path, wantReused)
+		}
+	}
+	backups, err := filepath.Glob(filepath.Join(dir, ".engram-backup-*", "engram.exe"))
+	if err != nil || len(backups) != 1 {
+		t.Fatalf("expected one backup after two installs: %v, %v", backups, err)
+	}
+	previous, err := os.ReadFile(backups[0])
+	if err != nil || string(previous) != "legacy" {
+		t.Fatalf("backup contents = %q, %v", previous, err)
+	}
+
 }

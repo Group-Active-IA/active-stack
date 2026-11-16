@@ -94,7 +94,7 @@ harnesses:
     description: { es: "Orquestador de fundación: OpenSpec, KB, política visual, roadmap, skills y reglas.", en: "Foundation orchestrator: OpenSpec, KB, visual policy, roadmap, skills and rules." }
     long_description: { es: "Orquesta la fundación sin rehacer las fases de otras skills: openspec init → discovery-research opcional → kb-creator → design-system → roadmap-generator → find-skill → skill-registry → agent-instruction. La fase visual guarda una decisión persistente y puede ejecutarse sola en proyectos existentes. Full la instala para Claude, Codex, OpenCode y Antigravity; depende de design-system.", en: "Orchestrates the foundation without reimplementing other skills: openspec init → optional discovery-research → kb-creator → design-system → roadmap-generator → find-skill → skill-registry → agent-instruction. The visual phase saves a persistent policy and can run on its own in existing projects. Full installs it for Claude, Codex, OpenCode and Antigravity; it depends on design-system." }
     type: skill
-    source: { repo: Group-Active-IA/active-orchestrator, ref: 63c5131c3abfa28f266b0b763e3587fc64b50502, method: clone }
+    source: { repo: Group-Active-IA/active-orchestrator, ref: d862278090d9c39b88eb7893aa9c15fca108abea, method: clone }
     # Full-only: orquesta kb-creator/roadmap-generator/agent-instruction/find-skill,
     # todas Full. En Lite quedaría huérfano. Lite = sustrato; Full = fundación guiada.
     install_modes: [full]
@@ -124,7 +124,7 @@ harnesses:
     description: { es: "Genera CHANGES.md (backlog técnico) desde la KB.", en: "Generates CHANGES.md (technical backlog) from the KB." }
     long_description: { es: "La skill que traduce la knowledge-base en un roadmap operativo de changes. Se clona desde `Group-Active-IA/roadmap-generator` al directorio de skills del agente y genera `CHANGES.md`: un índice de changes OpenSpec con árbol de dependencias, gates de paralelismo y camino crítico. Elegila después de armar la KB, cuando querés convertir el dominio documentado en un plan de implementación accionable. Depende de openspec y kb-creator, así que corre más tarde en la fundación.", en: "The skill that translates the knowledge base into an operational change roadmap. It's cloned from `Group-Active-IA/roadmap-generator` into the agent's skills directory and generates `CHANGES.md`: an index of OpenSpec changes with a dependency tree, parallelism gates, and the critical path. Choose it after building the KB, when you want to turn the documented domain into an actionable implementation plan. It depends on openspec and kb-creator, so it runs later in the foundation." }
     type: skill
-    source: { repo: Group-Active-IA/roadmap-generator, ref: latest, method: clone }
+    source: { repo: Group-Active-IA/roadmap-generator, ref: dd45758a665c1538a721b662a71974942951071c, method: clone }
     install_modes: [full]
     depends_on: [openspec, kb-creator]
 
@@ -133,7 +133,7 @@ harnesses:
     description: { es: "Genera AGENTS.md/CLAUDE.md correcto con todas las referencias.", en: "Generates a correct AGENTS.md/CLAUDE.md with all references." }
     long_description: { es: "La skill que redacta la constitución operativa del proyecto—el `AGENTS.md`/`CLAUDE.md` con todas las referencias correctas. Se clona desde `JuanCruzRobledo/agent-instruction` al directorio de skills del agente y arma stack, convenciones, reglas duras y el mapa de navegación hacia la KB y el roadmap, sin duplicar lo que el orquestador global ya define. Elegila cuando querés que los agentes tengan reglas de proyecto claras y específicas en vez de improvisar. Es parte de la fundación (Full).", en: "The skill that writes the project's operating constitution—the `AGENTS.md`/`CLAUDE.md` with all the right references. It's cloned from `JuanCruzRobledo/agent-instruction` into the agent's skills directory and assembles the stack, conventions, hard rules, and the navigation map to the KB and roadmap, without duplicating what the global orchestrator already defines. Choose it when you want agents to have clear, project-specific rules instead of improvising. It's part of the foundation (Full)." }
     type: skill
-    source: { repo: JuanCruzRobledo/agent-instruction, ref: latest, method: clone }
+    source: { repo: JuanCruzRobledo/agent-instruction, ref: a873714e0bcbc286498cb4a57290b93a1c268c28, method: clone }
     install_modes: [full]
 
   - id: skill-registry

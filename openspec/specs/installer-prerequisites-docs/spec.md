@@ -1,7 +1,7 @@
 # installer-prerequisites-docs Specification
 
 ## Purpose
-TBD - created by archiving change readme-prereqs. Update Purpose after archive.
+Specify how the installation documentation describes build-time and runtime prerequisites.
 
 ## Requirements
 

@@ -40,9 +40,27 @@ type shell struct {
 	quote  func(exe string) string
 }
 
+func usableBash() string {
+	var candidates []string
+	if path, err := exec.LookPath("bash"); err == nil {
+		candidates = append(candidates, path)
+	}
+	if runtime.GOOS == "windows" {
+		if git, err := exec.LookPath("git"); err == nil {
+			candidates = append(candidates, filepath.Join(filepath.Dir(git), "..", "bin", "bash.exe"))
+		}
+	}
+	for _, path := range candidates {
+		if exec.Command(path, "-c", "exit 0").Run() == nil {
+			return path
+		}
+	}
+	return ""
+}
+
 func shells() []shell {
 	var out []shell
-	if p, err := exec.LookPath("bash"); err == nil {
+	if p := usableBash(); p != "" {
 		out = append(out, shell{
 			name: "bash", bin: p,
 			args:   func(s string) []string { return []string{"-c", s} },

@@ -10,7 +10,7 @@ specialist needs into the assignment: the specialist does not see this skill.
 | explore | — | `${CLAUDE_SKILL_DIR}/modules/directed-code-reading.md`; `${CLAUDE_SKILL_DIR}/modules/bounded-command-output.md` if you run commands; `${CLAUDE_SKILL_DIR}/modules/task-tool-selection.md`; `${CLAUDE_SKILL_DIR}/modules/concise-agent-reporting.md` |
 | propose | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` | `${CLAUDE_SKILL_DIR}/modules/directed-code-reading.md`; `${CLAUDE_SKILL_DIR}/modules/task-tool-selection.md`; `${CLAUDE_SKILL_DIR}/modules/concise-agent-reporting.md` |
 | apply | `${CLAUDE_SKILL_DIR}/modules/artifacts.md`; `${CLAUDE_SKILL_DIR}/modules/bounded-command-output.md`; `${CLAUDE_SKILL_DIR}/modules/tdd.md` when Strict TDD is on and a test runner exists | `${CLAUDE_SKILL_DIR}/modules/directed-code-reading.md`; `${CLAUDE_SKILL_DIR}/modules/task-tool-selection.md`; `${CLAUDE_SKILL_DIR}/modules/concise-agent-reporting.md` |
-| verify | `${CLAUDE_SKILL_DIR}/modules/delegation.md`; `${CLAUDE_SKILL_DIR}/modules/model-assignments.md`; `${CLAUDE_SKILL_DIR}/modules/bounded-command-output.md` | `${CLAUDE_SKILL_DIR}/modules/directed-code-reading.md`; `${CLAUDE_SKILL_DIR}/modules/task-tool-selection.md`; `${CLAUDE_SKILL_DIR}/modules/concise-agent-reporting.md` |
+| verify | `${CLAUDE_SKILL_DIR}/modules/delegation.md` for delegated review only; `${CLAUDE_SKILL_DIR}/modules/model-assignments.md` for delegated review only; `${CLAUDE_SKILL_DIR}/modules/bounded-command-output.md` | `${CLAUDE_SKILL_DIR}/modules/directed-code-reading.md`; `${CLAUDE_SKILL_DIR}/modules/task-tool-selection.md`; `${CLAUDE_SKILL_DIR}/modules/concise-agent-reporting.md` |
 | archive | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` | `${CLAUDE_SKILL_DIR}/modules/task-tool-selection.md`; `${CLAUDE_SKILL_DIR}/modules/concise-agent-reporting.md` |
 | delegate (any action) | — | `${CLAUDE_SKILL_DIR}/modules/delegation.md`; `${CLAUDE_SKILL_DIR}/modules/model-assignments.md` |
 | session start and close | — | `${CLAUDE_SKILL_DIR}/modules/engram-opsx.md` |
@@ -27,8 +27,7 @@ whitespace), is missing.
 - Missing optional module: write `missing optional module: <id> — continuing without it` and
   resolve the action directly. Without `delegation`, do not delegate, even where other rules of
   this skill say to delegate.
-- On a surface without subagents, `verify` stops: write
-  `missing module: delegation — verify stopped (surface without subagents)`.
+- On a surface without subagents, direct verification can continue. When independent review is required, record an independent human review or report it pending.
 - Never replace a missing module with your own version of its rules.
 
 ### After compaction or resume

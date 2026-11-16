@@ -2,6 +2,7 @@ package config_test
 
 import (
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -88,16 +89,16 @@ func TestComposeLayers_SkillMDHasRoleTableAndNoModuleText(t *testing.T) {
 
 // 4.2 (M): every module exists only with its toggle; artifacts always.
 func TestComposeLayers_ModulesFollowToggles(t *testing.T) {
-	if got := moduleNames(mustLayers(t, nil)); strings.Join(got, ",") != "artifacts" {
-		t.Errorf("no toggles: modules = %v, want [artifacts]", got)
+	if got := moduleNames(mustLayers(t, nil)); strings.Join(got, ",") != "artifacts,bounded-command-output,evidence" {
+		t.Errorf("no toggles: modules = %v, want [artifacts bounded-command-output evidence]", got)
 	}
-	if got := moduleNames(mustLayers(t, allToggles)); strings.Join(got, ",") != "artifacts,delegation,engram-opsx,model-assignments,tdd" {
+	if got := moduleNames(mustLayers(t, allToggles)); strings.Join(got, ",") != "artifacts,bounded-command-output,delegation,engram-opsx,evidence,model-assignments,tdd" {
 		t.Errorf("all toggles: modules = %v", got)
 	}
 	for toggle, module := range map[string]string{"tdd": "tdd", "delegation": "delegation", "model-routing": "model-assignments", "engram": "engram-opsx"} {
 		got := moduleNames(mustLayers(t, []string{toggle}))
-		if strings.Join(got, ",") != "artifacts,"+module {
-			t.Errorf("toggle %s: modules = %v, want artifacts + %s", toggle, got, module)
+		if len(got) != 4 || !slices.Contains(got, "bounded-command-output") || !slices.Contains(got, "artifacts") || !slices.Contains(got, "evidence") || !slices.Contains(got, module) {
+			t.Errorf("toggle %s: modules = %v, want artifacts, capture and evidence + %s", toggle, got, module)
 		}
 	}
 	l := mustLayers(t, []string{"governance"})
@@ -258,7 +259,7 @@ func TestComposeLayers_ActionTableFollowsToggles(t *testing.T) {
 	all := tableOf(t, allToggles)
 	for _, want := range []string{
 		"| propose | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` |",
-		"| apply | `${CLAUDE_SKILL_DIR}/modules/artifacts.md`, `${CLAUDE_SKILL_DIR}/modules/tdd.md` |",
+		"| apply | `${CLAUDE_SKILL_DIR}/modules/artifacts.md`, `${CLAUDE_SKILL_DIR}/modules/bounded-command-output.md`, `${CLAUDE_SKILL_DIR}/modules/tdd.md` |",
 		"| archive | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` |",
 		"| delegate | `${CLAUDE_SKILL_DIR}/modules/delegation.md`, `${CLAUDE_SKILL_DIR}/modules/model-assignments.md` |",
 		"| session start and close | `${CLAUDE_SKILL_DIR}/modules/engram-opsx.md` |",
@@ -273,7 +274,7 @@ func TestComposeLayers_ActionTableFollowsToggles(t *testing.T) {
 			t.Errorf("no toggles: table must not list %q:\n%s", bad, none)
 		}
 	}
-	if !strings.Contains(none, "| apply | `${CLAUDE_SKILL_DIR}/modules/artifacts.md` |") {
+	if !strings.Contains(none, "| apply | `${CLAUDE_SKILL_DIR}/modules/artifacts.md`, `${CLAUDE_SKILL_DIR}/modules/bounded-command-output.md` |") {
 		t.Errorf("no toggles: apply keeps artifacts only:\n%s", none)
 	}
 	for toggle, absent := range map[string][]string{

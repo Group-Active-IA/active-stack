@@ -136,3 +136,21 @@ func TestStateFingerprint_NotARepository(t *testing.T) {
 		t.Error("un directorio que no es un repositorio debe dar error, no una huella")
 	}
 }
+
+func TestReceiptStateFingerprintIncludesIndex(t *testing.T) {
+	dir := gitRepo(t, "false")
+	before, err := ReceiptStateFingerprint(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	write(t, dir, "f.txt", "staged content")
+	gitIn(t, dir, "add", "f.txt")
+	write(t, dir, "f.txt", "a\nb\n")
+	after, err := ReceiptStateFingerprint(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if before == after {
+		t.Fatal("different index with the same worktree produced the same receipt fingerprint")
+	}
+}

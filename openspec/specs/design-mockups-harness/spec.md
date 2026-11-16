@@ -158,7 +158,12 @@ When `design-mockups` is installed, the section SHALL direct the agent to enter 
 
 ### Requirement: Visual changes produce a portable review bundle before implementation
 
-For visual changes with `design-mockups` installed, Claude and Codex SHALL automatically enter design after propose. Both SHALL create self-contained responsive HTML/CSS under the change's `mockups/` directory, covering affected screens and states before production UI implementation. They SHALL render mobile and desktop previews when a browser or preview tool exists, save the captures under `mockups/previews/`, record whether preview was rendered or manual, present the captures and local HTML to the user, and wait for explicit approval before apply. A user-supplied design SHALL enter the same review flow. Only the user's explicit skip request may omit mockups for visual work. A revision SHALL reset approval to pending. Artifact Design, Figma and Stitch MAY supplement the local bundle, but SHALL NOT be required for review.
+With `design-mockups` installed, Claude and Codex SHALL enter design after propose for visual changes, review a portable responsive bundle, and obtain explicit approval before apply. Only an explicit user request may skip mockups. Revisions MUST reset approval.
+
+#### Scenario: Local bundle and preview delivery
+
+- **WHEN** Claude or Codex prepares visual work or receives a user-supplied design
+- **THEN** it follows the same review flow: create self-contained HTML/CSS under `mockups/` covering affected screens and states, render mobile and desktop previews when a preview tool exists, save captures under `mockups/previews/`, record whether preview was rendered or manual, and present local HTML and captures to the user. Artifact Design, Figma, and Stitch may supplement the local bundle and remain optional.
 
 #### Scenario: Artifact flow is described
 
@@ -218,14 +223,12 @@ The Claude orchestrator block SHALL show the OPSX workflow diagram with a `verif
 
 ### Requirement: Verify includes a visual check against approved mockups
 
-The `design-mockups` section SHALL instruct that, during `verify`, a visual verification step runs when the change's `design.md` records under `## UI Mockups` a decision of `yes` or `provided` together with `Approval: approved`. When Playwright MCP tools are available, the step MUST direct the agent to:
+During `verify`, the `design-mockups` section SHALL require visual verification when `design.md` records `Decision: yes` or `provided` and `Approval: approved` under `## UI Mockups`.
 
-- start the project's development server;
-- open the local URL of each screen covered by the mockups;
-- capture each screen at a mobile viewport and at a desktop viewport;
-- inspect the browser console errors and the failed network requests;
-- compare the captures against the mockups in `openspec/changes/<name>/mockups/`;
-- stop the development server it started.
+#### Scenario: Playwright verification lifecycle
+
+- **WHEN** visual verification applies and Playwright MCP is available
+- **THEN** start the development server, open each local screen covered by the mockups, capture mobile and desktop views, inspect console errors and failed network requests, compare with `openspec/changes/<name>/mockups/`, and stop the server started for the check.
 
 #### Scenario: Visual step is described with both viewports
 
@@ -304,7 +307,12 @@ For a visual change, the agent SHALL inspect project-root `design-system/` befor
 
 ### Requirement: The design system is portable and cheap to revise
 
-The project SHALL use `design-system/README.md`, `brand.md`, `brand.js`, `tokens.css`, `components.html`, `assets/` and `previews/` as the default structure. The README SHALL record revision, approval, sources and open `(TBD)` decisions. Unresolved name/logo/imagery MAY remain `(TBD)` with clearly provisional, stable local assets or variables. The displayed brand name SHALL come from the shared `brand.js` in HTML previews so it can be replaced in one place. Mockups SHALL reuse shared tokens and assets where practical. A change to the approved system SHALL identify affected mockups and require renewed review if their appearance changes.
+The default design system SHALL keep shared assets and tokens local. The README SHALL record revision, approval, sources, and open `(TBD)` decisions. Revisions to the approved system SHALL identify affected mockups and require renewed review if their appearance changes.
+
+#### Scenario: Default local files
+
+- **WHEN** the design system is prepared for local review
+- **THEN** use `design-system/README.md`, `brand.md`, `brand.js`, `tokens.css`, `components.html`, `assets/`, and `previews/`. Use shared `brand.js` for the displayed name in HTML previews and reuse tokens and assets where practical. Unresolved name, logo, or imagery may remain `(TBD)` with clearly provisional, stable local assets or variables.
 
 #### Scenario: Logo remains unresolved
 

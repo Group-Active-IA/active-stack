@@ -38,13 +38,18 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 		return CodexPackage{}, err
 	}
 	pkg := CodexPackage{
-		Universal: "OPSX is available through explicit invocation of `$sdd-orchestrator`. The OpenSpec CLI owns artifact state. Never guess artifact state or create openspec directories manually.\n",
+		Universal: "OPSX is available through explicit invocation of `$sdd-orchestrator`. The OpenSpec CLI owns artifact state. Never guess artifact state or create openspec directories manually.\n\n" + workflowGuidance + "\n",
 		Files: map[string]string{
 			"SKILL.md":             string(skill),
 			"agents/openai.yaml":   "# managed-by: active-stack\npolicy:\n  allow_implicit_invocation: false\n",
 			"modules/artifacts.md": artifacts,
 		},
 	}
+	evidence, err := fs.ReadFile(embeddedAssets, "assets/opsx/evidence-module.md")
+	if err != nil {
+		return CodexPackage{}, err
+	}
+	pkg.Files["modules/evidence.md"] = string(evidence)
 	for _, name := range []string{"directed-code-reading", "bounded-command-output", "task-tool-selection", "concise-agent-reporting"} {
 		content, err := fs.ReadFile(embeddedAssets, "assets/codex/native/modules/"+name+".md")
 		if err != nil {
@@ -121,14 +126,14 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 // the action table delivered by change 05. It does not compose Claude assets.
 func codexActionModules(active map[string]bool, table string) string {
 	tdd := "Strict TDD is disabled; stop apply if Strict TDD is required"
-	delegation := "delegation disabled — verify stopped"
+	delegation := "delegation disabled; use direct or documented human review as applicable"
 	delegate := "delegation disabled; do not delegate"
 	engram := "Engram OPSX wiring disabled"
 	if active["tdd"] {
 		tdd = "`modules/tdd.md` when Strict TDD is on and a test runner exists"
 	}
 	if active["delegation"] {
-		delegation = "`modules/delegation.md`"
+		delegation = "`modules/delegation.md` for delegated review only"
 		delegate = "`modules/delegation.md`"
 	}
 	if active["engram"] {

@@ -10,7 +10,7 @@ specialist needs into the assignment: the specialist does not see this skill.
 | explore | — | `modules/directed-code-reading.md`; `modules/bounded-command-output.md` if you run commands; `modules/task-tool-selection.md`; `modules/concise-agent-reporting.md` |
 | propose | `modules/artifacts.md` | `modules/directed-code-reading.md`; `modules/task-tool-selection.md`; `modules/concise-agent-reporting.md` |
 | apply | `modules/artifacts.md`; `modules/bounded-command-output.md`; `modules/tdd.md` when Strict TDD is on and a test runner exists | `modules/directed-code-reading.md`; `modules/task-tool-selection.md`; `modules/concise-agent-reporting.md` |
-| verify | `modules/delegation.md`; `modules/bounded-command-output.md` | `modules/directed-code-reading.md`; `modules/task-tool-selection.md`; `modules/concise-agent-reporting.md` |
+| verify | `modules/delegation.md` for delegated review only; `modules/bounded-command-output.md` | `modules/directed-code-reading.md`; `modules/task-tool-selection.md`; `modules/concise-agent-reporting.md` |
 | archive | `modules/artifacts.md` | `modules/task-tool-selection.md`; `modules/concise-agent-reporting.md` |
 | delegate (any action) | — | `modules/delegation.md` |
 | session start and close | — | `modules/engram-opsx.md` |
@@ -27,8 +27,7 @@ whitespace), is missing.
 - Missing optional module: write `missing optional module: <id> — continuing without it` and
   resolve the action directly. Without `delegation`, do not delegate, even where other rules of
   this skill say to delegate.
-- On a surface without subagents, `verify` stops: write
-  `missing module: delegation — verify stopped (surface without subagents)`.
+- On a surface without subagents, direct verification can continue. When independent review is required, record an independent human review or report it pending.
 - Never replace a missing module with your own version of its rules.
 
 ### After compaction or resume

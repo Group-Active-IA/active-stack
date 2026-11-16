@@ -1,7 +1,7 @@
 # gui-installer-dependency-detection Specification
 
 ## Purpose
-TBD - created by archiving change gui-installer-dependency-detection. Update Purpose after archive.
+Specify how the Windows installer presents the engine dependency report before the user selects assistants.
 
 ## Requirements
 

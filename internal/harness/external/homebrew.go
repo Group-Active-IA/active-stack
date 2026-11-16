@@ -91,15 +91,24 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 	installDir := binaryInstallDirFn(goos)
 	outPath := filepath.Join(installDir, binaryName)
 
-	// Idempotent: if the binary is already on disk, skip the download
-	// entirely instead of overwriting it in place. This also sidesteps a
-	// Windows-specific hazard: when the existing binary is a long-running MCP
-	// server (e.g. engram, with one process per open Claude Code session),
-	// several processes can hold the .exe open at once, and Windows then
-	// refuses both the truncate-in-place write and the rename-aside retry
-	// ("the process cannot access the file because it is being used by
-	// another process"), failing the whole install.
-	if _, err := os.Stat(outPath); err == nil {
+	checkHooks := goos == "windows" && h.ID == "engram"
+	if checkHooks {
+		if err := os.MkdirAll(installDir, 0755); err != nil {
+			return "", false, err
+		}
+		lock := filepath.Join(installDir, ".engram-install.lock")
+		if err := os.Mkdir(lock, 0700); err != nil {
+			return "", false, fmt.Errorf("acquire Engram install lock: %w", err)
+		}
+		defer os.Remove(lock)
+	}
+
+	_, statErr := os.Stat(outPath)
+	if statErr != nil && !os.IsNotExist(statErr) {
+		return "", false, statErr
+	}
+	existing := statErr == nil
+	if existing && (!checkHooks || checkEngramHooks(ctx, outPath) == nil) {
 		_ = addToUserPath(installDir)
 		return outPath, true, nil
 	}
@@ -130,13 +139,32 @@ func downloadBinary(ctx context.Context, h model.Harness, profile system.Platfor
 		})
 	}
 
+	downloadPath := outPath
+	if checkHooks {
+		stage, err := os.MkdirTemp(installDir, ".engram-candidate-")
+		if err != nil {
+			return "", false, err
+		}
+		downloadPath = filepath.Join(stage, binaryName)
+		defer os.Remove(stage)
+		defer os.Remove(downloadPath)
+	}
 	if strings.HasSuffix(assetURL, ".zip") {
-		if err := downloadAndExtractZip(assetURL, binaryName, outPath); err != nil {
+		if err := downloadAndExtractZip(assetURL, binaryName, downloadPath); err != nil {
 			return "", false, fmt.Errorf("download %s zip: %w", repo, err)
 		}
 	} else {
-		if err := downloadAndExtractTarGz(assetURL, repo, outPath); err != nil {
+		if err := downloadAndExtractTarGz(assetURL, repo, downloadPath); err != nil {
 			return "", false, fmt.Errorf("download %s tar.gz: %w", repo, err)
+		}
+	}
+
+	if checkHooks {
+		if err := checkEngramHooks(ctx, downloadPath); err != nil {
+			return "", false, fmt.Errorf("downloaded Engram cannot run Windows hooks: %w", err)
+		}
+		if err := publishEngram(downloadPath, outPath, existing); err != nil {
+			return "", false, err
 		}
 	}
 

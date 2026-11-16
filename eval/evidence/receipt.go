@@ -2,9 +2,8 @@
 // opsx-verifiable-evidence (ficha 06): el esquema del recibo (design.md D2), los tres controles
 // (D3) y los tres estados (D4).
 //
-// Igual que eval/baseline, es externo al binario: no lo importan cmd/ ni internal/, usa solo la
-// biblioteca estándar y los paquetes de eval/. No es el verificador del producto; sirve para que
-// los fixtures de data fijen, con casos, qué veredicto exige el contrato.
+// El CLI reutiliza el esquema y la conversión de captura. El evaluador mantiene
+// separados los controles de integridad, procedencia y suficiencia.
 package evidence
 
 import (

@@ -64,7 +64,7 @@ func TestCodexPre05PackageUpgrade(t *testing.T) {
 	a := codex.NewAdapter()
 	h := model.Harness{ID: "sdd-orchestrator", Type: model.HarnessConfig, Toggles: []string{"delegation", "engram", "governance", "tdd", "model-routing"}}
 	skillRoot := filepath.Join(a.SkillsDir(home), h.ID)
-	newModules := []string{"directed-code-reading", "bounded-command-output", "task-tool-selection", "concise-agent-reporting"}
+	newModules := []string{"evidence", "directed-code-reading", "bounded-command-output", "task-tool-selection", "concise-agent-reporting"}
 	for _, id := range newModules {
 		if _, err := os.Stat(filepath.Join(skillRoot, "modules", id+".md")); !os.IsNotExist(err) {
 			t.Fatalf("seed unexpectedly contains new module %s: %v", id, err)

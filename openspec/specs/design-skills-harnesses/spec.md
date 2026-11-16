@@ -21,7 +21,7 @@ The embedded catalog SHALL contain a global-picker harness with id `emil-design-
 
 ### Requirement: The catalog declares the v1 taste skill harness
 
-The embedded catalog SHALL contain a global-picker harness with id `design-taste-frontend-v1` (equal to the upstream skill's declared name), type `skill`, sourced by `clone` from repository `Leonxlnx/taste-skill` at path `skills/taste-skill-v1`, pinned to commit `b482f7a970abb98c4108d4a9f761e458c64cefc8`. It MUST be marked third-party and best-effort, with bilingual `description` and `long_description`. The catalog MUST NOT contain any harness sourced from `senlindesign/taste-skill` or from the experimental `skills/taste-skill` path of `Leonxlnx/taste-skill`.
+The embedded catalog SHALL contain a global-picker harness with id `design-taste-frontend-v1` (equal to the upstream skill's declared name), type `skill`, sourced by `clone` from repository `Leonxlnx/taste-skill` at path `skills/taste-skill-v1`, pinned to commit `b482f7a970abb98c4108d4a9f761e458c64cefc8`. It MUST be marked third-party and best-effort, with bilingual `description` and `long_description`. The rejected sources below MUST be absent.
 
 #### Scenario: Catalog resolves the taste skill
 

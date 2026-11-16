@@ -1,7 +1,7 @@
 # catalog-localization Specification
 
 ## Purpose
-TBD - created by archiving change catalog-localized-descriptions. Update Purpose after archive.
+Define how the catalog stores, resolves, and delivers localized names and descriptions with deterministic language fallback.
 ## Requirements
 ### Requirement: LocalizedText resolves a language with deterministic fallback
 
@@ -68,7 +68,7 @@ The model SHALL provide a `LocalizedText` type (`map[string]string`) with a `Loc
 
 ### Requirement: Catalog load enforces bilingual completeness
 
-`catalog.Load()` SHALL validate localized text during load and fail loudly on any gap: every harness and every starter `Description` MUST have both `es` and `en`; `LongDescription` MUST have both languages for every global-picker harness (`!IsStarterOnly()`) and for every starter; for starter-only harnesses `LongDescription` is optional but, when present, MUST have both languages. A missing translation MUST cause `Load()` to return an error naming the offending harness/starter, the field, and the missing language, so a build/release cannot ship a one-language or un-migrated catalog. A legacy scalar description (parsed into `es` only) therefore fails load on the missing `en`.
+`catalog.Load()` SHALL require `es` and `en` in every harness and starter `Description` and in the `LongDescription` of every global-picker harness and starter. An optional starter-only `LongDescription` MUST use both languages when present. Missing translations MUST return an error naming the entry, field, and language. A legacy scalar provides only `es` and MUST fail for missing `en`.
 
 #### Scenario: Fully bilingual catalog loads
 
@@ -102,7 +102,7 @@ The model SHALL provide a `LocalizedText` type (`map[string]string`) with a `Loc
 
 ### Requirement: Long-description content follows a three-part structure
 
-For every catalog entry whose `long_description` is required (global-picker harnesses, i.e. `!IsStarterOnly()`, and all starters) and for the install-mode, permission-tier, and uninstall-strategy `*.long` keys in `internal/i18n`, the authored content SHALL, in each language (ES and EN), state (1) what the item is, (2) what it concretely installs or configures (binaries, files, MCPs, where it lands), and (3) when it makes sense to choose it, and when it does not; each language's text SHALL be 3-6 sentences. Harnesses with `scope: starter-only` are exempt: their `long_description` remains optional, and this requirement does not apply to them.
+Required catalog long descriptions and the install-mode, permission-tier, and uninstall-strategy `*.long` keys in `internal/i18n` SHALL use 3–6 sentences per language (ES and EN). Each SHALL explain the item, what it installs or configures (including relevant binaries, files, MCPs and destinations), and when to choose or skip it. Starter-only harnesses are exempt.
 
 #### Scenario: Global-picker harness long_description follows the structure
 

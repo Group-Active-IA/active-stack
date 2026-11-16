@@ -80,6 +80,9 @@ func (tc *TaskContext) Resolve(q Query) (Resolution, error) {
 		if !ok {
 			continue
 		}
+		if q.Action == "verify" && m.OptionalVia == "delegate-row" && !q.Delegating && q.Role == RoleCoordinator {
+			continue
+		}
 		toggleOn := m.Toggle == "" || active[m.Toggle]
 		if q.Role == RoleSpecialist {
 			e, blocked, ok := specialistEntry(m, q, toggleOn)

@@ -1,11 +1,18 @@
 # windows-gui-localization Specification
 
 ## Purpose
-TBD - created by archiving change gui-language-page. Update Purpose after archive.
+Define how the Windows installer chooses a language and resolves localized host strings.
 ## Requirements
 ### Requirement: Pure UI string table resolves localized Host literals
 
-A static `UiStrings` type SHALL expose a PURE `Get(lang, key)` function that returns the Host UI literal for the given language and key, with NO mutable global state — the caller (the shell) owns the current language and passes it in. The table SHALL cover the ~85 Host literals: the shell footer actions (`shell.next`/`shell.back`/`shell.cancel`), every page's title/subtitle (`page.*.title`/`page.*.subtitle`), hub entries plus their tooltips and the coming-soon label, review headings (Assistants / Install type / Components / Permission tier), PageTemplates headers ("Recommended", "Choose a backup to restore", "No backups yet.", Restore/Rename/Delete/Confirm/Cancel, "Browse…", the "{0} harnesses" format, "Target project", starter review headings, uninstall confirm headings), the backups warnings, the uninstall modification warning, the complete-state labels, and the progress format strings (e.g. `progress.installing_fmt`). When a key is missing for the requested language the function SHALL fall back to the English value, and when missing in English SHALL return the key itself. Localization MUST NOT be implemented with `.resx`/satellite assemblies (they break `PublishSingleFile`); the tables are plain in-code dictionaries.
+The Windows host SHALL use a pure `UiStrings.Get(lang, key)` lookup backed by in-code dictionaries. The shell owns the current language. Lookup MUST fall back to English and then to the key.
+
+#### Scenario: Detailed behavior for pure UI string table resolves localized Host literals
+
+- **WHEN** this contract applies
+- **THEN** the following conditions hold
+
+  A static `UiStrings` type SHALL expose a PURE `Get(lang, key)` function that returns the Host UI literal for the given language and key, with NO mutable global state — the caller (the shell) owns the current language and passes it in. The table SHALL cover the ~85 Host literals: the shell footer actions (`shell.next`/`shell.back`/`shell.cancel`), every page's title/subtitle (`page.*.title`/`page.*.subtitle`), hub entries plus their tooltips and the coming-soon label, review headings (Assistants / Install type / Components / Permission tier), PageTemplates headers ("Recommended", "Choose a backup to restore", "No backups yet.", Restore/Rename/Delete/Confirm/Cancel, "Browse…", the "{0} harnesses" format, "Target project", starter review headings, uninstall confirm headings), the backups warnings, the uninstall modification warning, the complete-state labels, and the progress format strings (e.g. `progress.installing_fmt`). When a key is missing for the requested language the function SHALL fall back to the English value, and when missing in English SHALL return the key itself. Localization MUST NOT be implemented with `.resx`/satellite assemblies (they break `PublishSingleFile`); the tables are plain in-code dictionaries.
 
 #### Scenario: A known key resolves in the requested language
 
