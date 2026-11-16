@@ -7,6 +7,8 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime"
+	"syscall"
 	"testing"
 
 	codexadapter "github.com/Group-Active-IA/active-stack/internal/agents/codex"
@@ -102,6 +104,9 @@ func TestNativeRollbackPreservesReplacedExistingParent(t *testing.T) {
 			t.Fatal(e)
 		}
 		if e := os.Symlink(foreign, root); e != nil {
+			if runtime.GOOS == "windows" && errors.Is(e, syscall.Errno(1314)) {
+				t.Skip("Windows process lacks symbolic link privilege")
+			}
 			t.Fatal(e)
 		}
 		return errors.New("late verify failed")

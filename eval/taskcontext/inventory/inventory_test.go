@@ -128,8 +128,8 @@ func TestBuild_SortedBySizeDescending(t *testing.T) {
 	for _, s := range srcs {
 		names[s.Name] = s.Bytes
 	}
-	if names["Bloque sdd-orchestrator inyectado — Claude"] != 4382 {
-		t.Errorf("bloque de Claude = %d, want 4382 (bloque universal de la entrega en capas, con marcadores)", names["Bloque sdd-orchestrator inyectado — Claude"])
+	if names["Bloque sdd-orchestrator inyectado — Claude"] != 4601 {
+		t.Errorf("bloque de Claude = %d, want 4601 (bloque universal de la entrega en capas, con marcadores)", names["Bloque sdd-orchestrator inyectado — Claude"])
 	}
 	if names["Sección design-mockups inyectada — Claude"] != 8940 {
 		t.Errorf("sección design-mockups = %d, want 8940", names["Sección design-mockups inyectada — Claude"])

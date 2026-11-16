@@ -119,7 +119,7 @@ func TestInstallManaged_MigratesLegacyBlock(t *testing.T) {
 	if !strings.Contains(md, "disable-model-invocation: true") {
 		t.Error("SKILL.md missing")
 	}
-	for _, m := range []string{"artifacts", "tdd", "delegation", "model-assignments", "engram-opsx"} {
+	for _, m := range []string{"artifacts", "bounded-command-output", "evidence", "tdd", "delegation", "model-assignments", "engram-opsx"} {
 		readText(t, filepath.Join(e.skills, "sdd-orchestrator", "modules", m+".md"))
 	}
 	if res.Modes[model.AgentClaude] != "skill" {

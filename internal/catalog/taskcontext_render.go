@@ -96,11 +96,11 @@ func (tc *TaskContext) renderActionTable(client string, toggles []string) (strin
 		// requires_flag solo valen si el proyecto activa esa condición.
 		var blocks []string
 		if toggles != nil {
-			plain, err := tc.Resolve(Query{Action: action, Role: RoleCoordinator, Toggles: toggles, Client: client})
+			plain, err := tc.Resolve(Query{Action: action, Role: RoleCoordinator, Toggles: toggles, Client: client, Delegating: action == "verify"})
 			if err != nil {
 				return "", err
 			}
-			strict, err := tc.Resolve(Query{Action: action, Role: RoleCoordinator, Toggles: toggles, Client: client, StrictTDD: true})
+			strict, err := tc.Resolve(Query{Action: action, Role: RoleCoordinator, Toggles: toggles, Client: client, Delegating: action == "verify", StrictTDD: true})
 			if err != nil {
 				return "", err
 			}
@@ -108,6 +108,9 @@ func (tc *TaskContext) renderActionTable(client string, toggles []string) (strin
 				stop := "STOP: `" + missingModuleLine(id, action) + "`"
 				if !slices.Contains(plain.Blocked, id) {
 					stop = "if Strict TDD is active, " + stop
+				}
+				if action == "verify" && tc.module(id).OptionalVia == "delegate-row" {
+					stop = "for delegated review only, " + stop
 				}
 				blocks = append(blocks, stop)
 			}
@@ -294,7 +297,7 @@ func (tc *TaskContext) RenderLoadMarkdown() string {
 	b.WriteString("- Los cuatro módulos de la 05 (`directed-code-reading`, `bounded-command-output`, `task-tool-selection`, `concise-agent-reporting`) no tienen toggle: figuran siempre.\n")
 	b.WriteString("- `bounded-command-output` es obligatorio en `apply` y `verify`: sin él no hay captura ni referencia y el resultado no puede verificarse.\n")
 	b.WriteString("- Modo legado de Claude (anterior a 2.1.110): no hay skill ni tabla, así que ningún módulo de la 05 se entrega; todo resultado de `apply` o `verify` queda *sin verificar*.\n")
-	b.WriteString("- Una superficie sin subagentes deja `verify` detenida como límite declarado de esa superficie.\n")
+	b.WriteString("- Una superficie sin subagentes admite verificación directa o revisión humana independiente documentada.\n")
 	b.WriteString(tc.renderParityMarkdown())
 	return b.String()
 }

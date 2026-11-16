@@ -128,7 +128,7 @@ func ComposeLayers(toggles []string) (Layers, error) {
 		}
 		uBlocks = append(uBlocks, e...)
 	}
-	universal := joinBlocks(uBlocks...)
+	universal := joinBlocks(append(uBlocks, workflowGuidance)...)
 
 	// Coordinator body (D10): role, mandatory rules and the action table first.
 	roleParts, err := pick("coordinator/role", "coordinator/role-fluid")
@@ -160,7 +160,8 @@ func ComposeLayers(toggles []string) (Layers, error) {
 	head := append(roleParts,
 		rule,
 		strings.TrimSpace(rulesHeading)+"\n\n"+strings.TrimSpace(cRules),
-		actionTable(active))
+		actionTable(active),
+		"Load `${CLAUDE_SKILL_DIR}/modules/evidence.md` for apply or verify when command results support a claim. Use the same review for direct and delegated execution.")
 	restKeys := []string{"coordinator/starting-work", "coordinator/workflow", "coordinator/launch-pattern"}
 	if active["governance"] {
 		restKeys = append(restKeys, "coordinator/governance-apply")
@@ -196,6 +197,16 @@ func ComposeLayers(toggles []string) (Layers, error) {
 		return Layers{}, err
 	}
 	modules["artifacts"] = joinBlocks(art)
+	evidence, err := fs.ReadFile(embeddedAssets, "assets/opsx/evidence-module.md")
+	if err != nil {
+		return Layers{}, err
+	}
+	modules["evidence"] = string(evidence)
+	capture, err := fs.ReadFile(embeddedAssets, "assets/codex/native/modules/bounded-command-output.md")
+	if err != nil {
+		return Layers{}, err
+	}
+	modules["bounded-command-output"] = string(capture)
 	if active["delegation"] {
 		d, err := delegationModule()
 		if err != nil {
@@ -313,7 +324,7 @@ func renumbered(heading string, items []string) string {
 func actionTable(active map[string]bool) string {
 	exists := func(n string) bool {
 		switch n {
-		case "artifacts":
+		case "artifacts", "bounded-command-output":
 			return true
 		case "tdd":
 			return active["tdd"]
@@ -331,7 +342,8 @@ func actionTable(active map[string]bool) string {
 		modules []string
 	}{
 		{"propose", []string{"artifacts"}},
-		{"apply", []string{"artifacts", "tdd"}},
+		{"apply", []string{"artifacts", "bounded-command-output", "tdd"}},
+		{"verify", []string{"bounded-command-output"}},
 		{"archive", []string{"artifacts"}},
 		{"delegate", []string{"delegation", "model-assignments"}},
 		{"session start and close", []string{"engram-opsx"}},
@@ -369,9 +381,9 @@ func joinBlocks(blocks ...string) string {
 }
 
 // ExpectedModules lists the module names ComposeLayers produces for the given
-// toggles (artifacts always), so verify can check that none is missing.
+// toggles, including the always-installed modules, for installation verification.
 func ExpectedModules(toggles []string) []string {
-	names := []string{"artifacts"}
+	names := []string{"artifacts", "bounded-command-output", "evidence"}
 	for _, t := range toggles {
 		switch t {
 		case "delegation":

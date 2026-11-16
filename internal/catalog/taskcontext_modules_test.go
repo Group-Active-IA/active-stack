@@ -38,7 +38,7 @@ func TestResolve_MandatoryPerAction(t *testing.T) {
 		{"explore", nil},
 		{"propose", []string{"artifacts"}},
 		{"apply", []string{"artifacts", "bounded-command-output", "tdd"}},
-		{"verify", []string{"delegation", "model-assignments", "bounded-command-output"}},
+		{"verify", []string{"bounded-command-output"}},
 		{"archive", []string{"artifacts"}},
 	}
 	for _, tt := range tests {
@@ -143,7 +143,7 @@ func TestResolve_DelegatingBringsModelAssignments(t *testing.T) {
 
 func TestResolve_VerifyWithoutDelegationIsBlocked(t *testing.T) {
 	tc := loadTC(t)
-	r, err := tc.Resolve(Query{Action: "verify", Role: RoleCoordinator, Toggles: []string{"engram", "tdd"}})
+	r, err := tc.Resolve(Query{Action: "verify", Role: RoleCoordinator, Delegating: true, Toggles: []string{"engram", "tdd"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -213,7 +213,7 @@ func TestParseTaskContext_RejectsInvalidModules(t *testing.T) {
 			return strings.Replace(s, "propose: mandatory, apply: mandatory, archive", "propose: sometimes, apply: mandatory, archive", 1)
 		}, "sometimes"},
 		{"acción fuera del ciclo", func(s string) string {
-			return strings.Replace(s, "actions: { verify: mandatory }\n    optional_via: delegate-row\n    specialist: { receives: true", "actions: { deploy: mandatory }\n    optional_via: delegate-row\n    specialist: { receives: true", 1)
+			return strings.Replace(s, "actions: { verify: mandatory }", "actions: { deploy: mandatory }", 1)
 		}, "deploy"},
 		{"orden sin un módulo", func(s string) string {
 			return strings.Replace(s, "  - engram-opsx\n\nmodules:", "\nmodules:", 1)

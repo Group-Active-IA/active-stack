@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -86,7 +87,7 @@ func TestSharedManagedDeliveryRollbackPreservesConcurrentCodexEdits(t *testing.T
 			if !verifyReached || result.Err == nil || result.Apply.Err == nil || !strings.Contains(result.Apply.Err.Error(), "mixed late verify failure") {
 				t.Fatalf("later failure was not reported: %+v", result)
 			}
-			if result.Rollback.Err == nil || !strings.Contains(result.Rollback.Err.Error(), "preserved") || !strings.Contains(result.Rollback.Err.Error(), cx.InstructionsPath(home)) {
+			if result.Rollback.Err == nil || !strings.Contains(result.Rollback.Err.Error(), "preserved") || !strings.Contains(result.Rollback.Err.Error(), strconv.Quote(cx.InstructionsPath(home))) {
 				t.Fatalf("rollback did not report the preserved edit conflict: %v", result.Rollback.Err)
 			}
 			got, err := os.ReadFile(cx.InstructionsPath(home))

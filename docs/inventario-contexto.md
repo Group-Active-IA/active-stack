@@ -50,8 +50,8 @@ Cada sección se mide instalándola sola en un home limpio; el total, instalando
 
 | Cliente | Bloque del orquestador | Sección design-mockups | Separador | Total inyectado |
 |---|---|---|---|---|
-| Claude | 4.382 B | 8.940 B | 1 B | 13.323 B |
-| Codex | 3.661 B | 8.940 B | 1 B | 12.602 B |
+| Claude | 4.601 B | 8.940 B | 1 B | 13.542 B |
+| Codex | 3.880 B | 8.940 B | 1 B | 12.821 B |
 
 El fragmento `design-mockups` mide 8.865 B; con los marcadores de sección de la inyección son 8.940 B.
 
@@ -98,9 +98,9 @@ Las cinco más grandes están en negrita: Skill tup-campus-navigator (60.699 B),
 | 35 | Skill alembic-migrations | skill | 5.577 | terceros @782565f7 |
 | 36 | Skill find-skill | skill | 5.472 | terceros @b716f9dc |
 | 37 | Skill web-scraper | skill | 5.079 | terceros @1ac73c20 |
-| 38 | Bloque sdd-orchestrator inyectado — Claude | instrucción inyectada | 4.382 | bloque universal de la entrega en capas; sección con marcadores |
-| 39 | Skill fastapi-code-review | skill | 3.686 | terceros @782565f7 |
-| 40 | Bloque sdd-orchestrator inyectado — Codex | instrucción inyectada | 3.661 | bloque universal de la entrega en capas; sección con marcadores |
+| 38 | Bloque sdd-orchestrator inyectado — Claude | instrucción inyectada | 4.601 | bloque universal de la entrega en capas; sección con marcadores |
+| 39 | Bloque sdd-orchestrator inyectado — Codex | instrucción inyectada | 3.880 | bloque universal de la entrega en capas; sección con marcadores |
+| 40 | Skill fastapi-code-review | skill | 3.686 | terceros @782565f7 |
 | 41 | Skill requesting-code-review | skill | 2.974 | terceros @22f0b463 |
 | 42 | Skill multi-stage-dockerfile | skill | 2.314 | terceros @222eba62 |
 | 43 | Comando claude/active/starter-add.md | comando | 885 |  |

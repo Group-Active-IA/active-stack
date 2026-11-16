@@ -1,9 +1,11 @@
 package capture_test
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -177,5 +179,33 @@ func TestStore_SaveRejectsInvalidRecord(t *testing.T) {
 	bad.Source = "otro"
 	if _, err := s.Save("", "r1", bad, []byte("x")); err == nil {
 		t.Error("Save debe validar el registro")
+	}
+}
+
+func TestStoreConcurrentSavesPreserveEveryRun(t *testing.T) {
+	_, clock, cache := newStore(t)
+	const runs = 12
+	start := make(chan struct{})
+	var group sync.WaitGroup
+	for i := range runs {
+		group.Go(func() {
+			<-start
+			id := fmt.Sprintf("parallel-%d", i)
+			rec := goodRecord()
+			rec.RunID = id
+			_, err := capture.NewStore(cache, clock.Now).Save("fixture", id, rec, []byte(id))
+			if err != nil {
+				t.Errorf("save %s: %v", id, err)
+			}
+		})
+	}
+	close(start)
+	group.Wait()
+	store := capture.NewStore(cache, clock.Now)
+	for i := range runs {
+		id := fmt.Sprintf("parallel-%d", i)
+		if got := store.Lookup("fixture", id); got.State != capture.Available {
+			t.Errorf("run %s: got availability %v", id, got.State)
+		}
 	}
 }

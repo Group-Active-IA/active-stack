@@ -11,6 +11,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -68,6 +69,28 @@ func main() {
 			if errors.Is(err, update.ErrHandoff) {
 				return
 			}
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+	case "evidence-state":
+		if len(os.Args) != 2 {
+			fmt.Fprintln(os.Stderr, "usage: active-stack evidence-state")
+			os.Exit(1)
+		}
+		state, err := checkoutEvidenceState(context.Background())
+		if err == nil {
+			err = json.NewEncoder(os.Stdout).Encode(state)
+		}
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "error: %v\n", err)
+			os.Exit(1)
+		}
+	case "evidence-capture":
+		cacheDir, err := os.UserCacheDir()
+		if err == nil {
+			err = runEvidenceCapture(context.Background(), os.Args[2:], cacheDir, os.Stdout)
+		}
+		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
 		}

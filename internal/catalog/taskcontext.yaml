@@ -220,11 +220,13 @@ modules:
   - id: delegation
     toggle: delegation
     actions: { verify: mandatory }
+    conditions: { verify: "for delegated review only" }
     optional_via: delegate-row
     specialist: { receives: true, note: "sí, cuando se delega" }
   - id: model-assignments
     toggle: model-routing
     actions: { verify: mandatory }
+    conditions: { verify: "for delegated review only" }
     optional_via: delegate-row
     omitted_in: [codex]
     with: delegation
@@ -269,11 +271,11 @@ parity:
     - modules: [delegation]
       client: claude
       scope: no-subagents
-      reason: "superficie sin subagentes: verify queda detenida como límite de la superficie"
+      reason: "superficie sin subagentes: verify directa o revisión humana independiente documentada"
     - modules: [delegation]
       client: codex
       scope: no-subagents
-      reason: "superficie sin subagentes: verify queda detenida como límite de la superficie"
+      reason: "superficie sin subagentes: verify directa o revisión humana independiente documentada"
     - modules: [model-assignments]
       client: codex
       scope: all

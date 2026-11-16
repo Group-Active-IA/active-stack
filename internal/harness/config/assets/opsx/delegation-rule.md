@@ -2,9 +2,9 @@
 
 Decide per action, in this order. The first step that applies closes the decision.
 
-1. **Independent review required** (for example, verify after an apply): the review goes to a
-   different agent than the one that built it. Nothing below overrides this. If delegation is not
-   available, stop that verification, say what is missing, and continue with the rest.
+1. **Independent review required by governance or the change**: use a reviewer who did not
+   implement the change. If delegation is unavailable, record independent human review or report
+   that review as pending. For low-risk changes that allow direct review, verify directly.
 2. **File conflict**: the write set overlaps an open assignment → serialize or narrow the scope.
 3. **Work directly** when the task is short, depends on decisions made in this conversation, or you
    will read the full result anyway.

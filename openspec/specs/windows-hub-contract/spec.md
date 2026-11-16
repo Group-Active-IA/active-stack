@@ -1,13 +1,20 @@
 # windows-hub-contract Specification
 
 ## Purpose
-TBD - created by archiving change windows-contract-hub-operations. Update Purpose after archive.
+Define the engine contracts that connect Windows Hub operations to starter installation, backups, and uninstall flows.
 
 ## Requirements
 
 ### Requirement: Starter install params are built by a shared helper
 
-The intent/params construction currently inline in `runStarterAdd` (`cmd/active-stack/starter_add.go`) SHALL be extracted into a pure exported helper `headless.BuildStarterInstallParams`, which resolves a starter's harnesses and MCPs from the catalog and returns the `headless.ParsedFlags` needed to run the pipeline. `runStarterAdd` MUST become a thin wrapper that delegates to this helper, and the new `windows starters install` path MUST reuse the same helper. The refactor MUST NOT change the observable behavior of `starter add`.
+The implementation SHALL satisfy the starter install params are built by a shared helper contract below.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The intent/params construction currently inline in `runStarterAdd` (`cmd/active-stack/starter_add.go`) SHALL be extracted into a pure exported helper `headless.BuildStarterInstallParams`, which resolves a starter's harnesses and MCPs from the catalog and returns the `headless.ParsedFlags` needed to run the pipeline. `runStarterAdd` MUST become a thin wrapper that delegates to this helper, and the new `windows starters install` path MUST reuse the same helper. The refactor MUST NOT change the observable behavior of `starter add`.
 
 #### Scenario: runStarterAdd delegates to the shared helper
 
@@ -35,7 +42,14 @@ The `active-stack windows starters list` command SHALL emit a JSON object `{"sta
 
 ### Requirement: windows starters install streams the install event contract
 
-The `active-stack windows starters install --starter <id> --project <dir> --agent <csv> [--dry-run] [--yes]` command SHALL run the starter installation through the shared `runWindowsPipeline` helper (extracted from `RunWindowsInstall`) and emit the SAME JSON event-stream as `windows install`, except that the terminal event's `type` MUST be `starter_finished` (rather than `install_finished`). The `--agent` value MUST be parsed as a comma-separated list. A `--dry-run` run MUST NOT mutate the target project.
+The `active-stack windows starters install --starter <id> --project <dir> --agent <csv> [--dry-run] [--yes]` command SHALL run the starter installation through the shared `runWindowsPipeline` helper (extracted from `RunWindowsInstall`) and emit the SAME JSON event-stream as `windows install`, except that the terminal event's `type` MUST be `starter_finished` (rather than `install_finished`).
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The `active-stack windows starters install --starter <id> --project <dir> --agent <csv> [--dry-run] [--yes]` command SHALL run the starter installation through the shared `runWindowsPipeline` helper (extracted from `RunWindowsInstall`) and emit the SAME JSON event-stream as `windows install`, except that the terminal event's `type` MUST be `starter_finished` (rather than `install_finished`). The `--agent` value MUST be parsed as a comma-separated list. A `--dry-run` run MUST NOT mutate the target project.
 
 #### Scenario: Successful starter install ends with starter_finished
 
@@ -54,7 +68,14 @@ The `active-stack windows starters install --starter <id> --project <dir> --agen
 
 ### Requirement: windows backups list reports backups from the home backup store
 
-The `active-stack windows backups list [--home]` command SHALL read backups via the public `backup.ListManifests` API rooted at the user's backup store under the resolved home directory, and emit a JSON object `{"backups":[...]}`. Each entry MUST carry `id`, `created_at`, `source`, `description`, `file_count`, `pinned`, `compressed`, `display_label` (from `Manifest.DisplayLabel()`), and `manifest_path` (the absolute path to the backup's `manifest.json`, needed later by uninstall-restore). The command MUST be read-only and MUST NOT modify `internal/backup`.
+The `active-stack windows backups list [--home]` command SHALL read backups via the public `backup.ListManifests` API rooted at the user's backup store under the resolved home directory, and emit a JSON object `{"backups":[...]}`.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The `active-stack windows backups list [--home]` command SHALL read backups via the public `backup.ListManifests` API rooted at the user's backup store under the resolved home directory, and emit a JSON object `{"backups":[...]}`. Each entry MUST carry `id`, `created_at`, `source`, `description`, `file_count`, `pinned`, `compressed`, `display_label` (from `Manifest.DisplayLabel()`), and `manifest_path` (the absolute path to the backup's `manifest.json`, needed later by uninstall-restore). The command MUST be read-only and MUST NOT modify `internal/backup`.
 
 #### Scenario: Backups are listed from a fabricated home store
 
@@ -73,7 +94,14 @@ The `active-stack windows backups list [--home]` command SHALL read backups via 
 
 ### Requirement: windows backups actions restore, delete, and rename via the public API
 
-The `active-stack windows backups restore|delete|rename --id <id> [--description <text>]` commands SHALL locate the manifest by `--id` from the home backup store and act on it using ONLY the public `internal/backup` API: `RestoreService{}.Restore` for `restore`, `DeleteBackup` for `delete`, and `RenameBackup` (with `--description`) for `rename`. Each command MUST emit `{"success":<bool>,"message":<string>,"id":<string>}`. An unknown `--id` MUST yield `success:false` with a descriptive message and a non-zero exit code. `internal/backup` MUST NOT be modified by this change.
+The `active-stack windows backups restore|delete|rename --id <id> [--description <text>]` commands SHALL locate the manifest by `--id` from the home backup store and act on it using ONLY the public `internal/backup` API: `RestoreService{}.Restore` for `restore`, `DeleteBackup` for `delete`, and `RenameBackup` (with `--description`) for `rename`.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The `active-stack windows backups restore|delete|rename --id <id> [--description <text>]` commands SHALL locate the manifest by `--id` from the home backup store and act on it using ONLY the public `internal/backup` API: `RestoreService{}.Restore` for `restore`, `DeleteBackup` for `delete`, and `RenameBackup` (with `--description`) for `rename`. Each command MUST emit `{"success":<bool>,"message":<string>,"id":<string>}`. An unknown `--id` MUST yield `success:false` with a descriptive message and a non-zero exit code. `internal/backup` MUST NOT be modified by this change.
 
 #### Scenario: Restore invokes the public restore service
 
@@ -97,7 +125,14 @@ The `active-stack windows backups restore|delete|rename --id <id> [--description
 
 ### Requirement: windows uninstall-options exposes the guided-uninstall option set
 
-The `active-stack windows uninstall-options` command SHALL emit a JSON object with `detected_agents` (from the shared `detectAgents(homeDir)` helper, also used by `RunWindowsDetect`), `modes` (the install-mode options), and `strategies` — an array of `{id, label, description, default, requires_manifest}` objects. The strategy whose `id` is `targeted` MUST be marked `default: true` and `requires_manifest: false`; the `restore` strategy MUST be marked `requires_manifest: true`. Extracting `detectAgents` MUST NOT change `RunWindowsDetect`'s observable output.
+The `active-stack windows uninstall-options` command SHALL emit a JSON object with `detected_agents` (from the shared `detectAgents(homeDir)` helper, also used by `RunWindowsDetect`), `modes` (the install-mode options), and `strategies` — an array of `{id, label, description, default, requires_manifest}` objects.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The `active-stack windows uninstall-options` command SHALL emit a JSON object with `detected_agents` (from the shared `detectAgents(homeDir)` helper, also used by `RunWindowsDetect`), `modes` (the install-mode options), and `strategies` — an array of `{id, label, description, default, requires_manifest}` objects. The strategy whose `id` is `targeted` MUST be marked `default: true` and `requires_manifest: false`; the `restore` strategy MUST be marked `requires_manifest: true`. Extracting `detectAgents` MUST NOT change `RunWindowsDetect`'s observable output.
 
 #### Scenario: Options carry detected agents, modes, and strategies
 
@@ -135,7 +170,14 @@ The `cmd/active-stack/windows_dispatch.go` router SHALL recognize and dispatch t
 
 ### Requirement: windows hub subcommands accept a language flag
 
-The `active-stack windows uninstall-options`, `windows starters list`, `windows starters install`, `windows backups list`, and `windows backups restore|delete|rename` commands SHALL each accept a `--lang` flag parsed by `i18n.Parse` with valid values `en` and `es`. When `--lang` is absent the language MUST default to `i18n.Default` (`en`), and the emitted JSON MUST stay byte-compatible with the pre-change output for that command. An unrecognized `--lang` value MUST cause the dispatch to print an error and return a non-zero exit code before the command's work runs. The resolved language MUST be threaded into every user-facing string the command emits, sourced from the `internal/i18n` tables. `internal/backup` MUST NOT be modified by this change.
+The `active-stack windows uninstall-options`, `windows starters list`, `windows starters install`, `windows backups list`, and `windows backups restore|delete|rename` commands SHALL each accept a `--lang` flag parsed by `i18n.Parse` with valid values `en` and `es`.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The `active-stack windows uninstall-options`, `windows starters list`, `windows starters install`, `windows backups list`, and `windows backups restore|delete|rename` commands SHALL each accept a `--lang` flag parsed by `i18n.Parse` with valid values `en` and `es`. When `--lang` is absent the language MUST default to `i18n.Default` (`en`), and the emitted JSON MUST stay byte-compatible with the pre-change output for that command. An unrecognized `--lang` value MUST cause the dispatch to print an error and return a non-zero exit code before the command's work runs. The resolved language MUST be threaded into every user-facing string the command emits, sourced from the `internal/i18n` tables. `internal/backup` MUST NOT be modified by this change.
 
 #### Scenario: Default language keeps hub output byte-compatible
 
@@ -154,7 +196,14 @@ The `active-stack windows uninstall-options`, `windows starters list`, `windows 
 
 ### Requirement: Uninstall strategies and modes carry an additive long description
 
-The `strategies` entries emitted by `windows uninstall-options` SHALL each source their `label` and `description` from the `strategy.*` i18n keys in the requested language and SHALL carry an additive `long_description` field (`json:"long_description,omitempty"`) sourced from the `strategy.*.long` key; its content MAY be placeholder-quality in this change. The `modes` entries emitted by `windows uninstall-options` (and shared with `windows options`) SHALL carry the same additive `long_description` from the `mode.*.long` key. The `targeted` strategy MUST remain `default: true` / `requires_manifest: false` and `restore` MUST remain `requires_manifest: true` in every language. Adding these fields MUST NOT change any existing field name or value.
+The `strategies` entries emitted by `windows uninstall-options` SHALL each source their `label` and `description` from the `strategy.*` i18n keys in the requested language and SHALL carry an additive `long_description` field (`json:"long_description,omitempty"`) sourced from the `strategy.*.long` key; its content MAY be placeholder-quality in this change.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The `strategies` entries emitted by `windows uninstall-options` SHALL each source their `label` and `description` from the `strategy.*` i18n keys in the requested language and SHALL carry an additive `long_description` field (`json:"long_description,omitempty"`) sourced from the `strategy.*.long` key; its content MAY be placeholder-quality in this change. The `modes` entries emitted by `windows uninstall-options` (and shared with `windows options`) SHALL carry the same additive `long_description` from the `mode.*.long` key. The `targeted` strategy MUST remain `default: true` / `requires_manifest: false` and `restore` MUST remain `requires_manifest: true` in every language. Adding these fields MUST NOT change any existing field name or value.
 
 #### Scenario: Strategies carry a populated long_description
 
@@ -168,7 +217,14 @@ The `strategies` entries emitted by `windows uninstall-options` SHALL each sourc
 
 ### Requirement: Starter list entries carry an additive long description
 
-The entries emitted by `windows starters list` SHALL resolve their `description` in the requested language from the starter's localized `Description` (`s.Description.Localized(lang)`) and SHALL populate their `long_description` field (`json:"long_description,omitempty"`) from the starter's localized `LongDescription` resolved in the requested language (`s.LongDescription.Localized(lang)`). Populating these fields MUST NOT change any existing starter-entry field name (`id`, `name`, `description`, `includes`, `harnesses`, `mcp_count`, `long_description`), so a client reading only the pre-existing fields keeps working. The starter `name` MUST remain non-localized.
+The entries emitted by `windows starters list` SHALL resolve their `description` in the requested language from the starter's localized `Description` (`s.Description.Localized(lang)`) and SHALL populate their `long_description` field (`json:"long_description,omitempty"`) from the starter's localized `LongDescription` resolved in the requested language (`s.LongDescription.Localized(lang)`).
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The entries emitted by `windows starters list` SHALL resolve their `description` in the requested language from the starter's localized `Description` (`s.Description.Localized(lang)`) and SHALL populate their `long_description` field (`json:"long_description,omitempty"`) from the starter's localized `LongDescription` resolved in the requested language (`s.LongDescription.Localized(lang)`). Populating these fields MUST NOT change any existing starter-entry field name (`id`, `name`, `description`, `includes`, `harnesses`, `mcp_count`, `long_description`), so a client reading only the pre-existing fields keeps working. The starter `name` MUST remain non-localized.
 
 #### Scenario: Starter description is localized from the catalog
 
@@ -202,7 +258,15 @@ The `source` field emitted per entry by `windows backups list` SHALL be localize
 - **THEN** the entry's `source` value equals the raw label string returned by `Source.Label()` unchanged
 
 ### Requirement: windows detect reports the full dependency set alongside detected agents
-The `active-stack windows detect` command SHALL emit a JSON object carrying `detected_agents` (unchanged) and an additive `dependencies` field built from `system.DetectDependencies`, containing one entry per dependency with `name`, `required`, `installed`, `version` (when detected), `install_hint`, and an `install_command` string (the platform install command from `system.InstallCommandsForDep`, pre-joined into a single display string; empty when no automatic command exists for the current platform), plus top-level `all_present`, `missing_required`, and `missing_optional`. Adding this field MUST NOT change the existing `detected_agents` field's name, type, or values.
+
+The implementation SHALL satisfy the windows detect reports the full dependency set alongside detected agents contract below.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  The `active-stack windows detect` command SHALL emit a JSON object carrying `detected_agents` (unchanged) and an additive `dependencies` field built from `system.DetectDependencies`, containing one entry per dependency with `name`, `required`, `installed`, `version` (when detected), `install_hint`, and an `install_command` string (the platform install command from `system.InstallCommandsForDep`, pre-joined into a single display string; empty when no automatic command exists for the current platform), plus top-level `all_present`, `missing_required`, and `missing_optional`. Adding this field MUST NOT change the existing `detected_agents` field's name, type, or values.
 
 #### Scenario: Detect reports dependencies alongside agents
 - **WHEN** `windows detect` runs on a machine missing Node.js

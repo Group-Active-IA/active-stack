@@ -105,6 +105,12 @@ func TestManagedVerify_PassesOnCorrectInstall(t *testing.T) {
 func TestManagedVerify_FailsOnEachDefect(t *testing.T) {
 	cases := map[string]func(t *testing.T, f managedFixture){
 		"missing SKILL.md": func(t *testing.T, f managedFixture) { mustRemove(t, f.skillFile("SKILL.md")) },
+		"missing capture module": func(t *testing.T, f managedFixture) {
+			mustRemove(t, f.skillFile("modules/bounded-command-output.md"))
+		},
+		"missing evidence module": func(t *testing.T, f managedFixture) {
+			mustRemove(t, f.skillFile("modules/evidence.md"))
+		},
 		"missing module of an active toggle": func(t *testing.T, f managedFixture) {
 			mustRemove(t, f.skillFile("modules/tdd.md"))
 		},

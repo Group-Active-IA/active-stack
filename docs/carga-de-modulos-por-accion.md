@@ -9,8 +9,8 @@ Columnas por acción: **O** obligatorio, **op** opcional, **—** no se carga. U
 | Módulo | Toggle | explore | propose | apply | verify | archive | Delegación | Especialista |
 |---|---|---|---|---|---|---|---|---|
 | `artifacts` | — | — | O | O | — | O | — | sí, en el encargo |
-| `delegation` | `delegation` | — | — | — | O | — | op, fila `delegate` | sí, cuando se delega |
-| `model-assignments` | `model-routing` | — | — | — | O | — | op, fila `delegate` | no |
+| `delegation` | `delegation` | — | — | — | O (for delegated review only) | — | op, fila `delegate` | sí, cuando se delega |
+| `model-assignments` | `model-routing` | — | — | — | O (for delegated review only) | — | op, fila `delegate` | no |
 | `directed-code-reading` | — | op | op | op | op | — | — | sí, si lee código |
 | `bounded-command-output` | — | op (if you run commands) | — | O | O | — | — | sí, si corre comandos |
 | `tdd` | `tdd` | — | — | O (when Strict TDD is on and a test runner exists) | — | — | — | sí, en apply |
@@ -31,7 +31,7 @@ Columnas por acción: **O** obligatorio, **op** opcional, **—** no se carga. U
 - Los cuatro módulos de la 05 (`directed-code-reading`, `bounded-command-output`, `task-tool-selection`, `concise-agent-reporting`) no tienen toggle: figuran siempre.
 - `bounded-command-output` es obligatorio en `apply` y `verify`: sin él no hay captura ni referencia y el resultado no puede verificarse.
 - Modo legado de Claude (anterior a 2.1.110): no hay skill ni tabla, así que ningún módulo de la 05 se entrega; todo resultado de `apply` o `verify` queda *sin verificar*.
-- Una superficie sin subagentes deja `verify` detenida como límite declarado de esa superficie.
+- Una superficie sin subagentes admite verificación directa o revisión humana independiente documentada.
 
 ## Paridad por cliente y superficie
 
@@ -41,8 +41,8 @@ Un módulo que un cliente no puede recibir figura como **límite**, no como entr
 
 | Cliente | Ámbito | Módulos | Motivo |
 |---|---|---|---|
-| Claude | `no-subagents` | `delegation` | superficie sin subagentes: verify queda detenida como límite de la superficie |
-| Codex | `no-subagents` | `delegation` | superficie sin subagentes: verify queda detenida como límite de la superficie |
+| Claude | `no-subagents` | `delegation` | superficie sin subagentes: verify directa o revisión humana independiente documentada |
+| Codex | `no-subagents` | `delegation` | superficie sin subagentes: verify directa o revisión humana independiente documentada |
 | Codex | `all` | `model-assignments` | omitido en Codex hasta la 09: límite declarado, no ausencia |
 | Claude | `legacy-mode` | `directed-code-reading`, `bounded-command-output`, `task-tool-selection`, `concise-agent-reporting` | modo legado (Claude anterior a 2.1.110): no hay skill ni tabla; todo resultado de apply o verify queda sin verificar |
 

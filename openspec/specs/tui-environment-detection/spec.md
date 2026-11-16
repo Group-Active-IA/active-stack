@@ -1,7 +1,7 @@
 # tui-environment-detection Specification
 
 ## Purpose
-TBD - created by archiving change tui-dependency-detection. Update Purpose after archive.
+Specify the environment and dependency information the terminal installer shows before assistant selection.
 
 ## Requirements
 

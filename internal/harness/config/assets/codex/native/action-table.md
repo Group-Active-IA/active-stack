@@ -30,8 +30,7 @@ whitespace), is missing.
   surface that delivers it is used, and say which one.
 - Missing optional module: write `missing optional module: <id> — continuing without it` and
   resolve the action directly. Without delegation, do not delegate.
-- On a surface without subagents, verify stops: write
-  `missing module: delegation — verify stopped (surface without subagents)`.
+- On a surface without subagents, direct verification can continue. When independent review is required, record an independent human review or report it pending.
 - Never replace a missing module with your own version of its rules.
 
 ### After compaction or resume

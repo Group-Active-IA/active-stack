@@ -73,7 +73,7 @@ func TestSelectiveDelegation_RuleOrderWithToggle(t *testing.T) {
 	}
 	steps := []string{
 		"## Direct or delegated",
-		"1. **Independent review required**",
+		"1. **Independent review required by governance or the change**",
 		"2. **File conflict**",
 		"3. **Work directly**",
 		"4. **Delegate**",
@@ -140,9 +140,8 @@ func TestSelectiveDelegation_RuleWithoutToggle(t *testing.T) {
 	for client, body := range bodies {
 		for _, want := range []string{
 			"## Direct or delegated",
-			"1. **Independent review required**",
-			"Delegation is disabled in this installation: work directly.",
-			"`missing module: delegation — <action> stopped`",
+			"Verify low-risk changes directly when governance and the change allow it.",
+			"record independent human review or report it as pending.",
 		} {
 			if !strings.Contains(body, want) {
 				t.Errorf("%s coordinator without delegation lacks %q", client, want)

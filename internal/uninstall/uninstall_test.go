@@ -3,6 +3,7 @@ package uninstall_test
 import (
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
+	"path/filepath"
 )
 
 // ─────────────────────────────────────────────────────────────────
@@ -48,18 +49,20 @@ func (f *fakeCatalog) ForAgent(a model.Agent) []model.Harness {
 // ─────────────────────────────────────────────────────────────────
 
 type fakeAdapter struct {
-	agent       model.Agent
-	homeDir     string
-	delivery    model.ConfigDelivery
-	variantKey  string // defaults to "claude" when empty
+	agent      model.Agent
+	homeDir    string
+	delivery   model.ConfigDelivery
+	variantKey string // defaults to "claude" when empty
 }
 
-func (a fakeAdapter) Agent() model.Agent                     { return a.agent }
-func (a fakeAdapter) InstructionsPath(homeDir string) string { return homeDir + "/instr.md" }
-func (a fakeAdapter) SkillsDir(homeDir string) string        { return homeDir + "/skills" }
-func (a fakeAdapter) SettingsPath(homeDir string) string     { return homeDir + "/settings.json" }
-func (a fakeAdapter) ConfigDelivery() model.ConfigDelivery   { return a.delivery }
-func (a fakeAdapter) CommandsDir(homeDir string) string      { return homeDir + "/commands" }
+func (a fakeAdapter) Agent() model.Agent { return a.agent }
+func (a fakeAdapter) InstructionsPath(homeDir string) string {
+	return filepath.Join(homeDir, "instr.md")
+}
+func (a fakeAdapter) SkillsDir(homeDir string) string      { return homeDir + "/skills" }
+func (a fakeAdapter) SettingsPath(homeDir string) string   { return homeDir + "/settings.json" }
+func (a fakeAdapter) ConfigDelivery() model.ConfigDelivery { return a.delivery }
+func (a fakeAdapter) CommandsDir(homeDir string) string    { return homeDir + "/commands" }
 func (a fakeAdapter) VariantKey() string {
 	if a.variantKey != "" {
 		return a.variantKey
@@ -84,7 +87,7 @@ func (a fakeAdapterCustomPath) InstructionsPath(homeDir string) string {
 	if a.instructionsPath != "" {
 		return a.instructionsPath
 	}
-	return homeDir + "/instr.md"
+	return filepath.Join(homeDir, "instr.md")
 }
 func (a fakeAdapterCustomPath) SkillsDir(homeDir string) string {
 	if a.skillsDir != "" {

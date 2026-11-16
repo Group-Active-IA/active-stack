@@ -76,3 +76,20 @@ func fileSHA256(path string) (string, error) {
 	}
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
+
+// ReceiptStateFingerprint binds the worktree bytes and the exact Git index
+// entries. StateFingerprint retains the baseline fixture format.
+func ReceiptStateFingerprint(dir string) (Fingerprint, error) {
+	worktree, err := StateFingerprint(dir)
+	if err != nil {
+		return Fingerprint{}, err
+	}
+	cmd := exec.Command("git", "ls-files", "--stage", "-z")
+	cmd.Dir = dir
+	index, err := cmd.Output()
+	if err != nil {
+		return Fingerprint{}, fmt.Errorf("read checkout index: %w", err)
+	}
+	payload := append([]byte("active-stack-receipt-state-v1\x00"+worktree.Value+"\x00"), index...)
+	return Fingerprint256(payload), nil
+}

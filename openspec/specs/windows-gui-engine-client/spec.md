@@ -6,7 +6,14 @@ Define the parsers that turn `active-stack windows ...` engine JSON responses (o
 
 ### Requirement: Options parser exposes additive tier metadata
 
-`InstallerSessionStateBuilder.BuildFromJson` SHALL parse the additive tier fields of the `windows options` response — `tier_capable` (bool), `tier_capable_agents` (array of agent id strings), and `permission_tiers` (array of `{id,label,description,default,warning?}`) — into new `InstallerSessionState` fields (`TierCapable`, `TierCapableAgents`, and `PermissionTierChoices` of type `PermissionTierChoice`). When any of these fields is absent from the JSON, the parser MUST resolve it to a safe default: `TierCapable=false`, `TierCapableAgents=[]`, `PermissionTierChoices=[]`. The existing detect/options parsing behavior MUST be unchanged.
+`InstallerSessionStateBuilder.BuildFromJson` SHALL parse the additive tier fields of the `windows options` response — `tier_capable` (bool), `tier_capable_agents` (array of agent id strings), and `permission_tiers` (array of `{id,label,description,default,warning?}`) — into new `InstallerSessionState` fields (`TierCapable`, `TierCapableAgents`, and `PermissionTierChoices` of type `PermissionTierChoice`).
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  `InstallerSessionStateBuilder.BuildFromJson` SHALL parse the additive tier fields of the `windows options` response — `tier_capable` (bool), `tier_capable_agents` (array of agent id strings), and `permission_tiers` (array of `{id,label,description,default,warning?}`) — into new `InstallerSessionState` fields (`TierCapable`, `TierCapableAgents`, and `PermissionTierChoices` of type `PermissionTierChoice`). When any of these fields is absent from the JSON, the parser MUST resolve it to a safe default: `TierCapable=false`, `TierCapableAgents=[]`, `PermissionTierChoices=[]`. The existing detect/options parsing behavior MUST be unchanged.
 
 #### Scenario: Tier metadata is parsed when present
 
@@ -71,7 +78,14 @@ An `UninstallOptionsParser.BuildFromJson` SHALL parse the `windows uninstall-opt
 
 ### Requirement: Pure argument builders for windows subcommands
 
-An `InstallArguments` type SHALL provide pure, side-effect-free builders that return an ordered argument list (`IReadOnlyList<string>`) for each `windows` subcommand, suitable for `ProcessStartInfo.ArgumentList`. Each path or free-text value MUST be a single, unquoted list element so values containing spaces are preserved. `BuildInstallArgs` MUST join agents with commas into a single `--agent` value; MUST omit `--custom` when the custom id set is empty OR the mode is not `custom`; and MUST omit `--tier` when the tier is null or empty. `BuildBackupActionArgs` MUST include `--description` only for the `rename` action with a non-empty description. Every builder for a subcommand that emits user-facing text (options, starters list/install, backups list, uninstall-options, install, uninstall) SHALL accept a `lang` parameter and append `--lang <lang>` to the argument list; the `detect` subcommand SHALL NOT take `--lang`. The `--lang` value is one of `es|en` and defaults to `en`.
+An `InstallArguments` type SHALL provide pure, side-effect-free builders that return an ordered argument list (`IReadOnlyList<string>`) for each `windows` subcommand, suitable for `ProcessStartInfo.ArgumentList`.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  An `InstallArguments` type SHALL provide pure, side-effect-free builders that return an ordered argument list (`IReadOnlyList<string>`) for each `windows` subcommand, suitable for `ProcessStartInfo.ArgumentList`. Each path or free-text value MUST be a single, unquoted list element so values containing spaces are preserved. `BuildInstallArgs` MUST join agents with commas into a single `--agent` value; MUST omit `--custom` when the custom id set is empty OR the mode is not `custom`; and MUST omit `--tier` when the tier is null or empty. `BuildBackupActionArgs` MUST include `--description` only for the `rename` action with a non-empty description. Every builder for a subcommand that emits user-facing text (options, starters list/install, backups list, uninstall-options, install, uninstall) SHALL accept a `lang` parameter and append `--lang <lang>` to the argument list; the `detect` subcommand SHALL NOT take `--lang`. The `--lang` value is one of `es|en` and defaults to `en`.
 
 #### Scenario: Install args with custom components and tier
 
@@ -102,7 +116,14 @@ An `InstallArguments` type SHALL provide pure, side-effect-free builders that re
 
 ### Requirement: Engine client uses ArgumentList and passes all detected agents
 
-`ProcessInstallerEngineClient` SHALL construct every child-process invocation via `ProcessStartInfo.ArgumentList` (one token per element) rather than a concatenated argument string, routing all argument construction through `InstallArguments` where a builder exists. `LoadSessionAsync` MUST pass ALL detected agents to `windows options` as a comma-separated `--agent` value (the `PickFirstAssistantId` single-agent collapse is removed), falling back to `claude` only when no agents are detected. The client SHALL expose a mutable `Language` property (default `"en"`), and SHALL thread that language as `--lang <Language>` into every text-emitting subcommand invocation — `windows options`, starters list/install, backups list, uninstall-options, install, and uninstall — while the `windows detect` invocation MUST NOT carry `--lang`.
+The implementation SHALL satisfy the engine client uses ArgumentList and passes all detected agents contract below.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  `ProcessInstallerEngineClient` SHALL construct every child-process invocation via `ProcessStartInfo.ArgumentList` (one token per element) rather than a concatenated argument string, routing all argument construction through `InstallArguments` where a builder exists. `LoadSessionAsync` MUST pass ALL detected agents to `windows options` as a comma-separated `--agent` value (the `PickFirstAssistantId` single-agent collapse is removed), falling back to `claude` only when no agents are detected. The client SHALL expose a mutable `Language` property (default `"en"`), and SHALL thread that language as `--lang <Language>` into every text-emitting subcommand invocation — `windows options`, starters list/install, backups list, uninstall-options, install, and uninstall — while the `windows detect` invocation MUST NOT carry `--lang`.
 
 #### Scenario: Session load queries options with all detected agents
 
@@ -144,7 +165,14 @@ An `InstallArguments` type SHALL provide pure, side-effect-free builders that re
 
 ### Requirement: Engine client isolates the GUI from child-process decoding and stream faults
 
-`ProcessInstallerEngineClient` SHALL decode the engine child process's standard output and standard error as UTF-8 by setting `StandardOutputEncoding` and `StandardErrorEncoding` to UTF-8 on the `ProcessStartInfo` used to launch the engine, so accented and non-ASCII text (e.g. Spanish copy) is read without corruption. The progress-stream parser (`InstallProgressSnapshotParser.Parse`) SHALL tolerate a stdout line that is not valid JSON by treating it as an ignorable/log-type snapshot rather than throwing an uncaught exception, so a single malformed line cannot abort the whole stream. This tolerance applies to individual malformed lines only: a genuine non-zero engine exit MUST still be surfaced as a thrown failure (so the shell can present it as a terminal Error state), never silently swallowed.
+`ProcessInstallerEngineClient` SHALL decode the engine child process's standard output and standard error as UTF-8 by setting `StandardOutputEncoding` and `StandardErrorEncoding` to UTF-8 on the `ProcessStartInfo` used to launch the engine, so accented and non-ASCII text (e.g.
+
+#### Scenario: Detailed contract
+
+- **WHEN** this requirement applies
+- **THEN** the following conditions hold
+
+  `ProcessInstallerEngineClient` SHALL decode the engine child process's standard output and standard error as UTF-8 by setting `StandardOutputEncoding` and `StandardErrorEncoding` to UTF-8 on the `ProcessStartInfo` used to launch the engine, so accented and non-ASCII text (e.g. Spanish copy) is read without corruption. The progress-stream parser (`InstallProgressSnapshotParser.Parse`) SHALL tolerate a stdout line that is not valid JSON by treating it as an ignorable/log-type snapshot rather than throwing an uncaught exception, so a single malformed line cannot abort the whole stream. This tolerance applies to individual malformed lines only: a genuine non-zero engine exit MUST still be surfaced as a thrown failure (so the shell can present it as a terminal Error state), never silently swallowed.
 
 #### Scenario: Child-process stdout and stderr are decoded as UTF-8
 

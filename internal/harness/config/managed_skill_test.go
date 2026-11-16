@@ -7,7 +7,9 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/filemerge"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
+	"syscall"
 	"testing"
 
 	"github.com/Group-Active-IA/active-stack/internal/model"
@@ -315,6 +317,9 @@ func TestManagedOperationSnapshotSymlinkIsRejected(t *testing.T) {
 	os.Mkdir(target, 0700)
 	path := filepath.Join(parent, "sdd-orchestrator-codex-native-operation")
 	if e := os.Symlink(target, path); e != nil {
+		if runtime.GOOS == "windows" && errors.Is(e, syscall.Errno(1314)) {
+			t.Skip("Windows process lacks symbolic link privilege")
+		}
 		t.Fatal(e)
 	}
 	if _, e := InstallManagedSkill(h, a, home); e == nil {
@@ -329,21 +334,27 @@ func TestManagedInstallRemovePreserveParentPermissions(t *testing.T) {
 	home := t.TempDir()
 	a := managedTestAdapter{}
 	parent := filepath.Dir(a.InstructionsPath(home))
-	os.Mkdir(parent, 0700)
+	if err := os.Mkdir(parent, 0700); err != nil {
+		t.Fatal(err)
+	}
+	before, err := os.Stat(parent)
+	if err != nil {
+		t.Fatal(err)
+	}
 	os.WriteFile(a.InstructionsPath(home), []byte("user rules"), 0600)
 	h := model.Harness{ID: "sdd-orchestrator", Type: model.HarnessConfig}
 	if _, e := InstallManagedSkill(h, a, home); e != nil {
 		t.Fatal(e)
 	}
 	info, _ := os.Stat(parent)
-	if info.Mode().Perm() != 0700 {
+	if info.Mode().Perm() != before.Mode().Perm() {
 		t.Fatalf("install widened parent to %o", info.Mode().Perm())
 	}
 	if _, e := RemoveManagedSkill(a, home, h.ID); e != nil {
 		t.Fatal(e)
 	}
 	info, _ = os.Stat(parent)
-	if info.Mode().Perm() != 0700 {
+	if info.Mode().Perm() != before.Mode().Perm() {
 		t.Fatalf("remove widened parent to %o", info.Mode().Perm())
 	}
 }

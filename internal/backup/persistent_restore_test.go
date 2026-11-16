@@ -327,7 +327,13 @@ func TestGuardedRestorePreservesParentPermissions(t *testing.T) {
 		t.Run(fmt.Sprint(persistent), func(t *testing.T) {
 			home := t.TempDir()
 			parent := filepath.Join(home, "private")
-			os.Mkdir(parent, 0700)
+			if err := os.Mkdir(parent, 0700); err != nil {
+				t.Fatal(err)
+			}
+			before, err := os.Stat(parent)
+			if err != nil {
+				t.Fatal(err)
+			}
 			path := filepath.Join(parent, "config")
 			os.WriteFile(path, []byte("before"), 0600)
 			m, e := NewSnapshotter().Create(filepath.Join(home, "backup"), []string{path})
@@ -344,7 +350,7 @@ func TestGuardedRestorePreservesParentPermissions(t *testing.T) {
 				t.Fatal(e)
 			}
 			info, _ := os.Stat(parent)
-			if info.Mode().Perm() != 0700 {
+			if info.Mode().Perm() != before.Mode().Perm() {
 				t.Fatalf("private directory permissions widened to %o", info.Mode().Perm())
 			}
 		})

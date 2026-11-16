@@ -81,7 +81,13 @@ func TestRenderActionTable_MatchesEntregaForClaude(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := entregaActionTable(t); got != want {
+	want := entregaActionTable(t)
+	for _, module := range []string{"delegation", "model-assignments"} {
+		path := "`${CLAUDE_SKILL_DIR}/modules/" + module + ".md`"
+		want = strings.Replace(want, path+";", path+" for delegated review only;", 1)
+	}
+	want = strings.Replace(want, "- On a surface without subagents, `verify` stops: write\n  `missing module: delegation — verify stopped (surface without subagents)`.", "- On a surface without subagents, direct verification can continue. When independent review is required, record an independent human review or report it pending.", 1)
+	if got != want {
 		t.Errorf("la tabla generada difiere del texto de entrega-03-04.md §3:\n--- entrega\n%s\n--- generada\n%s", want, got)
 	}
 }
@@ -135,7 +141,7 @@ func TestRenderActionTable_CodexDiffersOnlyInPathsAndModelAssignments(t *testing
 	}
 	// Regla de la entrega: reemplazar la ruta y quitar model-assignments.
 	want := strings.ReplaceAll(claude, "${CLAUDE_SKILL_DIR}/modules/", "modules/")
-	want = strings.ReplaceAll(want, "`modules/model-assignments.md`; ", "")
+	want = strings.ReplaceAll(want, "`modules/model-assignments.md` for delegated review only; ", "")
 	want = strings.ReplaceAll(want, "; `modules/model-assignments.md`", "")
 	if codex != want {
 		t.Errorf("la variante de Codex no sigue la regla de la entrega:\n--- esperada\n%s\n--- generada\n%s", want, codex)

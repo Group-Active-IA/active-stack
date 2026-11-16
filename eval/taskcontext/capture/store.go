@@ -237,8 +237,32 @@ func (idx index) expiry(change string, e indexEntry) (time.Time, bool) {
 	return time.Time{}, false
 }
 
+// lockIndex serializes read-modify-write operations across CLI processes.
+func (s *Store) lockIndex() (func(), error) {
+	if err := s.checkRoot(); err != nil {
+		return nil, err
+	}
+	if err := os.MkdirAll(s.Root, 0700); err != nil {
+		return nil, err
+	}
+	f, err := os.OpenFile(filepath.Join(s.Root, "index.lock"), os.O_CREATE|os.O_RDWR, 0600)
+	if err != nil {
+		return nil, err
+	}
+	if err := lockFile(f); err != nil {
+		f.Close()
+		return nil, err
+	}
+	return func() { _ = f.Close() }, nil
+}
+
 // Save guarda la copia redactada y su registro bajo la ruta de corrida.
 func (s *Store) Save(change, runID string, rec Record, copy []byte) (string, error) {
+	unlock, err := s.lockIndex()
+	if err != nil {
+		return "", err
+	}
+	defer unlock()
 	dir, err := s.safeRunDir(change, runID)
 	if err != nil {
 		return "", err
@@ -261,6 +285,11 @@ func (s *Store) Save(change, runID string, rec Record, copy []byte) (string, err
 
 // MarkArchived registra que el change se archivó ahora: desde ahí corren los siete días.
 func (s *Store) MarkArchived(change string) error {
+	unlock, err := s.lockIndex()
+	if err != nil {
+		return err
+	}
+	defer unlock()
 	idx, err := s.load()
 	if err != nil {
 		return err
@@ -271,6 +300,11 @@ func (s *Store) MarkArchived(change string) error {
 
 // Purge borra las corridas vencidas y deja constancia de desde cuándo.
 func (s *Store) Purge() ([]string, error) {
+	unlock, err := s.lockIndex()
+	if err != nil {
+		return nil, err
+	}
+	defer unlock()
 	idx, err := s.load()
 	if err != nil {
 		return nil, err

@@ -7,7 +7,7 @@ Defines how a cloned skill harness resolves its declared source reference (inclu
 
 ### Requirement: A commit-SHA ref installs that exact commit
 
-When a cloned skill harness declares a `ref` that is a full 40-character hexadecimal commit SHA, the installer SHALL install the skill content exactly as it exists at that commit, fetching only that commit (shallow) rather than the full history. The SHA MUST NOT be passed to git as a branch name. If the commit cannot be fetched, installation of that harness MUST fail with an error that names the harness, the repository and the ref; for a best-effort harness this failure MUST NOT abort the overall install.
+When a cloned skill harness declares a `ref` that is a full 40-character hexadecimal commit SHA, the installer SHALL install the skill content exactly as it exists at that commit, fetching only that commit (shallow) rather than the full history. The SHA MUST NOT be passed to git as a branch name. A failed fetch MUST identify the harness, repository, and ref. A best-effort failure MUST allow the overall install to continue.
 
 #### Scenario: SHA ref is fetched by commit
 

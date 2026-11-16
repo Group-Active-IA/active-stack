@@ -53,20 +53,19 @@ func TestCodexActionModulesLoad05AndHandleUnavailableModules(t *testing.T) {
 	}
 }
 
-func TestCodexPartialEvidenceRequirements06StayExplicitlyIncomplete(t *testing.T) {
+func TestCodexEvidenceContractRequiresCorroboration(t *testing.T) {
 	for _, toggles := range [][]string{nil, {"delegation"}} {
 		pkg, err := ComposeCodexPackage(toggles)
 		if err != nil {
 			t.Fatal(err)
 		}
-		skill := pkg.Files["SKILL.md"]
-		for _, text := range []string{"Partial evidence requirements", "f62cf00c09dc8a3aa96ddb4648801250e1a67a8c", "not a complete receipt contract", "direct and delegated", "Integrity, provenance and sufficiency", "same HEAD with different diffs", "staged, unstaged and new untracked files", "matching hash alone", "LF and CRLF", "unknown or unassessable", "all three checks pass for every declared requirement", "at least one execution receipt", "stale and rejected", "stop only the action requiring evidence"} {
-			if !strings.Contains(skill, text) {
-				t.Errorf("missing partial evidence rule %q", text)
+		for _, text := range []string{"staged, unstaged and new files", "LF and CRLF", "one receipt", "No receipts is never verified", "No independent source means unverified", "an unmet requirement with green tests"} {
+			if !strings.Contains(strings.ToLower(pkg.Files["modules/evidence.md"]), strings.ToLower(text)) {
+				t.Errorf("missing evidence rule %q", text)
 			}
 		}
-		if _, ok := pkg.Files["modules/evidence.md"]; ok {
-			t.Fatal("undelivered 06 evidence module must not be fabricated")
+		if !strings.Contains(pkg.Files["SKILL.md"], "leave the result unverified and stop that action") {
+			t.Error("missing evidence must leave the affected action unverified")
 		}
 	}
 }
