@@ -102,3 +102,7 @@ Keep the work's local verification separate from the roadmap observation.
    forward and identify what needs to be rerun or verified. Promotion never
    commits, stashes, resets, switches branches or rewrites project files on its
    own.
+
+## Documentation diagrams
+
+Include a fenced Mermaid block in the delivered Markdown when it clarifies an architecture flow or another documented relationship. Use the facts in the deliverable for nodes and connections. On request, read the document and show the saved block as Mermaid. If the source is unavailable, identify what is missing. For ClickUp, follow the active-roadmap read and publication instructions.
