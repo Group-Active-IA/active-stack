@@ -98,12 +98,21 @@ harnesses:
     install_modes: [lite, full]
     agents: [codex]
 
+  - id: active-roadmap
+    name: Active Roadmap
+    description: { es: "Previsualiza, publica y reconcilia tareas de ClickUp por proyecto.", en: "Preview, publish and reconcile ClickUp tasks per project." }
+    long_description: { es: "Previsualiza cada escritura en ClickUp para confirmación y conserva vínculos y estados en el repositorio.", en: "Preview each ClickUp write for confirmation and record links and states in the repository." }
+    type: skill
+    source: { method: embed }
+    install_modes: [full]
+    agents: [codex]
+
   - id: active-orchestrator
     name: active-orchestrator
     description: { es: "Ruta directa o fundación guiada con KB, roadmap e instrucciones.", en: "Direct work or guided foundation with knowledge base, roadmap and agent instructions." }
     long_description: { es: "Ofrece ruta directa o una checklist de fundación con aprobación previa. La base de conocimiento, el roadmap Markdown y las instrucciones del agente son obligatorios y reutilizables. Guarda el avance para retomar. Disponible en Full para Claude, Codex, OpenCode y Antigravity.", en: "Offers direct work or a foundation checklist with prior approval. The knowledge base, Markdown roadmap and agent instructions are required and reusable. Saves progress for resumption. Available in Full for Claude, Codex, OpenCode and Antigravity." }
     type: skill
-    source: { repo: Group-Active-IA/active-orchestrator, ref: 9493b3a46811ab0e8a04fbd0a8ea0c739e43b36b, method: clone }
+    source: { repo: Group-Active-IA/active-orchestrator, ref: 97a65eb7fabd0acc712d2dea6272bd0a0c42687c, method: clone }
     # Full-only: orquesta kb-creator/roadmap-generator/agent-instruction/find-skill,
     # todas Full. En Lite quedaría huérfano. Lite = sustrato; Full = fundación guiada.
     install_modes: [full]
@@ -133,7 +142,7 @@ harnesses:
     description: { es: "Genera CHANGES.md (backlog técnico) desde la KB.", en: "Generates CHANGES.md (technical backlog) from the KB." }
     long_description: { es: "Genera o reutiliza CHANGES.md a partir de la base de conocimiento. Documenta el orden, las dependencias y los criterios de verificación en Markdown local.", en: "Generates or reuses CHANGES.md from the knowledge base. Records order, dependencies and verification criteria in local Markdown." }
     type: skill
-    source: { repo: Group-Active-IA/roadmap-generator, ref: 30595e6283a1d1f3b7012788505387966fabdba3, method: clone }
+    source: { repo: Group-Active-IA/roadmap-generator, ref: d603877cbe9ce2cf4a5e8c9c201431f7a01164c0, method: clone }
     install_modes: [full]
     depends_on: [openspec, kb-creator]
 

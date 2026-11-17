@@ -71,6 +71,14 @@ an existing change instead of duplicating it.
    resuming. Reassess the mode if impact or coordination changes, and surface any
    newly applicable governance gate before extending the scope.
 
+## Reconcile the roadmap
+
+For ODD and SDD, reconcile the roadmap item on resume, delivery and closure
+using the [reconciliation reference](references/roadmap-reconciliation.md).
+On resume, check before making decisions based on cached status or assignment.
+On delivery and closure, check before reporting the current remote status.
+Keep the work's local verification separate from the roadmap observation.
+
 ## Promote ODD to SDD
 
 1. Pause work at the scope boundary. Explain what changed and why it merits SDD.

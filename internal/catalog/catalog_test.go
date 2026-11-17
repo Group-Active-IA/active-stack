@@ -340,7 +340,7 @@ func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
-	const wantFoundationGlobal = 21 // includes design-system and active-delivery
+	const wantFoundationGlobal = 22
 	got := c.ForMode(model.ModeCustom)
 	if len(got) != wantFoundationGlobal {
 		t.Errorf("custom mode returned %d harnesses, want %d foundation-global", len(got), wantFoundationGlobal)
@@ -370,8 +370,8 @@ func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 		wantCount int
 	}{
 		{model.ModeLite, 7},
-		{model.ModeFull, 21},
-		{model.ModeCustom, 21},
+		{model.ModeFull, 22},
+		{model.ModeCustom, 22},
 	}
 
 	for _, tc := range cases {
