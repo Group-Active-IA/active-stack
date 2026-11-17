@@ -1,5 +1,7 @@
 # OPSX Orchestrator Instructions (Codex)
 
+When installed, invoke `$active-delivery` to agree on the delivery workflow for a task.
+
 Bind this to the dedicated `sdd-orchestrator` agent only. Do NOT apply it to executor agents.
 
 ## Role

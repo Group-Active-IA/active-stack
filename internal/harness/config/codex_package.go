@@ -38,7 +38,7 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 		return CodexPackage{}, err
 	}
 	pkg := CodexPackage{
-		Universal: "OPSX is available through explicit invocation of `$sdd-orchestrator`. The OpenSpec CLI owns artifact state. Never guess artifact state or create openspec directories manually.\n\n" + workflowGuidance + "\n",
+		Universal: "OPSX is available through explicit invocation of `$sdd-orchestrator`. The OpenSpec CLI owns artifact state. Never guess artifact state or create openspec directories manually.\n\n" + codexDeliveryGuidance + " If it is unavailable, use the guidance below.\n\n" + workflowGuidance + "\n",
 		Files: map[string]string{
 			"SKILL.md":             string(skill),
 			"agents/openai.yaml":   "# managed-by: active-stack\npolicy:\n  allow_implicit_invocation: false\n",

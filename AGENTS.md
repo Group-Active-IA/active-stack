@@ -109,7 +109,7 @@ Formuladas como "NUNCA X → hacer Y". Estas reglas son duras: violarlas invalid
 - **NUNCA pisar config del usuario sin backup** → SIEMPRE snapshot vía `internal/backup` antes de escribir.
 - **SIEMPRE inyectar con markers idempotentes** → usar `internal/filemerge` (merge por markers); reinstalar no debe duplicar bloques.
 - **NUNCA hardcodear paths de agente** → resolver SIEMPRE vía el adapter del agente (`internal/agents`).
-- **NUNCA commitear sin pedido explícito** del responsable; *conventional commits* exclusivamente; **NUNCA** atribución de coautoría a la IA.
+- **Cerrá cada objetivo de implementación autorizado con commits, PR y merge a `main` una vez verificado.** La autorización del responsable para completar el objetivo incluye estos pasos, salvo que pida una entrega diferente. Verificá el estado del PR y la integración en `main` antes de cerrar el Goal. Para trabajos fuera de un objetivo autorizado, pedí autorización antes de commitear. Usá *conventional commits* y omití atribución de coautoría a la IA.
 - **NUNCA meter en el repo lo que se saca** → GGA, theme, statusline, keybindings, persona-marketing y el framing "supercharge any agent" NO van. La persona puede sobrevivir solo como harness `config` opcional, sin envoltorio de marketing.
 - **SIEMPRE limpiar leftovers `gentle-ai` / `gentle-stack` / `Gentleman.Dots`** al portar código del repo viejo (paths, strings, nombres, branding).
 - **NUNCA instalar "repos"** → el instalador instala **harnesses**, y cada harness sabe cómo se materializa (skill/config/external).
@@ -159,6 +159,6 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
   `openspec/matriz-reglas-opsx.md`.
 - `openspec/` se versiona en Git. Compartí la rama de propuesta con sus artefactos para revisión.
 - Antes de crear una rama, leé [CHANGES.md](CHANGES.md) y la ficha del change asignado.
-  La ronda actual se limita a `propose`. Creá una rama `propose/<nombre-del-change>`,
+  Para una ronda autorizada solo para propuesta OPSX, creá una rama `propose/<nombre-del-change>`,
   acordá las decisiones en el grupo durante el armado y compartí los artefactos finales
   para revisión de los siete integrantes. El roadmap detalla la entrega y la aceptación.

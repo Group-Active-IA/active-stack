@@ -10,12 +10,12 @@ claude	+model-routing	8811	221
 claude	+governance	10087	241
 claude	+engram	16180	360
 claude	+tdd	19977	443
-codex	none	6328	151
-codex	+delegation	7179	172
-codex	+model-routing	7629	185
-codex	+governance	8905	205
-codex	+engram	14998	324
-codex	+tdd	18795	407
+codex	none	6417	153
+codex	+delegation	7268	174
+codex	+model-routing	7718	187
+codex	+governance	8994	207
+codex	+engram	15087	326
+codex	+tdd	18884	409
 
 ## Referencia: demás variantes (fuera del alcance de paridad)
 # variant	scope	bytes	lines

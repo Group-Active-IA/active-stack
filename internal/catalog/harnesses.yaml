@@ -89,6 +89,15 @@ harnesses:
     depends_on: [sdd-orchestrator, design-system]
 
   # ── Skills propias ─────────────────────────────────────────────────────────
+  - id: active-delivery
+    name: Active Delivery
+    description: { es: "Coordina la entrega de una tarea con ODD o SDD en Codex.", en: "Coordinates an individual task through ODD or SDD in Codex." }
+    long_description: { es: "Skill local para acordar alcance y verificación por tarea, elegir ODD o SDD y transferir decisiones y pruebas si el trabajo escala a SDD.", en: "Bundled skill to agree on scope and verification per task, choose ODD or SDD, and carry decisions and evidence forward when work escalates to SDD." }
+    type: skill
+    source: { method: embed }
+    install_modes: [lite, full]
+    agents: [codex]
+
   - id: active-orchestrator
     name: active-orchestrator
     description: { es: "Ruta directa o fundación guiada con KB, roadmap e instrucciones.", en: "Direct work or guided foundation with knowledge base, roadmap and agent instructions." }
