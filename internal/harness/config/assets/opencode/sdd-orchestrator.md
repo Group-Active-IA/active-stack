@@ -16,12 +16,7 @@ OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The u
 
 ## Starting Work on a Project
 
-BEFORE touching anything, determine the project's CURRENT STATE. Never start implementing on an unknown state — knowing where the project stands is step zero.
-
-1. **Does the project already have its foundation?** (an `openspec/` directory, a complete `CLAUDE.md`/`AGENTS.md`)
-   - NO, and the `active-orchestrator` skill IS available → invoke `active-orchestrator`. It reads the project state and triggers ONLY the missing foundation step (openspec init → kb-creator → roadmap-generator → find-skill → agent-instruction). It is idempotent at the flow level: it never re-runs what already exists.
-   - NO, and `active-orchestrator` is NOT available (Lite installs) → set up the substrate by hand.
-2. **Foundation already in place?** → run `openspec list` and `openspec status` to locate yourself before any explore/propose/apply.
+Before the first explicitly requested OPSX action, check that the OpenSpec CLI is available. If the CLI is unavailable, report that OpenSpec must be installed and stop the requested OPSX action. Check whether the project already has an OpenSpec workspace. If present, reuse the existing OpenSpec configuration. Otherwise, ask for confirmation before running `openspec init --tools opencode` from the project root. If the user declines, leave the workspace untouched and stop the requested OPSX action. If initialization fails, report the error and stop the requested OPSX action. Only run `openspec list` or `openspec status` after verifying the workspace is ready. For work outside OPSX, leave OpenSpec initialization to an explicitly requested OPSX action.
 
 <!-- active-stack:sdd-delegation -->
 ## Delegation Rules
