@@ -72,6 +72,23 @@ def codex_registrations():
         raise RoadmapError("No se pudo consultar la configuración MCP de Codex") from error
 
 
+def merge_description(current, marker, replacement):
+    if not isinstance(current, str):
+        return None
+    pattern = rf"(\\?)\[(/?){re.escape(marker)}(\\?)\]"
+    matches = list(re.finditer(pattern, current))
+    if len(matches) != 2:
+        return None
+    opening, closing = matches
+    style = opening[1]
+    if opening[2] or closing[2] != "/" or (opening[3], closing[1], closing[3]) != (style, style, style):
+        return None
+    if style:
+        replacement = replacement.replace(f"[{marker}]", opening[0], 1)
+        replacement = replacement.replace(f"[/{marker}]", closing[0], 1)
+    return current[:opening.start()] + replacement + current[closing.end():]
+
+
 class Roadmap:
     def __init__(self, root):
         self.config_path = root / ".active-stack" / "roadmap.json"
@@ -164,14 +181,11 @@ class Roadmap:
             elif remote_id and current.get("fingerprint") == content_fingerprint:
                 action = "unchanged"
             elif remote_id:
-                opening, closing = f"[{marker}]", f"[/{marker}]"
+                merged = merge_description(current_description, marker, description)
                 action = "inspect"
-                if isinstance(current_description, str):
-                    if current_description.count(opening) == current_description.count(closing) == 1:
-                        start, end = current_description.index(opening), current_description.index(closing)
-                        if start < end:
-                            action = "update"
-                            description = current_description[:start] + description + current_description[end + len(closing):]
+                if merged is not None:
+                    action = "update"
+                    description = merged
             else:
                 action = "create"
             rows.append({

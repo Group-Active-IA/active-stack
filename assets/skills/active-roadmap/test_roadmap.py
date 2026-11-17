@@ -104,6 +104,38 @@ class RoadmapTests(unittest.TestCase):
         with self.assertRaises(RoadmapError):
             self.begin("F1")
 
+    def test_update_merges_clickup_escaped_markers_into_original_markdown(self):
+        row = self.begin("F2")["rows"][0]
+        self.roadmap.result("F2", "created", remote_id="a1", url="https://app.clickup.com/t/a1")
+        marker = row["marker"]
+        self.tasks[1].update(
+            description="Nuevo alcance",
+            current_description=(
+                f"## Nota **manual**\n\\[{marker}\\]\n"
+                f"Ficha: [CHANGES.md](https://changes.md)\n\\[/{marker}\\]\n"
+                "\n> Conservar [enlace](https://example.com)."
+            ),
+        )
+        update = self.begin("F2")["rows"][0]
+        self.assertIn("Nuevo alcance", update["description"])
+        self.assertIn(f"\\[{marker}\\]", update["description"])
+        self.assertIn(f"\\[/{marker}\\]", update["description"])
+        self.assertTrue(update["description"].startswith("## Nota **manual**\n"))
+        self.assertTrue(update["description"].endswith("\n\n> Conservar [enlace](https://example.com)."))
+        self.assertNotIn("https://changes.md", update["description"])
+
+    def test_update_rejects_mixed_or_duplicate_markers(self):
+        row = self.begin("F1")["rows"][0]
+        self.roadmap.result("F1", "created", remote_id="a1", url="https://app.clickup.com/t/a1")
+        self.tasks[0]["title"] = "Editada"
+        marker = row["marker"]
+        raw = f"[{marker}]\nNota\n[/{marker}]"
+        escaped = f"\\[{marker}\\]\nNota\n\\[/{marker}\\]"
+        for invalid in (f"[{marker}]\nNota\n\\[/{marker}\\]", raw + "\n" + escaped, f"\\[{marker}]\n" + raw):
+            with self.subTest(description=invalid):
+                self.tasks[0]["current_description"] = invalid
+                self.assertEqual(self.roadmap.preview(self.tasks)["rows"][0]["action"], "inspect")
+
     def test_local_roadmap_cannot_publish(self):
         self.config.write_text('{"mode":"local"}')
         plan = self.roadmap.preview(self.tasks)
