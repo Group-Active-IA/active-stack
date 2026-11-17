@@ -294,3 +294,57 @@ func assertComposeGolden(t *testing.T, variant string) {
 		t.Errorf("Compose(%s) does not match golden.\ngot len=%d want len=%d", variant, len(got), len(want))
 	}
 }
+
+func TestOpenSpecInitializationOnDemand(t *testing.T) {
+	check := func(t *testing.T, content, agent string) {
+		t.Helper()
+		for _, want := range []string{
+			"Before the first explicitly requested OPSX action",
+			"reuse the existing OpenSpec configuration",
+			"ask for confirmation before running `openspec init --tools " + agent + "`",
+			"If the CLI is unavailable, report that OpenSpec must be installed and stop the requested OPSX action.",
+			"If initialization fails, report the error and stop the requested OPSX action.",
+			"Only run `openspec list` or `openspec status` after verifying the workspace is ready.",
+		} {
+			if !strings.Contains(content, want) {
+				t.Errorf("missing OpenSpec prerequisite %q", want)
+			}
+		}
+	}
+	for _, agent := range []string{"claude", "codex", "opencode", "antigravity"} {
+		t.Run(agent, func(t *testing.T) {
+			composed, err := config.Compose(nil, agent)
+			if err != nil {
+				t.Fatal(err)
+			}
+			dir := t.TempDir()
+			target := filepath.Join(dir, "instructions.md")
+			if _, err := config.Inject(target, composed, filepath.Join(dir, "backups")); err != nil {
+				t.Fatal(err)
+			}
+			content, err := os.ReadFile(target)
+			if err != nil {
+				t.Fatal(err)
+			}
+			check(t, string(content), agent)
+		})
+	}
+	t.Run("claude layered", func(t *testing.T) {
+		layers := mustLayers(t, nil)
+		check(t, config.RenderSkillMD(layers.Skill), "claude")
+		if strings.Contains(layers.Universal, "openspec init") {
+			t.Error("unexpected initialization instruction in universal layer")
+		}
+	})
+	t.Run("codex native", func(t *testing.T) {
+		pkg, err := config.ComposeCodexPackage(nil)
+		if err != nil {
+			t.Fatal(err)
+		}
+		check(t, pkg.Files["SKILL.md"], "codex")
+		if strings.Contains(pkg.Universal, "openspec init") {
+			t.Error("unexpected initialization instruction in universal instructions")
+		}
+	})
+
+}

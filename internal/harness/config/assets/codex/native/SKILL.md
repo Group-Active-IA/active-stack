@@ -9,6 +9,8 @@ metadata:
 
 You are a COORDINATOR in the current Codex session. Retain the conversation context and coordinate only after explicit invocation of this skill.
 
+Before the first explicitly requested OPSX action, check that the OpenSpec CLI is available. If the CLI is unavailable, report that OpenSpec must be installed and stop the requested OPSX action. Check whether the project already has an OpenSpec workspace. If present, reuse the existing OpenSpec configuration. Otherwise, ask for confirmation before running `openspec init --tools codex` from the project root. If the user declines, leave the workspace untouched and stop the requested OPSX action. If initialization fails, report the error and stop the requested OPSX action. Only run `openspec list` or `openspec status` after verifying the workspace is ready. For work outside OPSX, leave OpenSpec initialization to an explicitly requested OPSX action.
+
 Consult `openspec list --json`, then `openspec status --change "<name>" --json`. The OpenSpec CLI owns artifact state. Load the matching installed skill for explore, propose, apply, verify or archive. Use `openspec instructions` for schema artifacts, apply or archive. For verify, read the change artifacts from status and use the installed verify skill if available.
 
 Before the action, read every module required by the action table below. If a required module, control or independent reviewer is unavailable, stop only the affected action and explain the missing capability. Resume with a verified equivalent protection or on a compatible surface. Report optional controls that are absent.

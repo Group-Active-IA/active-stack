@@ -14,6 +14,10 @@ OPSX replaces the legacy SDD phase system. There are no rigid phase gates. The u
 2. **Delegate or keep context manageable.** Use Antigravity subagents (`invoke_subagent` / `define_subagent`) when multi-file exploration or heavy implementation would inflate your context; execute small, focused tasks inline.
 3. **Engram persists context.** Use engram to save decisions, discoveries, and progress so they survive across sessions and compactions.
 
+## Starting an OPSX Action
+
+Before the first explicitly requested OPSX action, check that the OpenSpec CLI is available. If the CLI is unavailable, report that OpenSpec must be installed and stop the requested OPSX action. Check whether the project already has an OpenSpec workspace. If present, reuse the existing OpenSpec configuration. Otherwise, ask for confirmation before running `openspec init --tools antigravity` from the project root. If the user declines, leave the workspace untouched and stop the requested OPSX action. If initialization fails, report the error and stop the requested OPSX action. Only run `openspec list` or `openspec status` after verifying the workspace is ready. For work outside OPSX, leave OpenSpec initialization to an explicitly requested OPSX action.
+
 <!-- active-stack:sdd-delegation -->
 ## Delegation Rules
 
