@@ -6,6 +6,10 @@ import (
 	"strings"
 )
 
+const codexDocumentationDiagrams = "## Documentation diagrams\n\n" +
+	"Include an editable Mermaid diagram when it clarifies a roadmap dependency, an architecture flow, or another relationship supported by the documentation. Save the fenced Mermaid block in the relevant repository Markdown or ClickUp task description. Follow the project's preview and confirmation workflow for ClickUp writes.\n\n" +
+	"When asked to show a diagram, read the current source and return the exact saved Mermaid block for rendering. For ClickUp, read markdown_description and include the task link and available description, status, subtasks and watchers as relevant. Showing a saved diagram is read-only. If the source or block is unavailable, say what is missing.\n"
+
 // CodexPackage is the content of a machine-level native OPSX delivery.
 // Files are relative to the skill directory resolved by the agent adapter.
 // Composition does not write or migrate a user's configuration.
@@ -38,7 +42,7 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 		return CodexPackage{}, err
 	}
 	pkg := CodexPackage{
-		Universal: "OPSX is available through explicit invocation of `$sdd-orchestrator`. The OpenSpec CLI owns artifact state. Never guess artifact state or create openspec directories manually.\n\n" + codexDeliveryGuidance + " If it is unavailable, use the guidance below.\n\n" + workflowGuidance + "\n",
+		Universal: "OPSX is available through explicit invocation of `$sdd-orchestrator`. The OpenSpec CLI owns artifact state. Never guess artifact state or create openspec directories manually.\n\n" + codexDeliveryGuidance + " If it is unavailable, use the guidance below.\n\n" + workflowGuidance + "\n\n" + codexDocumentationDiagrams,
 		Files: map[string]string{
 			"SKILL.md":             string(skill),
 			"agents/openai.yaml":   "# managed-by: active-stack\npolicy:\n  allow_implicit_invocation: false\n",

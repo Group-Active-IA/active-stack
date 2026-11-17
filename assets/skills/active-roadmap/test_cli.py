@@ -29,15 +29,18 @@ class RoadmapCliTest(unittest.TestCase):
                 path.write_text(json.dumps(value), encoding="utf-8")
                 return str(path)
 
+            diagram = "```mermaid\nflowchart LR\n    F1 --> F2\n```"
             tasks = payload("tasks.json", [
                 {"id": "F1", "title": "First", "responsible": "Ana"},
-                {"id": "F2", "title": "Second", "dependencies": ["F1"]},
+                {"id": "F2", "title": "Second", "dependencies": ["F1"], "description": "Dependencies\n\n" + diagram},
                 {"id": "F3", "title": "Third"},
             ])
             plan = run("preview", tasks)
+            self.assertIn(diagram, plan["rows"][1]["description"])
             self.assertFalse((config / "roadmap-state.json").exists())
             batch = run("begin", tasks, plan["approval"], "F1", "F2")
             self.assertEqual([r["id"] for r in batch["rows"]], ["F1", "F2"])
+            self.assertIn(diagram, batch["rows"][1]["description"])
             self.assertIsNone(batch["rows"][0]["assignee"])
             self.assertIn("Ana", batch["rows"][0]["description"])
             for task_id, result in (
