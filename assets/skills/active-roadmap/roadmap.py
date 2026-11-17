@@ -8,6 +8,7 @@ import json
 import os
 from pathlib import Path
 import re
+import subprocess
 import sys
 import tempfile
 
@@ -27,6 +28,48 @@ def timestamp():
 def load(path):
     with path.open(encoding="utf-8-sig") as document:
         return json.load(document)
+
+
+CLICKUP_MCP_URL = "https://mcp.clickup.com/mcp"
+
+
+def diagnose_clickup(registrations, probe=None):
+    official = [
+        server for server in registrations
+        if server["transport"]["type"] == "streamable_http"
+        and server["transport"].get("url", "").rstrip("/") == CLICKUP_MCP_URL
+    ]
+    enabled = [server for server in official if server["enabled"]]
+    candidates = enabled or official
+    if not candidates:
+        status = "conflict" if any(server["name"] == "clickup" for server in registrations) else "missing"
+        return {"status": status}
+    server = next((item for item in candidates if item["name"] == "clickup"), None)
+    if server is None:
+        if len(candidates) > 1:
+            return {"status": "ambiguous"}
+        server = candidates[0]
+    if not server["enabled"]:
+        status = "disabled"
+    elif server["auth_status"] == "not_logged_in" or probe == "unauthorized":
+        status = "login_required"
+    else:
+        status = {
+            None: "check_list",
+            "forbidden": "list_unavailable",
+            "not_found": "list_unavailable",
+            "ok": "ready",
+            "error": "verification_pending",
+        }[probe]
+    return {"status": status, "name": server["name"]}
+
+
+def codex_registrations():
+    try:
+        process = subprocess.run(["codex", "mcp", "list", "--json"], capture_output=True, check=True, timeout=30)
+        return json.loads(process.stdout)
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        raise RoadmapError("No se pudo consultar la configuración MCP de Codex") from error
 
 
 class Roadmap:
@@ -216,6 +259,8 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("read")
+    setup = commands.add_parser("setup")
+    setup.add_argument("--probe", choices=["unauthorized", "forbidden", "not_found", "ok", "error"])
     preview = commands.add_parser("preview")
     preview.add_argument("tasks", type=Path)
     begin = commands.add_parser("begin")
@@ -231,6 +276,16 @@ def main():
     try:
         if arguments.command == "read":
             output = journal.read()
+        elif arguments.command == "setup":
+            settings = journal.config()
+            if settings["mode"] == "local":
+                output = {"status": "local"}
+            else:
+                output = {
+                    **diagnose_clickup(codex_registrations(), arguments.probe),
+                    "workspace_id": settings.get("workspace_id"),
+                    "list_id": settings["list_id"],
+                }
         elif arguments.command == "preview":
             output = journal.preview(load(arguments.tasks))
         elif arguments.command == "begin":

@@ -9,6 +9,20 @@ Usá la raíz del proyecto. `CHANGES.md` conserva alcance y dependencias. ClickU
 
 Leé `.active-stack/roadmap.json`. Si falta o dice `mode: local`, mantené toda la operación en Markdown. Con `mode: clickup`, usá el MCP oficial de ClickUp (`https://mcp.clickup.com/mcp`) y los identificadores del proyecto. Si falta acceso, explicá cómo conectar el MCP y permití continuar con el roadmap local. No guardes credenciales en el proyecto.
 
+## Conectar ClickUp en Codex
+
+Ejecutá `roadmap.py --root <proyecto> setup` en un proyecto configurado para ClickUp. El diagnóstico solo lee el registro MCP de Codex y devuelve el nombre de la conexión, el estado y el destino configurado. Si la sesión ya expone el MCP oficial, usá la lectura real de la Lista para comprobar acceso.
+
+- `missing`. Mostrá que se agregará una conexión al perfil de Codex. Si el usuario aprueba el registro, ejecutá `codex mcp add clickup --url https://mcp.clickup.com/mcp`. Este comando puede iniciar OAuth inmediatamente. Dejá que el usuario autorice en el navegador y volvé a consultar el diagnóstico.
+- `login_required`. Reutilizá la entrada ya registrada. Guiá al usuario para ejecutar `codex mcp login <nombre>` y autorizar en el navegador. Si el comando anterior de registro ya inició OAuth, esperá que termine antes de ofrecer otro login.
+- `conflict`, `ambiguous` o `disabled`. Mostrá la situación al usuario y pedí que elija o habilite la conexión correcta. Conservá los registros existentes.
+- `check_list`. El registro existe, pero el acceso a la Lista todavía no está verificado. Llamá `clickup_get_list` con el ID de Lista y el workspace configurados. Si la sesión se inició antes del registro o login y la herramienta no está expuesta, pedí reiniciar la sesión de Codex para que cargue el MCP.
+- `ready`. Llegá a este estado solo tras una lectura exitosa de la Lista configurada. Confirmá su nombre e ID.
+- `list_unavailable`. Si la lectura devolvió denegado o no encontrado, pedí comprobar el ID, el workspace y el acceso a la Lista. Conservá el destino hasta que el usuario confirme un cambio.
+- `verification_pending`. Si falla la red o el servidor, conservá la configuración y permití continuar localmente hasta verificar.
+
+Tras la lectura real, el helper admite `setup --probe ok`, `unauthorized`, `forbidden`, `not_found` o `error` según la respuesta. Nunca guardes ni leas tokens, secretos o URLs de retorno OAuth en archivos del proyecto o en resultados de tareas. [Configuración de ClickUp](https://developer.clickup.com/docs/connect-an-ai-assistant-to-clickups-mcp-server-1)
+
 ## Vista previa
 
 1. Extraé fichas de `CHANGES.md` fielmente en un archivo JSON temporal fuera del repo. Cada fila usa `id` estable y `title`, más `description`, `responsible` y `dependencies` (lista de IDs) si constan en la ficha. No inventes IDs o responsables para fichas ambiguas.
