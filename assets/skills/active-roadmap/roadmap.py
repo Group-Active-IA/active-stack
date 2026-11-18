@@ -8,9 +8,11 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
+import uuid
 
 
 class RoadmapError(ValueError):
@@ -33,24 +35,32 @@ def load(path):
 CLICKUP_MCP_URL = "https://mcp.clickup.com/mcp"
 
 
-def diagnose_clickup(registrations, probe=None):
+def diagnose_clickup(registrations, probe=None, name=None):
     official = [
         server for server in registrations
         if server["transport"]["type"] == "streamable_http"
         and server["transport"].get("url", "").rstrip("/") == CLICKUP_MCP_URL
     ]
+    if name is not None:
+        official = [server for server in official if server["name"] == name]
+        if not official:
+            return {"status": "missing", "name": name}
     enabled = [server for server in official if server["enabled"]]
     candidates = enabled or official
+    reachable = [server for server in candidates if server.get("reachable", True)]
+    candidates = reachable or candidates
     if not candidates:
         status = "conflict" if any(server["name"] == "clickup" for server in registrations) else "missing"
         return {"status": status}
     server = next((item for item in candidates if item["name"] == "clickup"), None)
     if server is None:
         if len(candidates) > 1:
-            return {"status": "ambiguous"}
+            return {"status": "ambiguous", "names": [item["name"] for item in candidates]}
         server = candidates[0]
     if not server["enabled"]:
         status = "disabled"
+    elif server.get("reachable") is False and probe is None:
+        status = "verification_pending"
     elif server["auth_status"] == "not_logged_in" or probe == "unauthorized":
         status = "login_required"
     else:
@@ -64,12 +74,53 @@ def diagnose_clickup(registrations, probe=None):
     return {"status": status, "name": server["name"]}
 
 
+def client_command(name, *arguments):
+    """Resolve npm shims such as codex.cmd or claude.cmd, which Windows needs by full path."""
+    return [shutil.which(name) or name, *arguments]
+
+
 def codex_registrations():
     try:
-        process = subprocess.run(["codex", "mcp", "list", "--json"], capture_output=True, check=True, timeout=30)
+        process = subprocess.run(client_command("codex", "mcp", "list", "--json"), capture_output=True, check=True, timeout=30)
         return json.loads(process.stdout)
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         raise RoadmapError("No se pudo consultar la configuración MCP de Codex") from error
+
+
+CLAUDE_MCP_LINE = re.compile(r"^(?P<name>[^\s].*?): (?P<target>.+?)(?: \((?P<kind>HTTP|SSE)\))? - (?P<health>[^-]+)$")
+
+
+def parse_claude_mcp_list(text):
+    """Translate `claude mcp list` output into the registration shape used by Codex."""
+    registrations = []
+    for line in text.splitlines():
+        match = CLAUDE_MCP_LINE.match(line.strip())
+        if not match:
+            continue
+        target = match["target"]
+        health = match["health"].lower()
+        if not target.startswith(("http://", "https://")):
+            transport = {"type": "stdio", "command": target}
+        elif match["kind"] == "SSE":
+            transport = {"type": "sse", "url": target}
+        else:
+            transport = {"type": "streamable_http", "url": target}
+        registrations.append({
+            "name": match["name"],
+            "enabled": True,
+            "auth_status": "not_logged_in" if "auth" in health else "oauth",
+            "reachable": "connected" in health or "auth" in health,
+            "transport": transport,
+        })
+    return registrations
+
+
+def claude_registrations():
+    try:
+        process = subprocess.run(client_command("claude", "mcp", "list"), capture_output=True, check=True, timeout=120)
+        return parse_claude_mcp_list(process.stdout.decode("utf-8", errors="replace"))
+    except (OSError, subprocess.SubprocessError) as error:
+        raise RoadmapError("No se pudo consultar la configuración MCP de Claude Code") from error
 
 
 def merge_description(current, marker, replacement):
@@ -106,6 +157,33 @@ class Roadmap:
 
     def read(self):
         return load(self.state_path) if self.state_path.exists() else {"tasks": {}}
+
+    def configure(self, list_id, workspace_id=None):
+        """Save the approved ClickUp destination, keeping a stable project_id and known assignees."""
+        if not isinstance(list_id, str) or not list_id.strip():
+            raise RoadmapError("Falta configurar list_id")
+        current = load(self.config_path) if self.config_path.exists() else {}
+        settings = {
+            "mode": "clickup",
+            "project_id": current.get("project_id") or str(uuid.uuid4()),
+            "list_id": list_id.strip(),
+        }
+        workspace = workspace_id or current.get("workspace_id")
+        if workspace:
+            settings["workspace_id"] = workspace
+        if current.get("assignees"):
+            settings["assignees"] = current["assignees"]
+        self.config_path.parent.mkdir(parents=True, exist_ok=True)
+        if self.config_path.exists():
+            backup = self.config_path.with_suffix(".json.bak")
+            backup.write_bytes(self.config_path.read_bytes())
+        with tempfile.NamedTemporaryFile(
+            mode="w", dir=self.config_path.parent, encoding="utf-8", delete=False
+        ) as output:
+            json.dump(settings, output, ensure_ascii=False, indent=2)
+            output.write("\n")
+        Path(output.name).replace(self.config_path)
+        return settings
 
     @contextmanager
     def locked(self):
@@ -275,6 +353,13 @@ def main():
     commands.add_parser("read")
     setup = commands.add_parser("setup")
     setup.add_argument("--probe", choices=["unauthorized", "forbidden", "not_found", "ok", "error"])
+    setup.add_argument("--client", choices=["codex", "claude"], required=True)
+    setup.add_argument("--name", help="MCP connection to use when several point to ClickUp")
+    setup.add_argument("--list-id", help="Destination to diagnose before saving the configuration")
+    setup.add_argument("--workspace-id")
+    configure = commands.add_parser("configure")
+    configure.add_argument("--list-id", required=True)
+    configure.add_argument("--workspace-id")
     preview = commands.add_parser("preview")
     preview.add_argument("tasks", type=Path)
     begin = commands.add_parser("begin")
@@ -292,14 +377,23 @@ def main():
             output = journal.read()
         elif arguments.command == "setup":
             settings = journal.config()
+            if arguments.list_id:
+                settings = {**settings, "mode": "clickup", "list_id": arguments.list_id,
+                            "workspace_id": arguments.workspace_id or settings.get("workspace_id")}
             if settings["mode"] == "local":
                 output = {"status": "local"}
             else:
                 output = {
-                    **diagnose_clickup(codex_registrations(), arguments.probe),
+                    **diagnose_clickup(
+                        claude_registrations() if arguments.client == "claude" else codex_registrations(),
+                        arguments.probe,
+                        arguments.name,
+                    ),
                     "workspace_id": settings.get("workspace_id"),
                     "list_id": settings["list_id"],
                 }
+        elif arguments.command == "configure":
+            output = journal.configure(arguments.list_id, arguments.workspace_id)
         elif arguments.command == "preview":
             output = journal.preview(load(arguments.tasks))
         elif arguments.command == "begin":

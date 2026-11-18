@@ -18,8 +18,23 @@ func TestActiveRoadmapCatalog(t *testing.T) {
 	if !harness.InMode(model.ModeFull) || harness.InMode(model.ModeLite) {
 		t.Fatal("active-roadmap must be included in Full and available separately in Custom")
 	}
-	if !harness.SupportsAgent(model.AgentCodex) || harness.SupportsAgent(model.AgentClaude) ||
+	if !harness.SupportsAgent(model.AgentCodex) || !harness.SupportsAgent(model.AgentClaude) ||
 		harness.SupportsAgent(model.AgentOpenCode) || harness.SupportsAgent(model.AgentAntigravity) {
-		t.Fatal("active-roadmap must be scoped to Codex")
+		t.Fatal("active-roadmap must be scoped to Codex and Claude")
+	}
+}
+
+func TestActiveDeliveryCatalogIncludesClaude(t *testing.T) {
+	cat, err := Load()
+	if err != nil {
+		t.Fatal(err)
+	}
+	harness, ok := cat.ByID("active-delivery")
+	if !ok {
+		t.Fatal("active-delivery missing from catalog")
+	}
+	if !harness.SupportsAgent(model.AgentCodex) || !harness.SupportsAgent(model.AgentClaude) ||
+		harness.SupportsAgent(model.AgentOpenCode) || harness.SupportsAgent(model.AgentAntigravity) {
+		t.Fatal("active-delivery must be scoped to Codex and Claude")
 	}
 }

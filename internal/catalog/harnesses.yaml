@@ -91,12 +91,12 @@ harnesses:
   # ── Skills propias ─────────────────────────────────────────────────────────
   - id: active-delivery
     name: Active Delivery
-    description: { es: "Coordina la entrega de una tarea con ODD o SDD en Codex.", en: "Coordinates an individual task through ODD or SDD in Codex." }
+    description: { es: "Coordina la entrega de una tarea con ODD o SDD.", en: "Coordinates an individual task through ODD or SDD." }
     long_description: { es: "Skill local para acordar alcance y verificación por tarea, elegir ODD o SDD y transferir decisiones y pruebas si el trabajo escala a SDD.", en: "Bundled skill to agree on scope and verification per task, choose ODD or SDD, and carry decisions and evidence forward when work escalates to SDD." }
     type: skill
     source: { method: embed }
     install_modes: [lite, full]
-    agents: [codex]
+    agents: [codex, claude]
 
   - id: active-roadmap
     name: Active Roadmap
@@ -105,7 +105,7 @@ harnesses:
     type: skill
     source: { method: embed }
     install_modes: [full]
-    agents: [codex]
+    agents: [codex, claude]
 
   - id: active-orchestrator
     name: active-orchestrator

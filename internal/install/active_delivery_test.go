@@ -16,17 +16,17 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
-func TestActiveDeliveryPackagesSkillAndHandoffForCodex(t *testing.T) {
+func TestActiveDeliveryPackagesSkillAndHandoffForCodexAndClaude(t *testing.T) {
 	cat, err := catalog.Load()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	modes := []struct {
-		name        string
-		mode        model.InstallMode
-		custom      []string
-		wantOnCodex bool
+		name       string
+		mode       model.InstallMode
+		custom     []string
+		wantOnHost bool
 	}{
 		{"lite", model.ModeLite, nil, true},
 		{"full", model.ModeFull, nil, true},
@@ -47,14 +47,14 @@ func TestActiveDeliveryPackagesSkillAndHandoffForCodex(t *testing.T) {
 						break
 					}
 				}
-				if host != model.AgentCodex || !mode.wantOnCodex {
+				if (host != model.AgentCodex && host != model.AgentClaude) || !mode.wantOnHost {
 					if delivery != nil {
 						t.Fatal("active-delivery was selected outside the requested mode and host")
 					}
 					return
 				}
 				if delivery == nil {
-					t.Fatal("active-delivery missing from requested Codex mode")
+					t.Fatal("active-delivery missing from requested mode")
 				}
 				adapter, err := agents.NewAdapter(host)
 				if err != nil {

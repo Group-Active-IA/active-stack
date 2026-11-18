@@ -1,6 +1,6 @@
 ---
 name: active-roadmap
-description: Muestra las acciones de ClickUp disponibles para el proyecto. Previsualiza, publica y reconcilia tareas de CHANGES.md con ClickUp por proyecto.
+description: Muestra las acciones de ClickUp disponibles para el proyecto. Previsualiza, publica y reconcilia tareas de CHANGES.md con ClickUp por proyecto, y consulta el avance o los diagramas guardados en sus tareas vinculadas.
 ---
 
 # Active Roadmap
@@ -18,14 +18,24 @@ Usá este punto de entrada ante preguntas sobre qué se puede hacer con ClickUp 
 3. Usá el selector nativo de opción única si la sesión lo expone. Si no, usá una lista numerada. Incluí **Ver detalle** y esperá la elección. Al mostrar el detalle, explicá el ejemplo, qué lee, qué cambia y cuándo confirma. Podés mostrar el detalle de una acción bloqueada si lo piden. Volvé a ofrecer las acciones después de mostrar el detalle.
 4. Abrir el selector, pedir detalle y elegir una acción son pasos de lectura. Publicar o actualizar abre la vista previa y requiere confirmación explícita de la escritura concreta. Ver el avance muestra los datos consultados y solo guarda el estado local cuando el usuario pide sincronizar. Configurar abre el diagnóstico y sigue sus confirmaciones antes de cambiar el registro o el destino.
 
-## Conectar ClickUp en Codex
+## Conectar ClickUp
 
-Ejecutá `roadmap.py --root <proyecto> setup` en un proyecto configurado para ClickUp. El diagnóstico solo lee el registro MCP de Codex y devuelve el nombre de la conexión, el estado y el destino configurado. Si la sesión ya expone el MCP oficial, usá la lectura real de la Lista para comprobar acceso.
+Ejecutá `roadmap.py --root <proyecto> setup --client <cliente>` con `codex` en Codex y `claude` en Claude Code; el cliente es obligatorio. El diagnóstico solo lee el registro MCP del cliente activo y devuelve el nombre de la conexión, el estado y el destino configurado. Si la sesión ya expone el MCP oficial, usá la lectura real de la Lista para comprobar acceso.
 
-- `missing`. Mostrá que se agregará una conexión al perfil de Codex. Si el usuario aprueba el registro, ejecutá `codex mcp add clickup --url https://mcp.clickup.com/mcp`. Este comando puede iniciar OAuth inmediatamente. Dejá que el usuario autorice en el navegador y volvé a consultar el diagnóstico.
-- `login_required`. Reutilizá la entrada ya registrada. Guiá al usuario para ejecutar `codex mcp login <nombre>` y autorizar en el navegador. Si el comando anterior de registro ya inició OAuth, esperá que termine antes de ofrecer otro login.
-- `conflict`, `ambiguous` o `disabled`. Mostrá la situación al usuario y pedí que elija o habilite la conexión correcta. Conservá los registros existentes.
-- `check_list`. El registro existe, pero el acceso a la Lista todavía no está verificado. Llamá `clickup_get_list` con el ID de Lista y el workspace configurados. Si la sesión se inició antes del registro o login y la herramienta no está expuesta, pedí reiniciar la sesión de Codex para que cargue el MCP.
+Para configurar un destino nuevo o cambiarlo, seguí este orden:
+
+1. Antes de escribir, diagnosticá el destino propuesto con `setup --client <cliente> --list-id <lista> [--workspace-id <workspace>]` y leé la Lista con `clickup_get_list`.
+2. Mostrá la Lista validada, su nombre, el workspace y los responsables conocidos, y pedí aprobación explícita para guardar.
+3. Con la aprobación, ejecutá `roadmap.py --root <proyecto> configure --list-id <lista> [--workspace-id <workspace>]`. El helper genera un UUID como `project_id` la primera vez, conserva el existente y los responsables mapeados al cambiar el destino, guarda una copia previa y no escribe credenciales.
+
+No escribas `.active-stack/roadmap.json` a mano ni uses el nombre del proyecto como `project_id`.
+
+En Claude Code, las herramientas pueden llegar con prefijo, como `mcp__clickup__clickup_get_list` o `mcp__claude_ai_ClickUp__clickup_get_list` cuando el usuario conectó ClickUp desde claude.ai. Usá la herramienta del MCP oficial con el mismo nombre base.
+
+- `missing`. Mostrá que se agregará una conexión al cliente y pedí aprobación antes de registrarla. En Codex ejecutá `codex mcp add clickup --url https://mcp.clickup.com/mcp`; este comando puede iniciar OAuth inmediatamente. En Claude Code ejecutá `claude mcp add --transport http --scope user clickup https://mcp.clickup.com/mcp`, o indicá que también puede conectar ClickUp desde los conectores de claude.ai. Dejá que el usuario autorice en el navegador y volvé a consultar el diagnóstico.
+- `login_required`. Reutilizá la entrada ya registrada. En Codex guiá al usuario para ejecutar `codex mcp login <nombre>`. En Claude Code pedí que abra `/mcp`, elija la conexión y autorice en el navegador. Si el comando anterior de registro ya inició OAuth, esperá que termine antes de ofrecer otro login.
+- `conflict`, `ambiguous` o `disabled`. Mostrá la situación al usuario y pedí que elija o habilite la conexión correcta. Con `ambiguous`, el diagnóstico lista los nombres; repetí `setup` con `--name <conexión>` para la elegida. Conservá los registros existentes.
+- `check_list`. El registro existe, pero el acceso a la Lista todavía no está verificado. Llamá `clickup_get_list` con el ID de Lista y el workspace configurados. Si la sesión se inició antes del registro o login y la herramienta no está expuesta, pedí iniciar una sesión nueva del cliente para que cargue el MCP.
 - `ready`. Llegá a este estado solo tras una lectura exitosa de la Lista configurada. Confirmá su nombre e ID.
 - `list_unavailable`. Si la lectura devolvió denegado o no encontrado, pedí comprobar el ID, el workspace y el acceso a la Lista. Conservá el destino hasta que el usuario confirme un cambio.
 - `verification_pending`. Si falla la red o el servidor, conservá la configuración y permití continuar localmente hasta verificar.
@@ -56,7 +66,7 @@ Mostrá la conclusión para todas las filas, incluidos los enlaces, las asignaci
 
 ## Reconciliación
 
-Al retomar, entregar o cerrar una ficha, consultá `roadmap.py --root <proyecto> read` y leé el ID vinculado con `clickup_get_task`. Registrá `roadmap.py --root <proyecto> reconcile <id> <snapshot.json>` con `{"status":"...","assignees":["..."]}`. Ante error usá `{"reason":"..."}` para conservar el último estado confirmado y marcar verificación pendiente. Compartí el estado observado, enlace, fecha y asignación efectiva; mantené `.active-stack/roadmap-state.json` como evidencia del proyecto.
+Reconciliá solo cuando el usuario pide sincronizar o al retomar, entregar o cerrar una ficha. Publicar, actualizar o mostrar el avance no sincroniza por sí solo: registrá el resultado de la escritura con `result` y ofrecé sincronizar. En esos casos, consultá `roadmap.py --root <proyecto> read` y leé el ID vinculado con `clickup_get_task`. Registrá `roadmap.py --root <proyecto> reconcile <id> <snapshot.json>` con `{"status":"...","assignees":["..."]}`. Ante error usá `{"reason":"..."}` para conservar el último estado confirmado y marcar verificación pendiente. Compartí el estado observado, enlace, fecha y asignación efectiva; mantené `.active-stack/roadmap-state.json` como evidencia del proyecto.
 
 El helper Python local nunca llama a ClickUp. La aprobación humana es requisito para cada escritura remota. Consultá las [herramientas oficiales de ClickUp](https://developer.clickup.com/docs/mcp-tools).
 

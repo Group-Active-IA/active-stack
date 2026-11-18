@@ -5,6 +5,19 @@ import (
 	"testing"
 )
 
+func TestClaudeActiveDeliveryEntrypoint(t *testing.T) {
+	layers, err := ComposeLayers(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(layers.Universal, "`active-delivery` skill") {
+		t.Error("Claude universal rules lack the installed delivery entrypoint")
+	}
+	if strings.Contains(layers.Universal, "$active-delivery") {
+		t.Error("Claude universal rules use Codex invocation syntax")
+	}
+}
+
 func TestCodexActiveDeliveryEntrypoint(t *testing.T) {
 	machine, err := ComposeCodexPackage(nil)
 	if err != nil {

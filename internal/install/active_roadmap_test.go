@@ -13,27 +13,34 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
-func TestActiveRoadmapInstallsCodexSkillAndHelper(t *testing.T) {
+func TestActiveRoadmapInstallsSkillAndHelper(t *testing.T) {
 	cat, err := catalog.Load()
 	if err != nil {
 		t.Fatal(err)
 	}
-	harness, ok := cat.ByID("active-roadmap")
-	if !ok {
-		t.Fatal("missing active-roadmap harness")
-	}
-	adapter, err := agents.NewAdapter(model.AgentCodex)
-	if err != nil {
-		t.Fatal(err)
-	}
-	home := t.TempDir()
-	_, err = skill.NewInstaller(nil, assets.SkillsFS).Install(context.Background(), harness, []skill.AgentAdapter{adapter}, home, t.TempDir())
-	if err != nil {
-		t.Fatal(err)
-	}
-	for _, name := range []string{"SKILL.md", "roadmap.py"} {
-		if _, err := os.Stat(filepath.Join(adapter.SkillsDir(home), harness.ID, name)); err != nil {
-			t.Error(err)
-		}
+	for _, agent := range []model.Agent{model.AgentCodex, model.AgentClaude} {
+		t.Run(string(agent), func(t *testing.T) {
+			for _, id := range []string{"active-roadmap", "active-delivery"} {
+				harness, ok := cat.ByID(id)
+				if !ok {
+					t.Fatalf("missing %s harness", id)
+				}
+				adapter, err := agents.NewAdapter(agent)
+				if err != nil {
+					t.Fatal(err)
+				}
+				home := t.TempDir()
+				_, err = skill.NewInstaller(nil, assets.SkillsFS).Install(context.Background(), harness, []skill.AgentAdapter{adapter}, home, t.TempDir())
+				if err != nil {
+					t.Fatal(err)
+				}
+				files := map[string][]string{"active-roadmap": {"SKILL.md", "roadmap.py", "references/clickup-actions.md"}, "active-delivery": {"SKILL.md", "references/handoff.md"}}[id]
+				for _, name := range files {
+					if _, err := os.Stat(filepath.Join(adapter.SkillsDir(home), harness.ID, filepath.FromSlash(name))); err != nil {
+						t.Error(err)
+					}
+				}
+			}
+		})
 	}
 }
