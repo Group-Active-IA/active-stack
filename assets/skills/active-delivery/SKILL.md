@@ -103,6 +103,14 @@ Keep the work's local verification separate from the roadmap observation.
    commits, stashes, resets, switches branches or rewrites project files on its
    own.
 
+## ClickUp actions
+
+When the user asks what they can do with ClickUp or makes an open-ended request about the project roadmap, invoke the action selector in `active-roadmap` if installed. For a concrete request, use the corresponding roadmap workflow.
+
 ## Documentation diagrams
 
 Include a fenced Mermaid block in the delivered Markdown when it clarifies an architecture flow or another documented relationship. Use the facts in the deliverable for nodes and connections. On request, read the document and show the saved block as Mermaid. If the source is unavailable, identify what is missing. For ClickUp, follow the active-roadmap read and publication instructions.
+
+During discovery, offer an editable diagram when it clarifies a documented workflow or relationship. At delivery, place it in the agreed handoff document and identify its source so it can be retrieved in a fresh session.
+
+If a request is ambiguous and the source contains multiple Mermaid blocks, present one option per diagram, using its heading or a brief descriptive label. Use a single-choice interaction when the current client exposes one, such as OpenCode's question tool. Otherwise list the options by number. In both cases wait for the selection before showing only the selected exact block. In a surface without Mermaid rendering, return the editable fenced source.

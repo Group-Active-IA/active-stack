@@ -12,8 +12,8 @@ func TestDocumentationDiagramEntryPoints(t *testing.T) {
 		heading string
 		want    []string
 	}{
-		{"active-delivery", "Documentation diagrams", []string{"fenced Mermaid", "architecture", "saved block", "source is unavailable"}},
-		{"active-roadmap", "Diagramas de documentación", []string{"bloque Mermaid editable", "markdown_description", "text_content", "bloque guardado exacto", "vista previa y confirmación"}},
+		{"active-delivery", "Documentation diagrams", []string{"fenced Mermaid", "architecture", "saved block", "source is unavailable", "discovery", "one option per diagram", "OpenCode", "wait for the selection"}},
+		{"active-roadmap", "Diagramas de documentación", []string{"bloque Mermaid editable", "markdown_description", "text_content", "bloque guardado exacto", "vista previa y confirmación", "una opción por diagrama", "esperá la selección"}},
 	} {
 		t.Run(tc.skill, func(t *testing.T) {
 			data, err := fs.ReadFile(SkillsFS, "skills/"+tc.skill+"/SKILL.md")

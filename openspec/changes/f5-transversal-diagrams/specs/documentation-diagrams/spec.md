@@ -43,3 +43,25 @@ Cuando el usuario solicite mostrar un diagrama, Codex SHALL recuperar el Mermaid
 
 - **WHEN** el origen o el bloque solicitado no está disponible
 - **THEN** Codex indica qué falta para recuperar el diagrama
+
+### Requirement: Select one saved documentation diagram
+When an ambiguous request matches multiple saved Mermaid blocks, the agent SHALL offer one labeled option per matching diagram and wait for a selection. The agent SHALL use the native single-choice interaction when exposed by the current client. In a client without that interaction, it SHALL use a numbered list. After selection it SHALL return only the exact selected block.
+
+#### Scenario: Ambiguous request with three diagrams
+- **WHEN** the user asks to see the diagram in a source containing three Mermaid blocks
+- **THEN** the agent presents the three diagram options and waits before returning a block
+
+#### Scenario: Named diagram in a client without rendering
+- **WHEN** the user identifies one saved diagram and the client does not render Mermaid
+- **THEN** the agent returns the exact editable fenced block for that diagram
+
+### Requirement: Preserve the diagram across discovery and delivery
+The agent SHALL propose a diagram during discovery when it clarifies relationships supported by the source. When a diagram contributes to the delivery, the agent SHALL identify its saved source in the handoff.
+
+#### Scenario: Discovery source describes a workflow
+- **WHEN** a discovery document describes a workflow that would benefit from a diagram
+- **THEN** the agent proposes an editable Mermaid block expressing the documented relationships
+
+#### Scenario: Recover a delivery diagram
+- **WHEN** a later session opens the handoff and selects one of its saved diagrams
+- **THEN** the agent retrieves the selected block from the source identified in the handoff
