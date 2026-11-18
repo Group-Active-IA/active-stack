@@ -1,10 +1,21 @@
 # CHANGES — Roadmap de mejoras de Active Stack
 
-> Leé este documento antes de abrir una rama. Es el plan canónico de mejoras de OPSX para Codex y Claude. El estado de cada change se consulta con OpenSpec. Esta ronda cubre **solo `propose`**, incluida la planificación de la implementación futura.
+> El roadmap F1-F5 está cerrado. El plan de la ronda anterior se conserva como referencia.
 
 [Vista interactiva](https://active-stack-roadmap.vercel.app/) · [Informe ejecutivo y evidencia](https://active-stack-executive-site.vercel.app/) · [Roadmap post-starters archivado](docs/archive/CHANGES-2026-11-05-post-starters.md)
 
-## Cómo trabajar en esta ronda
+## Cierre del roadmap F1-F5
+
+| Ficha | Estado |
+|---|---|
+| F1 · Fundación | Integrada en [PR #18](https://github.com/Group-Active-IA/active-stack/pull/18). Incluye la ficha F2 original. |
+| F3 · ODD junto a SDD | Integrada en [PR #19](https://github.com/Group-Active-IA/active-stack/pull/19). |
+| F4 · Tareas y vista previa | [PR #20](https://github.com/Group-Active-IA/active-stack/pull/20) y selector guiado en Codex. Piloto de publicación selectiva completado. |
+| F5 · Visualizaciones | [PR #21](https://github.com/Group-Active-IA/active-stack/pull/21), selección de diagramas y [pilotos de Discovery y Entrega](openspec/changes/f5-transversal-diagrams/pilot-evidence.md). |
+
+## Ronda anterior de propuestas
+
+### Cómo se trabajó en esa ronda
 
 1. **Ubicá tu ficha y leé sus referencias.** Revisá [AGENTS.md](AGENTS.md) o [CLAUDE.md](CLAUDE.md), el alcance y las dependencias. Confirmá qué código existe, qué comportamiento se observó y qué falta investigar. Los identificadores 01–10 son para coordinar. El nombre en kebab-case identifica el change en OpenSpec.
 2. **Creá una rama por change en Active Stack.** Con la rama principal actualizada, usá `git switch -c propose/<nombre-del-change>`. Si redactás dos propuestas en paralelo, usá un worktree por rama. El worktree mantiene separados los borradores de cada rama.

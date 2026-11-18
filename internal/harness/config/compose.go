@@ -65,6 +65,10 @@ func Compose(toggles []string, variantKey string) (string, error) {
 
 	// Steps 4-6: additive fragments (always appended in fixed order).
 	var additives []string
+	switch variantKey {
+	case "opencode", "antigravity":
+		additives = append(additives, documentationDiagrams)
+	}
 
 	// Step 4: governance.
 	if active["governance"] {

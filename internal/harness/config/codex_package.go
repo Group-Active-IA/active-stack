@@ -6,9 +6,10 @@ import (
 	"strings"
 )
 
-const codexDocumentationDiagrams = "## Documentation diagrams\n\n" +
+const documentationDiagrams = "## Documentation diagrams\n\n" +
 	"Include an editable Mermaid diagram when it clarifies a roadmap dependency, an architecture flow, or another relationship supported by the documentation. Save the fenced Mermaid block in the relevant repository Markdown or ClickUp task description. Follow the project's preview and confirmation workflow for ClickUp writes.\n\n" +
-	"When asked to show a diagram, read the current source and return the exact saved Mermaid block for rendering. For ClickUp, read markdown_description and include the task link and available description, status, subtasks and watchers as relevant. Showing a saved diagram is read-only. If the source or block is unavailable, say what is missing.\n"
+	"When asked to show a diagram, read the current source and return the exact saved Mermaid block for rendering. For ClickUp, read markdown_description and include the task link and available description, status, subtasks and watchers as relevant. Showing a saved diagram is read-only. If the source or block is unavailable, say what is missing.\n\n" +
+	"During discovery, suggest a diagram when it clarifies a workflow or relationship. Draw only relationships supported by the source. At delivery, identify the saved source in the handoff. When an ambiguous request matches multiple blocks, offer one option per diagram labeled by heading or purpose and wait for the selection. Use the client's single-choice tool when available (for example OpenCode question, Antigravity ask_question, or Claude Code AskUserQuestion), otherwise offer a numbered list. Show only the selected exact block. In a surface without rendering, present the editable fenced Mermaid.\n"
 
 // CodexPackage is the content of a machine-level native OPSX delivery.
 // Files are relative to the skill directory resolved by the agent adapter.
@@ -42,7 +43,7 @@ func ComposeCodexPackage(toggles []string) (CodexPackage, error) {
 		return CodexPackage{}, err
 	}
 	pkg := CodexPackage{
-		Universal: "OPSX is available through explicit invocation of `$sdd-orchestrator`. The OpenSpec CLI owns artifact state. Never guess artifact state or create openspec directories manually.\n\n" + codexDeliveryGuidance + " If it is unavailable, use the guidance below.\n\n" + workflowGuidance + "\n\n" + codexDocumentationDiagrams,
+		Universal: "OPSX is available through explicit invocation of `$sdd-orchestrator`. The OpenSpec CLI owns artifact state. Never guess artifact state or create openspec directories manually.\n\n" + codexDeliveryGuidance + " If it is unavailable, use the guidance below.\n\n" + workflowGuidance + "\n\n" + documentationDiagrams,
 		Files: map[string]string{
 			"SKILL.md":             string(skill),
 			"agents/openai.yaml":   "# managed-by: active-stack\npolicy:\n  allow_implicit_invocation: false\n",

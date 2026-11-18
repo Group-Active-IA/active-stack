@@ -19,15 +19,15 @@ codex	+tdd	18884	409
 
 ## Referencia: demás variantes (fuera del alcance de paridad)
 # variant	scope	bytes	lines
-antigravity	none	5714	138
-antigravity	all	18893	401
+antigravity	none	7015	146
+antigravity	all	20195	410
 cursor	none	5579	147
 cursor	all	18556	411
 gemini	none	5525	147
 gemini	all	17992	403
 generic	none	5461	154
 generic	all	17847	408
-opencode	none	7285	182
-opencode	all	20234	442
+opencode	none	8586	190
+opencode	all	21536	451
 windsurf	none	5794	149
 windsurf	all	18677	418

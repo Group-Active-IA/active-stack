@@ -128,8 +128,8 @@ func TestBuild_SortedBySizeDescending(t *testing.T) {
 	for _, s := range srcs {
 		names[s.Name] = s.Bytes
 	}
-	if names["Bloque sdd-orchestrator inyectado — Claude"] != 4601 {
-		t.Errorf("bloque de Claude = %d, want 4601 (bloque universal de la entrega en capas, con marcadores)", names["Bloque sdd-orchestrator inyectado — Claude"])
+	if names["Bloque sdd-orchestrator inyectado — Claude"] != 5902 {
+		t.Errorf("bloque de Claude = %d, want 5902 (bloque universal de la entrega en capas, con marcadores)", names["Bloque sdd-orchestrator inyectado — Claude"])
 	}
 	if names["Sección design-mockups inyectada — Claude"] != 8940 {
 		t.Errorf("sección design-mockups = %d, want 8940", names["Sección design-mockups inyectada — Claude"])
@@ -207,8 +207,8 @@ func TestDoc_InventoryReproducesGolden(t *testing.T) {
 	}
 	// Cifras de la tabla de proposal.md — Impact, tal como las produce Compose.
 	for _, want := range []string{
-		"20.065 B · 448 L", "18.010 B · 403 L", // bloque completo
-		"7.116 B · 188 L", "5.543 B · 147 L", // sin toggles
+		"19.977 B · 443 L", "18.884 B · 409 L", // bloque completo
+		"7.028 B · 183 L", "6.417 B · 153 L", // sin toggles
 		"| `delegation` | 1.005 B |", "| `engram` | 6.093 B |", "| `tdd` | 3.797 B |", // fragmentos
 		"8.865 B", // design-mockups
 	} {

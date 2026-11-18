@@ -128,7 +128,7 @@ func ComposeLayers(toggles []string) (Layers, error) {
 		}
 		uBlocks = append(uBlocks, e...)
 	}
-	universal := joinBlocks(append(uBlocks, workflowGuidance)...)
+	universal := joinBlocks(append(uBlocks, workflowGuidance, documentationDiagrams)...)
 
 	// Coordinator body (D10): role, mandatory rules and the action table first.
 	roleParts, err := pick("coordinator/role", "coordinator/role-fluid")
