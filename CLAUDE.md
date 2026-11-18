@@ -141,7 +141,7 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
 |---|---|
 | El blueprint del diseño (fuente de verdad) | `ARCHITECTURE.md` |
 | La metodología (etapas, governance, flujo) | `../MANUAL-METODOLOGICO.md` |
-| Roadmap canónico, fichas de change y responsables | [CHANGES.md](CHANGES.md) |
+| Mejora vigente y criterios de aceptación | [CHANGES.md](CHANGES.md) |
 | Qué harnesses existen y de qué tipo | `internal/catalog/harnesses.yaml` |
 | Los tipos de dominio | `internal/model/harness.go` |
 | Cargar/validar el catálogo | `internal/catalog/catalog.go` |
@@ -153,12 +153,14 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
 
 ## 6. Notas
 
+- Si el responsable pide «Implementá y verificá lo pendiente de Claude», seguí el [encargo de cierre de Claude Code](docs/verificacion-claude-code.md). Incluye la matriz F1-F5, el roadmap archivado y la entrega a main.
+
 - En Claude, el orquestador SDD (coordinación, delegación, model-routing) se entrega como
   la skill `/sdd-orchestrator` más un bloque universal en `CLAUDE.md`. Este proyecto NO
   los duplica; el detalle está en `internal/harness/config/assets/` y en
   `openspec/matriz-reglas-opsx.md`.
 - `openspec/` se versiona en Git. Compartí la rama de propuesta con sus artefactos para revisión.
-- Antes de crear una rama, leé [CHANGES.md](CHANGES.md) y la ficha del change asignado.
-  Para una ronda autorizada solo para propuesta OPSX, creá una rama `propose/<nombre-del-change>`,
-  acordá las decisiones en el grupo durante el armado y compartí los artefactos finales
-  para revisión de los siete integrantes. El roadmap detalla la entrega y la aceptación.
+- Antes de crear una rama, consultá [CHANGES.md](CHANGES.md) y usá el informe de trabajo en equipo como fuente de alcance y criterios de aceptación. El [archivo histórico](docs/archive/roadmap-f1-f5/index.md) se consulta cuando haga falta recuperar una decisión anterior.
+- Trabajá cada ficha en una rama y, cuando haya trabajo simultáneo, en un worktree separado. Delegá encargos acotados a subagentes con alcance, rutas y verificación definidos.
+- Al cerrar cada ficha, verificá los criterios y registrá la evidencia. Con la autorización del responsable, hacé el commit, publicá la rama, abrí el pull request y fusioná a main tras los checks y revisiones aplicables.
+- Guardá continuidad en Engram y compactá al cerrar la ficha o antes de pasar a la siguiente. Dejá rama, PR, SHA, pruebas, decisiones y próximo paso verificable.
