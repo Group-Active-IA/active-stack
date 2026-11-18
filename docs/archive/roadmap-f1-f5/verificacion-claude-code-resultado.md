@@ -113,7 +113,20 @@ Tres subagentes repitieron la matriz en proyectos nuevos (`sb1/`, `sb2/`, `sb3/`
 
 Desvíos menores observados: la confirmación de `openspec init` se pidió en la misma pregunta que la promoción, antes de ejecutar nada; algunas respuestas mezclaron tuteo y voseo; las sesiones guardaron entradas en Engram por las instrucciones globales del usuario, no por las skills del stack.
 
-## Pendientes fuera de este repositorio
+## Cierre de integración · 2026-11-18
 
-- `active-orchestrator`: integrar el [PR #6](https://github.com/Group-Active-IA/active-orchestrator/pull/6) (rama `fix/claude-entrypoints-plan-approval`, commits 3223696 y 1518ef9), que depende de los mantenedores de ese repositorio. Después, actualizar en `internal/catalog/harnesses.yaml` el SHA de `active-orchestrator`, hoy `4318a75`.
+Los [PR #23](https://github.com/Group-Active-IA/active-stack/pull/23) y [#24](https://github.com/Group-Active-IA/active-stack/pull/24) quedaron integrados en main de Active Stack. El pendiente de `active-orchestrator` descrito arriba queda resuelto: se fusionó el [PR #6](https://github.com/Group-Active-IA/active-orchestrator/pull/6), con merge `09c841e33c33744abeafe600e88fe1c36fa0f599`. El catálogo reemplaza el pin `4318a75008e72d4820bb9800bb16d5a413c4e80b` por ese merge de upstream para que Full instale la corrección en Claude, Codex, OpenCode y Antigravity.
+
+La revisión de integración ejecutó `python -m pytest -q` en un clon temporal de la skill: 14 pruebas pasan en la base y 16 en la versión corregida. En Active Stack, `go test ./internal/catalog` pasó antes del cambio; la nueva prueba `TestActiveOrchestratorFullUsesApprovedClaudeFix` falló primero para los cuatro clientes con el pin antiguo y pasó al actualizarlo. También pasó `go test ./internal/catalog -count=1`, que valida el YAML embebido mediante `catalog.Load()`.
+
+Esta comprobación verifica el contrato publicado y la selección de la versión corregida por el catálogo. No repite ni atribuye nuevos pilotos de Claude o escrituras en ClickUp; los recorridos y sesiones de las secciones anteriores conservan su evidencia original.
+
+### Evidencia del ciclo TDD
+
+| Tarea | Prueba | Capa | Red de seguridad | RED | GREEN | Triangulación | Refactor |
+|---|---|---|---|---|---|---|---|
+| Actualizar pin de active-orchestrator | `internal/catalog/orchestrator_release_test.go` | Catálogo | `go test ./internal/catalog` OK | Cuatro clientes fallan con el SHA anterior | Prueba focalizada y paquete completo OK | Claude, Codex, OpenCode y Antigravity | No necesario |
+
+## Observación previa fuera del cierre de Claude
+
 - `starter add` sigue haciendo `self-install` en proyectos (punto 2 de `correcciones-stack-main-2026-11-17`); no se tocó.
