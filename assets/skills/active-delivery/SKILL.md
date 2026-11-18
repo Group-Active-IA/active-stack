@@ -19,7 +19,11 @@ governance, authorization, TDD and verification requirements in either mode.
 
 Read the relevant project instructions, roadmap item and any existing handoff.
 Use the roadmap ID if available. Start with read-only inspection and explain the
-recommendation in one or two sentences.
+recommendation in one or two sentences. Then wait for the user to confirm or
+change the mode before editing files or running commands that change the
+project, unless the request already states the mode explicitly or a handoff
+for the same ID records the user's confirmed mode and the scope is unchanged.
+A bounded ODD task still needs this confirmation the first time.
 
 | Recommend | Signals |
 |---|---|
@@ -45,7 +49,9 @@ still need governance approval.
 
 When the CLI is available, use the existing workspace if present. Otherwise
 follow the existing SDD onboarding procedure and ask for confirmation before
-running `openspec init --tools codex` from the project root. If declined, leave
+running `openspec init --tools <client>` from the project root, with
+`openspec init --tools codex` in Codex and `openspec init --tools claude` in
+Claude Code. If declined, leave
 the workspace untouched and continue ODD only within the approved scope. If
 initialization fails, report the error and pause the requested SDD action.
 

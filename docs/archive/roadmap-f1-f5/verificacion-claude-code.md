@@ -1,8 +1,10 @@
 # Cierre de verificación de Claude Code
 
+> Encargo cerrado el 2026-11-18. Ver el [resultado de la verificación](verificacion-claude-code-resultado.md).
+
 **Frase de inicio** · «Implementá y verificá lo pendiente de Claude».
 
-Este encargo revisa el roadmap F1–F5 ya integrado, reproduce sus recorridos en Claude Code y resuelve los pendientes de Claude. Antes de empezar, leer el [roadmap publicado y su flujo histórico](archive/roadmap-f1-f5/CHANGES-publicado.md), la [copia de continuidad del cierre](archive/roadmap-f1-f5/CHANGES-copia-local.md) y las reglas vigentes en [CLAUDE.md](../CLAUDE.md). El informe de trabajo en equipo sigue siendo el alcance de la próxima mejora.
+Este encargo revisa el roadmap F1–F5 ya integrado, reproduce sus recorridos en Claude Code y resuelve los pendientes de Claude. Antes de empezar, leer el [roadmap publicado y su flujo histórico](CHANGES-publicado.md), la [copia de continuidad del cierre](CHANGES-copia-local.md) y las reglas vigentes en [CLAUDE.md](../../../CLAUDE.md). El informe de trabajo en equipo sigue siendo el alcance de la próxima mejora.
 
 ## Encargo
 
