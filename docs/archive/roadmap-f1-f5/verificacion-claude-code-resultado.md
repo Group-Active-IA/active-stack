@@ -50,7 +50,7 @@ Bloqueo por permisos: dos defectos de F1 están en la skill externa `active-orch
 1. **Entrada en Claude.** La skill anuncia `/active-orchestrator:init` y entradas como `:design` o `:find-skill`. En Claude Code `/active-orchestrator:init` no existe como comando y la fundación no se activa; funciona `/active-orchestrator init` o el pedido en lenguaje natural. Las sugerencias del propio modelo alternaron entre `:find-skill` y ` :find-skill`.
 2. **Plan modificado sin aprobación.** Un subagente respondió la checklist solo con variantes (`1=skip, 2=import, 3=off, …`) para un plan distinto del recomendado. La skill escribió el estado con `approved_at`, despachó `kb-creator` y no mostró el resumen final ni pidió aprobación, aunque su contrato dice «A new or changed plan requires approval».
 
-Corrección propuesta en la rama `fix/claude-entrypoints-plan-approval` de ese repositorio (commits 3223696 y 1518ef9, 16 pruebas de contrato OK). La skill documenta la forma con espacio para Claude, una respuesta que solo elige fases o variantes cambia el plan sin aprobarlo y el resumen lista el registro de política visual en `design-system/README.md`. Con esa versión instalada a mano, los subagentes verificaron F1 y F2 completos. El SHA del catálogo se actualiza cuando ese cambio se integre.
+Corrección propuesta en la rama `fix/claude-entrypoints-plan-approval` de ese repositorio (commits 3223696 y 1518ef9, 16 pruebas de contrato OK). La skill documenta la forma con espacio para Claude, una respuesta que solo elige fases o variantes cambia el plan sin aprobarlo y el resumen lista el registro de política visual en `design-system/README.md`. Con esa versión instalada a mano, los subagentes verificaron F1 y F2 completos. El cambio se publicó desde el fork `cachi001/active-orchestrator` en el [PR #6](https://github.com/Group-Active-IA/active-orchestrator/pull/6). El SHA del catálogo se actualiza cuando ese PR se integre.
 
 ### F2 · Adaptación de arneses
 
@@ -115,5 +115,5 @@ Desvíos menores observados: la confirmación de `openspec init` se pidió en la
 
 ## Pendientes fuera de este repositorio
 
-- `active-orchestrator`: integrar la rama `fix/claude-entrypoints-plan-approval` y actualizar el SHA del catálogo.
+- `active-orchestrator`: integrar el [PR #6](https://github.com/Group-Active-IA/active-orchestrator/pull/6) (rama `fix/claude-entrypoints-plan-approval`, commits 3223696 y 1518ef9), que depende de los mantenedores de ese repositorio. Después, actualizar en `internal/catalog/harnesses.yaml` el SHA de `active-orchestrator`, hoy `4318a75`.
 - `starter add` sigue haciendo `self-install` en proyectos (punto 2 de `correcciones-stack-main-2026-11-17`); no se tocó.
