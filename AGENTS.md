@@ -153,7 +153,7 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
 
 ## 6. Notas
 
-- Si el responsable pide «Implementá y verificá lo pendiente de Claude», seguí el [encargo de cierre de Claude Code](docs/verificacion-claude-code.md). Incluye la matriz F1-F5, el roadmap archivado y la entrega a main.
+- La verificación de F1-F5 en Claude Code quedó cerrada el 2026-11-18. El [resultado por ficha](docs/archive/roadmap-f1-f5/verificacion-claude-code-resultado.md) registra la evidencia, los defectos corregidos y los pendientes externos.
 
 - En Claude, el orquestador SDD (coordinación, delegación, model-routing) se entrega como
   la skill `/sdd-orchestrator` más un bloque universal en `CLAUDE.md`. Este proyecto NO
