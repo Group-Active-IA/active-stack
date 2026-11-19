@@ -14,7 +14,7 @@ Que Active Stack permita trabajar en equipo de forma automática en un proyecto 
 | Persona | Usuario de GitHub | Carril |
 |---|---|---|
 | Matías | `(TBD)` | Verificación de Engram Cloud, entrega, ClickUp |
-| Emiliano | `(TBD)` | Roadmap, contrato, motor de memoria, documentación |
+| Emiliano | `cachi001` | Roadmap, contrato, motor de memoria, documentación |
 | Giuliano | `(TBD)` | Apoyo en R-01, instrucciones y hooks de Engram, verify |
 | Gianfranco | `(TBD)` | Fundación en modo equipo, permisos |
 | Juan Cruz (dueño) | `(TBD)` | Revisión, integración, pilotos |
@@ -33,7 +33,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-03 | Giuliano | — | omitida | | | Absorbida en R-11, R-12 y el piloto R-24 |
 | R-04 | Gianfranco | — | omitida | | | Absorbida en R-10 y R-18 |
 | R-05 | Juan Cruz | R-01 | pendiente | | | Puerta G0 (solo Engram) |
-| R-06 | Emiliano | — | pendiente | | | |
+| R-06 | Emiliano | — | mergeada | [#30](https://github.com/Group-Active-IA/active-stack/pull/30) | `1cfe767` | Contrato y validador `team.py`; desbloquea R-09, R-10 y R-11 |
 | R-07 | Giuliano | R-05 | pendiente | | | |
 | R-08 | Emiliano | R-05 | pendiente | | | |
 | R-09 | Emiliano | R-06 | pendiente | | | Repo externo |
@@ -68,10 +68,11 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 
 | ID | Decisión | Fecha |
 |---|---|---|
+| DA-01 | Opción (a): se versionan `team.json` y los vínculos de fichas con ClickUp; observaciones de cada sincronización, `team.local.json` y `me.local.json` quedan locales | 2026-11-19 |
 | DA-10 | Canal de avisos: grupo de WhatsApp del equipo; aprueba cambios de diseño: Juan Cruz | 2026-11-19 |
 
 ## Punto de reanudación
 
-**Siguiente acción:** arrancan **en paralelo** R-01 (Matías, con apoyo de Giuliano: verificación de Engram Cloud) y R-06 (Emiliano: contrato del modo equipo). Gianfranco empieza cuando R-06 esté `mergeada` (R-10). Cuando R-01 esté `mergeada`, el dueño resuelve R-05 y se habilita la parte de Engram.
+**Siguiente acción:** R-06 quedó `mergeada`: arrancan R-09 (Emiliano), R-10 (Gianfranco) y R-11 (Matías). R-01 (Matías, con apoyo de Giuliano: verificación de Engram Cloud) sigue en curso. Cuando R-01 esté `mergeada`, el dueño resuelve R-05 y se habilita la parte de Engram.
 **Bloqueos vigentes:** ninguno.
 **Autorizaciones vigentes:** ninguna de excepción.
