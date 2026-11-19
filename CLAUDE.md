@@ -153,6 +153,8 @@ El nivel de autonomía es proporcional a la criticidad del paquete tocado.
 
 ## 6. Notas
 
+- Si alguien dice «soy <nombre>, quiero implementar lo mío» (o «continuar» dentro de ese trabajo), seguí la [guía de implementación en equipo](docs/guia-implementacion-equipo.md): detecta qué ficha toca, en qué orden y si una dependencia de otra persona sigue pendiente. El encargo anterior de verificación de Claude Code está [archivado](docs/archive/roadmap-f1-f5/verificacion-claude-code.md).
+
 - La verificación de F1-F5 en Claude Code quedó cerrada el 2026-11-18. El [resultado por ficha](docs/archive/roadmap-f1-f5/verificacion-claude-code-resultado.md) registra la evidencia, los defectos corregidos y los pendientes externos.
 
 - En Claude, el orquestador SDD (coordinación, delegación, model-routing) se entrega como
