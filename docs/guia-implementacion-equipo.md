@@ -73,7 +73,7 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
 ## 6. Repos externos y PR
 
 - Si la ficha dice «repo externo», el trabajo se hace en **ese repositorio** (`Group-Active-IA/active-orchestrator`, `Group-Active-IA/roadmap-generator`, `JuanCruzRobledo/agent-instruction`): clonar o usar un fork, crear la rama allí y **abrir el PR en ese repo**, aunque la persona no tenga permiso de escritura. **Juan Cruz acepta el PR.**
-- El cambio de `ref` en `harnesses.yaml` (SHA completo) **no** lo hace el implementador: lo hace el dueño en R-20 (salvo R-09 y R-10, que fijan antes los `ref` de su propio repo por decisión DA-06).
+- El cambio de `ref` en `harnesses.yaml` (SHA completo) **no** lo hace el implementador: lo hace el dueño en R-20, en un commit propio y con el test de catálogo. Los tres repos externos ya están fijados por SHA: el cambio de un PR mergeado no llega a nadie hasta ese bump.
 - Siempre que se cite un test o decisión de un plan, con prefijo: `[EQ]` o `[EN]`.
 - Antes de abrir el PR: criterios verificados con evidencia, `go test ./... -count=1` y `go vet ./...` donde corresponda, espejo `CLAUDE.md`/`AGENTS.md` sincronizado si se tocó alguno, y el PR enlaza la ficha y su informe.
 

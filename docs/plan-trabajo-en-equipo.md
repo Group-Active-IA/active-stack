@@ -40,7 +40,7 @@ Leídos el 2026-11-19. El implementador debe reverificarlos antes de editar.
 | H1 | La rama actual (`propose/codex-strict-compat`) está **por detrás de `main`** (`684ad50`, v0.8.1): no contiene `assets/skills/active-delivery` ni `active-roadmap`, y fija `active-orchestrator` en otro SHA (`63c5131…` vs `09c841e…` de la guía). Implementar desde `main`. | `git ls-tree main`, `harnesses.yaml` |
 | H2 | `active-delivery` y `active-roadmap` son skills **embebidas** (`source: { method: embed }`), `agents: [codex, claude]`. `active-delivery` va en Lite y Full; `active-roadmap` solo en Full. Viven en `assets/skills/active-delivery/` (con `references/handoff.md`, `roadmap-reconciliation.md`) y `assets/skills/active-roadmap/` (con `roadmap.py`, `references/clickup-actions.md` y tests Python). | `harnesses.yaml` en `main` |
 | H3 | `active-orchestrator` está declarado para **los cuatro agentes** (`claude, codex, opencode, antigravity`), `install_modes: [full]`, fijado por SHA. Un cambio ahí **llega a OpenCode y Antigravity**. | `harnesses.yaml:92-101` |
-| H4 | `roadmap-generator` y `agent-instruction` están en `ref: latest` y **sin campo `agents`** (aplican a todos). Un cambio en sus repos llega a todos los usuarios en la siguiente instalación o actualización, **sin pasar por el test del catálogo**. | `harnesses.yaml:122-137` |
+| H4 | `roadmap-generator` y `agent-instruction` **ya están fijados por SHA en `main`** (`d603877…` y `71b9aa8…`, verificado el 2026-11-19; en la rama vieja figuraban como `latest`) y **sin campo `agents`** (aplican a todos). Un cambio en sus repos **solo llega a los usuarios cuando se actualiza el `ref` en `harnesses.yaml`**. | `harnesses.yaml` en `main` |
 | H5 | `roadmap-generator` vive en `Group-Active-IA/roadmap-generator` y `agent-instruction` en `JuanCruzRobledo/agent-instruction`: repos externos, un PR en cada uno. | `harnesses.yaml` |
 | H6 | `AGENTS.md` del **proyecto** lo leen Codex **y también OpenCode/Antigravity**. Si las reglas de equipo viven ahí, deben funcionar (con una convención manual) en clientes que no tienen `active-delivery`. | guía, lámina 24 |
 | H7 | La guía declara: ODD con traspaso único por ficha en `knowledge-base/entrega/<id>.md`; roadmap en `CHANGES.md` + `.active-stack/roadmap.json` (modo y destino) + `roadmap-state.json` (vínculos y observaciones); estado de fundación en `.active-orchestrator-state.json`. | guía, láminas 11 y 14 |
@@ -218,7 +218,7 @@ Esta modificación toca piezas que **comparten** otros agentes. Reglas para el i
 | `roadmap-generator`, `agent-instruction` | Todos (H4) | Los campos de la ficha son markdown plano; el verificador no depende de ninguna herramienta de agente. Reglas de equipo del proyecto con el **fallback manual** de 3.4 (H6). Las fichas viejas siguen siendo válidas. |
 | `permissions` | Claude, Codex, OpenCode | `deny` de push a `main` en Claude y Codex (primer alcance). OpenCode: mismo `deny` si su overlay lo soporta `(TBD)`; Antigravity `(TBD)` si tiene overlay. |
 | Instalaciones sin modo equipo | Todos | **Byte a byte idénticas** a las actuales, en los cuatro agentes. |
-| `ref: latest` (H4) | Todos | **Fijar ambos repos por SHA** antes de integrar este cambio, para que lo que reciben OpenCode/Antigravity sea revisable y tenga test de catálogo. |
+| `ref` por SHA (H4) | Todos | Ya están fijados. Después de mergear un PR en un repo externo, se actualiza el `ref` (SHA completo) en un commit propio con test de catálogo; hasta entonces nadie recibe el cambio. |
 
 Consecuencia declarada: quien use OpenCode o Antigravity **recibe las reglas y la convención**, pero no el flujo guiado. Su protección real es `deny`/protección de `main`. Extenderles el flujo es un change aparte (Pendientes).
 
@@ -283,7 +283,7 @@ Define y documenta: `team.json`, archivos locales, campos de ficha, handoff y re
 
 ### Fase 2 · `roadmap-generator` (repo externo; MEDIO)
 
-Fichas con los campos de 3.5, verificador y reparto editable. **PR en el repo externo primero**; luego fijar el `ref` por SHA en `harnesses.yaml` en un commit propio con su test de catálogo (H4).
+Fichas con los campos de 3.5, verificador y reparto editable. **PR en el repo externo primero**; luego actualizar el `ref` (SHA completo) en `harnesses.yaml` en un commit propio con su test de catálogo (H4).
 
 **Pruebas (repo externo):** fichas con dependencias reales (ciclo, zona solapada, cadena de 3 PR, ficha sin resultado, responsable inexistente) · ficha vieja intacta · `N` mayor y menor que el paralelismo real · replanificar sin tocar fichas empezadas · verificador sin red.
 
@@ -376,7 +376,7 @@ Solo con autorización del responsable; repo y lista de ClickUp **descartables**
 |---|---|
 | El agente se saltea el flujo (instrucción, no candado) | `deny` técnico (Fase 6), protección de `main` ofrecida, V6 mide el cumplimiento |
 | Un humano pushea a `main` | Solo lo frena GitHub; se ofrece la protección y se avisa si falta |
-| Cambios en repos externos llegan a todos los agentes sin revisión (`latest`) | Fijar por SHA antes de integrar (T-F7-3) |
+| Un cambio en un repo externo llega a todos los agentes sin revisión | Los `ref` ya están fijados por SHA; solo se actualizan con un commit propio y test de catálogo (T-F7-3) |
 | OpenCode/Antigravity leen reglas que mencionan skills que no tienen | Fallback manual en la sección (H6, 3.4) |
 | Conflictos de merge por estado compartido (`roadmap-state.json`, `CHANGES.md`) | V1; estado derivado de rama/PR/ClickUp; observaciones locales; un archivo por ficha para el handoff |
 | Nombres en un repo público | Pregunta explícita; modo local con solo la cantidad (D5) |
