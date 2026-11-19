@@ -73,6 +73,6 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 
 ## Punto de reanudación
 
-**Siguiente acción:** R-06 quedó `mergeada`: arrancan R-09 (Emiliano), R-10 (Gianfranco) y R-11 (Matías). R-01 (Matías, con apoyo de Giuliano: verificación de Engram Cloud) sigue en curso. Cuando R-01 esté `mergeada`, el dueño resuelve R-05 y se habilita la parte de Engram.
+**Siguiente acción:** R-06 quedó `mergeada`: arrancan R-09 (Emiliano), R-10 (Gianfranco) y R-11 (Matías). R-01 (Matías, con apoyo de Giuliano: verificación de Engram Cloud) sigue pendiente. Cuando R-01 esté `mergeada`, el dueño resuelve R-05 y se habilita la parte de Engram.
 **Bloqueos vigentes:** ninguno.
 **Autorizaciones vigentes:** ninguna de excepción.
