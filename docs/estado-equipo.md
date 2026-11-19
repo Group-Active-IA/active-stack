@@ -15,7 +15,7 @@ Que Active Stack permita trabajar en equipo de forma automática en un proyecto 
 |---|---|---|
 | Matías | `(TBD)` | Verificación de Engram Cloud, entrega, ClickUp |
 | Emiliano | `(TBD)` | Roadmap, contrato, motor de memoria, documentación |
-| Giuliano | `(TBD)` | Instrucciones y hooks de Engram, verify |
+| Giuliano | `(TBD)` | Apoyo en R-01, instrucciones y hooks de Engram, verify |
 | Gianfranco | `(TBD)` | Fundación en modo equipo, permisos |
 | Juan Cruz (dueño) | `(TBD)` | Revisión, integración, pilotos |
 
@@ -23,17 +23,17 @@ El usuario de GitHub sirve para confirmar la identidad de quien dice «soy X». 
 
 ## Estado por ficha
 
-Estados: `pendiente` · `en curso` · `PR abierto` · `mergeada` · `bloqueada`.
-Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` acá y en Git.
+Estados: `pendiente` · `en curso` · `PR abierto` · `mergeada` · `bloqueada` · `omitida`.
+Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` acá y en Git. Las `omitida` no cuentan.
 
 | Ficha | Responsable | Depende de | Estado | PR / repo | SHA de merge | Nota |
 |---|---|---|---|---|---|---|
 | R-01 | Matías | — | pendiente | | | |
-| R-02 | Emiliano | — | pendiente | | | |
-| R-03 | Giuliano | — | pendiente | | | |
-| R-04 | Gianfranco | — | pendiente | | | |
-| R-05 | Juan Cruz | R-01, R-02, R-03, R-04 | pendiente | | | Puerta G0 |
-| R-06 | Emiliano | R-05 | pendiente | | | |
+| R-02 | Emiliano | — | omitida | | | Absorbida: VE-1 pasa al primer paso de R-06 |
+| R-03 | Giuliano | — | omitida | | | Absorbida en R-11, R-12 y el piloto R-24 |
+| R-04 | Gianfranco | — | omitida | | | Absorbida en R-10 y R-18 |
+| R-05 | Juan Cruz | R-01 | pendiente | | | Puerta G0 (solo Engram) |
+| R-06 | Emiliano | — | pendiente | | | |
 | R-07 | Giuliano | R-05 | pendiente | | | |
 | R-08 | Emiliano | R-05 | pendiente | | | |
 | R-09 | Emiliano | R-06 | pendiente | | | Repo externo |
@@ -45,7 +45,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-15 | Emiliano | R-08, R-01 | pendiente | | | |
 | R-16 | Giuliano | R-15, R-14 | pendiente | | | ALTO |
 | R-17 | Giuliano | R-08, R-16 | pendiente | | | ALTO |
-| R-18 | Gianfranco | R-11, R-04, R-01, R-16 | pendiente | | | ALTO |
+| R-18 | Gianfranco | R-11, R-01, R-16 | pendiente | | | ALTO |
 | R-19 | Gianfranco | R-10, R-17 | pendiente | | | Repos externos |
 | R-20 | Juan Cruz | R-09, R-10, R-12, R-14, R-16, R-17, R-18, R-19 | pendiente | | | Integración |
 | R-21 | Giuliano | R-20 | pendiente | | | |
@@ -72,6 +72,6 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 
 ## Punto de reanudación
 
-**Siguiente acción:** el dueño abre la Ola 0 avisando al grupo para que Matías, Emiliano, Giuliano y Gianfranco tomen R-01 a R-04 en paralelo. Cuando las cuatro estén `mergeada`, el dueño resuelve R-05.
+**Siguiente acción:** arrancan **en paralelo** R-01 (Matías, con apoyo de Giuliano: verificación de Engram Cloud) y R-06 (Emiliano: contrato del modo equipo). Gianfranco empieza cuando R-06 esté `mergeada` (R-10). Cuando R-01 esté `mergeada`, el dueño resuelve R-05 y se habilita la parte de Engram.
 **Bloqueos vigentes:** ninguno.
 **Autorizaciones vigentes:** ninguna de excepción.

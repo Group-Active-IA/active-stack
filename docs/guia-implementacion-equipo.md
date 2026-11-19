@@ -45,7 +45,7 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
    Si las fuentes **no coinciden** (por ejemplo, el PR figura mergeado pero el estado dice `PR abierto`), **decirlo** y no continuar hasta que el dueño actualice el estado.
 3. Elegir la **primera ficha de la persona** cuyo estado sea `en curso` (retomar) o `pendiente`.
 4. **Verificar dependencias.** La ficha puede empezar solo si **todas** sus dependencias están `mergeada` en el estado **y** el merge se confirma en Git (la rama base contiene el SHA registrado, o el PR figura mergeado). Casos:
-   - **Todas mergeadas** → seguir con la sección 4.
+   - **Todas mergeadas** (las dependencias `omitida` no cuentan) → seguir con la sección 4.
    - **Alguna no está mergeada** → **BLOQUEAR**. Decir de forma concreta: «No podés empezar R-xx todavía: depende de R-yy (de <persona>), que está en estado `<estado>`». **No** escribir código, no crear ramas, no «adelantar lo fácil».
    - Con la ficha bloqueada, ofrecer: (a) otra ficha propia que **no** esté bloqueada, (b) revisar el PR de quien bloquea si está abierto, (c) esperar y avisarle al dueño. Si la persona insiste en empezar igual, responder que solo avanza con una **autorización de excepción** escrita por el dueño en [estado-equipo.md](estado-equipo.md); sin esa línea, no se adelanta.
    - **Estado `bloqueada`** en el estado → leer la nota y avisar.
@@ -111,4 +111,4 @@ Cuando se cumplen los criterios:
 
 ## 11. Mensaje listo para el grupo
 
-> Equipo: el repo ya tiene la guía de implementación. Bajen `main`, abran Claude Code o Codex en el repo y escriban: **«Soy <su nombre>, quiero implementar lo mío»**. El agente les dice qué ficha les toca y en qué orden; si depende de alguien que no terminó, los frena. **Primera tanda, en paralelo:** Matías (R-01), Emiliano (R-02), Giuliano (R-03), Gianfranco (R-04). Cuando terminen, me pasan el `.md` del informe de cierre por acá. Yo reviso y acepto cada PR, y recién ahí le aviso a quien sigue.
+> Equipo: ya está la guía en `main`. Bajen el repo, abran Claude Code o Codex y escriban **«Soy <su nombre>, quiero implementar lo mío»**. El agente los guía. **Arrancan dos en paralelo:** Matías con R-01 (prueba de Engram Cloud, con apoyo de Giuliano) y Emiliano con R-06 (contrato del modo equipo). Gianfranco, tu agente te va a decir que esperes a que Emiliano termine. Al terminar, el agente arma un `.md`: pásenmelo acá y yo reviso y acepto su PR.
