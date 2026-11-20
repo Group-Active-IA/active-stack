@@ -8,10 +8,9 @@ import (
 
 // [EN] Fase 2 (R-13): contract of the engram-cloud section text.
 
-// engramCloudMaxBytes is the size cap of the section (T-F2-9). (TBD) The plan
-// leaves the number open and it belongs to the owner (DA-02, R-13 card): this
-// is the recommended value, measured against a 1.8 KB draft, and it changes
-// only by an explicit decision.
+// engramCloudMaxBytes is the size cap of the section (T-F2-9). The plan left the
+// number open (TBD); it was confirmed on 2026-11-20 (R-14 card, decision on the
+// R-13 cap). It changes only by an explicit decision.
 const engramCloudMaxBytes = 2500
 
 func engramCloudText(t *testing.T) string {
