@@ -95,6 +95,24 @@ var tableES = map[string]string{
 	"backup.source.install": "instalación",
 	"backup.source.sync":    "sincronización",
 	"backup.source.upgrade": "actualización",
+
+	// memory.* — "active-stack memory branch" ([EN] Fase 4).
+	"memory.usage":                      "Uso: active-stack memory branch [--project <ruta>] [--json] [--lang en|es]",
+	"memory.label.mode":                 "Modo de memoria",
+	"memory.label.tagged":               "Etiqueta",
+	"memory.label.branch":               "Rama",
+	"memory.label.slug":                 "Slug",
+	"memory.value.yes":                  "sí",
+	"memory.value.no":                   "no",
+	"memory.value.no_repo":              "(no es un repositorio Git)",
+	"memory.value.none":                 "(ninguno)",
+	"memory.warn.marker_invalid":        "Se ignora %s: no es JSON válido. El modo de memoria queda en off.",
+	"memory.warn.marker_unknown_policy": "Se ignora %s: memory_policy %q desconocida. El modo de memoria queda en off.",
+	"memory.error.unknown_subcommand":   "Subcomando de memory desconocido: %q.",
+	"memory.error.no_directory":         "No existe el directorio: %s",
+	"memory.error.git_missing":          "Git no está instalado o no está en el PATH.",
+	"memory.error.empty_slug":           "La rama %q no tiene letras ni números para armar su etiqueta. Renombrá la rama.",
+	"memory.error.failed":               "No se pudo leer el estado de Git: %v",
 }
 
 func init() {
