@@ -12,7 +12,7 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
 2. Escribí: **«Soy Matías, quiero implementar lo mío»** (con tu nombre).
 3. El agente te dice qué ficha te toca, en qué orden y, si depende de otra persona que no terminó, **te avisa y no te deja empezar**.
 4. Implementás con el agente. Cuando termina, genera tu **informe de cierre** (un `.md` corto).
-5. **El informe no va al dueño: va a quien tu ficha desbloquea.** Queda en el PR y, al mergearse, en `main`. Avisale por el grupo a esa persona (el agente te dice a quién). Juan Cruz solo mergea el PR.
+5. **El informe no va al dueño: va a quien tu ficha desbloquea.** Queda en el PR y, al mergearse, en `main`. **No hace falta pasarlo por WhatsApp**: cuando el PR se mergea, el agente de esa persona lo encuentra en el repo. Juan Cruz solo mergea el PR.
 6. El agente te dice cuál es tu próxima ficha y de quién espera. Cuando el PR de esa dependencia figure mergeado en Git, empezás solo: repetí desde el paso 2.
 
 ---
@@ -97,9 +97,9 @@ Cuando se cumplen los criterios:
 
 1. Verificar todos los criterios con evidencia y dejar el traspaso `docs/equipo/fichas/R-xx.md` completo.
 2. Generar el **informe de cierre** `docs/equipo/informes/R-xx.md` desde la [plantilla](equipo/informes/PLANTILLA.md). Es **corto** (menos de una pantalla): qué ficha, enlace al PR y repo, qué se hizo, cómo verificarlo, **qué tiene que hacer el dueño** (revisar el PR, decidir algo, aceptar), a quién desbloquea y decisiones que necesitan al dueño.
-3. Con el pedido de la persona: commit, push y PR (informe incluido, y su fila del estado en `PR abierto`). **Decir siempre a quién va cada informe**, con esta frase exacta por destinatario: **«Este informe va para <persona> (ficha R-yy)»**. Los destinatarios salen de la tabla del estado: son las fichas cuya columna «Depende de» incluye la que se cierra (si hay varias, una línea por cada una; si la persona cierra más de un informe, una línea por informe y destinatario). Si ninguna ficha depende de esta, decir **«Este informe no va para nadie: solo mergea Juan Cruz»**. Después: **«Avisale por el grupo a esas personas; Juan Cruz solo tiene que mergear»**. El PR lleva en el cuerpo el enlace al informe y qué se verificó.
+3. Con el pedido de la persona: commit, push y PR (informe incluido, y su fila del estado en `PR abierto`). **Decir siempre a quién va cada informe**, con esta frase exacta por destinatario: **«Este informe va para <persona> (ficha R-yy)»**. Los destinatarios salen de la tabla del estado: son las fichas cuya columna «Depende de» incluye la que se cierra (si hay varias, una línea por cada una; si la persona cierra más de un informe, una línea por informe y destinatario). Si ninguna ficha depende de esta, decir **«Este informe no va para nadie: solo mergea Juan Cruz»**. Después: **«El informe queda en el PR y en `main` al mergear; no hace falta pasarlo por el grupo»**. El PR lleva en el cuerpo el enlace al informe y qué se verificó.
 4. Actualizar el «Punto de reanudación» del traspaso, guardar lo durable en Engram y **recomendar compactar**.
-5. Informar la **siguiente ficha** de la persona, de quién espera y qué debe ocurrir antes (por ejemplo: «tu próxima ficha es R-12; espera a que se mergee tu PR de R-11»). **No empezarla** hasta que el PR de esa dependencia figure mergeado en Git. Si falta algo, el agente de la siguiente ficha lee el informe de la anterior desde `main`.
+5. Informar la **siguiente ficha** de la persona, de quién espera y qué debe ocurrir antes (por ejemplo: «tu próxima ficha es R-12; espera a que se mergee tu PR de R-11»). **No empezarla** hasta que el PR de esa dependencia figure mergeado en Git; para enterarse, la persona escribe «continuar» y el agente lo verifica en Git y lee el informe desde `main`. Si falta algo, el agente de la siguiente ficha lee el informe de la anterior desde `main`.
 
 ## 10. Para el dueño (Juan Cruz)
 
