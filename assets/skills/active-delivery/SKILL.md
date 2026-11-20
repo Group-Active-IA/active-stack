@@ -3,6 +3,7 @@ name: active-delivery
 description: >-
   Choose ODD or SDD for one unit of project work. Resume ODD from project evidence,
   or carry that evidence into the existing OpenSpec flow with user approval.
+  In team projects, identify the member, find their fichas and manage delivery.
 license: Apache-2.0
 metadata:
   version: "1.0"
@@ -14,6 +15,16 @@ Use this skill at the start or resumption of a unit of work, or when its scope
 changes enough to reconsider the delivery mode. Foundation defines the project
 setup. This skill chooses the delivery mode for the current work. Follow project
 governance, authorization, TDD and verification requirements in either mode.
+
+## Start in a team project
+
+In a new session or when resuming, use the bundled team validator from the
+project root. In team mode, follow [team delivery](references/team-delivery.md)
+to confirm identity, show the member's assigned work, and hand off to the
+appropriate ficha workspace before making changes. A person in consultation
+mode can inspect assignments, dependencies and reviews. The individual
+workflow below applies as before when the validator reports no team mode.
+Consult the reference for missing, invalid or unverified team configuration.
 
 ## Choose the delivery mode
 
@@ -75,7 +86,8 @@ an existing change instead of duplicating it.
 3. Implement and verify within the agreed scope. Update the existing record when
    continuity still depends on it. Keep OpenSpec out of ODD, including when
    resuming. Reassess the mode if impact or coordination changes, and surface any
-   newly applicable governance gate before extending the scope.
+   newly applicable governance gate before extending the scope. In team mode,
+   maintain the existing ficha handoff even when nobody continues.
 
 ## Reconcile the roadmap
 

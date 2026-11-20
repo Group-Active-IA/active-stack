@@ -1,7 +1,7 @@
 # Delivery handoff
 
 Use one Markdown record for each unit that needs ODD continuity or a confirmed
-promotion. Save it at `knowledge-base/entrega/<id>.md`. Use the stable roadmap
+promotion, and for every ficha in team mode. Save it at `knowledge-base/entrega/<id>.md`. Use the stable roadmap
 ID when available. If the ID is unsuitable as a filename, agree on a safe,
 unique basename and retain the original ID inside the record. Keep the file
 under the project root. Check ownership and identity before updating an
@@ -53,6 +53,18 @@ appropriate. The project record remains sufficient to resume without Engram.
 - Trigger, approval and intended OpenSpec action
 - Existing change reference and authoritative status, once checked
 ```
+
+## Team fields
+
+For team work, include these six fields in the same Markdown file, in ODD
+and SDD. Keep each field even when a value is pending or there is no successor.
+
+- **Result** — Outcome and current status of the ficha.
+- **PR and SHA** — URL and observed SHA, or pending publication.
+- **Verification** — How to reproduce the checks and where their evidence lives.
+- **Remaining work** — Steps and known gaps.
+- **Next owner** — Confirmed member ID or nobody assigned.
+- **Blockers** — Dependencies, outstanding review or approvals, or none observed.
 
 On resumption, compare current work with the recorded evidence. An unchanged
 HEAD alone does not validate tests against edited files. Preserve historical

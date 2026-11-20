@@ -38,7 +38,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-08 | Emiliano | R-05 | PR abierto | [#44](https://github.com/Group-Active-IA/active-stack/pull/44) | | `internal/memory` y `active-stack memory branch`, T-F4-1 a T-F4-12. Colisión de slugs `(TBD)` hasta que decida el dueño; desbloquea R-15 y, con R-16, R-17 |
 | R-09 | Emiliano | R-06 | pendiente | | | Repo externo |
 | R-10 | Gianfranco | R-06 | mergeada | [orchestrator #7](https://github.com/Group-Active-IA/active-orchestrator/pull/7) · [agent-instruction #2](https://github.com/JuanCruzRobledo/agent-instruction/pull/2) · [stack #34](https://github.com/Group-Active-IA/active-stack/pull/34) | orchestrator `32142a9` · agent-instruction `c9f371c` · stack `17a276d` | Repos externos mergeados desde forks. El bump del `ref` en `harnesses.yaml` queda para R-20. Sin validador en OpenCode/Antigravity (la fase valida con reglas escritas) |
-| R-11 | Matías | R-06 | pendiente | | | |
+| R-11 | Matías | R-06 | PR abierto | [PR #46](https://github.com/Group-Active-IA/active-stack/pull/46) | | [Informe](equipo/informes/R-11.md) |
 | R-12 | Matías | R-11 | pendiente | | | |
 | R-13 | Giuliano | R-07 | mergeada | [#45](https://github.com/Group-Active-IA/active-stack/pull/45) | `f8d677e` | Sección `engram-cloud` + golden de `Compose` de las ocho variantes. [Informe](equipo/informes/R-13.md) |
 | R-14 | Giuliano | R-13 | PR abierto | [#47](https://github.com/Group-Active-IA/active-stack/pull/47) | | Pruebas de coherencia T-F3-1 a T-F3-4; corrige la clave `opsx` de R-13; DA-11 verificado. [Informe](equipo/informes/R-14.md) |

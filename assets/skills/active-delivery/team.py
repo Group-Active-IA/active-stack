@@ -460,6 +460,9 @@ def _build_parser():
     validate.add_argument("--file", help="valida este archivo como team.json (solo el contenido)")
     ficha = sub.add_parser("ficha", help="valida los campos de una ficha en JSON")
     ficha.add_argument("--file", required=True, help="JSON con los campos de la ficha")
+    import delivery
+
+    delivery.add_commands(sub)
     return parser
 
 
@@ -478,7 +481,7 @@ def main(argv=None):
             result = {"ok": not errors, "errors": errors}
         else:
             result = validate_project(args.root)
-    else:
+    elif args.command == "ficha":
         fields, error = _read_json(args.file)
         if error:
             result = {"ok": False, "errors": [error], "warnings": []}
@@ -490,7 +493,10 @@ def main(argv=None):
                 if not team_error and isinstance(loaded, dict):
                     team_doc = loaded
             result = validate_ficha(fields, team_doc)
+    else:
+        import delivery
 
+        result = delivery.run(args)
     _emit(result)
     return 0 if result.get("ok") else 1
 
