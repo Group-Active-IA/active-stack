@@ -97,6 +97,12 @@ func checkSkill(h model.Harness, adapter Adapter, homeDir string) []Check {
 // one the config installer writes (internal/harness/config: Inject uses
 // "sdd-orchestrator" for the orchestrator, installSection uses h.ID).
 func checkConfig(h model.Harness, adapter Adapter, homeDir string) []Check {
+	// A config harness that is not the orchestrator and has no registered
+	// section fragment installs as an explicit no-op: there is nothing to verify
+	// and no marker was written (engram-cloud before its section exists).
+	if h.ID != "sdd-orchestrator" && !config.HasSectionFragment(h.ID) {
+		return nil
+	}
 	if h.ID == "sdd-orchestrator" && adapter.Agent() == model.AgentCodex && adapter.ConfigDelivery() == model.ConfigDeliveryManagedSkill {
 		return []Check{{
 			ID:          fmt.Sprintf("config:%s:%s", h.ID, adapter.Agent()),

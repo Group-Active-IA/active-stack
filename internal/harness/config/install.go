@@ -13,7 +13,11 @@ import (
 // each adapter's instructions file, taking a backup first.
 //
 // Harnesses registered in sectionFragments are injected as their own section
-// (see installSection); everything else is the sdd-orchestrator path.
+// (see installSection). The sdd-orchestrator harness takes the orchestrator
+// path. Any other config harness is an explicit no-op: it writes and replaces
+// nothing and returns a warning that names it, so a catalog entry can exist
+// before its section fragment does (engram-cloud, phase 1) without degrading
+// the orchestrator or failing the install.
 //
 // Returns an error if:
 //   - h.Type is not model.HarnessConfig
@@ -22,6 +26,10 @@ import (
 func Install(h model.Harness, adapters []AgentAdapter, homeDir string) (Result, error) {
 	return InstallWith(h, adapters, homeDir, InstallOptions{})
 }
+
+// orchestratorHarnessID is the only config harness that takes the orchestrator
+// install path; every other config harness needs a sectionFragments entry.
+const orchestratorHarnessID = "sdd-orchestrator"
 
 // InstallOptions tunes InstallWith for the layered Claude delivery.
 type InstallOptions struct {
@@ -50,6 +58,14 @@ func InstallWith(h model.Harness, adapters []AgentAdapter, homeDir string, opts 
 
 	if fragment, ok := sectionFragments[h.ID]; ok {
 		return installSection(h, fragment, adapters, homeDir)
+	}
+
+	if h.ID != orchestratorHarnessID {
+		return Result{
+			AllAlready: true,
+			Warnings: []string{fmt.Sprintf(
+				"config harness %q has no registered section fragment yet: nothing was written", h.ID)},
+		}, nil
 	}
 
 	var warnings []string

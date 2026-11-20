@@ -39,6 +39,15 @@ var ownedSectionIDs = map[string]bool{
 	UniversalSectionID:      true,
 }
 
+// HasSectionFragment reports whether a config harness has its own registered
+// section fragment. A config harness that is neither the orchestrator nor
+// registered here installs as an explicit no-op (see Install), so callers such
+// as verify must not expect a marker for it.
+func HasSectionFragment(id string) bool {
+	_, ok := sectionFragments[id]
+	return ok
+}
+
 // isOwnedSection reports whether id is a section this installer manages: either
 // an orchestrator-nested one (ownedSectionIDs) or a standalone harness section
 // registered in sectionFragments (e.g. design-mockups). Deriving the second set
