@@ -1,7 +1,7 @@
 # Estado del trabajo en equipo
 
-> **Único escritor: Juan Cruz (dueño).** Nadie más edita este archivo ni en su rama ni en su PR: así no hay conflictos de merge. Las personas informan su avance con el informe de cierre (`docs/equipo/informes/`) y el dueño actualiza esta tabla **al aceptar cada PR**.
-> Los agentes **leen** este archivo desde `origin/main` (no desde una copia local desactualizada) y lo contrastan con `git` y `gh`. Si no coinciden, avisan.
+> **Cada responsable edita solo su propia fila**, en su PR, y completa la fila de la dependencia ya mergeada (estado, PR, SHA) como primer paso de su ficha. El dueño no actualiza esta tabla; solo escribe las «Autorizaciones de excepción».
+> Los agentes **leen** este archivo desde `origin/main` y lo contrastan con `git` y `gh`. **La autoridad de «mergeada» es Git/`gh`**; si la tabla va atrasada, se corrige la fila y se sigue.
 
 **Última actualización:** 2026-11-19 · **Roadmap:** [roadmap-implementacion-equipo.md](roadmap-implementacion-equipo.md) · **Guía:** [guia-implementacion-equipo.md](guia-implementacion-equipo.md)
 
