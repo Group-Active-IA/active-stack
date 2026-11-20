@@ -39,6 +39,7 @@ def crear_repo(base, marcador=True):
 
 def entorno(base):
     env = dict(os.environ)
+    env["R05_LOG"] = str(base / "hook.log")
     env["ENGRAM_DATA_DIR"] = str(base / "db")
     env["ENGRAM_CLOUD_AUTOSYNC"] = "0"
     return env
@@ -51,7 +52,8 @@ def config(base, modo):
     hooks = []
     if modo.startswith("hook") or modo.startswith("ajusteA"):
         script = "hook.py" if modo.startswith("hook") else "hook_ajuste_a.py"
-        hooks.append({"type": "command", "command": PY, "args": ["-B", str(PROTO / script)]})
+        ruta = Path(__file__).with_name("hook_log.py") if modo == "hooklog" else PROTO / script
+        hooks.append({"type": "command", "command": PY, "args": ["-B", str(ruta)]})
     if modo.endswith("+sim") or modo == "proxy+sim":
         hooks.append({"type": "command", "command": PY, "args": ["-B", str(Path(__file__).with_name("sim_plugin_hook.py"))]})
     if modo.startswith("proxy"):

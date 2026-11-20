@@ -41,7 +41,18 @@ Plugin real 0.1.22 (hooks `SessionStart` + `PreToolUse` oficiales) más la reesc
 | Ajuste A | — | 3/4 (y descarta `type`: queda `manual`) |
 | Proxy B | **6/6** | 3/3 (una corrida no terminó de escribirse) |
 
-Lectura honesta: con el plugin real **no hay conflicto de `session_id`** (el hallazgo con el sustituto era un artefacto). Pero la doc no especifica el orden de hooks paralelos que devuelven `updatedInput`, y bajo carga `hook.py` perdió la etiqueta en silencio (la causa más probable es su timeout de 2 s de Git, **no demostrada**). El proxy B no depende de ese orden: por eso se mantiene DA-05 = B, con el hook como alternativa viable en cargas normales. Con una sola corrida fallida de cada tipo no se puede afirmar más; n es pequeño.
+Lectura honesta: con el plugin real **no hay conflicto de `session_id`** (el hallazgo con el sustituto era un artefacto). Pero bajo carga `hook.py` perdió la etiqueta en silencio.
+
+**Diagnóstico bajo carga (instrumentado, `hook_log.py`, `resultados/carga/`):**
+
+| Mecanismo | Secuencial | 12 corridas en paralelo |
+|---|---|---|
+| `hook.py` | 6/6 | **9/12** |
+| Proxy B | 6/6 | **12/12** |
+
+En las 3 corridas fallidas del hook, **el hook se ejecutó bien**: 0,62–0,68 s, código 0, produjo la reescritura. Aun así la fila quedó sin etiqueta. **No fue el timeout de Git** (hipótesis descartada). La reescritura del hook se descartó porque dos hooks `PreToolUse` del mismo evento corren en paralelo, ambos devuelven `updatedInput` (el del plugin ata el `session_id`) y la documentación no especifica cuál prevalece; con la carga cambian los tiempos y a veces gana el del plugin. No demostré la regla exacta (por ejemplo, «gana el último en terminar»), pero sí que es un orden no determinista y no un error del hook.
+
+**Consecuencia:** un hook de Claude **no puede ser el mecanismo de entrega** de la etiqueta mientras convivan dos hooks que reescriben la misma entrada. El proxy B actúa en la capa MCP, después de todos los hooks, y resistió la carga. DA-05 = B queda confirmada con evidencia; el hook queda descartado como vía principal, no como «alternativa viable».
 
 ### Q11 (6 pares, 3 `mem_save` por sesión, mismo prompt)
 
@@ -51,7 +62,7 @@ Lectura honesta: con el plugin real **no hay conflicto de `session_id`** (el hal
 
 ## Pendiente (no ejecutado)
 
-V8 interactivo (hook sin confiar: `claude -p` confía la carpeta); V9 con el proceso del proxy terminado entre llamadas; `mem_session_finalize` en vivo (solo unitaria); cierre completo de Q9; variante con sufijo de V11 en Claude; modelo distinto de `haiku`; causa de las pérdidas de etiqueta del hook bajo carga.
+V8 interactivo (hook sin confiar: `claude -p` confía la carpeta); V9 con el proceso del proxy terminado entre llamadas; `mem_session_finalize` en vivo (solo unitaria); cierre completo de Q9; variante con sufijo de V11 en Claude; modelo distinto de `haiku`; la regla exacta de prevalencia entre hooks paralelos (solo se demostró que es no determinista).
 
 ## Plugin local (corrección pedida por el dueño)
 
