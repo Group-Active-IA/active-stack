@@ -1,0 +1,38 @@
+{
+ "sin_B": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save",
+   "mcp__engram__mem_save",
+   "mcp__engram__mem_save"
+  ],
+  "usage": {
+   "input_tokens": 6,
+   "cache_creation_input_tokens": 17902,
+   "cache_read_input_tokens": 113909,
+   "output_tokens": 632
+  },
+  "stderr": "",
+  "result": "OK",
+  "is_error": false
+ },
+ "con_B": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save",
+   "mcp__engram__mem_save",
+   "mcp__engram__mem_save"
+  ],
+  "usage": {
+   "input_tokens": 10,
+   "cache_creation_input_tokens": 18584,
+   "cache_read_input_tokens": 203275,
+   "output_tokens": 931
+  },
+  "stderr": "",
+  "result": "OK\n\nLas tres memorias quedaron guardadas (q11a, q11b, q11c). Engram marcó conflictos pendientes de revisión en q11b y q11c, con score casi cero. Si querés, los resuelvo con `mem_judge`.",
+  "is_error": false
+ }
+}

@@ -1,0 +1,40 @@
+{
+ "sin_B": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save",
+   "mcp__engram__mem_save",
+   "mcp__engram__mem_save"
+  ],
+  "turnos": 7,
+  "usage": {
+   "input_tokens": 6,
+   "cache_creation_input_tokens": 17967,
+   "cache_read_input_tokens": 113886,
+   "output_tokens": 700
+  },
+  "stderr": "",
+  "result": "OK",
+  "is_error": false
+ },
+ "con_B": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save",
+   "mcp__engram__mem_save",
+   "mcp__engram__mem_save"
+  ],
+  "turnos": 7,
+  "usage": {
+   "input_tokens": 10,
+   "cache_creation_input_tokens": 18828,
+   "cache_read_input_tokens": 203263,
+   "output_tokens": 1093
+  },
+  "stderr": "",
+  "result": "OK",
+  "is_error": false
+ }
+}

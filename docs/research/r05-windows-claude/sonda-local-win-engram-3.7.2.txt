@@ -1,0 +1,25 @@
+engram 3.7.2
+git version 2.45.1.windows.1
+Q10 config=True checkout-original ["r01-synthetic", "config"]
+Q10 config=True different-clone ["r01-synthetic", "config"]
+Q10 config=True different-worktree ["r01-synthetic", "config"]
+Q10 config=False checkout-original ["checkout-original", "git_root"]
+Q10 config=False different-clone ["unknown", "git_remote"]
+Q10 config=False different-worktree ["checkout-original", "git_root"]
+Q7/Q8 nombres MCP ["mem_capture_passive", "mem_compare", "mem_consolidate", "mem_context", "mem_current_project", "mem_delete", "mem_doctor", "mem_get_observation", "mem_judge", "mem_judge_many", "mem_list_projects", "mem_merge_projects", "mem_pin", "mem_review", "mem_save", "mem_save_prompt", "mem_search", "mem_search_prompts", "mem_session_end", "mem_session_finalize", "mem_session_start", "mem_session_summary", "mem_stats", "mem_suggest_topic_key", "mem_timeline", "mem_unpin", "mem_update"]
+Campos de mem_capture_passive ["content", "session_id", "source"]
+Campos de mem_save ["capture_prompt", "content", "observation", "org", "project", "project_choice_reason", "recovery_token", "scope", "session_id", "title", "topic_key", "type"]
+Campos de mem_save_prompt ["content", "cwd", "directory", "project", "project_choice_reason", "recovery_token", "session_id"]
+Campos de mem_search ["all_projects", "limit", "match_mode", "org", "project", "query", "response_format", "scope", "type"]
+Campos de mem_session_finalize ["project", "project_choice_reason", "recovery_token", "session_id", "summary"]
+Campos de mem_session_summary ["content", "project", "project_choice_reason", "recovery_token", "session_id"]
+Campos de mem_update ["content", "expected_project", "find", "id", "replace", "scope", "title", "topic_key", "type"]
+Q2 IDs al guardar [1, 2, 2]
+Q2 búsqueda literal [pilotfixture] [2]
+Q5 búsqueda canary con org=alpha [1]
+Q5 búsqueda canary con org=beta [2]
+Q5 búsqueda canary con org=gamma []
+Q4 cambio a clave existente "Memory updated: #2 \"[pilotfixture] revision\" (discovery, scope=project)"
+Q4 lectura tras cambio "#1 [discovery] base\nsynthetic indexing canary 0\nSession: manual-save-r01-synthetic\nProject: r01-synthetic\nScope: project\nTopic: k\nDuplicates: 1\nRevisions: 1\nCreated: 2026-11-19 21:58:57"
+Q4 lectura tras cambio "#2 [discovery] [pilotfixture] revision\nsynthetic indexing canary 2\nSession: manual-save-r01-synthetic\nProject: r01-synthetic\nScope: project\nTopic: k\nDuplicates: 1\nRevisions: 3\nCreated: 2026-11-19 21:58:57"
+Q4 ID del guardado posterior 3

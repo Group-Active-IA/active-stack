@@ -1,0 +1,25 @@
+{
+  "python": {
+    "rc": 0,
+    "stdout": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"allow\", \"updatedInput\": {\"title\": \"[feat-r-05-x] T\", \"content\": \"Branch: feat/R-05-x \\u00b7 Author: Juan Cruz Robledo\\nC\", \"topic_key\": \"branch/feat-r-05-x/k\", \"session_id\": \"s1\"}}}",
+    "stderr": ""
+  },
+  "py": {
+    "rc": 0,
+    "stdout": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"allow\", \"updatedInput\": {\"title\": \"[feat-r-05-x] T\", \"content\": \"Branch: feat/R-05-x \\u00b7 Author: Juan Cruz Robledo\\nC\", \"topic_key\": \"branch/feat-r-05-x/k\", \"session_id\": \"s1\"}}}",
+    "stderr": ""
+  },
+  "cmd.exe": {
+    "rc": 0,
+    "stdout": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"allow\", \"updatedInput\": {\"title\": \"[feat-r-05-x] T\", \"content\": \"Branch: feat/R-05-x \\u00b7 Author: Juan Cruz Robledo\\nC\", \"topic_key\": \"branch/feat-r-05-x/k\", \"session_id\": \"s1\"}}}",
+    "stderr": ""
+  },
+  "git-bash": {
+    "rc": 0,
+    "stdout": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"allow\", \"updatedInput\": {\"title\": \"[feat-r-05-x] T\", \"content\": \"Branch: feat/R-05-x \\u00b7 Author: Juan Cruz Robledo\\nC\", \"topic_key\": \"branch/feat-r-05-x/k\", \"session_id\": \"s1\"}}}",
+    "stderr": ""
+  },
+  "repo": "<HOME>\\AppData\\Local\\Temp\\r05 espacio ktb2m8_g\\repo con espacios",
+  "marker_bytes": "{\"memory_policy\": \"cloud-branch\"}\r\n"
+}
+RESULT PASS

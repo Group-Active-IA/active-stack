@@ -1,0 +1,27 @@
+{
+ "modo": "hook",
+ "etiquetado_y_sesion_correcta": true,
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save"
+  ],
+  "turnos": 5,
+  "stderr": "",
+  "claude_session": "598a2195-9eb6-49ca-80a9-c3fcf9f4e7db",
+  "result": "OK",
+  "is_error": false
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "598a2195-9eb6-49ca-80a9-c3fcf9f4e7db",
+   "tipo": "discovery",
+   "titulo": "[feat-r-05-real] r05 canary",
+   "clave": "branch/feat-r-05-real/k",
+   "rev": 1,
+   "contenido": "Branch: feat/R-05-real · Author: Juan Cruz Robledo\ncanary r05 real"
+  }
+ ]
+}

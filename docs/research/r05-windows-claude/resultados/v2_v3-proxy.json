@@ -1,0 +1,51 @@
+{
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save",
+   "Bash",
+   "mcp__engram__mem_save",
+   "Bash",
+   "mcp__engram__mem_save"
+  ],
+  "usage": {
+   "input_tokens": 14,
+   "cache_creation_input_tokens": 18159,
+   "cache_read_input_tokens": 293560,
+   "output_tokens": 787
+  },
+  "stderr": "",
+  "result": "OK",
+  "is_error": false
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[feat-r-05-a] paso1",
+   "clave": "branch/feat-r-05-a/k",
+   "rev": 1,
+   "contenido": "Branch: feat/R-05-a · Author: Juan Cruz Robledo\nr05 paso1"
+  },
+  {
+   "id": 2,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[feat-otra] paso2",
+   "clave": "branch/feat-otra/k",
+   "rev": 1,
+   "contenido": "Branch: feat/otra · Author: Juan Cruz Robledo\nr05 paso2"
+  },
+  {
+   "id": 3,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "paso3",
+   "clave": "k",
+   "rev": 1,
+   "contenido": "Author: Juan Cruz Robledo\nr05 paso3"
+  }
+ ]
+}

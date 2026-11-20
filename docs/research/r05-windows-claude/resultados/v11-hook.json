@@ -1,0 +1,96 @@
+{
+ "resumen": {
+  "feat/una": {
+   "rc": 0,
+   "tools": [
+    "ToolSearch",
+    "mcp__engram__mem_save"
+   ],
+   "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 16979,
+    "cache_read_input_tokens": 113628,
+    "output_tokens": 343
+   },
+   "stderr": "",
+   "result": "OK. Guardé la observación en engram con title `una`, content `r05 una`, topic_key `k` y tipo `discovery`.",
+   "is_error": false
+  },
+  "feat-una": {
+   "rc": 0,
+   "tools": [
+    "ToolSearch",
+    "mcp__engram__mem_save"
+   ],
+   "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 14325,
+    "cache_read_input_tokens": 116380,
+    "output_tokens": 376
+   },
+   "stderr": "",
+   "result": "OK. Guardado en engram: \"[feat-una] una-guion\" (discovery).",
+   "is_error": false
+  },
+  "detached": {
+   "rc": 0,
+   "tools": [
+    "mcp__engram__mem_save"
+   ],
+   "usage": {
+    "input_tokens": 4,
+    "cache_creation_input_tokens": 12489,
+    "cache_read_input_tokens": 72319,
+    "output_tokens": 196
+   },
+   "stderr": "",
+   "result": "Listo, guardé la memoria `detached` (tipo discovery, topic_key `kd`, contenido \"r05 detached\"). Quedó activa en el proyecto `r05-synthetic`.",
+   "is_error": false
+  },
+  "largo": {
+   "rc": 0,
+   "tools": [
+    "ToolSearch",
+    "mcp__engram__mem_save"
+   ],
+   "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 14392,
+    "cache_read_input_tokens": 116479,
+    "output_tokens": 359
+   },
+   "stderr": "",
+   "result": "Guardado: \"largo\" (discovery), topic_key `kl`, proyecto r05-synthetic.",
+   "is_error": false
+  }
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[feat-una] una-guion",
+   "clave": "branch/feat-una/k",
+   "rev": 2,
+   "contenido": "Branch: feat-una · Author: Juan Cruz Robledo\nr05 una-guion"
+  },
+  {
+   "id": 2,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[detached-8471285] detached",
+   "clave": "branch/detached-8471285/kd",
+   "rev": 1,
+   "contenido": "Branch: detached-8471285 · Author: Juan Cruz Robledo\nr05 detached"
+  },
+  {
+   "id": 3,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[feature-xxxxxxxxxxxxxxxxxxxxxxxxx-ca7b9b] largo",
+   "clave": "branch/feature-xxxxxxxxxxxxxxxxxxxxxxxxx-ca7b9b/kl",
+   "rev": 1,
+   "contenido": "Branch: feature/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-final · Author: Juan Cruz Robledo\nr05 largo"
+  }
+ ]
+}

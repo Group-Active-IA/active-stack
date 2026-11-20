@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "E:\ESCRITORIO\programar\2026\Framework\active-stack\docs\research\r05-windows-claude\q3_real.py", line 22, in <module>
+    print(json.dumps(corre(sys.argv[1]), indent=1, ensure_ascii=False, default=str))
+                     ~~~~~^^^^^^^^^^^^^
+  File "E:\ESCRITORIO\programar\2026\Framework\active-stack\docs\research\r05-windows-claude\q3_real.py", line 17, in corre
+    f = filas(base)
+  File "E:\ESCRITORIO\programar\2026\Framework\active-stack\docs\research\r05-windows-claude\escenarios.py", line 22, in filas
+    return [dict(zip(("id", "sesion", "tipo", "titulo", "clave", "rev", "contenido"), r)) for r in c.execute(
+                                                                                                   ~~~~~~~~~^
+        "select id,session_id,type,title,topic_key,revision_count,content from observations where deleted_at is null")]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+sqlite3.OperationalError: disk I/O error
