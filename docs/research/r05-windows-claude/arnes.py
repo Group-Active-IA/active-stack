@@ -87,13 +87,27 @@ def claude(base, repo, prompt, modo="hook", extra=(), model="haiku", timeout=300
                 urllib.request.urlopen(f"http://127.0.0.1:{port}/health", timeout=1); break
             except Exception:
                 time.sleep(0.25)
+    antes = _servidores_engram()
     try:
         run = subprocess.run(cmd, cwd=str(repo), env=env, capture_output=True, text=True,
                              encoding="utf-8", timeout=timeout)
     finally:
         if server:
             server.terminate()
+        # El plugin real arranca su propio `engram serve` (puerto 7437) con la base temporal y lo deja vivo:
+        # ocupa el puerto del servidor real y el PreToolUse del plugin bloquea los guardados del usuario.
+        for pid in _servidores_engram() - antes:
+            subprocess.run(["taskkill", "/F", "/PID", str(pid)], capture_output=True)
     return run
+
+
+def _servidores_engram():
+    """PIDs de procesos `engram ... serve` (Windows)."""
+    out = subprocess.run(["powershell", "-NoProfile", "-Command",
+                          "Get-CimInstance Win32_Process -Filter \"Name='engram.exe'\" | "
+                          "Where-Object { $_.CommandLine -match ' serve' } | ForEach-Object { $_.ProcessId }"],
+                         capture_output=True, text=True).stdout
+    return {int(x) for x in out.split() if x.isdigit()}
 
 
 def buscar(base, repo, query="r05"):
