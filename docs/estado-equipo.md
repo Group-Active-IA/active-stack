@@ -42,7 +42,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-12 | Matías | R-11 | pendiente | | | |
 | R-13 | Giuliano | R-07 | mergeada | [#45](https://github.com/Group-Active-IA/active-stack/pull/45) | `f8d677e` | Sección `engram-cloud` + golden de `Compose` de las ocho variantes. [Informe](equipo/informes/R-13.md) |
 | R-14 | Giuliano | R-13 | PR abierto | [#47](https://github.com/Group-Active-IA/active-stack/pull/47) | | Pruebas de coherencia T-F3-1 a T-F3-4; corrige la clave `opsx` de R-13; DA-11 verificado. [Informe](equipo/informes/R-14.md) |
-| R-15 | Emiliano | R-08, R-01 | en curso | | | Núcleo de etiquetado compartido por hook y proxy; la vía de entrega en Claude espera la decisión pendiente 1 del dueño |
+| R-15 | Emiliano | R-08, R-01 | PR abierto | [#50](https://github.com/Group-Active-IA/active-stack/pull/50) | | Núcleo de etiquetado (sirve a hook y proxy) y hooks `session-start`/`pre-read`. Sin `pre-save`: el hook volvió a fallar en Claude (5/12 contra 12/12 del proxy); espera la decisión pendiente 1 del dueño. [Informe](equipo/informes/R-15.md) |
 | R-16 | Giuliano | R-15, R-14 | pendiente | | | ALTO |
 | R-17 | Giuliano | R-08, R-16 | pendiente | | | ALTO |
 | R-18 | Gianfranco | R-11, R-01, R-16 | pendiente | | | ALTO |
