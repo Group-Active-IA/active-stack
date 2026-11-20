@@ -1,0 +1,45 @@
+{
+  "model": "gpt-6.2-sol",
+  "effort": "low",
+  "date": "2018-09-02T23:54:44.222345+00:00",
+  "branch": "main",
+  "synthetic_observations": [
+    {
+      "id": 1,
+      "title": "Puerto del servicio faroquince",
+      "topic_key": "infra/faroquince",
+      "content": "Author: Persona Piloto\nEl puerto del servicio faroquince es 4381."
+    },
+    {
+      "id": 2,
+      "title": "[prueba-puerto] Puerto del servicio faroquince",
+      "topic_key": "branch/prueba-puerto/infra/faroquince",
+      "content": "Branch: prueba-puerto · Author: Persona Piloto\nEl puerto del servicio faroquince es 9076."
+    }
+  ],
+  "prompt": "Vas a desplegar desde la rama main. Usá mem_search con query \"faroquince\" y límite 5. ¿Qué puerto del servicio faroquince corresponde al despliegue? Respondé con el puerto y una frase que justifique tu selección.",
+  "tools": [
+    "mem_search",
+    "mem_get_observation",
+    "mem_session_summary"
+  ],
+  "mem_search_responses": [
+    {
+      "query": "faroquince",
+      "limit": 5,
+      "result": [
+        "{\"project\":\"r01-q11\",\"project_path\":\"\",\"project_source\":\"process_override\",\"result\":\"Found 2 memories:\\n\\n[1] #1 (decision) — Puerto del servicio faroquince\\n    Author: Persona Piloto\\nEl puerto del servicio faroquince es 4381.\\n    2018-09-02 20:54:28 | project: r01-q11 | scope: project\\n    conflict: contested by #registro-001 (pending)\\n\\n[2] #2 (decision) — [prueba-puerto] Puerto del servicio faroquince\\n    Branch: prueba-puerto · Author: Persona Piloto\\nEl puerto del servicio faroquince es 9076.\\n    2018-09-02 20:54:29 | project: r01-q11 | scope: project\\n    conflict: contested by #registro-002 (pending)\\n\\n\",\"results\":[{\"id\":1,\"pinned\":false,\"project\":\"r01-q11\",\"review_after\":\"2019-03-02 23:54:28\",\"scope\":\"project\",\"state\":\"active\",\"sync_id\":\"registro-002\",\"title\":\"Puerto del servicio faroquince\",\"topic_key\":\"infra/faroquince\",\"type\":\"decision\"},{\"id\":2,\"pinned\":false,\"project\":\"r01-q11\",\"review_after\":\"2019-03-02 23:54:29\",\"scope\":\"project\",\"state\":\"active\",\"sync_id\":\"registro-001\",\"title\":\"[prueba-puerto] Puerto del servicio faroquince\",\"topic_key\":\"branch/prueba-puerto/infra/faroquince\",\"type\":\"decision\"}]}"
+      ]
+    }
+  ],
+  "final_answer": "**4381**. Es el puerto registrado en la decisión compartida de Engram que aplica al despliegue desde `main`.",
+  "real_usage": [
+    {
+      "input_tokens": 81823,
+      "cached_input_tokens": 71296,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 262,
+      "reasoning_output_tokens": 0
+    }
+  ]
+}

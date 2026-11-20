@@ -1,0 +1,120 @@
+{
+  "join_key": "tool_use_id",
+  "capture_scope": "Dos guardados sintéticos en padre e hijo. El observador no guarda el título, el contenido ni el topic_key.",
+  "guardados": [
+    {
+      "caller_confirmado_por_rollout": "parent",
+      "thread_id": "id-local-003",
+      "call_id_rollout": "llamada-001",
+      "join_pre_post": {
+        "tool_use_id": "llamada-001",
+        "pre": {
+          "tool_use_id": "llamada-001",
+          "session_id": "id-local-003",
+          "phase": "PreToolUse"
+        },
+        "post": {
+          "tool_use_id": "llamada-001",
+          "session_id": "id-local-003",
+          "phase": "PostToolUse",
+          "observation_id": 24
+        }
+      },
+      "native_handler_completions": [
+        {
+          "source": "user",
+          "eventName": "preToolUse",
+          "status": "completed"
+        },
+        {
+          "source": "plugin",
+          "eventName": "preToolUse",
+          "status": "completed"
+        },
+        {
+          "source": "user",
+          "eventName": "postToolUse",
+          "status": "completed"
+        }
+      ],
+      "model_emission": {
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "title": "muestra-003",
+        "topic_key": "muestra-004",
+        "content": "Synthetic identical R01"
+      },
+      "id_en_respuesta_del_rollout": 24,
+      "fila": {
+        "id": 24,
+        "session_id": "id-local-003",
+        "scope": "personal",
+        "type": "decision",
+        "project": "r01-fixture",
+        "title": "[feat-r-01] muestra-003",
+        "topic_key": "branch/feat-r-01/muestra-004",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic identical R01"
+      },
+      "mem_get_observation": "#24 [decision] [feat-r-01] muestra-003\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic identical R01\nSession: id-local-003\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-004\nDuplicates: 2\nRevisions: 1\nCreated: 2018-09-02 20:44:53"
+    },
+    {
+      "caller_confirmado_por_rollout": "child",
+      "thread_id": "id-local-004",
+      "call_id_rollout": "llamada-002",
+      "join_pre_post": {
+        "tool_use_id": "llamada-002",
+        "pre": {
+          "tool_use_id": "llamada-002",
+          "session_id": "id-local-003",
+          "agent_id": "id-local-004",
+          "phase": "PreToolUse"
+        },
+        "post": {
+          "tool_use_id": "llamada-002",
+          "session_id": "id-local-003",
+          "agent_id": "id-local-004",
+          "phase": "PostToolUse",
+          "observation_id": 24
+        }
+      },
+      "native_handler_completions": [
+        {
+          "source": "user",
+          "eventName": "preToolUse",
+          "status": "completed"
+        },
+        {
+          "source": "plugin",
+          "eventName": "preToolUse",
+          "status": "completed"
+        },
+        {
+          "source": "user",
+          "eventName": "postToolUse",
+          "status": "completed"
+        }
+      ],
+      "model_emission": {
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "title": "muestra-003",
+        "topic_key": "muestra-005",
+        "content": "Synthetic identical R01"
+      },
+      "id_en_respuesta_del_rollout": 24,
+      "fila": {
+        "id": 24,
+        "session_id": "id-local-003",
+        "scope": "personal",
+        "type": "decision",
+        "project": "r01-fixture",
+        "title": "[feat-r-01] muestra-003",
+        "topic_key": "branch/feat-r-01/muestra-004",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic identical R01"
+      },
+      "mem_get_observation": "#24 [decision] [feat-r-01] muestra-003\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic identical R01\nSession: id-local-003\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-004\nDuplicates: 2\nRevisions: 1\nCreated: 2018-09-02 20:44:53"
+    }
+  ]
+}
