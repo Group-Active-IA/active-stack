@@ -88,6 +88,15 @@ harnesses:
     agents: [claude, codex, opencode, antigravity]
     depends_on: [sdd-orchestrator, design-system]
 
+  - id: engram-cloud
+    name: Engram Cloud (team memory)
+    description: { es: "Memoria compartida de equipo en Engram Cloud, con el trabajo distinguido por rama y autor (Claude y Codex).", en: "Shared team memory in Engram Cloud, with work distinguished by branch and author (Claude and Codex)." }
+    long_description: { es: "Full lo instala para Claude y Codex; Custom permite seleccionarlo. Prepara al agente para que la memoria compartida de Engram Cloud distinga el trabajo por rama y autor. Nada se activa solo. La garantía se declara por agente: en Claude con Windows se comprobó la mayor parte de las pruebas, pero quedan pruebas sin ejecutar, y en Codex la verificación es parcial. Requiere Engram 3.7.x, un servidor de Engram Cloud del equipo y, en Claude, el plugin de Engram instalado y actualizado; este harness no instala ni verifica ese plugin. OpenCode y Antigravity quedan fuera. Documentación: https://github.com/Gentleman-Programming/engram/blob/main/docs/engram-cloud/README.md", en: "Full installs it for Claude and Codex; Custom can select it. It prepares the agent so the shared Engram Cloud memory distinguishes work by branch and author. Nothing activates by itself. The guarantee is declared per agent: on Claude with Windows most checks passed, but some checks were not run, and on Codex verification is partial. It requires Engram 3.7.x, a team Engram Cloud server and, on Claude, the Engram plugin installed and up to date; this harness neither installs nor verifies that plugin. OpenCode and Antigravity are out of scope. Documentation: https://github.com/Gentleman-Programming/engram/blob/main/docs/engram-cloud/README.md" }
+    type: config
+    install_modes: [full]
+    agents: [claude, codex]
+    depends_on: [engram, sdd-orchestrator]
+
   # ── Skills propias ─────────────────────────────────────────────────────────
   - id: active-delivery
     name: Active Delivery
