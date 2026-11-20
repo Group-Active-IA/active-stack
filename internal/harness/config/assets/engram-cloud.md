@@ -4,7 +4,7 @@ Applies ONLY when the project has `.engram/active-stack.json` with `"memory_poli
 Otherwise ignore this whole section.
 
 It extends the Engram Protocol block above and OVERRIDES: proactive-save routing, the
-`opsx/{change}/{phase}` keys and the "GIT SYNC" section. Never use Git Sync (`.engram/chunks`).
+`opsx/{change-name}/{phase}` keys and the "GIT SYNC" section. Never use Git Sync (`.engram/chunks`).
 
 ### Saving
 You save memories as usual. The author line (`Author: <name>`) is added for you, and so is the branch
