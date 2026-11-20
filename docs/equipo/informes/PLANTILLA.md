@@ -14,7 +14,7 @@
 **Qué tenés que hacer vos:**
 - [ ] <revisar el PR / revisar la propuesta ALTO / decidir DA-xx / aceptar y actualizar el estado>
 
-**Decisiones que necesito de vos:** <ninguna | DA-xx con la opción que recomiendo y por qué>
+**Decisiones que necesito de vos:** <ninguna | DA-xx de producto con la opción que recomiendo y por qué>. Nunca un arreglo técnico ni un hueco de la ficha: eso se cierra dentro de la ficha (guía, sección 5, punto 8).
 
 **Qué desbloquea:** <R-yy de <persona>>
 **Mi siguiente ficha:** <R-zz> (espera a: <R-yy>)
