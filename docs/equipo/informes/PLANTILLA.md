@@ -16,6 +16,7 @@
 
 **Decisiones que necesito de vos:** <ninguna | DA-xx de producto con la opción que recomiendo y por qué>. Nunca un arreglo técnico ni un hueco de la ficha: eso se cierra dentro de la ficha (guía, sección 5, punto 8).
 
+**Este informe va para:** <persona (ficha R-yy), una línea por destinatario | nadie: solo mergea Juan Cruz>
 **Qué desbloquea:** <R-yy de <persona>>
 **Mi siguiente ficha:** <R-zz> (espera a: <R-yy>)
 
