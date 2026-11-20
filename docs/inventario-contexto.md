@@ -88,10 +88,10 @@ Las cinco más grandes están en negrita: Skill tup-campus-navigator (60.699 B),
 | 25 | Sección design-mockups inyectada — Codex | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
 | 26 | Skill react19-form-pattern | skill | 8.734 | terceros @782565f7 |
 | 27 | Skill redis-best-practices | skill | 8.526 | terceros @7682ca77 |
-| 28 | Skill agent-instruction | skill | 8.243 | terceros @1f7922f9 |
-| 29 | Skill help-system-content | skill | 8.039 | terceros @782565f7 |
-| 30 | Skill skill-registry | skill | 7.702 | terceros @78434d8f |
-| 31 | Skill active-delivery | skill | 7.651 | embebida |
+| 28 | Skill active-delivery | skill | 8.368 | embebida |
+| 29 | Skill agent-instruction | skill | 8.243 | terceros @1f7922f9 |
+| 30 | Skill help-system-content | skill | 8.039 | terceros @782565f7 |
+| 31 | Skill skill-registry | skill | 7.702 | terceros @78434d8f |
 | 32 | Skill clean-architecture | skill | 7.397 | terceros @782565f7 |
 | 33 | Skill design-system | skill | 6.948 | embebida |
 | 34 | Skill websocket-engineer | skill | 6.586 | terceros @078a25cc |
