@@ -17,7 +17,7 @@ Que Active Stack permita trabajar en equipo de forma automática en un proyecto 
 | Emiliano | `cachi001` | Roadmap, contrato, motor de memoria, documentación |
 | Giuliano | `(TBD)` | Apoyo en R-01, instrucciones y hooks de Engram, verify |
 | Gianfranco | `(TBD)` | Fundación en modo equipo, permisos |
-| Juan Cruz (dueño) | `(TBD)` | Revisión, integración, pilotos |
+| Juan Cruz (dueño) | `JuanCruzRobledo` | Revisión, integración, pilotos |
 
 El usuario de GitHub sirve para confirmar la identidad de quien dice «soy X». Hasta completarlo, el agente pregunta y la persona confirma.
 
@@ -28,11 +28,11 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 
 | Ficha | Responsable | Depende de | Estado | PR / repo | SHA de merge | Nota |
 |---|---|---|---|---|---|---|
-| R-01 | Matías | — | pendiente | | | |
+| R-01 | Matías | — | mergeada | [#32](https://github.com/Group-Active-IA/active-stack/pull/32) | `88b05cb` | Aceptada con límites: solo Codex/macOS; Claude y Windows pasan a R-05 |
 | R-02 | Emiliano | — | omitida | | | Absorbida: VE-1 pasa al primer paso de R-06 |
 | R-03 | Giuliano | — | omitida | | | Absorbida en R-11, R-12 y el piloto R-24 |
 | R-04 | Gianfranco | — | omitida | | | Absorbida en R-10 y R-18 |
-| R-05 | Juan Cruz | R-01 | pendiente | | | Puerta G0 (solo Engram) |
+| R-05 | Juan Cruz | R-01 | pendiente | | | Puerta G0 (solo Engram). En Windows + Claude Code. [Ficha lista](equipo/fichas/R-05.md) |
 | R-06 | Emiliano | — | mergeada | [#30](https://github.com/Group-Active-IA/active-stack/pull/30) | `1cfe767` | Contrato y validador `team.py`; desbloquea R-09, R-10 y R-11 |
 | R-07 | Giuliano | R-05 | pendiente | | | |
 | R-08 | Emiliano | R-05 | pendiente | | | |
@@ -73,6 +73,6 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 
 ## Punto de reanudación
 
-**Siguiente acción:** R-06 quedó `mergeada`: arrancan R-09 (Emiliano), R-10 (Gianfranco) y R-11 (Matías). R-01 (Matías, con apoyo de Giuliano: verificación de Engram Cloud) sigue pendiente. Cuando R-01 esté `mergeada`, el dueño resuelve R-05 y se habilita la parte de Engram.
+**Siguiente acción:** R-06 y R-01 quedaron `mergeada`. Arrancan R-09 (Emiliano), R-10 (Gianfranco) y R-11 (Matías). R-05 (Juan Cruz, en Windows + Claude Code) tiene la ficha lista: decir «Soy Juan Cruz, continuá». Al cerrar R-05 se habilitan R-07 y R-08.
 **Bloqueos vigentes:** ninguno.
 **Autorizaciones vigentes:** ninguna de excepción.

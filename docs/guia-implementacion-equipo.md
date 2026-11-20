@@ -33,7 +33,7 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
 1. Si dijo su nombre («soy Matías»), buscarlo en la tabla **Equipo** de [estado-equipo.md](estado-equipo.md). Si no lo dijo, **preguntarlo**: no adivinar por el nombre de Git.
 2. Si hay usuario de GitHub registrado, compararlo con `gh api user` (o `git config user.name`). Si no coincide, mostrar la diferencia y pedir confirmación. Si el usuario figura `(TBD)`, pedirle que lo confirme y avisar al dueño para completarlo.
 3. Si el nombre no está en la tabla, **modo consulta**: solo lectura; explicar que el dueño debe asignarle una ficha.
-4. El dueño (Juan Cruz) puede pedir «mostrame el estado» sin ficha propia.
+4. El dueño (Juan Cruz) puede pedir «mostrame el estado». Si dice «Soy Juan Cruz, continuá» o «implementá lo mío», su ficha es **R-05**: seguir [equipo/fichas/R-05.md](equipo/fichas/R-05.md) (Windows + Claude Code; el dueño también actualiza el estado).
 
 ## 3. Detectar qué le toca y si puede empezar
 
