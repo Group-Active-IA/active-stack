@@ -32,7 +32,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-02 | Emiliano | — | omitida | | | Absorbida: VE-1 pasa al primer paso de R-06 |
 | R-03 | Giuliano | — | omitida | | | Absorbida en R-11, R-12 y el piloto R-24 |
 | R-04 | Gianfranco | — | omitida | | | Absorbida en R-10 y R-18 |
-| R-05 | Juan Cruz | R-01 | pendiente | | | Puerta G0 (solo Engram). En Windows + Claude Code. [Ficha lista](equipo/fichas/R-05.md) |
+| R-05 | Juan Cruz | R-01 | mergeada | [#35](https://github.com/Group-Active-IA/active-stack/pull/35) | `ebcbb17` | Puerta G0 cerrada para Claude + Windows. B (proxy) con vías narrativas; DA-02/05/09/12 registradas. Aviso: plugin de Claude desactualizado, ver [informe](equipo/informes/R-05.md) |
 | R-06 | Emiliano | — | mergeada | [#30](https://github.com/Group-Active-IA/active-stack/pull/30) | `1cfe767` | Contrato y validador `team.py`; desbloquea R-09, R-10 y R-11 |
 | R-07 | Giuliano | R-05 | pendiente | | | |
 | R-08 | Emiliano | R-05 | pendiente | | | |
@@ -77,6 +77,6 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 
 ## Punto de reanudación
 
-**Siguiente acción:** R-06 y R-01 quedaron `mergeada`. Arrancan R-09 (Emiliano), R-10 (Gianfranco) y R-11 (Matías). R-05 (Juan Cruz, en Windows + Claude Code) tiene la ficha lista: decir «Soy Juan Cruz, continuá». Al cerrar R-05 se habilitan R-07 y R-08.
+**Siguiente acción:** R-05 quedó `mergeada`: **R-07 (Giuliano) y R-08 (Emiliano) están habilitadas**. R-09, R-10 y R-11 siguen en curso. Quien tome R-07/R-08 debe fijar y verificar la versión del plugin de Engram para Claude (el stack hoy no lo instala; ver informe de R-05).
 **Bloqueos vigentes:** ninguno.
 **Autorizaciones vigentes:** ninguna de excepción.
