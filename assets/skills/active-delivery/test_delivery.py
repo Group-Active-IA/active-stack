@@ -121,7 +121,13 @@ class DeliveryTest(unittest.TestCase):
         self.assertEqual(self.workspace()[1]["action"], "attach")
         self.assertEqual(self.workspace("--apply", "--expected-base", head, "--expected-tip", head)[1]["action"], "ready")
         self.assertEqual(self.workspace("--apply", "--expected-base", head)[1]["action"], "occupied")
-        self.assertEqual(self.git("worktree", "list").count(str(self.worktree)), 1)
+        listing = self.git("worktree", "list", "--porcelain", "-z")
+        paths = [
+            pathlib.Path(field[len("worktree "):]).resolve()
+            for field in listing.split("\0")
+            if field.startswith("worktree ")
+        ]
+        self.assertEqual(paths.count(self.worktree.resolve()), 1)
 
     def test_dirty_checkout_does_not_create_or_change_worktree(self):
         self.select()
