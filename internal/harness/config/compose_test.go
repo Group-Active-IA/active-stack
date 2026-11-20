@@ -274,6 +274,14 @@ func TestCompose_ClaudeDiagramIncludesVerify(t *testing.T) {
 func TestCompose_AllToggles_codex(t *testing.T)       { assertComposeGolden(t, "codex") }
 func TestCompose_AllToggles_antigravity(t *testing.T) { assertComposeGolden(t, "antigravity") }
 
+// R-13 (Engram Cloud, phase 2): pin the remaining four variants before the
+// engram-cloud section is registered, so the eight variants have a golden taken
+// at the state of origin/main 1cf9e36. They must not change with that work.
+func TestCompose_AllToggles_cursor(t *testing.T)   { assertComposeGolden(t, "cursor") }
+func TestCompose_AllToggles_gemini(t *testing.T)   { assertComposeGolden(t, "gemini") }
+func TestCompose_AllToggles_generic(t *testing.T)  { assertComposeGolden(t, "generic") }
+func TestCompose_AllToggles_windsurf(t *testing.T) { assertComposeGolden(t, "windsurf") }
+
 func assertComposeGolden(t *testing.T, variant string) {
 	t.Helper()
 	toggles := []string{"delegation", "model-routing", "engram", "tdd", "governance"}
