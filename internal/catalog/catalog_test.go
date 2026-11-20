@@ -334,13 +334,14 @@ func TestForMode_ActiveOrchestratorIsFullOnly(t *testing.T) {
 // C-32: replaces TestForMode_CustomReturnsAll (which incorrectly expected all 43).
 // Bumped 13->15 when discovery-research and web-scraper were catalogued as
 // Full-only, non-starter-only harnesses (add-discovery-scraper-harnesses). Bumped 16->18 when emil-design-eng and
-// design-taste-frontend-v1 were catalogued (design-skills-harnesses).
+// design-taste-frontend-v1 were catalogued (design-skills-harnesses). Bumped 22->23 when
+// engram-cloud (R-07, Full/Custom only) was catalogued.
 func TestForMode_CustomReturnsOnlyGlobal(t *testing.T) {
 	c, err := Load()
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
 	}
-	const wantFoundationGlobal = 22
+	const wantFoundationGlobal = 23
 	got := c.ForMode(model.ModeCustom)
 	if len(got) != wantFoundationGlobal {
 		t.Errorf("custom mode returned %d harnesses, want %d foundation-global", len(got), wantFoundationGlobal)
@@ -370,8 +371,8 @@ func TestForMode_ExcludesStarterOnlyHarnesses(t *testing.T) {
 		wantCount int
 	}{
 		{model.ModeLite, 7},
-		{model.ModeFull, 22},
-		{model.ModeCustom, 22},
+		{model.ModeFull, 23},
+		{model.ModeCustom, 23},
 	}
 
 	for _, tc := range cases {
