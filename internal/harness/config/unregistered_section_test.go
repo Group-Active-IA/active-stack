@@ -16,8 +16,8 @@ import (
 )
 
 // R-07 "cierre sin huecos": a config harness that is neither the orchestrator
-// nor registered in sectionFragments (engram-cloud before its phase 2 fragment
-// exists) must not fall through to the orchestrator path. It must be an
+// nor registered in sectionFragments (engram-cloud before R-13 registered its
+// phase 2 fragment) must not fall through to the orchestrator path. It must be an
 // explicit no-op that writes and replaces nothing.
 
 func dirDigest(t *testing.T, root string) map[string]string {
@@ -65,46 +65,11 @@ func installOrchestrator(t *testing.T, home string, adapters []config.AgentAdapt
 	}
 }
 
-// The real catalog entry, real Claude and Codex adapters.
-func TestInstall_EngramCloudWithoutFragment_LeavesOrchestratorIntact(t *testing.T) {
-	home := t.TempDir()
-	adapters := []config.AgentAdapter{claude.NewAdapter(), codex.NewAdapter()}
-	installOrchestrator(t, home, adapters)
-	before := dirDigest(t, home)
-
-	cat, err := catalog.Load()
-	if err != nil {
-		t.Fatal(err)
-	}
-	ec, ok := cat.ByID("engram-cloud")
-	if !ok {
-		t.Fatal("engram-cloud missing from catalog")
-	}
-	res, err := config.InstallWith(ec, adapters, home, realOpts(home))
-	if err != nil {
-		t.Fatalf("engram-cloud install must not fail (codex used to): %v", err)
-	}
-	if len(res.Files) != 0 {
-		t.Errorf("engram-cloud must write no files, wrote %v", res.Files)
-	}
-	if !res.AllAlready {
-		t.Error("a no-op must report AllAlready")
-	}
-	if len(res.Warnings) == 0 {
-		t.Error("a no-op must explain itself with a warning")
-	}
-	after := dirDigest(t, home)
-	for k, v := range before {
-		if after[k] != v {
-			t.Errorf("%s changed after installing engram-cloud", k)
-		}
-	}
-	for k := range after {
-		if _, existed := before[k]; !existed {
-			t.Errorf("%s was created by installing engram-cloud", k)
-		}
-	}
-}
+// engram-cloud used to be the real-catalog example of this no-op. Since R-13
+// registers its section fragment, it is covered by
+// TestInstall_EngramCloud_RealAdapters_AfterOrchestratorAndNothingDegrades
+// (engram_cloud_install_test.go); the no-op is exercised below with an invented
+// config harness, which has no fragment and never will.
 
 // Triangulation: an invented config harness without a fragment behaves the same.
 func TestInstall_UnknownConfigHarnessWithoutFragment_IsNoOp(t *testing.T) {

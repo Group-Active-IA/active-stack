@@ -39,6 +39,7 @@ var knownVariants = map[string]bool{
 // sdd-orchestrator (composed from toggles per agent variant).
 var sectionFragments = map[string]string{
 	"design-mockups": "design-mockups.md",
+	"engram-cloud":   "engram-cloud.md",
 }
 
 // loadVariant reads the sdd-orchestrator.md asset for the given variant key.
