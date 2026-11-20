@@ -12,8 +12,8 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
 2. Escribí: **«Soy Matías, quiero implementar lo mío»** (con tu nombre).
 3. El agente te dice qué ficha te toca, en qué orden y, si depende de otra persona que no terminó, **te avisa y no te deja empezar**.
 4. Implementás con el agente. Cuando termina, genera tu **informe de cierre** (un `.md` corto).
-5. **Pasale ese `.md` a Juan Cruz por el grupo de WhatsApp.** Él revisa y acepta tu PR y actualiza el estado.
-6. El agente te dice cuál es tu próxima ficha y de quién espera. Cuando Juan Cruz la libere, repetí desde el paso 2.
+5. **El informe no va al dueño: va a quien tu ficha desbloquea.** Queda en el PR y, al mergearse, en `main`. **No hace falta pasarlo por WhatsApp**: cuando el PR se mergea, el agente de esa persona lo encuentra en el repo. Juan Cruz solo mergea el PR.
+6. El agente te dice cuál es tu próxima ficha y de quién espera. Cuando el PR de esa dependencia figure mergeado en Git, empezás solo: repetí desde el paso 2.
 
 ---
 
@@ -22,7 +22,7 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
 - **Sin SDD.** No crear changes de OpenSpec ni propuesta/diseño/specs/tareas. Cada ficha se ejecuta con **criterios cortos** (los tests `T-*` de la fase indicada en el roadmap) y **TDD estricto**. OpenSpec solo si un change ya está iniciado o el dueño lo pide.
 - **Orden por dependencia.** Nunca se implementa una ficha cuya dependencia no figure `mergeada` (sección 3).
 - **Una ficha = una rama = un PR.** Rama `feat/R-xx-slug` desde `origin/main` actualizado.
-- **Solo el dueño escribe [estado-equipo.md](estado-equipo.md).** Nadie más lo edita.
+- **[estado-equipo.md](estado-equipo.md): cada responsable edita solo su fila** (en su propio PR) y, como primer paso de su ficha, completa la fila de la dependencia ya mergeada (estado, PR, SHA). El dueño no lo actualiza. La **autoridad de «mergeada» es Git/`gh`** (PR mergeado en `origin/main`); la tabla es el registro. Las «Autorizaciones de excepción» siguen siendo solo del dueño.
 - Todas las reglas del proyecto de [CLAUDE.md](../CLAUDE.md) (espejo [AGENTS.md](../AGENTS.md)) siguen vigentes, en especial: NUNCA commitear sin pedido explícito de la persona; *conventional commits* y **sin coautoría de IA**; NUNCA `go build` ni `active-stack install` real; NUNCA pisar config del usuario sin backup; markers idempotentes; paths por el adapter; `(TBD)` donde falte una decisión.
 - **Governance ALTO** (R-16, R-17, R-18 y toda ficha que toque `backup`, `filemerge` o `pipeline`): primero se **propone** y se espera la revisión del dueño; no se codifica antes.
 - **Hecho = evidencia.** Algo es «verificado» solo con comando, salida y versión. Una prueba que no se pudo ejecutar se informa como **no ejecutada**.
@@ -39,10 +39,10 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
 
 1. `git fetch origin`. Leer **[estado-equipo.md](estado-equipo.md) desde `origin/main`** (no la copia local) y el [roadmap](roadmap-implementacion-equipo.md).
 2. Listar las fichas de la persona **en el orden del roadmap**. Para cada una calcular su estado real combinando tres fuentes:
-   - la tabla del estado (autoridad);
+   - la tabla del estado (registro);
    - Git: ¿existe la rama `feat/R-xx-*` local o remota? ¿commits sin mergear?;
    - `gh pr list` / `gh pr view` (en el repo de la ficha): ¿PR abierto o mergeado?
-   Si las fuentes **no coinciden** (por ejemplo, el PR figura mergeado pero el estado dice `PR abierto`), **decirlo** y no continuar hasta que el dueño actualice el estado.
+   Si las fuentes **no coinciden** (por ejemplo, el PR figura mergeado pero el estado dice `PR abierto`), **gana Git/`gh`**: corregir la fila atrasada y seguir. Solo se avisa al dueño si Git mismo es ambiguo (PR cerrado sin merge, rama borrada, SHA que no está en `main`).
 3. Elegir la **primera ficha de la persona** cuyo estado sea `en curso` (retomar) o `pendiente`.
 4. **Verificar dependencias.** La ficha puede empezar solo si **todas** sus dependencias están `mergeada` en el estado **y** el merge se confirma en Git (la rama base contiene el SHA registrado, o el PR figura mergeado). Casos:
    - **Todas mergeadas** (las dependencias `omitida` no cuentan) → seguir con la sección 4.
@@ -68,7 +68,8 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
 5. **Recomendar compactar** automáticamente (decirlo a la persona) en estos momentos: al cerrar un hito con el contexto muy cargado, antes de cambiar de frente si el historial dejó de servir, o ante un aviso de límite de contexto. **Antes de compactar:** sobrescribir el bloque «Punto de reanudación» del traspaso (evidencia, tareas abiertas, decisiones, siguiente acción), guardar lo durable en Engram (`mem_save`) con referencia a ese archivo, y evitar registros repetidos.
 6. **«Continuar» después de compactar:** releer el traspaso de la ficha y el estado, comprobar Git y la rama, verificar si quedó algún subagente trabajando **antes** de reasignar, y ejecutar la siguiente acción. Conservar las autorizaciones y bloqueos vigentes.
 7. **Objetivo (goal), según el cliente.** *Codex:* si el chat no tiene objetivo activo y la persona dijo «continuar», crear uno con el texto «Objetivo para el goal» del traspaso. *Claude Code:* no puede fijar `/goal`; mostrar **una sola vez**, en una línea, ese texto listo para que la persona lo pegue, y seguir trabajando.
-8. **Qué no hace el agente solo:** commit, push y PR (siempre con el pedido de la persona), escrituras en ClickUp o GitHub, ni cambios de configuración de cuentas. Tampoco crea cuentas, inicia sesión ni acepta permisos de administrador: pide eso a la persona con pasos concretos.
+8. **Cierre sin huecos (regla del dueño).** Quien tiene la ficha la deja **completamente resuelta y mergeable**: el dueño no repara, no completa ni arbitra un arreglo técnico. Si al trabajar aparece un defecto o carencia que impide que el cambio sea seguro en `main` (por ejemplo, un componente existente que degrada algo al recibir lo nuevo), el responsable **lo corrige dentro de su ficha**, con su prueba, aunque toque código de otro paquete de governance MEDIO o BAJO (con checkpoints). Solo se detiene y avisa (sección 8) si el arreglo exige tocar `backup`, `filemerge` o `pipeline` (ALTO), contradice una decisión `DA-xx` o necesita una decisión de producto. En ese caso el aviso lleva la causa, el alcance exacto del arreglo y una **recomendación**, no una lista de opciones neutras. Está prohibido entregar un PR marcado «no mergear tal como está» pidiéndole al dueño que elija cómo cerrar el hueco. Antes de cerrar: instalar o ejercitar de punta a punta el efecto del cambio con los adaptadores reales y confirmar que nada existente se degrada.
+9. **Qué no hace el agente solo:** commit, push y PR (siempre con el pedido de la persona), escrituras en ClickUp o GitHub, ni cambios de configuración de cuentas. Tampoco crea cuentas, inicia sesión ni acepta permisos de administrador: pide eso a la persona con pasos concretos.
 
 ## 6. Repos externos y PR
 
@@ -96,18 +97,18 @@ Cuando se cumplen los criterios:
 
 1. Verificar todos los criterios con evidencia y dejar el traspaso `docs/equipo/fichas/R-xx.md` completo.
 2. Generar el **informe de cierre** `docs/equipo/informes/R-xx.md` desde la [plantilla](equipo/informes/PLANTILLA.md). Es **corto** (menos de una pantalla): qué ficha, enlace al PR y repo, qué se hizo, cómo verificarlo, **qué tiene que hacer el dueño** (revisar el PR, decidir algo, aceptar), a quién desbloquea y decisiones que necesitan al dueño.
-3. Con el pedido de la persona: commit, push y PR (informe incluido). Decirle: **«Pasale este archivo a Juan Cruz por el grupo»**.
+3. Con el pedido de la persona: commit, push y PR (informe incluido, y su fila del estado en `PR abierto`). **Decir siempre a quién va cada informe**, con esta frase exacta por destinatario: **«Este informe va para <persona> (ficha R-yy)»**. Los destinatarios salen de la tabla del estado: son las fichas cuya columna «Depende de» incluye la que se cierra (si hay varias, una línea por cada una; si la persona cierra más de un informe, una línea por informe y destinatario). Si ninguna ficha depende de esta, decir **«Este informe no va para nadie: solo mergea Juan Cruz»**. Después: **«El informe queda en el PR y en `main` al mergear; no hace falta pasarlo por el grupo»**. El PR lleva en el cuerpo el enlace al informe y qué se verificó.
 4. Actualizar el «Punto de reanudación» del traspaso, guardar lo durable en Engram y **recomendar compactar**.
-5. Informar la **siguiente ficha** de la persona, de quién espera y qué debe ocurrir antes (por ejemplo: «tu próxima ficha es R-12; espera a que el dueño acepte tu PR de R-11»). **No empezarla** hasta que el estado figure `mergeada`.
+5. Informar la **siguiente ficha** de la persona, de quién espera y qué debe ocurrir antes (por ejemplo: «tu próxima ficha es R-12; espera a que se mergee tu PR de R-11»). **No empezarla** hasta que el PR de esa dependencia figure mergeado en Git; para enterarse, la persona escribe «continuar» y el agente lo verifica en Git y lee desde `main` **el informe de cada dependencia mergeada** (puede ser más de uno) antes de empezar. Si falta algo, el agente de la siguiente ficha lee desde `main` el informe de cada ficha de la que depende.
 
 ## 10. Para el dueño (Juan Cruz)
 
-1. Recibís el informe `.md` por el grupo. Revisás el PR (en el repo que indique).
-2. Si hay algo que decidir, el informe lo dice. Si la ficha es de governance ALTO, revisás **la propuesta antes** de que se codifique.
-3. Aceptás/mergeás el PR y, en un commit propio, actualizás **[estado-equipo.md](estado-equipo.md)**: estado `mergeada`, PR, SHA de merge y nota. Eso es lo que **desbloquea** las fichas siguientes.
-4. Avisás al grupo a quién le toca, por ejemplo: «R-11 mergeada, Matías puede seguir con R-12».
-5. Si tenés que habilitar una ficha adelantándola, lo escribís en «Autorizaciones de excepción».
-6. Las puertas **R-05, R-20, R-24, R-25** son tuyas; las pruebas E2E y los pilotos requieren tu autorización expresa.
+Tu trabajo se reduce a **mergear PR**, una vez por ficha, y a lo que solo vos podés decidir. No recibís informes, no actualizás el estado ni avisás al grupo.
+
+1. **Mergear el PR** cuando el cuerpo del PR dice que está verificado. Si el responsable cumplió el «cierre sin huecos» (sección 5, punto 8), no hay nada más que revisar.
+2. **Solo si lo exige la ficha:** revisar la propuesta de una ficha de governance ALTO **antes** de que se codifique, o decidir un `DA-xx` de producto. El agente te lo presenta con una recomendación.
+3. Escribir una «Autorización de excepción» únicamente cuando quieras adelantar una ficha.
+4. Las puertas **R-05, R-20, R-24, R-25** son tuyas; las pruebas E2E y los pilotos requieren tu autorización expresa.
 
 ## 11. Mensaje listo para el grupo
 

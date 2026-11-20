@@ -1,7 +1,7 @@
 # Estado del trabajo en equipo
 
-> **Único escritor: Juan Cruz (dueño).** Nadie más edita este archivo ni en su rama ni en su PR: así no hay conflictos de merge. Las personas informan su avance con el informe de cierre (`docs/equipo/informes/`) y el dueño actualiza esta tabla **al aceptar cada PR**.
-> Los agentes **leen** este archivo desde `origin/main` (no desde una copia local desactualizada) y lo contrastan con `git` y `gh`. Si no coinciden, avisan.
+> **Cada responsable edita solo su propia fila**, en su PR, y completa la fila de la dependencia ya mergeada (estado, PR, SHA) como primer paso de su ficha. El dueño no actualiza esta tabla; solo escribe las «Autorizaciones de excepción».
+> Los agentes **leen** este archivo desde `origin/main` y lo contrastan con `git` y `gh`. **La autoridad de «mergeada» es Git/`gh`**; si la tabla va atrasada, se corrige la fila y se sigue.
 
 **Última actualización:** 2026-11-19 · **Roadmap:** [roadmap-implementacion-equipo.md](roadmap-implementacion-equipo.md) · **Guía:** [guia-implementacion-equipo.md](guia-implementacion-equipo.md)
 
@@ -34,7 +34,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-04 | Gianfranco | — | omitida | | | Absorbida en R-10 y R-18 |
 | R-05 | Juan Cruz | R-01 | mergeada | [#35](https://github.com/Group-Active-IA/active-stack/pull/35) | `ebcbb17` | Puerta G0 cerrada para Claude + Windows. B (proxy) con vías narrativas; DA-02/05/09/12 registradas. Aviso: plugin de Claude desactualizado, ver [informe](equipo/informes/R-05.md) |
 | R-06 | Emiliano | — | mergeada | [#30](https://github.com/Group-Active-IA/active-stack/pull/30) | `1cfe767` | Contrato y validador `team.py`; desbloquea R-09, R-10 y R-11 |
-| R-07 | Giuliano | R-05 | pendiente | | | Habilitada. [Ficha lista](equipo/fichas/R-07.md) |
+| R-07 | Giuliano | R-05 | en curso | [#40](https://github.com/Group-Active-IA/active-stack/pull/40) | | Devuelta a Giuliano: debe cerrar la guarda del instalador dentro de la ficha (ver «Cierre sin huecos» en la [ficha](equipo/fichas/R-07.md)). No mergear antes |
 | R-08 | Emiliano | R-05 | pendiente | | | Habilitada. [Ficha lista](equipo/fichas/R-08.md); T-F4-4 con el caso de colisión `(TBD)` hasta que decida el dueño |
 | R-09 | Emiliano | R-06 | pendiente | | | Repo externo |
 | R-10 | Gianfranco | R-06 | mergeada | [orchestrator #7](https://github.com/Group-Active-IA/active-orchestrator/pull/7) · [agent-instruction #2](https://github.com/JuanCruzRobledo/agent-instruction/pull/2) · [stack #34](https://github.com/Group-Active-IA/active-stack/pull/34) | orchestrator `32142a9` · agent-instruction `c9f371c` · stack `17a276d` | Repos externos mergeados desde forks. El bump del `ref` en `harnesses.yaml` queda para R-20. Sin validador en OpenCode/Antigravity (la fase valida con reglas escritas) |
