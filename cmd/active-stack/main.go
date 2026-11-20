@@ -7,6 +7,7 @@
 //	active-stack install --headless   Non-interactive install (also implied by --mode/--agent).
 //	active-stack install --dry-run    Print the install plan; do not execute.
 //	active-stack install --help       Show all available flags.
+//	active-stack memory branch        Show the memory mode and tag of the current Git branch.
 package main
 
 import (
@@ -93,6 +94,10 @@ func main() {
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "error: %v\n", err)
 			os.Exit(1)
+		}
+	case "memory":
+		if code := runMemoryDispatch(os.Args[2:], os.Stdout, os.Stderr); code != 0 {
+			os.Exit(code)
 		}
 	case "install":
 		if err := runInstall(os.Args[2:]); err != nil {

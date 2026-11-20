@@ -96,6 +96,24 @@ var tableEN = map[string]string{
 	"backup.source.install": "install",
 	"backup.source.sync":    "sync",
 	"backup.source.upgrade": "upgrade",
+
+	// memory.* — "active-stack memory branch" ([EN] Fase 4).
+	"memory.usage":                      "Usage: active-stack memory branch [--project <path>] [--json] [--lang en|es]",
+	"memory.label.mode":                 "Memory mode",
+	"memory.label.tagged":               "Tagged",
+	"memory.label.branch":               "Branch",
+	"memory.label.slug":                 "Slug",
+	"memory.value.yes":                  "yes",
+	"memory.value.no":                   "no",
+	"memory.value.no_repo":              "(not a Git repository)",
+	"memory.value.none":                 "(none)",
+	"memory.warn.marker_invalid":        "Ignoring %s: it is not valid JSON. Memory mode stays off.",
+	"memory.warn.marker_unknown_policy": "Ignoring %s: unknown memory_policy %q. Memory mode stays off.",
+	"memory.error.unknown_subcommand":   "Unknown memory subcommand %q.",
+	"memory.error.no_directory":         "The directory does not exist: %s",
+	"memory.error.git_missing":          "Git is not installed or not in PATH.",
+	"memory.error.empty_slug":           "Branch %q has no letters or digits to build its tag. Rename the branch.",
+	"memory.error.failed":               "Could not read the Git state: %v",
 }
 
 func init() {
