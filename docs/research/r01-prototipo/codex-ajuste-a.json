@@ -1,0 +1,64 @@
+[
+  {
+    "condition": "marked",
+    "thread_id": "id-local-001",
+    "model_emission": {
+      "scope": "personal",
+      "type": "decision",
+      "title": "muestra-001",
+      "content": "Synthetic R01",
+      "topic_key": "muestra-001",
+      "project": "r01-fixture"
+    },
+    "codex_dispatched_arguments": {
+      "title": "[feat-r-01] muestra-001",
+      "topic_key": "branch/feat-r-01/muestra-001",
+      "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic R01"
+    },
+    "engram_project_source": "process_override",
+    "mem_get_observation": "#10 [manual] [feat-r-01] muestra-001\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic R01\nSession: id-local-001\nProject: r01-fixture\nScope: project\nTopic: branch/feat-r-01/muestra-001\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:23:31",
+    "stored_row": {
+      "id": 10,
+      "project": "r01-fixture",
+      "session_id": "id-local-001",
+      "title": "[feat-r-01] muestra-001",
+      "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic R01",
+      "topic_key": "branch/feat-r-01/muestra-001",
+      "type": "manual",
+      "scope": "project"
+    }
+  },
+  {
+    "condition": "control",
+    "thread_id": "id-local-002",
+    "model_emission": {
+      "scope": "personal",
+      "type": "decision",
+      "title": "muestra-002",
+      "content": "Synthetic R01",
+      "topic_key": "muestra-002",
+      "project": "r01-fixture"
+    },
+    "codex_dispatched_arguments": {
+      "content": "Synthetic R01",
+      "project": "r01-fixture",
+      "scope": "personal",
+      "session_id": "id-local-002",
+      "title": "muestra-002",
+      "topic_key": "muestra-002",
+      "type": "decision"
+    },
+    "engram_project_source": "explicit_override",
+    "mem_get_observation": "#11 [decision] muestra-002\nSynthetic R01\nSession: id-local-002\nProject: r01-fixture\nScope: personal\nTopic: muestra-002\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:23:43",
+    "stored_row": {
+      "id": 11,
+      "project": "r01-fixture",
+      "session_id": "id-local-002",
+      "title": "muestra-002",
+      "content": "Synthetic R01",
+      "topic_key": "muestra-002",
+      "type": "decision",
+      "scope": "personal"
+    }
+  }
+]

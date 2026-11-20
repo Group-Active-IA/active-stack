@@ -1,0 +1,196 @@
+{
+  "metodo": "Con observador pasivo de los metadatos de PreToolUse",
+  "eventos": [
+    {
+      "threadId": "id-local-016",
+      "turnId": "id-local-017",
+      "rollout_call_id": "llamada-007",
+      "cwd_rollout_y_proxy": "laboratorio/repositorio",
+      "notificaciones_hook": [
+        {
+          "method": "hook/started",
+          "threadId": "id-local-016",
+          "turnId": "id-local-017",
+          "run": {
+            "id": "pre-tool-use:0:<lab>/profile/config.toml:llamada-007",
+            "eventName": "preToolUse",
+            "source": "user",
+            "status": "running",
+            "startedAt": 1535931691,
+            "completedAt": null
+          }
+        },
+        {
+          "method": "hook/started",
+          "threadId": "id-local-016",
+          "turnId": "id-local-017",
+          "run": {
+            "id": "pre-tool-use:1:<lab>/profile/plugins/cache/engram/engram/0.1.5/hooks/hooks.json:llamada-007",
+            "eventName": "preToolUse",
+            "source": "plugin",
+            "status": "running",
+            "startedAt": 1535931691,
+            "completedAt": null
+          }
+        },
+        {
+          "method": "hook/completed",
+          "threadId": "id-local-016",
+          "turnId": "id-local-017",
+          "run": {
+            "id": "pre-tool-use:0:<lab>/profile/config.toml:llamada-007",
+            "eventName": "preToolUse",
+            "source": "user",
+            "status": "completed",
+            "startedAt": 1535931691,
+            "completedAt": 1535931691
+          }
+        },
+        {
+          "method": "hook/completed",
+          "threadId": "id-local-016",
+          "turnId": "id-local-017",
+          "run": {
+            "id": "pre-tool-use:1:<lab>/profile/plugins/cache/engram/engram/0.1.5/hooks/hooks.json:llamada-007",
+            "eventName": "preToolUse",
+            "source": "plugin",
+            "status": "completed",
+            "startedAt": 1535931691,
+            "completedAt": 1535931691
+          }
+        }
+      ],
+      "emision": {
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "title": "muestra-014",
+        "topic_key": "muestra-014",
+        "content": "Synthetic caller parent"
+      },
+      "despacho_y_entrada_proxy": {
+        "session_id": "id-local-016",
+        "title": "muestra-014",
+        "topic_key": "muestra-014",
+        "content": "Synthetic caller parent",
+        "project": "r01-fixture",
+        "type": "decision",
+        "scope": "personal"
+      },
+      "salida_proxy_y_fila": {
+        "session_id": "id-local-016",
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic caller parent",
+        "title": "[feat-r-01] muestra-014",
+        "topic_key": "branch/feat-r-01/muestra-014"
+      },
+      "observacion_id": 22,
+      "mem_get_observation": "#22 [decision] [feat-r-01] muestra-014\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic caller parent\nSession: id-local-016\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-014\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:41:31",
+      "metadatos_recibidos_por_observador": {
+        "session_id": "id-local-016",
+        "cwd": "laboratorio/repositorio",
+        "tool_use_id": "llamada-007",
+        "marker": "muestra-014",
+        "tool": "mcp__engram__mem_save"
+      }
+    },
+    {
+      "threadId": "id-local-018",
+      "turnId": "id-local-019",
+      "rollout_call_id": "llamada-008",
+      "cwd_rollout_y_proxy": "laboratorio/repositorio",
+      "notificaciones_hook": [
+        {
+          "method": "hook/started",
+          "threadId": "id-local-018",
+          "turnId": "id-local-019",
+          "run": {
+            "id": "pre-tool-use:0:<lab>/profile/config.toml:llamada-008",
+            "eventName": "preToolUse",
+            "source": "user",
+            "status": "running",
+            "startedAt": 1535931692,
+            "completedAt": null
+          }
+        },
+        {
+          "method": "hook/started",
+          "threadId": "id-local-018",
+          "turnId": "id-local-019",
+          "run": {
+            "id": "pre-tool-use:1:<lab>/profile/plugins/cache/engram/engram/0.1.5/hooks/hooks.json:llamada-008",
+            "eventName": "preToolUse",
+            "source": "plugin",
+            "status": "running",
+            "startedAt": 1535931692,
+            "completedAt": null
+          }
+        },
+        {
+          "method": "hook/completed",
+          "threadId": "id-local-018",
+          "turnId": "id-local-019",
+          "run": {
+            "id": "pre-tool-use:0:<lab>/profile/config.toml:llamada-008",
+            "eventName": "preToolUse",
+            "source": "user",
+            "status": "completed",
+            "startedAt": 1535931692,
+            "completedAt": 1535931692
+          }
+        },
+        {
+          "method": "hook/completed",
+          "threadId": "id-local-018",
+          "turnId": "id-local-019",
+          "run": {
+            "id": "pre-tool-use:1:<lab>/profile/plugins/cache/engram/engram/0.1.5/hooks/hooks.json:llamada-008",
+            "eventName": "preToolUse",
+            "source": "plugin",
+            "status": "completed",
+            "startedAt": 1535931692,
+            "completedAt": 1535931692
+          }
+        }
+      ],
+      "emision": {
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "title": "muestra-015",
+        "topic_key": "muestra-015",
+        "content": "Synthetic caller child"
+      },
+      "despacho_y_entrada_proxy": {
+        "session_id": "id-local-016",
+        "title": "muestra-015",
+        "topic_key": "muestra-015",
+        "content": "Synthetic caller child",
+        "project": "r01-fixture",
+        "type": "decision",
+        "scope": "personal"
+      },
+      "salida_proxy_y_fila": {
+        "session_id": "id-local-016",
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic caller child",
+        "title": "[feat-r-01] muestra-015",
+        "topic_key": "branch/feat-r-01/muestra-015"
+      },
+      "observacion_id": 23,
+      "mem_get_observation": "#23 [decision] [feat-r-01] muestra-015\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic caller child\nSession: id-local-016\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-015\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:41:32",
+      "metadatos_recibidos_por_observador": {
+        "session_id": "id-local-016",
+        "cwd": "laboratorio/repositorio",
+        "tool_use_id": "llamada-008",
+        "agent_id": "id-local-018",
+        "marker": "muestra-015",
+        "tool": "mcp__engram__mem_save"
+      }
+    }
+  ]
+}

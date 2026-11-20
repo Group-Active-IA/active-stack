@@ -1,0 +1,157 @@
+[
+  {
+    "condition": "q3-trial",
+    "thread_id": "id-local-007",
+    "child_thread_ids": [],
+    "parent_dispatched_arguments": [
+      {
+        "type": "discovery",
+        "title": "[feat-r-01] muestra-009",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic R01",
+        "topic_key": "branch/feat-r-01/muestra-009",
+        "project": "r01-fixture"
+      }
+    ],
+    "persisted": [
+      {
+        "id": 1,
+        "title": "[feat-r-01] muestra-009",
+        "session_id": "id-local-007",
+        "topic_key": "branch/feat-r-01/muestra-009",
+        "first_line": "Branch: feat/R-01 · Author: Persona Piloto",
+        "mem_get_observation_verified": true
+      }
+    ]
+  },
+  {
+    "condition": "q6-trial",
+    "thread_id": "id-local-008",
+    "child_thread_ids": [
+      "id-local-009"
+    ],
+    "parent_dispatched_arguments": [
+      {
+        "type": "discovery",
+        "title": "[feat-r-01] muestra-010-parent-0",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic R01",
+        "topic_key": "branch/feat-r-01/muestra-010-parent-0",
+        "project": "r01-fixture"
+      },
+      {
+        "type": "discovery",
+        "title": "[r01-segunda] muestra-010-parent-1",
+        "content": "Branch: r01-segunda · Author: Persona Piloto\nSynthetic R01",
+        "topic_key": "branch/r01-segunda/muestra-010-parent-1",
+        "project": "r01-fixture"
+      },
+      {
+        "type": "discovery",
+        "title": "muestra-010-parent-2",
+        "content": "Author: Persona Piloto\nSynthetic R01",
+        "topic_key": "muestra-010-parent-2",
+        "project": "r01-fixture"
+      }
+    ],
+    "persisted": [
+      {
+        "id": 2,
+        "title": "[feat-r-01] muestra-010-parent-0",
+        "session_id": "id-local-008",
+        "topic_key": "branch/feat-r-01/muestra-010-parent-0",
+        "first_line": "Branch: feat/R-01 · Author: Persona Piloto",
+        "mem_get_observation_verified": true
+      },
+      {
+        "id": 3,
+        "title": "[r01-segunda] muestra-010-parent-1",
+        "session_id": "id-local-008",
+        "topic_key": "branch/r01-segunda/muestra-010-parent-1",
+        "first_line": "Branch: r01-segunda · Author: Persona Piloto",
+        "mem_get_observation_verified": true
+      },
+      {
+        "id": 4,
+        "title": "muestra-010-parent-2",
+        "session_id": "id-local-008",
+        "topic_key": "muestra-010-parent-2",
+        "first_line": "Author: Persona Piloto",
+        "mem_get_observation_verified": true
+      },
+      {
+        "id": 5,
+        "title": "[feat-r-01] muestra-010-child-0",
+        "session_id": "id-local-008",
+        "topic_key": "branch/feat-r-01/muestra-010-child-0",
+        "first_line": "Branch: feat/R-01 · Author: Persona Piloto",
+        "mem_get_observation_verified": true
+      }
+    ]
+  },
+  {
+    "condition": "control-trial",
+    "thread_id": "id-local-010",
+    "child_thread_ids": [
+      "id-local-011"
+    ],
+    "parent_dispatched_arguments": [
+      {
+        "content": "Synthetic R01",
+        "project": "r01-fixture",
+        "session_id": "id-local-010",
+        "title": "muestra-011-parent-0",
+        "topic_key": "muestra-011-parent-0",
+        "type": "discovery"
+      },
+      {
+        "content": "Synthetic R01",
+        "project": "r01-fixture",
+        "session_id": "id-local-010",
+        "title": "muestra-011-parent-1",
+        "topic_key": "muestra-011-parent-1",
+        "type": "discovery"
+      },
+      {
+        "content": "Synthetic R01",
+        "project": "r01-fixture",
+        "session_id": "id-local-010",
+        "title": "muestra-011-parent-2",
+        "topic_key": "muestra-011-parent-2",
+        "type": "discovery"
+      }
+    ],
+    "persisted": [
+      {
+        "id": 6,
+        "title": "muestra-011-parent-0",
+        "session_id": "id-local-010",
+        "topic_key": "muestra-011-parent-0",
+        "first_line": "Synthetic R01",
+        "mem_get_observation_verified": true
+      },
+      {
+        "id": 7,
+        "title": "muestra-011-parent-1",
+        "session_id": "id-local-010",
+        "topic_key": "muestra-011-parent-1",
+        "first_line": "Synthetic R01",
+        "mem_get_observation_verified": true
+      },
+      {
+        "id": 8,
+        "title": "muestra-011-parent-2",
+        "session_id": "id-local-010",
+        "topic_key": "muestra-011-parent-2",
+        "first_line": "Synthetic R01",
+        "mem_get_observation_verified": true
+      },
+      {
+        "id": 9,
+        "title": "muestra-011-child-0",
+        "session_id": "id-local-010",
+        "topic_key": "muestra-011-child-0",
+        "first_line": "Synthetic R01",
+        "mem_get_observation_verified": true
+      }
+    ]
+  }
+]

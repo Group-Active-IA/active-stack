@@ -1,0 +1,334 @@
+{
+  "base_compartida": "base-001",
+  "config_mcp": "Un registro engram sin cwd explícito; upstream engram real; ambos procesos Codex se lanzan desde el mismo directorio ajeno a los checkouts y usan -C para elegir el worktree.",
+  "barreras": [
+    {
+      "at": "2018-09-02T23:33:20.136514+00:00",
+      "event": "hooks oficiales confiados",
+      "worktrees": 2
+    },
+    {
+      "at": "2018-09-02T23:33:21.283176+00:00",
+      "event": "proveedor espera",
+      "lane": "A",
+      "idx": 0
+    },
+    {
+      "at": "2018-09-02T23:33:21.288074+00:00",
+      "event": "proveedor espera",
+      "lane": "B",
+      "idx": 0
+    },
+    {
+      "at": "2018-09-02T23:33:21.288195+00:00",
+      "event": "barrera inicial",
+      "ambos_procesos_vivos": true
+    },
+    {
+      "at": "2018-09-02T23:33:21.637786+00:00",
+      "event": "proveedor espera",
+      "lane": "A",
+      "idx": 1
+    },
+    {
+      "at": "2018-09-02T23:33:21.739352+00:00",
+      "event": "proveedor espera",
+      "lane": "B",
+      "idx": 1
+    },
+    {
+      "at": "2018-09-02T23:33:21.748552+00:00",
+      "event": "inicial",
+      "rows": [
+        [
+          "A",
+          16,
+          1
+        ],
+        [
+          "B",
+          17,
+          1
+        ]
+      ]
+    },
+    {
+      "at": "2018-09-02T23:33:22.015260+00:00",
+      "event": "proveedor espera",
+      "lane": "A",
+      "idx": 2
+    },
+    {
+      "at": "2018-09-02T23:33:22.091738+00:00",
+      "event": "tras_A",
+      "rows": [
+        [
+          "A",
+          16,
+          2
+        ],
+        [
+          "B",
+          17,
+          1
+        ]
+      ]
+    },
+    {
+      "at": "2018-09-02T23:33:22.371672+00:00",
+      "event": "proveedor espera",
+      "lane": "B",
+      "idx": 2
+    },
+    {
+      "at": "2018-09-02T23:33:22.374520+00:00",
+      "event": "tras_B",
+      "rows": [
+        [
+          "A",
+          16,
+          2
+        ],
+        [
+          "B",
+          17,
+          2
+        ]
+      ]
+    }
+  ],
+  "sesiones": {
+    "A": {
+      "thread_id": "id-local-022",
+      "worktree": ".pilot-par-001-a",
+      "cwd_proxy_observado": ".pilot-par-001-a",
+      "git_branch": "wt-r01-a-par-001",
+      "escrituras": [
+        {
+          "emision": {
+            "title": "muestra-018",
+            "topic_key": "base-001",
+            "content": "Synthetic lane A revision 1",
+            "scope": "personal",
+            "type": "decision",
+            "project": "r01-fixture"
+          },
+          "despacho_y_entrada_proxy": {
+            "session_id": "id-local-022",
+            "title": "muestra-018",
+            "topic_key": "base-001",
+            "content": "Synthetic lane A revision 1",
+            "project": "r01-fixture",
+            "type": "decision",
+            "scope": "personal"
+          },
+          "salida_proxy": {
+            "session_id": "id-local-022",
+            "title": "[wt-r01-a-par-001] muestra-018",
+            "topic_key": "branch/wt-r01-a-par-001/base-001",
+            "content": "Branch: wt-r01-a-par-001 · Author: Persona Piloto\nSynthetic lane A revision 1",
+            "project": "r01-fixture",
+            "type": "decision",
+            "scope": "personal"
+          },
+          "engram_id": 16,
+          "project_source": "explicit_override"
+        },
+        {
+          "emision": {
+            "title": "muestra-018",
+            "topic_key": "base-001",
+            "content": "Synthetic lane A revision 2",
+            "scope": "personal",
+            "type": "decision",
+            "project": "r01-fixture"
+          },
+          "despacho_y_entrada_proxy": {
+            "session_id": "id-local-022",
+            "title": "muestra-018",
+            "topic_key": "base-001",
+            "content": "Synthetic lane A revision 2",
+            "project": "r01-fixture",
+            "type": "decision",
+            "scope": "personal"
+          },
+          "salida_proxy": {
+            "session_id": "id-local-022",
+            "title": "[wt-r01-a-par-001] muestra-018",
+            "topic_key": "branch/wt-r01-a-par-001/base-001",
+            "content": "Branch: wt-r01-a-par-001 · Author: Persona Piloto\nSynthetic lane A revision 2",
+            "project": "r01-fixture",
+            "type": "decision",
+            "scope": "personal"
+          },
+          "engram_id": 16,
+          "project_source": "explicit_override"
+        }
+      ]
+    },
+    "B": {
+      "thread_id": "id-local-023",
+      "worktree": ".pilot-par-001-b",
+      "cwd_proxy_observado": ".pilot-par-001-b",
+      "git_branch": "wt-r01-b-par-001",
+      "escrituras": [
+        {
+          "emision": {
+            "title": "muestra-019",
+            "topic_key": "base-001",
+            "content": "Synthetic lane B revision 1",
+            "scope": "personal",
+            "type": "decision",
+            "project": "r01-fixture"
+          },
+          "despacho_y_entrada_proxy": {
+            "session_id": "id-local-023",
+            "title": "muestra-019",
+            "topic_key": "base-001",
+            "content": "Synthetic lane B revision 1",
+            "project": "r01-fixture",
+            "type": "decision",
+            "scope": "personal"
+          },
+          "salida_proxy": {
+            "session_id": "id-local-023",
+            "title": "[wt-r01-b-par-001] muestra-019",
+            "topic_key": "branch/wt-r01-b-par-001/base-001",
+            "content": "Branch: wt-r01-b-par-001 · Author: Persona Piloto\nSynthetic lane B revision 1",
+            "project": "r01-fixture",
+            "type": "decision",
+            "scope": "personal"
+          },
+          "engram_id": 17,
+          "project_source": "explicit_override"
+        },
+        {
+          "emision": {
+            "title": "muestra-019",
+            "topic_key": "base-001",
+            "content": "Synthetic lane B revision 2",
+            "scope": "personal",
+            "type": "decision",
+            "project": "r01-fixture"
+          },
+          "despacho_y_entrada_proxy": {
+            "session_id": "id-local-023",
+            "title": "muestra-019",
+            "topic_key": "base-001",
+            "content": "Synthetic lane B revision 2",
+            "project": "r01-fixture",
+            "type": "decision",
+            "scope": "personal"
+          },
+          "salida_proxy": {
+            "session_id": "id-local-023",
+            "title": "[wt-r01-b-par-001] muestra-019",
+            "topic_key": "branch/wt-r01-b-par-001/base-001",
+            "content": "Branch: wt-r01-b-par-001 · Author: Persona Piloto\nSynthetic lane B revision 2",
+            "project": "r01-fixture",
+            "type": "decision",
+            "scope": "personal"
+          },
+          "engram_id": 17,
+          "project_source": "explicit_override"
+        }
+      ]
+    }
+  },
+  "lecturas": {
+    "inicial": {
+      "A": {
+        "fila": {
+          "id": 16,
+          "session_id": "id-local-022",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal",
+          "title": "[wt-r01-a-par-001] muestra-018",
+          "topic_key": "branch/wt-r01-a-par-001/base-001",
+          "content": "Branch: wt-r01-a-par-001 · Author: Persona Piloto\nSynthetic lane A revision 1",
+          "revision_count": 1
+        },
+        "mem_get_observation": "#16 [decision] [wt-r01-a-par-001] muestra-018\nBranch: wt-r01-a-par-001 · Author: Persona Piloto\nSynthetic lane A revision 1\nSession: id-local-022\nProject: r01-fixture\nScope: personal\nTopic: branch/wt-r01-a-par-001/base-001\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:33:21"
+      },
+      "B": {
+        "fila": {
+          "id": 17,
+          "session_id": "id-local-023",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal",
+          "title": "[wt-r01-b-par-001] muestra-019",
+          "topic_key": "branch/wt-r01-b-par-001/base-001",
+          "content": "Branch: wt-r01-b-par-001 · Author: Persona Piloto\nSynthetic lane B revision 1",
+          "revision_count": 1
+        },
+        "mem_get_observation": "#17 [decision] [wt-r01-b-par-001] muestra-019\nBranch: wt-r01-b-par-001 · Author: Persona Piloto\nSynthetic lane B revision 1\nSession: id-local-023\nProject: r01-fixture\nScope: personal\nTopic: branch/wt-r01-b-par-001/base-001\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:33:21"
+      }
+    },
+    "tras_A": {
+      "A": {
+        "fila": {
+          "id": 16,
+          "session_id": "id-local-022",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal",
+          "title": "[wt-r01-a-par-001] muestra-018",
+          "topic_key": "branch/wt-r01-a-par-001/base-001",
+          "content": "Branch: wt-r01-a-par-001 · Author: Persona Piloto\nSynthetic lane A revision 2",
+          "revision_count": 2
+        },
+        "mem_get_observation": "#16 [decision] [wt-r01-a-par-001] muestra-018\nBranch: wt-r01-a-par-001 · Author: Persona Piloto\nSynthetic lane A revision 2\nSession: id-local-022\nProject: r01-fixture\nScope: personal\nTopic: branch/wt-r01-a-par-001/base-001\nDuplicates: 1\nRevisions: 2\nCreated: 2018-09-02 20:33:21"
+      },
+      "B": {
+        "fila": {
+          "id": 17,
+          "session_id": "id-local-023",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal",
+          "title": "[wt-r01-b-par-001] muestra-019",
+          "topic_key": "branch/wt-r01-b-par-001/base-001",
+          "content": "Branch: wt-r01-b-par-001 · Author: Persona Piloto\nSynthetic lane B revision 1",
+          "revision_count": 1
+        },
+        "mem_get_observation": "#17 [decision] [wt-r01-b-par-001] muestra-019\nBranch: wt-r01-b-par-001 · Author: Persona Piloto\nSynthetic lane B revision 1\nSession: id-local-023\nProject: r01-fixture\nScope: personal\nTopic: branch/wt-r01-b-par-001/base-001\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:33:21"
+      }
+    },
+    "tras_B": {
+      "A": {
+        "fila": {
+          "id": 16,
+          "session_id": "id-local-022",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal",
+          "title": "[wt-r01-a-par-001] muestra-018",
+          "topic_key": "branch/wt-r01-a-par-001/base-001",
+          "content": "Branch: wt-r01-a-par-001 · Author: Persona Piloto\nSynthetic lane A revision 2",
+          "revision_count": 2
+        },
+        "mem_get_observation": "#16 [decision] [wt-r01-a-par-001] muestra-018\nBranch: wt-r01-a-par-001 · Author: Persona Piloto\nSynthetic lane A revision 2\nSession: id-local-022\nProject: r01-fixture\nScope: personal\nTopic: branch/wt-r01-a-par-001/base-001\nDuplicates: 1\nRevisions: 2\nCreated: 2018-09-02 20:33:21"
+      },
+      "B": {
+        "fila": {
+          "id": 17,
+          "session_id": "id-local-023",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal",
+          "title": "[wt-r01-b-par-001] muestra-019",
+          "topic_key": "branch/wt-r01-b-par-001/base-001",
+          "content": "Branch: wt-r01-b-par-001 · Author: Persona Piloto\nSynthetic lane B revision 2",
+          "revision_count": 2
+        },
+        "mem_get_observation": "#17 [decision] [wt-r01-b-par-001] muestra-019\nBranch: wt-r01-b-par-001 · Author: Persona Piloto\nSynthetic lane B revision 2\nSession: id-local-023\nProject: r01-fixture\nScope: personal\nTopic: branch/wt-r01-b-par-001/base-001\nDuplicates: 1\nRevisions: 2\nCreated: 2018-09-02 20:33:21"
+      }
+    }
+  },
+  "comparacion_filas_completas": {
+    "B_inicial_igual_a_B_tras_A": true,
+    "A_tras_A_igual_a_A_tras_B": true
+  }
+}

@@ -1,0 +1,307 @@
+{
+  "study": "Q11",
+  "model": "gpt-6.2-sol",
+  "reasoning_effort": "low",
+  "codex_version": "0.169.0-alpha.11.1",
+  "engram_version": "3.6.2",
+  "synthetic_project": "r01-q11",
+  "branch": "feat/q11",
+  "baseline": "Protocolo vigente del repo, Engram MCP local directo, base semilla restaurada antes de cada sesión.",
+  "treatment": "Mismo protocolo, borrador completo del Apéndice A, línea de contexto inicial del ensayo y proxy B stdio apuntando a la misma base semilla. Sin Engram Cloud remoto.",
+  "reference_prompt": "En este proyecto de laboratorio, buscá en la memoria el registro sintético \"lote Q11 azafran\". Respondé con el código de color de ese registro en una sola línea. Es una consulta de lectura.",
+  "reference_observation": {
+    "title": "lote Q11 azafran",
+    "content": "Valor del código de color del lote Q11 azafran: MALVA-47."
+  },
+  "artifacts": {
+    "appendix_A_utf8_bytes": 1769
+  },
+  "preflight": "Las instrucciones normalizadas y los esquemas de herramientas coincidieron en los dos perfiles evaluados. Los hashes originales se conservan en la evidencia privada.",
+  "measurements": [
+    {
+      "sequence": 1,
+      "mode": "base",
+      "started": "2018-09-02T23:51:40.537301+00:00",
+      "elapsed_s": 12.64,
+      "usage": [
+        {
+          "input_tokens": 78904,
+          "cached_input_tokens": 63360,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 169,
+          "reasoning_output_tokens": 0
+        }
+      ],
+      "tools": [
+        {
+          "server": "engram",
+          "tool": "mem_context",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_search",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_get_observation",
+          "status": "completed"
+        }
+      ],
+      "final": "MALVA-47"
+    },
+    {
+      "sequence": 2,
+      "mode": "engram-cloud",
+      "started": "2018-09-02T23:51:53.185803+00:00",
+      "elapsed_s": 93.95,
+      "usage": [
+        {
+          "input_tokens": 83567,
+          "cached_input_tokens": 68480,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 177,
+          "reasoning_output_tokens": 10
+        }
+      ],
+      "tools": [
+        {
+          "server": "engram",
+          "tool": "mem_context",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_search",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_get_observation",
+          "status": "completed"
+        }
+      ],
+      "final": "MALVA-47"
+    },
+    {
+      "sequence": 3,
+      "mode": "engram-cloud",
+      "started": "2018-09-02T23:53:27.151582+00:00",
+      "elapsed_s": 12.94,
+      "usage": [
+        {
+          "input_tokens": 83604,
+          "cached_input_tokens": 68224,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 173,
+          "reasoning_output_tokens": 21
+        }
+      ],
+      "tools": [
+        {
+          "server": "engram",
+          "tool": "mem_context",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_search",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_get_observation",
+          "status": "completed"
+        }
+      ],
+      "final": "MALVA-47"
+    },
+    {
+      "sequence": 4,
+      "mode": "base",
+      "started": "2018-09-02T23:53:40.098267+00:00",
+      "elapsed_s": 14.2,
+      "usage": [
+        {
+          "input_tokens": 81391,
+          "cached_input_tokens": 75904,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 189,
+          "reasoning_output_tokens": 11
+        }
+      ],
+      "tools": [
+        {
+          "server": "engram",
+          "tool": "mem_context",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_search",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_get_observation",
+          "status": "completed"
+        }
+      ],
+      "final": "MALVA-47"
+    },
+    {
+      "sequence": 5,
+      "mode": "base",
+      "started": "2018-09-02T23:53:54.316984+00:00",
+      "elapsed_s": 18.14,
+      "usage": [
+        {
+          "input_tokens": 92580,
+          "cached_input_tokens": 85248,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 246,
+          "reasoning_output_tokens": 12
+        }
+      ],
+      "tools": [
+        {
+          "server": "engram",
+          "tool": "mem_context",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_search",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_get_observation",
+          "status": "completed"
+        }
+      ],
+      "final": "MALVA-47"
+    },
+    {
+      "sequence": 6,
+      "mode": "engram-cloud",
+      "started": "2018-09-02T23:54:12.464301+00:00",
+      "elapsed_s": 12.63,
+      "usage": [
+        {
+          "input_tokens": 83598,
+          "cached_input_tokens": 68224,
+          "cache_write_input_tokens": 0,
+          "output_tokens": 198,
+          "reasoning_output_tokens": 22
+        }
+      ],
+      "tools": [
+        {
+          "server": "engram",
+          "tool": "mem_context",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_search",
+          "status": "completed"
+        },
+        {
+          "server": "engram",
+          "tool": "mem_get_observation",
+          "status": "completed"
+        }
+      ],
+      "final": "MALVA-47"
+    }
+  ],
+  "pairs": [
+    {
+      "pair": 1,
+      "order": [
+        "base",
+        "engram-cloud"
+      ],
+      "baseline_run": 1,
+      "cloud_run": 2,
+      "delta": {
+        "input": 4663,
+        "cached": 5120,
+        "uncached": -457,
+        "output": 8,
+        "reasoning": 10,
+        "calls": 0
+      }
+    },
+    {
+      "pair": 2,
+      "order": [
+        "engram-cloud",
+        "base"
+      ],
+      "baseline_run": 4,
+      "cloud_run": 3,
+      "delta": {
+        "input": 2213,
+        "cached": -7680,
+        "uncached": 9893,
+        "output": -16,
+        "reasoning": 10,
+        "calls": 0
+      }
+    },
+    {
+      "pair": 3,
+      "order": [
+        "base",
+        "engram-cloud"
+      ],
+      "baseline_run": 5,
+      "cloud_run": 6,
+      "delta": {
+        "input": -8982,
+        "cached": -17024,
+        "uncached": 8042,
+        "output": -48,
+        "reasoning": 10,
+        "calls": 0
+      }
+    }
+  ],
+  "totals": {
+    "base": {
+      "input": 252875,
+      "cached": 224512,
+      "uncached": 28363,
+      "output": 604,
+      "reasoning": 23,
+      "calls": 9
+    },
+    "engram-cloud": {
+      "input": 250769,
+      "cached": 204928,
+      "uncached": 45841,
+      "output": 548,
+      "reasoning": 53,
+      "calls": 9
+    }
+  },
+  "delta_sums": {
+    "input": -2106,
+    "cached": -19584,
+    "uncached": 17478,
+    "output": -56,
+    "reasoning": 30,
+    "calls": 0
+  },
+  "pooled_input_delta_pct": -0.83,
+  "input_delta_pct_per_pair": [
+    5.91,
+    2.72,
+    -9.7
+  ],
+  "cache_note": "cached_input_tokens incluido en input_tokens; no sumar ambos. Los pares se ejecutaron en secuencia con orden alternado y no se reinició la caché del proveedor.",
+  "acceptance_threshold": null
+}

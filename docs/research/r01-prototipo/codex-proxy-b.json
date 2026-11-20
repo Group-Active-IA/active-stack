@@ -1,0 +1,206 @@
+[
+  {
+    "thread_id": "id-local-024",
+    "client_and_mcp_cwd": "laboratorio/repositorio",
+    "saves": [
+      {
+        "branch": "feat/R-01",
+        "model_emission": {
+          "scope": "personal",
+          "type": "decision",
+          "title": "muestra-020",
+          "content": "Synthetic R01",
+          "topic_key": "muestra-020",
+          "project": "r01-fixture"
+        },
+        "codex_dispatch_and_proxy_incoming": {
+          "session_id": "id-local-024",
+          "title": "muestra-020",
+          "topic_key": "muestra-020",
+          "content": "Synthetic R01",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal"
+        },
+        "proxy_upstream": {
+          "session_id": "id-local-024",
+          "title": "[feat-r-01] muestra-020",
+          "topic_key": "branch/feat-r-01/muestra-020",
+          "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic R01",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal"
+        },
+        "differing_fields": [
+          "content",
+          "title",
+          "topic_key"
+        ],
+        "engram_response": {
+          "id": 12,
+          "project_source": "explicit_override"
+        },
+        "mem_get_observation": "#12 [decision] [feat-r-01] muestra-020\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic R01\nSession: id-local-024\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-020\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:26:43",
+        "stored_row": {
+          "project": "r01-fixture",
+          "session_id": "id-local-024",
+          "title": "[feat-r-01] muestra-020",
+          "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic R01",
+          "topic_key": "branch/feat-r-01/muestra-020",
+          "type": "decision",
+          "scope": "personal"
+        }
+      },
+      {
+        "branch": "r01-segunda",
+        "model_emission": {
+          "scope": "personal",
+          "type": "decision",
+          "title": "muestra-021",
+          "content": "Synthetic R01",
+          "topic_key": "muestra-021",
+          "project": "r01-fixture"
+        },
+        "codex_dispatch_and_proxy_incoming": {
+          "session_id": "id-local-024",
+          "title": "muestra-021",
+          "topic_key": "muestra-021",
+          "content": "Synthetic R01",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal"
+        },
+        "proxy_upstream": {
+          "session_id": "id-local-024",
+          "title": "[r01-segunda] muestra-021",
+          "topic_key": "branch/r01-segunda/muestra-021",
+          "content": "Branch: r01-segunda · Author: Persona Piloto\nSynthetic R01",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal"
+        },
+        "differing_fields": [
+          "content",
+          "title",
+          "topic_key"
+        ],
+        "engram_response": {
+          "id": 13,
+          "project_source": "explicit_override"
+        },
+        "mem_get_observation": "#13 [decision] [r01-segunda] muestra-021\nBranch: r01-segunda · Author: Persona Piloto\nSynthetic R01\nSession: id-local-024\nProject: r01-fixture\nScope: personal\nTopic: branch/r01-segunda/muestra-021\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:26:44",
+        "stored_row": {
+          "project": "r01-fixture",
+          "session_id": "id-local-024",
+          "title": "[r01-segunda] muestra-021",
+          "content": "Branch: r01-segunda · Author: Persona Piloto\nSynthetic R01",
+          "topic_key": "branch/r01-segunda/muestra-021",
+          "type": "decision",
+          "scope": "personal"
+        }
+      }
+    ]
+  },
+  {
+    "thread_id": "id-local-025",
+    "client_and_mcp_cwd": "laboratorio/repositorio",
+    "saves": [
+      {
+        "branch": "feat/R-01",
+        "model_emission": {
+          "scope": "personal",
+          "type": "decision",
+          "title": "muestra-022",
+          "content": "Synthetic R01",
+          "topic_key": "muestra-022",
+          "project": "r01-fixture"
+        },
+        "codex_dispatch_and_proxy_incoming": {
+          "session_id": "id-local-025",
+          "title": "muestra-022",
+          "topic_key": "muestra-022",
+          "content": "Synthetic R01",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal"
+        },
+        "proxy_upstream": {
+          "session_id": "id-local-025",
+          "title": "[feat-r-01] muestra-022",
+          "topic_key": "branch/feat-r-01/muestra-022",
+          "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic R01",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal"
+        },
+        "differing_fields": [
+          "content",
+          "title",
+          "topic_key"
+        ],
+        "engram_response": {
+          "id": 14,
+          "project_source": "explicit_override"
+        },
+        "mem_get_observation": "#14 [decision] [feat-r-01] muestra-022\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic R01\nSession: id-local-025\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-022\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:27:14",
+        "stored_row": {
+          "project": "r01-fixture",
+          "session_id": "id-local-025",
+          "title": "[feat-r-01] muestra-022",
+          "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic R01",
+          "topic_key": "branch/feat-r-01/muestra-022",
+          "type": "decision",
+          "scope": "personal"
+        }
+      },
+      {
+        "branch": "r01-segunda",
+        "model_emission": {
+          "scope": "personal",
+          "type": "decision",
+          "title": "muestra-023",
+          "content": "Synthetic R01",
+          "topic_key": "muestra-023",
+          "project": "r01-fixture"
+        },
+        "codex_dispatch_and_proxy_incoming": {
+          "session_id": "id-local-025",
+          "title": "muestra-023",
+          "topic_key": "muestra-023",
+          "content": "Synthetic R01",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal"
+        },
+        "proxy_upstream": {
+          "session_id": "id-local-025",
+          "title": "[r01-segunda] muestra-023",
+          "topic_key": "branch/r01-segunda/muestra-023",
+          "content": "Branch: r01-segunda · Author: Persona Piloto\nSynthetic R01",
+          "project": "r01-fixture",
+          "type": "decision",
+          "scope": "personal"
+        },
+        "differing_fields": [
+          "content",
+          "title",
+          "topic_key"
+        ],
+        "engram_response": {
+          "id": 15,
+          "project_source": "explicit_override"
+        },
+        "mem_get_observation": "#15 [decision] [r01-segunda] muestra-023\nBranch: r01-segunda · Author: Persona Piloto\nSynthetic R01\nSession: id-local-025\nProject: r01-fixture\nScope: personal\nTopic: branch/r01-segunda/muestra-023\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:27:14",
+        "stored_row": {
+          "project": "r01-fixture",
+          "session_id": "id-local-025",
+          "title": "[r01-segunda] muestra-023",
+          "content": "Branch: r01-segunda · Author: Persona Piloto\nSynthetic R01",
+          "topic_key": "branch/r01-segunda/muestra-023",
+          "type": "decision",
+          "scope": "personal"
+        }
+      }
+    ]
+  }
+]

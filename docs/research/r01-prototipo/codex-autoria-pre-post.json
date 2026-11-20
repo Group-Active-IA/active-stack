@@ -1,0 +1,120 @@
+{
+  "join_key": "tool_use_id",
+  "capture_scope": "Dos guardados sintéticos en padre e hijo. El observador no guarda el título, el contenido ni el topic_key.",
+  "guardados": [
+    {
+      "caller_confirmado_por_rollout": "parent",
+      "thread_id": "id-local-005",
+      "call_id_rollout": "llamada-003",
+      "join_pre_post": {
+        "tool_use_id": "llamada-003",
+        "pre": {
+          "tool_use_id": "llamada-003",
+          "session_id": "id-local-005",
+          "phase": "PreToolUse"
+        },
+        "post": {
+          "tool_use_id": "llamada-003",
+          "session_id": "id-local-005",
+          "phase": "PostToolUse",
+          "observation_id": 25
+        }
+      },
+      "native_handler_completions": [
+        {
+          "source": "user",
+          "eventName": "preToolUse",
+          "status": "completed"
+        },
+        {
+          "source": "plugin",
+          "eventName": "preToolUse",
+          "status": "completed"
+        },
+        {
+          "source": "user",
+          "eventName": "postToolUse",
+          "status": "completed"
+        }
+      ],
+      "model_emission": {
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "title": "muestra-006",
+        "topic_key": "muestra-007",
+        "content": "Synthetic orchard of lemons with painted yellow baskets"
+      },
+      "id_en_respuesta_del_rollout": 25,
+      "fila": {
+        "id": 25,
+        "session_id": "id-local-005",
+        "scope": "personal",
+        "type": "decision",
+        "project": "r01-fixture",
+        "title": "[feat-r-01] muestra-006",
+        "topic_key": "branch/feat-r-01/muestra-007",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic orchard of lemons with painted yellow baskets"
+      },
+      "mem_get_observation": "#25 [decision] [feat-r-01] muestra-006\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic orchard of lemons with painted yellow baskets\nSession: id-local-005\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-007\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:45:10"
+    },
+    {
+      "caller_confirmado_por_rollout": "child",
+      "thread_id": "id-local-006",
+      "call_id_rollout": "llamada-004",
+      "join_pre_post": {
+        "tool_use_id": "llamada-004",
+        "pre": {
+          "tool_use_id": "llamada-004",
+          "session_id": "id-local-005",
+          "agent_id": "id-local-006",
+          "phase": "PreToolUse"
+        },
+        "post": {
+          "tool_use_id": "llamada-004",
+          "session_id": "id-local-005",
+          "agent_id": "id-local-006",
+          "phase": "PostToolUse",
+          "observation_id": 26
+        }
+      },
+      "native_handler_completions": [
+        {
+          "source": "user",
+          "eventName": "preToolUse",
+          "status": "completed"
+        },
+        {
+          "source": "plugin",
+          "eventName": "preToolUse",
+          "status": "completed"
+        },
+        {
+          "source": "user",
+          "eventName": "postToolUse",
+          "status": "completed"
+        }
+      ],
+      "model_emission": {
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "title": "muestra-006",
+        "topic_key": "muestra-008",
+        "content": "Synthetic laboratory of coastal astronomy and red constellations"
+      },
+      "id_en_respuesta_del_rollout": 26,
+      "fila": {
+        "id": 26,
+        "session_id": "id-local-005",
+        "scope": "personal",
+        "type": "decision",
+        "project": "r01-fixture",
+        "title": "[feat-r-01] muestra-006",
+        "topic_key": "branch/feat-r-01/muestra-008",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic laboratory of coastal astronomy and red constellations"
+      },
+      "mem_get_observation": "#26 [decision] [feat-r-01] muestra-006\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic laboratory of coastal astronomy and red constellations\nSession: id-local-005\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-008\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:45:11"
+    }
+  ]
+}

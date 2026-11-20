@@ -1,0 +1,108 @@
+{
+  "versiones": {
+    "codex": "0.169.0-alpha.11.1",
+    "engram": "3.6.2",
+    "plugin": "0.1.5"
+  },
+  "spawn_wait": {
+    "sender_thread_id": "id-local-020",
+    "receiver_thread_id": "id-local-021",
+    "wait_status": "completed"
+  },
+  "guardados": [
+    {
+      "caller": "parent",
+      "rollout_file": "rollout-2026-11-19T20-36-18-id-local-020.jsonl",
+      "thread_id": "id-local-020",
+      "call_id": "llamada-009",
+      "codex_namespace": "mcp__engram",
+      "codex_tool": "mem_save",
+      "model_and_rollout_args": {
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "title": "muestra-016",
+        "topic_key": "muestra-016",
+        "content": "Synthetic caller parent"
+      },
+      "rollout_cwd_and_proxy_cwd": "laboratorio/repositorio",
+      "proxy_incoming": {
+        "session_id": "id-local-020",
+        "title": "muestra-016",
+        "topic_key": "muestra-016",
+        "content": "Synthetic caller parent",
+        "project": "r01-fixture",
+        "type": "decision",
+        "scope": "personal"
+      },
+      "proxy_upstream": {
+        "session_id": "id-local-020",
+        "title": "[feat-r-01] muestra-016",
+        "topic_key": "branch/feat-r-01/muestra-016",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic caller parent",
+        "project": "r01-fixture",
+        "type": "decision",
+        "scope": "personal"
+      },
+      "tool_output_id": 18,
+      "project_source": "explicit_override",
+      "stored_row": {
+        "project": "r01-fixture",
+        "session_id": "id-local-020",
+        "title": "[feat-r-01] muestra-016",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic caller parent",
+        "topic_key": "branch/feat-r-01/muestra-016",
+        "type": "decision",
+        "scope": "personal"
+      },
+      "mem_get_observation": "#18 [decision] [feat-r-01] muestra-016\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic caller parent\nSession: id-local-020\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-016\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:36:18"
+    },
+    {
+      "caller": "child",
+      "rollout_file": "rollout-2026-11-19T20-36-18-id-local-021.jsonl",
+      "thread_id": "id-local-021",
+      "call_id": "llamada-010",
+      "codex_namespace": "mcp__engram",
+      "codex_tool": "mem_save",
+      "model_and_rollout_args": {
+        "type": "decision",
+        "scope": "personal",
+        "project": "r01-fixture",
+        "title": "muestra-017",
+        "topic_key": "muestra-017",
+        "content": "Synthetic caller child"
+      },
+      "rollout_cwd_and_proxy_cwd": "laboratorio/repositorio",
+      "proxy_incoming": {
+        "session_id": "id-local-020",
+        "title": "muestra-017",
+        "topic_key": "muestra-017",
+        "content": "Synthetic caller child",
+        "project": "r01-fixture",
+        "type": "decision",
+        "scope": "personal"
+      },
+      "proxy_upstream": {
+        "session_id": "id-local-020",
+        "title": "[feat-r-01] muestra-017",
+        "topic_key": "branch/feat-r-01/muestra-017",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic caller child",
+        "project": "r01-fixture",
+        "type": "decision",
+        "scope": "personal"
+      },
+      "tool_output_id": 19,
+      "project_source": "explicit_override",
+      "stored_row": {
+        "project": "r01-fixture",
+        "session_id": "id-local-020",
+        "title": "[feat-r-01] muestra-017",
+        "content": "Branch: feat/R-01 · Author: Persona Piloto\nSynthetic caller child",
+        "topic_key": "branch/feat-r-01/muestra-017",
+        "type": "decision",
+        "scope": "personal"
+      },
+      "mem_get_observation": "#19 [decision] [feat-r-01] muestra-017\nBranch: feat/R-01 · Author: Persona Piloto\nSynthetic caller child\nSession: id-local-020\nProject: r01-fixture\nScope: personal\nTopic: branch/feat-r-01/muestra-017\nDuplicates: 1\nRevisions: 1\nCreated: 2018-09-02 20:36:19"
+    }
+  ]
+}
