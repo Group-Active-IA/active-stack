@@ -18,10 +18,12 @@ dependencies or remote fields.
    looking up tasks and updating that file. A missing or ambiguous link requires
    resolution in that workflow. Never infer a match from a similar title or
    create a task during reconciliation.
-2. On a successful read, persist the linked task's last confirmed status,
-   assignee, link and timestamp in the repo snapshot. Store it once per item in
-   `.active-stack/roadmap-state.json`. Treat the timestamp as the time of the
-   successful observation. If the read fails or the connector or link is
+2. On a successful read, use the `active-roadmap` reconcile action to store one
+   last confirmed status, assignee and timestamp per linked task. In team mode the
+   helper stores observations in its Git-local worktree journal and shares the
+   links in `.active-stack/roadmap-state.json`. In individual mode the existing
+   repo snapshot remains the observation store. Treat the timestamp as the time
+   of the successful observation. If the read fails or the connector or link is
    unavailable, preserve the last confirmed observation and its timestamp.
    Record reconciliation as pending with the reason and continue local work
    within its agreed scope. Report status or assignment as unconfirmed if no
@@ -33,3 +35,10 @@ dependencies or remote fields.
    status change, assignment or closure. Keep read reconciliation separate from
    publication. Report local results and the confirmed remote observation or
    pending reconciliation in the delivery summary.
+
+For an authorized team write, use the `active-roadmap` team flow. Derive the ficha
+from the stable ID and branch, use `link_pr` to add a verified PR to its linked
+task, and use `close` after checking the merged PR and its reachable merge SHA.
+Preserve the local handoff even if ClickUp is unavailable. A read reconciliation
+can expose a different remote assignee. A separate authorized `assign` preview
+lets the operator reconcile the assignment from the confirmed team roster.

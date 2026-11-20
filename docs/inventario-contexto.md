@@ -72,7 +72,7 @@ Las cinco más grandes están en negrita: Skill tup-campus-navigator (60.699 B),
 | 9 | Skill postgresql-table-design | skill | 16.082 | terceros @782565f7 |
 | 10 | Skill tailwind-design-system | skill | 15.730 | terceros @782565f7 |
 | 11 | Skill interface-design | skill | 14.925 | terceros @782565f7 |
-| 12 | Skill active-roadmap | skill | 13.283 | embebida |
+| 12 | Skill active-roadmap | skill | 13.818 | embebida |
 | 13 | Skill dashboard-crud-page | skill | 12.759 | terceros @782565f7 |
 | 14 | Skill fastapi-domain-service | skill | 12.746 | terceros @782565f7 |
 | 15 | Skill roadmap-generator | skill | 12.384 | terceros @deaabe9d |
