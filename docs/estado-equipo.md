@@ -34,8 +34,8 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-04 | Gianfranco | — | omitida | | | Absorbida en R-10 y R-18 |
 | R-05 | Juan Cruz | R-01 | mergeada | [#35](https://github.com/Group-Active-IA/active-stack/pull/35) | `ebcbb17` | Puerta G0 cerrada para Claude + Windows. B (proxy) con vías narrativas; DA-02/05/09/12 registradas. Aviso: plugin de Claude desactualizado, ver [informe](equipo/informes/R-05.md) |
 | R-06 | Emiliano | — | mergeada | [#30](https://github.com/Group-Active-IA/active-stack/pull/30) | `1cfe767` | Contrato y validador `team.py`; desbloquea R-09, R-10 y R-11 |
-| R-07 | Giuliano | R-05 | pendiente | | | |
-| R-08 | Emiliano | R-05 | pendiente | | | |
+| R-07 | Giuliano | R-05 | pendiente | | | Habilitada. [Ficha lista](equipo/fichas/R-07.md) |
+| R-08 | Emiliano | R-05 | pendiente | | | Habilitada. [Ficha lista](equipo/fichas/R-08.md); T-F4-4 con el caso de colisión `(TBD)` hasta que decida el dueño |
 | R-09 | Emiliano | R-06 | pendiente | | | Repo externo |
 | R-10 | Gianfranco | R-06 | mergeada | [orchestrator #7](https://github.com/Group-Active-IA/active-orchestrator/pull/7) · [agent-instruction #2](https://github.com/JuanCruzRobledo/agent-instruction/pull/2) · [stack #34](https://github.com/Group-Active-IA/active-stack/pull/34) | orchestrator `32142a9` · agent-instruction `c9f371c` · stack `17a276d` | Repos externos mergeados desde forks. El bump del `ref` en `harnesses.yaml` queda para R-20. Sin validador en OpenCode/Antigravity (la fase valida con reglas escritas) |
 | R-11 | Matías | R-06 | pendiente | | | |
@@ -70,7 +70,7 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 |---|---|---|
 | DA-01 | Opción (a): se versionan `team.json` y los vínculos de fichas con ClickUp; observaciones de cada sincronización, `team.local.json` y `me.local.json` quedan locales | 2026-11-19 |
 | DA-02 (Engram, Claude) | Tope de sobrecosto de B: entrada sin caché ≤ +15 % de la línea base y ≤ 3.000 tokens por sesión de 3 guardados (medido: mediana +4,3 %, máx +15,0 % / +2.411). Codex: se re-mide en R-08 `(TBD)`. Decidida por delegación del dueño | 2026-11-19 |
-| DA-05 | Vía **B (proxy)** para Claude (R-05, Windows + Claude Code 2.1.327, Engram 3.7.2, plugin 0.1.22). Q3 pasa con el plugin real para hook y proxy; B se mantiene porque no depende del orden de hooks (el hook perdió etiqueta bajo carga). B ahora cubre también resumen, finalize, prompt y captura pasiva. Límite: si el proxy termina, el siguiente guardado falla (visto en Codex). Evidencia: [matriz](research/r05-windows-claude/matriz-claude-windows.md) | 2026-11-19 |
+| DA-05 | Vía **B (proxy)** para Claude (R-05, Windows + Claude Code 2.1.327, Engram 3.7.2, plugin 0.1.22). Con el plugin real, hook y proxy pasan en secuencia (6/6), pero bajo carga el **hook falla 3 de 12 (9/12) y B 0 de 12 (12/12)**: el hook se ejecuta bien y su reescritura se descarta porque corre en paralelo con el `PreToolUse` del plugin (orden no especificado). Un hook de Claude **no puede ser el mecanismo de entrega**; B sí. B cubre también resumen, finalize, prompt y captura pasiva. Límite: si el proxy termina, el siguiente guardado falla (visto en Codex; en Claude no ejecutado). Evidencia: [matriz](research/r05-windows-claude/matriz-claude-windows.md) | 2026-11-19 |
 | DA-09 | No se hace la Fase 8: la lectura de rama no pide confirmación (Claude en 3 modos; Codex en 2). Se reabre si R-14/R-16 mide un pedido en el cierre completo | 2026-11-19 |
 | DA-12 | Garantía de etiquetado por agente: Claude + Windows pasa V1–V5, V7, V9, V12, V13 y vías narrativas; V8 interactivo y V9 con proxy terminado no ejecutados; Codex parcial. Nada se activa solo | 2026-11-19 |
 | DA-04 | La fundación ofrece proteger `main` solo con confirmación; si el plan o los permisos no lo permiten, lo dice y deja la convención escrita (lo que R-10 ya implementa). La cuenta del dueño es GitHub Free | 2026-11-19 |
@@ -78,6 +78,10 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 
 ## Punto de reanudación
 
-**Siguiente acción:** R-05 quedó `mergeada`: **R-07 (Giuliano) y R-08 (Emiliano) están habilitadas**. R-10 quedó `mergeada` (R-19 espera a R-17 de Giuliano). R-09 y R-11 siguen en curso. Quien tome R-07/R-08 debe fijar y verificar la versión del plugin de Engram para Claude (el stack hoy no lo instala; ver informe de R-05).
+**Siguiente acción:** R-05 quedó `mergeada`: **R-07 (Giuliano) y R-08 (Emiliano) están habilitadas** y tienen ficha. R-10 quedó `mergeada` (R-19 espera a R-17 de Giuliano). R-09 y R-11 siguen en curso.
+**Decisiones pendientes del dueño (no bloquean R-07 ni R-08, sí a R-13, R-14 y R-16):**
+1. **Forma de entrega del etiquetado en Claude.** El plan [EN] (Fases 5–6) da por hecho un hook; R-05 demostró que un hook no es fiable en Claude y se eligió el proxy B (DA-05). Hay que decidir si el producto entrega B (proxy dentro de `active-stack`, registrado como MCP) y reescribir las Fases 5–6, antes de que Giuliano empiece R-13. Codex sigue sin re-medirse (R-08 lo re-mide `(TBD)`).
+2. **Colisión de slugs** (`feat/una` vs `feat-una`): ver [R-08](equipo/fichas/R-08.md).
+**Riesgos detectados que ninguna ficha cubre todavía:** el stack no instala ni verifica el plugin de Engram para Claude (0.1.0 en vez de 0.1.22+); un `engram serve` huérfano o de otra base hace que el plugin bloquee los guardados con «identidad del servidor local sin confirmar»; falta `jq` en la máquina del dueño y el plugin lo usa. Candidatas: `verify` (Fase 10) y la instalación (Fase 9). Detalle en la [matriz de R-05](research/r05-windows-claude/matriz-claude-windows.md).
 **Bloqueos vigentes:** ninguno.
 **Autorizaciones vigentes:** ninguna de excepción.

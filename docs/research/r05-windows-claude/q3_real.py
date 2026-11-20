@@ -16,7 +16,9 @@ def corre(modo, rama="feat/R-05-real"):
     s = resumen(r); s.pop("usage", None); s["tools"] = [t["name"] for t in s["tools"]]
     f = filas(base)
     ok = bool(f) and f[0]["sesion"] == s.get("claude_session") and f[0]["titulo"].startswith("[")
-    return {"modo": modo, "etiquetado_y_sesion_correcta": ok, "resumen": s, "filas": f}
+    log = base / "hook.log"
+    hl = [json.loads(x) for x in log.read_text(encoding="utf-8").splitlines()] if log.exists() else []
+    return {"modo": modo, "etiquetado_y_sesion_correcta": ok, "hook_log": hl, "resumen": s, "filas": f}
 
 if __name__ == "__main__":
     print(json.dumps(corre(sys.argv[1]), indent=1, ensure_ascii=False, default=str))

@@ -1,0 +1,36 @@
+{
+ "modo": "hooklog",
+ "etiquetado_y_sesion_correcta": false,
+ "hook_log": [
+  {
+   "inicio": 1795140177.465031,
+   "seg": 0.62,
+   "rc": 0,
+   "salida": true,
+   "stderr": ""
+  }
+ ],
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save"
+  ],
+  "turnos": 5,
+  "stderr": "",
+  "claude_session": "fdcdb0d2-10ec-4a9d-b95b-6f9273d62f8a",
+  "result": "OK",
+  "is_error": false
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "fdcdb0d2-10ec-4a9d-b95b-6f9273d62f8a",
+   "tipo": "discovery",
+   "titulo": "r05 canary",
+   "clave": "k",
+   "rev": 1,
+   "contenido": "canary r05 real"
+  }
+ ]
+}
