@@ -38,7 +38,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-08 | Emiliano | R-05 | pendiente | | | Habilitada. [Ficha lista](equipo/fichas/R-08.md); T-F4-4 con el caso de colisión `(TBD)` hasta que decida el dueño |
 | R-09 | Emiliano | R-06 | pendiente | | | Repo externo |
 | R-10 | Gianfranco | R-06 | mergeada | [orchestrator #7](https://github.com/Group-Active-IA/active-orchestrator/pull/7) · [agent-instruction #2](https://github.com/JuanCruzRobledo/agent-instruction/pull/2) · [stack #34](https://github.com/Group-Active-IA/active-stack/pull/34) | orchestrator `32142a9` · agent-instruction `c9f371c` · stack `17a276d` | Repos externos mergeados desde forks. El bump del `ref` en `harnesses.yaml` queda para R-20. Sin validador en OpenCode/Antigravity (la fase valida con reglas escritas) |
-| R-11 | Matías | R-06 | PR abierto | [PR de la rama](https://github.com/Group-Active-IA/active-stack/pulls?q=is%3Apr+head%3Afeat%2FR-11-active-delivery) | | [Informe](equipo/informes/R-11.md) |
+| R-11 | Matías | R-06 | PR abierto | [PR #46](https://github.com/Group-Active-IA/active-stack/pull/46) | | [Informe](equipo/informes/R-11.md) |
 | R-12 | Matías | R-11 | pendiente | | | |
 | R-13 | Giuliano | R-07 | pendiente | | | |
 | R-14 | Giuliano | R-13 | pendiente | | | |
