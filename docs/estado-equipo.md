@@ -16,7 +16,7 @@ Que Active Stack permita trabajar en equipo de forma automática en un proyecto 
 | Matías | `(TBD)` | Verificación de Engram Cloud, entrega, ClickUp |
 | Emiliano | `cachi001` | Roadmap, contrato, motor de memoria, documentación |
 | Giuliano | `(TBD)` | Apoyo en R-01, instrucciones y hooks de Engram, verify |
-| Gianfranco | `(TBD)` | Fundación en modo equipo, permisos |
+| Gianfranco | `Gianfranco05` | Fundación en modo equipo, permisos |
 | Juan Cruz (dueño) | `JuanCruzRobledo` | Revisión, integración, pilotos |
 
 El usuario de GitHub sirve para confirmar la identidad de quien dice «soy X». Hasta completarlo, el agente pregunta y la persona confirma.
@@ -37,7 +37,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-07 | Giuliano | R-05 | pendiente | | | |
 | R-08 | Emiliano | R-05 | pendiente | | | |
 | R-09 | Emiliano | R-06 | pendiente | | | Repo externo |
-| R-10 | Gianfranco | R-06 | pendiente | | | Repos externos |
+| R-10 | Gianfranco | R-06 | mergeada | [orchestrator #7](https://github.com/Group-Active-IA/active-orchestrator/pull/7) · [agent-instruction #2](https://github.com/JuanCruzRobledo/agent-instruction/pull/2) · [stack #34](https://github.com/Group-Active-IA/active-stack/pull/34) | orchestrator `32142a9` · agent-instruction `c9f371c` · stack `17a276d` | Repos externos mergeados desde forks. El bump del `ref` en `harnesses.yaml` queda para R-20. Sin validador en OpenCode/Antigravity (la fase valida con reglas escritas) |
 | R-11 | Matías | R-06 | pendiente | | | |
 | R-12 | Matías | R-11 | pendiente | | | |
 | R-13 | Giuliano | R-07 | pendiente | | | |
@@ -73,10 +73,11 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 | DA-05 | Vía **B (proxy)** para Claude (R-05, Windows + Claude Code 2.1.327, Engram 3.7.2, plugin 0.1.22). Q3 pasa con el plugin real para hook y proxy; B se mantiene porque no depende del orden de hooks (el hook perdió etiqueta bajo carga). B ahora cubre también resumen, finalize, prompt y captura pasiva. Límite: si el proxy termina, el siguiente guardado falla (visto en Codex). Evidencia: [matriz](research/r05-windows-claude/matriz-claude-windows.md) | 2026-11-19 |
 | DA-09 | No se hace la Fase 8: la lectura de rama no pide confirmación (Claude en 3 modos; Codex en 2). Se reabre si R-14/R-16 mide un pedido en el cierre completo | 2026-11-19 |
 | DA-12 | Garantía de etiquetado por agente: Claude + Windows pasa V1–V5, V7, V9, V12, V13 y vías narrativas; V8 interactivo y V9 con proxy terminado no ejecutados; Codex parcial. Nada se activa solo | 2026-11-19 |
+| DA-04 | La fundación ofrece proteger `main` solo con confirmación; si el plan o los permisos no lo permiten, lo dice y deja la convención escrita (lo que R-10 ya implementa). La cuenta del dueño es GitHub Free | 2026-11-19 |
 | DA-10 | Canal de avisos: grupo de WhatsApp del equipo; aprueba cambios de diseño: Juan Cruz | 2026-11-19 |
 
 ## Punto de reanudación
 
-**Siguiente acción:** R-05 quedó `mergeada`: **R-07 (Giuliano) y R-08 (Emiliano) están habilitadas**. R-09, R-10 y R-11 siguen en curso. Quien tome R-07/R-08 debe fijar y verificar la versión del plugin de Engram para Claude (el stack hoy no lo instala; ver informe de R-05).
+**Siguiente acción:** R-05 quedó `mergeada`: **R-07 (Giuliano) y R-08 (Emiliano) están habilitadas**. R-10 quedó `mergeada` (R-19 espera a R-17 de Giuliano). R-09 y R-11 siguen en curso. Quien tome R-07/R-08 debe fijar y verificar la versión del plugin de Engram para Claude (el stack hoy no lo instala; ver informe de R-05).
 **Bloqueos vigentes:** ninguno.
 **Autorizaciones vigentes:** ninguna de excepción.
