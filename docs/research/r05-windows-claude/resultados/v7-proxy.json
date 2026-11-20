@@ -1,0 +1,29 @@
+{
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save"
+  ],
+  "usage": {
+   "input_tokens": 6,
+   "cache_creation_input_tokens": 16971,
+   "cache_read_input_tokens": 113621,
+   "output_tokens": 350
+  },
+  "stderr": "",
+  "result": "OK. Guardé la memoria en engram con title \"sin marcador\", content \"r05 sin marcador\", topic_key \"k\" y type \"discovery\". Quedó activa en el proyecto r05-synthetic.",
+  "is_error": false
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "sin marcador",
+   "clave": "k",
+   "rev": 1,
+   "contenido": "r05 sin marcador"
+  }
+ ]
+}

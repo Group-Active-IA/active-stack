@@ -1,0 +1,29 @@
+{
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save"
+  ],
+  "usage": {
+   "input_tokens": 6,
+   "cache_creation_input_tokens": 17012,
+   "cache_read_input_tokens": 113667,
+   "output_tokens": 368
+  },
+  "stderr": "",
+  "result": "OK. Se guardó la observación \"marcador malo\" (tipo discovery, topic_key `k`) en el proyecto r05-synthetic, id 1.",
+  "is_error": false
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "marcador malo",
+   "clave": "k",
+   "rev": 1,
+   "contenido": "r05 marcador malo"
+  }
+ ]
+}

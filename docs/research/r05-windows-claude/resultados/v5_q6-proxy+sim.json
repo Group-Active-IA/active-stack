@@ -1,0 +1,30 @@
+{
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "Agent",
+   "ToolSearch",
+   "mcp__engram__mem_save"
+  ],
+  "usage": {
+   "input_tokens": 4,
+   "cache_creation_input_tokens": 649,
+   "cache_read_input_tokens": 42939,
+   "output_tokens": 4
+  },
+  "stderr": "",
+  "result": "OK",
+  "is_error": false
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "sim-4aad1768-9806-45e6-9b4f-920c38ce9ba8",
+   "tipo": "discovery",
+   "titulo": "[feat-r-05-sub] desde subagente",
+   "clave": "branch/feat-r-05-sub/k",
+   "rev": 1,
+   "contenido": "Branch: feat/R-05-sub · Author: Juan Cruz Robledo\nr05 sub"
+  }
+ ]
+}

@@ -1,0 +1,30 @@
+{
+ "modo": "nada",
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_session_summary",
+   "mcp__engram__mem_capture_passive",
+   "mcp__engram__mem_save_prompt"
+  ],
+  "turnos": 7,
+  "stderr": "Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.\n",
+  "claude_session": "e3abdf5d-a020-4bf6-a578-91030f15e2fb",
+  "result": "OK",
+  "is_error": false
+ },
+ "observaciones": [
+  [
+   "session_summary",
+   "## Goal\nr05 resumen sintetico"
+  ],
+  [
+   "passive",
+   "r05 aprendizaje sintetico de prueba"
+  ]
+ ],
+ "prompts": [
+  "r05 prompt sintetico"
+ ]
+}

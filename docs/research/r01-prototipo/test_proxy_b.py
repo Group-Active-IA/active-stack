@@ -32,6 +32,16 @@ class ProxyB(unittest.TestCase):
                     "content": "Branch: feat/R-01 · Author: Persona Piloto\nC"}
         self.assertEqual(actual, {**req, "params": {**req["params"], "arguments": expected}})
 
+    def test_vias_narrativas_se_etiquetan_por_el_proxy(self):
+        self.fixture.git("switch", "-qc", "feat/R-05")
+        for name, campo in (("mem_session_summary", "content"), ("mem_session_finalize", "summary"),
+                            ("mem_save_prompt", "content")):
+            args = {"session_id": "S", campo: "texto"}
+            req = {"jsonrpc": "2.0", "method": "tools/call", "id": 3, "params": {"name": name, "arguments": args}}
+            actual = json.loads(self.run_proxy((json.dumps(req) + "\n").encode()))
+            esperado = {"session_id": "S", campo: "Branch: feat/R-05 · Author: Persona Piloto\ntexto"}
+            self.assertEqual(actual["params"]["arguments"], esperado, name)
+
     def test_reenvia_otros_metodos_y_guardado_sin_marcador(self):
         (self.fixture.repo / ".engram" / "active-stack.json").unlink()
         requests = [

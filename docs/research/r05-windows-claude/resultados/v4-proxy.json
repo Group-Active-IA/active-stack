@@ -1,0 +1,55 @@
+{
+ "resumen": {
+  "b": {
+   "rc": 0,
+   "tools": [
+    "mcp__engram__mem_save"
+   ],
+   "usage": {
+    "input_tokens": 4,
+    "cache_creation_input_tokens": 12754,
+    "cache_read_input_tokens": 72579,
+    "output_tokens": 138
+   },
+   "stderr": "",
+   "result": "OK",
+   "is_error": false
+  },
+  "a": {
+   "rc": 0,
+   "tools": [
+    "ToolSearch",
+    "mcp__engram__mem_save"
+   ],
+   "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 17391,
+    "cache_read_input_tokens": 114109,
+    "output_tokens": 511
+   },
+   "stderr": "",
+   "result": "OK",
+   "is_error": false
+  }
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[feat-wb] simultaneo",
+   "clave": "branch/feat-wb/k",
+   "rev": 1,
+   "contenido": "Branch: feat/wb · Author: Juan Cruz Robledo\nr05 simultaneo"
+  },
+  {
+   "id": 2,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[feat-wa] simultaneo",
+   "clave": "branch/feat-wa/k",
+   "rev": 1,
+   "contenido": "Branch: feat/wa · Author: Juan Cruz Robledo\nr05 simultaneo"
+  }
+ ]
+}

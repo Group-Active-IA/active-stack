@@ -1,0 +1,27 @@
+{
+ "modo": "proxy",
+ "etiquetado_y_sesion_correcta": true,
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save"
+  ],
+  "turnos": 5,
+  "stderr": "Warning: no stdin data received in 3s, proceeding without it. If piping from a slow command, redirect stdin explicitly: < /dev/null to skip, or wait longer.\n",
+  "claude_session": "c040a81d-0fcc-4aaf-998f-4a04917472cf",
+  "result": "OK",
+  "is_error": false
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "c040a81d-0fcc-4aaf-998f-4a04917472cf",
+   "tipo": "discovery",
+   "titulo": "[feat-r-05-real] r05 canary",
+   "clave": "branch/feat-r-05-real/k",
+   "rev": 1,
+   "contenido": "Branch: feat/R-05-real · Author: Juan Cruz Robledo\ncanary r05 real"
+  }
+ ]
+}

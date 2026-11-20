@@ -1,0 +1,29 @@
+{
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_search"
+  ],
+  "usage": {
+   "input_tokens": 6,
+   "cache_creation_input_tokens": 13246,
+   "cache_read_input_tokens": 115232,
+   "output_tokens": 173
+  },
+  "stderr": "",
+  "result": "El puerto decidido es **4381**, en la rama **feat/R-05-lect**.",
+  "is_error": false
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[feat-r-05-lect] decision puerto",
+   "clave": "branch/feat-r-05-lect/decision",
+   "rev": 1,
+   "contenido": "Branch: feat/R-05-lect · Author: Juan Cruz Robledo\nr05 usamos el puerto 4381"
+  }
+ ]
+}

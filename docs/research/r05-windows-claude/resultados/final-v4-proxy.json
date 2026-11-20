@@ -1,0 +1,60 @@
+{
+ "resumen": {
+  "b": {
+   "rc": 0,
+   "tools": [
+    "ToolSearch",
+    "mcp__engram__mem_save"
+   ],
+   "turnos": 4,
+   "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 17219,
+    "cache_read_input_tokens": 114109,
+    "output_tokens": 286
+   },
+   "stderr": "",
+   "claude_session": "db83757a-92d3-4566-b5d0-cb789551fffe",
+   "result": "OK",
+   "is_error": false
+  },
+  "a": {
+   "rc": 0,
+   "tools": [
+    "ToolSearch",
+    "mcp__engram__mem_save"
+   ],
+   "turnos": 5,
+   "usage": {
+    "input_tokens": 6,
+    "cache_creation_input_tokens": 17428,
+    "cache_read_input_tokens": 114145,
+    "output_tokens": 621
+   },
+   "stderr": "",
+   "claude_session": "4a26ea70-e7af-4d4f-8ab2-d6b6af83d990",
+   "result": "OK. Se guardó la memoria, pero quedó pendiente una revisión de conflicto con una memoria existente (`[feat-wb] simultaneo`). Si querés, la resuelvo con `mem_judge`.",
+   "is_error": false
+  }
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[feat-wb] simultaneo",
+   "clave": "branch/feat-wb/k",
+   "rev": 1,
+   "contenido": "Branch: feat/wb · Author: Juan Cruz Robledo\nr05 simultaneo"
+  },
+  {
+   "id": 2,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "[feat-wa] simultaneo",
+   "clave": "branch/feat-wa/k",
+   "rev": 1,
+   "contenido": "Branch: feat/wa · Author: Juan Cruz Robledo\nr05 simultaneo"
+  }
+ ]
+}

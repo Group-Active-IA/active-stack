@@ -1,0 +1,24 @@
+{
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save"
+  ],
+  "stderr": "",
+  "result": "OK. Guardado en engram: título \"timeout\", tipo discovery, topic_key \"k\".",
+  "is_error": false
+ },
+ "segundos": 10.6,
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "manual-save-r05-synthetic",
+   "tipo": "discovery",
+   "titulo": "timeout",
+   "clave": "k",
+   "rev": 1,
+   "contenido": "r05 timeout"
+  }
+ ]
+}

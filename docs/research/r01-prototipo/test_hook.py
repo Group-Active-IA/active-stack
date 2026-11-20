@@ -78,6 +78,38 @@ class SaveFixture(unittest.TestCase):
         sha = self.git("rev-parse", "HEAD")[:7]
         self.assertEqual(self.run_hook(self.event())["updatedInput"]["title"], f"[detached-{sha}] T")
 
+    def test_vias_de_resumen_y_captura_llevan_rama_y_autor(self):
+        """R-05: las vías narrativas anteponen la cabecera al campo de texto y no tocan clave ni título."""
+        campos = {"mem_session_summary": "content", "mem_session_finalize": "summary",
+                  "mem_save_prompt": "content"}
+        for rama, cabecera in (("feat/R-05", "Branch: feat/R-05 · Author: Persona Piloto"),
+                               ("main", "Author: Persona Piloto")):
+            self.git("switch", "-q", "main") if rama == "main" else self.git("switch", "-qc", rama)
+            for tool, campo in campos.items():
+                for prefijo in ("mcp__engram__", "mcp__plugin_engram_engram__"):
+                    entrada = {"session_id": "S", "project": "fixture", campo: "texto"}
+                    evento = {**self.event(tool=prefijo + tool), "tool_input": entrada}
+                    salida = self.run_hook(evento)["updatedInput"]
+                    self.assertEqual(salida, {**entrada, campo: cabecera + "\ntexto"}, (rama, tool))
+
+    def test_captura_pasiva_etiqueta_cada_item_porque_engram_descarta_el_resto(self):
+        """Engram extrae solo los ítems de '## Key Learnings:'; la cabecera fuera de ellos se perdería."""
+        texto = "Intro\n## Key Learnings:\n- uno\n  * dos\n3. tres\nno es item"
+        evento = {**self.event(tool="mcp__engram__mem_capture_passive"),
+                  "tool_input": {"session_id": "S", "content": texto}}
+        self.git("switch", "-qc", "feat/R-05")
+        esperado = "Intro\n## Key Learnings:\n- [feat-r-05] uno\n  * [feat-r-05] dos\n3. [feat-r-05] tres\nno es item"
+        self.assertEqual(self.run_hook(evento)["updatedInput"]["content"], esperado)
+        self.git("switch", "-q", "main")
+        self.assertIsNone(self.run_hook(evento))
+
+    def test_vias_narrativas_sin_campo_o_sin_marcador_no_se_tocan(self):
+        evento = {**self.event(tool="mcp__engram__mem_session_summary"), "tool_input": {"session_id": "S"}}
+        self.assertIsNone(self.run_hook(evento))
+        evento["tool_input"] = {"session_id": "S", "content": "x"}
+        (self.repo / ".engram" / "active-stack.json").unlink()
+        self.assertIsNone(self.run_hook(evento))
+
     def test_malformed_and_no_remote(self):
         p = subprocess.run([sys.executable, str(HOOK)], input="[]", capture_output=True, text=True)
         self.assertEqual((p.returncode, p.stdout), (0, ""))

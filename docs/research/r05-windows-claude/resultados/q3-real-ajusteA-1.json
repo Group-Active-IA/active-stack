@@ -1,0 +1,27 @@
+{
+ "modo": "ajusteA",
+ "etiquetado_y_sesion_correcta": false,
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_save"
+  ],
+  "turnos": 4,
+  "stderr": "",
+  "claude_session": "81d469fd-075e-408e-b818-50104d7d2655",
+  "result": "OK",
+  "is_error": false
+ },
+ "filas": [
+  {
+   "id": 1,
+   "sesion": "81d469fd-075e-408e-b818-50104d7d2655",
+   "tipo": "discovery",
+   "titulo": "r05 canary",
+   "clave": "k",
+   "rev": 1,
+   "contenido": "canary r05 real"
+  }
+ ]
+}

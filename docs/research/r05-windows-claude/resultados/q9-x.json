@@ -1,0 +1,14 @@
+{
+ "default": {
+  "result": "La rama actual es:\n\nfeat/R-05-p",
+  "permission_denials": []
+ },
+ "plan": {
+  "result": "feat/R-05-p",
+  "permission_denials": []
+ },
+ "acceptEdits": {
+  "result": "La rama actual es `feat/R-05-p`.",
+  "permission_denials": []
+ }
+}

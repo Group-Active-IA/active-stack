@@ -6,7 +6,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from hook import rewrite
+from hook import NARRATIVE_FIELDS, rewrite
 
 
 def trace_test_call(incoming, upstream):
@@ -28,13 +28,13 @@ def transform(line):
     if not isinstance(msg, dict) or msg.get("method") != "tools/call":
         return line
     params = msg.get("params")
-    if not isinstance(params, dict) or params.get("name") != "mem_save":
+    if not isinstance(params, dict) or params.get("name") not in ("mem_save", *NARRATIVE_FIELDS):
         return line
     args = params.get("arguments")
     if not isinstance(args, dict):
         return line
     try:
-        result = rewrite({"hook_event_name": "PreToolUse", "tool_name": "mcp__engram__mem_save",
+        result = rewrite({"hook_event_name": "PreToolUse", "tool_name": "mcp__engram__" + params["name"],
                           "tool_input": args, "cwd": os.getcwd()})
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         print(f"Etiquetado omitido ({type(error).__name__})", file=sys.stderr)
@@ -42,7 +42,8 @@ def transform(line):
     if not result:
         return line
     msg["params"]["arguments"] = result["hookSpecificOutput"]["updatedInput"]
-    trace_test_call(args, msg["params"]["arguments"])
+    if params["name"] == "mem_save":
+        trace_test_call(args, msg["params"]["arguments"])
     return (json.dumps(msg) + "\n").encode()
 
 

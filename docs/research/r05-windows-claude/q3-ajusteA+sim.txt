@@ -1,0 +1,22 @@
+"result": "OK",
+ "is_error": false
+}
+Found 1 memories:
+[1] #1 (manual) — [feat-r-05-x] r05 canary
+    Branch: feat/R-05-x · Author: Juan Cruz Robledo
+canary r05 sintetico
+    2026-11-19 22:06:22 | project: r05-synthetic | scope: project
+Could not check fo
+Found 1 memories:
+[1] #1 (manual) — [feat-r-05-x] r05 canary
+    Branch: feat/R-05-x · Author: Juan Cruz Robledo
+canary r05 sintetico
+    2026-11-19 22:06:22 | project: r05-synthetic | scope: project
+TIMELINE
+Session: r05-synthetic (2026-11-20 01:06:18.881653900)
+Total observations in session: 1
+>>> #1 [manual] [feat-r-05-x] r05 canary <<<
+    Branch: feat/R-05-x · Author: Juan Cruz Robledo
+canary r05 sintetico
+    2026-11-19 22:06:22
+BASE C:\Users\<HOME>\AppData\Local\Temp\r05 q3 n0v_jg0c

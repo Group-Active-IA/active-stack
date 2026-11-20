@@ -1,0 +1,30 @@
+{
+ "modo": "proxy",
+ "resumen": {
+  "rc": 0,
+  "tools": [
+   "ToolSearch",
+   "mcp__engram__mem_session_summary",
+   "mcp__engram__mem_capture_passive",
+   "mcp__engram__mem_save_prompt"
+  ],
+  "turnos": 7,
+  "stderr": "",
+  "claude_session": "1d711474-d1ab-45ff-b028-5d5cef173239",
+  "result": "OK",
+  "is_error": false
+ },
+ "observaciones": [
+  [
+   "session_summary",
+   "Branch: feat/R-05-nar · Author: Juan Cruz Robledo\n## Goal\nr0"
+  ],
+  [
+   "passive",
+   "[feat-r-05-nar] r05 aprendizaje sintetico de prueba"
+  ]
+ ],
+ "prompts": [
+  "Branch: feat/R-05-nar · Author: Juan Cruz Robledo\nr05 prompt"
+ ]
+}
