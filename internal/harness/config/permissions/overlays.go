@@ -27,6 +27,64 @@ var securityFloorDeny = []string{
 	"Edit(.env.*)",
 }
 
+// pushMainDeny holds the R-18 rules that block pushes to main. They ship in every
+// tier (deny wins over allow and over bypassPermissions) but are kept apart from
+// securityFloorDeny, which stays the single source of the C-21 floor.
+//
+// Measured in VE-5 (docs/equipo/fichas/R-18.md), Claude Code 2.1.330:
+//   - the legacy ":*" form matches a command prefix at a word boundary, so
+//     "git push origin main:*" does not block "main-fix";
+//   - ":*" does not work with a wildcard in the middle, so "git -C <path> push"
+//     and "git -c k=v push" need the space form "git * push ...";
+//   - "main*" would also block main-fix and maintenance, so the -C/-c cover uses
+//     two exact rules (with and without trailing arguments);
+//   - Bash(...) rules do not apply to the PowerShell tool, which needs its own.
+//
+// This is a risk reduction, not a guarantee: aliases, "bash -c", other clients
+// and the lack of a PowerShell tool are not covered. The real protection of main
+// is the GitHub branch protection (DA-04).
+var pushMainDeny = buildPushMainDeny()
+
+func buildPushMainDeny() []string {
+	// Literal command prefixes that move main (git push --force is already in the floor).
+	prefixes := []string{
+		"git push origin main",
+		"git push origin HEAD:main",
+		"git push -u origin main",
+		"git push --set-upstream origin main",
+		"git push origin refs/heads/main",
+		"git push origin HEAD:refs/heads/main",
+		"git push origin +main",
+		"git push origin :main",
+		"git push --delete origin main",
+	}
+	var rules []string
+	for _, p := range prefixes {
+		rules = append(rules, "Bash("+p+":*)")
+	}
+	// Bare "git push" cannot see the branch: block it exactly so the agent must
+	// name the branch ("git push origin <branch>" is not blocked).
+	rules = append(rules, "Bash(git push)")
+	// git -C <path> / git -c k=v: wildcard with a space, exact on "main".
+	rules = append(rules, "Bash(git * push origin main)", "Bash(git * push origin main *)")
+	for _, p := range prefixes {
+		rules = append(rules, "PowerShell("+p+")", "PowerShell("+p+" *)")
+	}
+	rules = append(rules,
+		"PowerShell(git push --force)", "PowerShell(git push --force *)",
+		"PowerShell(git push)",
+		"PowerShell(git * push origin main)", "PowerShell(git * push origin main *)",
+	)
+	return rules
+}
+
+// PushMainDeny returns a copy of the R-18 deny rules for pushes to main.
+func PushMainDeny() []string {
+	out := make([]string, len(pushMainDeny))
+	copy(out, pushMainDeny)
+	return out
+}
+
 // SecurityFloorDeny returns a copy of the security floor deny rules.
 // Exported for testing; the internal slice must not be mutated.
 func SecurityFloorDeny() []string {
@@ -59,6 +117,11 @@ var claudeAllowList = []string{
 	"Bash(go build:*)",
 	"Bash(git status)",
 	"Bash(git diff:*)",
+	// R-18: read-only GitHub CLI, so the team flow does not ask every session.
+	// "gh api user" is exact: no free arguments (no --method/-X write).
+	"Bash(gh pr list:*)",
+	"Bash(gh pr diff:*)",
+	"Bash(gh api user)",
 }
 
 // composeClaudeOverlay returns the JSON overlay bytes for Claude Code given a
@@ -70,7 +133,7 @@ func composeClaudeOverlay(tier model.PermissionTier) []byte {
 	tier = tier.Normalize()
 
 	var shape claudeSettingsShape
-	shape.Permissions.Deny = SecurityFloorDeny()
+	shape.Permissions.Deny = append(SecurityFloorDeny(), pushMainDeny...)
 
 	switch tier {
 	case model.TierEstricto:

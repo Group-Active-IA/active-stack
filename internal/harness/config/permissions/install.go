@@ -104,6 +104,14 @@ func installOne(homeDir string, adapter PermissionsAdapter, tier model.Permissio
 		return false, "", err
 	}
 
+	// R-18: MergeJSONObjects replaces arrays, which would discard the user's own
+	// allow/deny entries. Union them here (Claude only) instead of touching filemerge.
+	if adapter.Agent() == model.AgentClaude {
+		if base, readErr := osReadFile(settingsPath); readErr == nil {
+			overlay = unionClaudeArrays(base, overlay)
+		}
+	}
+
 	writeResult, err := mergeJSONFile(settingsPath, overlay)
 	if err != nil {
 		return false, "", fmt.Errorf("permissions: merge settings for agent %q: %w", adapter.Agent(), err)
