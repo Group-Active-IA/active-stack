@@ -1,0 +1,8 @@
+diff --git a/internal/x/x.go b/internal/x/x.go
+--- a/internal/x/x.go
++++ b/internal/x/x.go
+@@ -1,3 +1,3 @@
+ package x
+-func Max(a, b int) int { return a }
++func Max(a, b int) int { if a > b { return a }; return b }
++// token: ficticioficticioficticio0000

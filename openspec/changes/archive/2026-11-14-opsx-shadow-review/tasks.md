@@ -1,0 +1,50 @@
+# Tasks: opsx-shadow-review
+
+> Ronda `propose`: el piloto no corre y no toca el binario. 3.1 y 3.2 están hechas y 1.2 está parcial, como preparación en `eval/shadow/` (13/11); el resto sigue pendiente.
+> Prerrequisitos: 06 (PR #12) y 08 integradas, y 05 (PR #10) para la lista D14; protocolo de 02 (`240e1b2`) y pilotos de 09 (`89f1fa5`) disponibles para los grupos 4 y 5.
+> Primera ronda (decisión confirmada): sólo históricos y preparados, material público revisado y datos ficticios.
+
+## 0. Decisiones previas (grupo)
+
+- [ ] 0.1 Registrar proveedor, paquete de datos, acceso y métricas acordados, más tamaño de muestra, U1–U3, acuerdo mínimo de etiquetado, custodio y etiquetadores.
+- [ ] 0.2 Junto con 09, en una sola tarea compartida: obtener documentación de Jev (qué es, entrada, salida, costo, retención y entrenamiento) o registrar que no se evalúa en ninguna de las dos fichas.
+
+## 1. Muestra
+
+- [ ] 1.1 Mapear los commits `fix` de `main` al commit que introdujo cada defecto; descartar los que no se puedan ubicar. Aceptación: tabla fix → origen → archivos → requisito afectado. Borrador SZZ en `muestra-candidatos.md` (40 fixes: 6 en estrato A, 14 en B, el resto descartado o en suspenso); falta la confirmación manual por fila y la columna de requisito afectado. Sumar los `fix` nuevos de `main`: `cd4aa37` y `e4c7e48` ya tienen SZZ (42 en `d5e95bd`); faltan `4074694`, `06216ba`, `25ad5c2`, `41d7cb6` y `d3ab8b3` (47 en `0005a6f`). *14/11: mapeados los seis restantes de 48 en `8bfca74`; los seis son fixes de revisión dentro del mismo PR y quedan fuera del estrato histórico (`muestra-candidatos.md`, sección 3). Sigue faltando la confirmación manual por fila y la columna de requisito afectado.*
+- [ ] 1.2 Construir casos preparados reutilizando la familia "Revisión de un diff sembrado" de 02, ya en `main` (formato de `eval/baseline/fixtures/revision/` y regla de `eval/baseline/review`) y sumando los rechazos de 06 (recibo falso con hash correcto, mismo HEAD con diff distinto, salida truncada sin original, tests verdes sin cubrir el requisito) desde sus fixtures `eval/evidence/testdata/casos/` (06 `3c7d908`), sin reescribir el veredicto esperado y defectos de lógica con ubicación conocida. *Parcial 13/11: `eval/shadow/muestra/preparados.json` con 5 casos (diff sembrado de 02 con sus dos defectos de lógica ubicados, y los cuatro rechazos de 06), referenciados con huella fijada; etiqueta leída de la fuente y material sin pistas. Falta sumar defectos de lógica propios, en la cantidad que fije 0.1, y pasarlos por el etiquetado de 1.4. `informes/implementacion-1.2-3.1-3.2-2026-11-13.md`.*
+- [ ] 1.3 Armar controles: inspeccionar manualmente los changes candidatos y construir fixtures limpios. Un change sin fixes posteriores no entra como control sin inspección.
+- [ ] 1.4 Doble etiquetado independiente + resolución por tercero; calcular acuerdo. Congelar la muestra en un commit.
+- [ ] 1.5 Armar cada paquete histórico desde el estado previo al fix y verificar que no contiene el fix, sus mensajes, referencias, texto posterior, ramas ni etiquetas.
+
+## 2. Referencia
+
+- [ ] 2.1 Definir la revisión de referencia por caso: requisitos y escenarios, recibos de ejecución ficticios de 06 con su estado por requisito, la tabla de cobertura de 08 aplicada a las acciones del caso y decisión humana. *Estado 14/11: 08 integrado en `main` (`3e0564e`) con alcance parcial y sin matriz medida (deuda D08-0204: toda acción figura como no controlada o no probada). Se puede fijar la estructura con el formato D13 de `openspec/specs/native-controls-pilot/spec.md`; la columna de cobertura queda «no probada» hasta que 08 entregue la matriz.*
+- [ ] 2.2 Medir la referencia contra las etiquetas congeladas (VP, FP, FN por severidad).
+
+## 3. Datos
+
+- [x] 3.1 Lista de inclusión y armado del paquete con huella. *Hecho 13/11: `eval/shadow` `Build`/`FromFiles`; huella con la convención de `TreeHash` de 02, comprobada contra `fixture.TreeHash`. `informes/implementacion-1.2-3.1-3.2-2026-11-13.md`.*
+- [x] 3.2 RED: fixtures con secreto sembrado en un diff público, ruta del home, variable de entorno y `settings.json` real deben cancelar el envío. GREEN: examen previo sobre todo el paquete con la lista de patrones de 05 (D14), leída de su declaración en el catálogo (`internal/catalog`, PR #10 de 05) y no copiada. *Hecho 13/11: `eval/shadow` `Scan` con el redactor de 05 (`eval/taskcontext/redact`) y los patrones del catálogo. RED 20:50:46, GREEN 20:52:19. Hallazgo: `env-assignment` de D14 no ve líneas agregadas de un diff; 10 normaliza el diff sin cambiar D14. `informes/implementacion-1.2-3.1-3.2-2026-11-13.md`.*
+- [x] 3.3 Registro de envío por caso, candidato y proveedor. *Hecho 14/11: `eval/shadow` `SendLog.Authorize`/`Records`, JSONL append-only con caso, huella, candidato, proveedor, fecha y huella por archivo (`ReconstructFingerprint` reconstruye la del paquete). Sólo registra si el examen previo no tuvo positivos y la huella coincide. No envía nada. `informes/implementacion-3.3-4.4-2026-11-14.md`.*
+- [ ] 3.4 Verificar retención y uso para entrenamiento de cada proveedor como condiciones separadas antes del primer envío. *Parcial 14/11: la compuerta está en código (`ProviderTerms`; `Authorize` y `CheckEntry` exigen proveedor, retención y entrenamiento por separado). Falta verificar las condiciones de un proveedor real, que depende de 0.1.*
+
+## 4. Arnés en sombra
+
+- [x] 4.1 Arnés externo al binario; verificar que el diff no toca `cmd/` ni `internal/`. *Hecho 14/11: `git diff --name-only origin/main...HEAD -- cmd internal` vacío y ningún `.go` de `cmd/` o `internal/` importa `eval/shadow`. `informes/implementacion-3.3-4.4-2026-11-14.md`.*
+- [x] 4.2 Almacén fuera del árbol, con huella y acceso restringido al custodio; apertura sólo con caso cerrado definitivamente. RED: intento de lectura anticipada desde el rol de referencia o etiquetado debe denegarse y registrarse. *Hecho 14/11: `eval/shadow` `Store`: rechaza un directorio dentro del repo y un custodio vacío, guarda una sola vez con huella (0700/0600), abre sólo al custodio con decisión de referencia y etiquetas congeladas, verifica la huella y registra todo intento en `accesos.jsonl`. RED 17:38:08, GREEN 17:40:31. La designación del custodio sigue en 0.1. `informes/implementacion-3.3-4.4-2026-11-14.md`.*
+- [x] 4.3 Prompt de revisión fijo y versionado; formato de hallazgo de D4. *Hecho 14/11: `eval/shadow/prompt/revision-v1.md` embebido, `PromptVersion` y huella fijada por test (con `eol=lf`); `ParseFindings` estricto sobre el formato de D4. `informes/implementacion-3.3-4.4-2026-11-14.md`.*
+- [ ] 4.4 Verificar criterios de entrada por candidato; registrar descartes. *Parcial 14/11: `CheckEntry` aplica los criterios de D6 y lista todos los motivos de descarte. Falta aplicarlo a candidatos reales, que dependen de 0.1 y 0.2.*
+- [ ] 4.5 Calibrar cada candidato con un conjunto propio fuera de la muestra (prompt, modelo y esfuerzo según 02 y 09). *Estado 14/11: 09 integrado en `main` (`8bfca74`) sólo con la parte offline (`eval/modelcache`: protocolo, contrastes y reporte de costo por aceptada). Sin parámetros calibrados ni corridas reales (09 tareas 1.3, 2.2, 3.2 y 4.3 abiertas); el costo de 5.4 puede reutilizar su contabilidad de intentos y preparación, no sus valores.*
+
+## 5. Corridas y métricas
+
+- [ ] 5.1 Correr cada candidato sobre la muestra congelada.
+- [ ] 5.2 Emparejar hallazgos contra etiquetas congeladas (tercer etiquetador).
+- [ ] 5.3 Arbitraje aparte, ciego al origen, de los hallazgos sin emparejar: defecto nuevo confirmado, falsa alarma, indeterminado.
+- [ ] 5.4 Calcular precisión, exhaustividad, señal adicional (cantidad), proporción de controles con falsa alarma, costo por caso y minutos de triage.
+
+## 6. Cierre
+
+- [ ] 6.1 Informe con datos crudos, muestra, acuerdo, arbitraje aparte, log de envío y salida (seguir explorando, repetir, descartar).
+- [ ] 6.2 Si la salida es seguir explorando: abrir la decisión de arquitectura separada y evaluar si una ronda posterior incluye evidencia real redactada o changes vivos; no integrar en esta ficha.

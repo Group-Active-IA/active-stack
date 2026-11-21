@@ -1,0 +1,10 @@
+{
+  "incluir": [
+    "diff.patch",
+    "settings.json"
+  ],
+  "envia": false,
+  "reglas": [
+    "config-de-usuario"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "incluir": [
+    "diff.patch",
+    "config/.env.local"
+  ],
+  "envia": false,
+  "reglas": [
+    "cubre:env-assignment"
+  ]
+}

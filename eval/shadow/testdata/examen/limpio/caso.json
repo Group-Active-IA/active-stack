@@ -1,0 +1,8 @@
+{
+  "incluir": [
+    "diff.patch",
+    "proposal.md"
+  ],
+  "envia": true,
+  "reglas": []
+}

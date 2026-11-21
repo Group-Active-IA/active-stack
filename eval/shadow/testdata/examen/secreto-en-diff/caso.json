@@ -1,0 +1,10 @@
+{
+  "incluir": [
+    "diff.patch",
+    "proposal.md"
+  ],
+  "envia": false,
+  "reglas": [
+    "token"
+  ]
+}
