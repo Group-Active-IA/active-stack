@@ -3,7 +3,7 @@
 > **Cada responsable edita solo su propia fila**, en su PR, y completa la fila de la dependencia ya mergeada (estado, PR, SHA) como primer paso de su ficha. El dueño no actualiza esta tabla; solo escribe las «Autorizaciones de excepción».
 > Los agentes **leen** este archivo desde `origin/main` y lo contrastan con `git` y `gh`. **La autoridad de «mergeada» es Git/`gh`**; si la tabla va atrasada, se corrige la fila y se sigue.
 
-**Última actualización:** 2026-11-19 · **Roadmap:** [roadmap-implementacion-equipo.md](roadmap-implementacion-equipo.md) · **Guía:** [guia-implementacion-equipo.md](guia-implementacion-equipo.md)
+**Última actualización:** 2026-11-20 · **Roadmap:** [roadmap-implementacion-equipo.md](roadmap-implementacion-equipo.md) · **Guía:** [guia-implementacion-equipo.md](guia-implementacion-equipo.md)
 
 ## Objetivo
 
@@ -35,14 +35,14 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-05 | Juan Cruz | R-01 | mergeada | [#35](https://github.com/Group-Active-IA/active-stack/pull/35) | `ebcbb17` | Puerta G0 cerrada para Claude + Windows. B (proxy) con vías narrativas; DA-02/05/09/12 registradas. Aviso: plugin de Claude desactualizado, ver [informe](equipo/informes/R-05.md) |
 | R-06 | Emiliano | — | mergeada | [#30](https://github.com/Group-Active-IA/active-stack/pull/30) | `1cfe767` | Contrato y validador `team.py`; desbloquea R-09, R-10 y R-11 |
 | R-07 | Giuliano | R-05 | mergeada | [#40](https://github.com/Group-Active-IA/active-stack/pull/40) | `1cf9e36` | Catálogo `engram-cloud` + guarda no-op en el instalador y en verify. [Informe](equipo/informes/R-07.md) |
-| R-08 | Emiliano | R-05 | PR abierto | [#44](https://github.com/Group-Active-IA/active-stack/pull/44) | | `internal/memory` y `active-stack memory branch`, T-F4-1 a T-F4-12. Colisión de slugs `(TBD)` hasta que decida el dueño; desbloquea R-15 y, con R-16, R-17 |
-| R-09 | Emiliano | R-06 | pendiente | | | Repo externo |
+| R-08 | Emiliano | R-05 | mergeada | [#44](https://github.com/Group-Active-IA/active-stack/pull/44) | `5b2f0b3` | `internal/memory` y `active-stack memory branch`, T-F4-1 a T-F4-12. Colisión de slugs `(TBD)` hasta que decida el dueño; desbloquea R-15 y, con R-16, R-17 |
+| R-09 | Emiliano | R-06 | mergeada | [roadmap-generator #3](https://github.com/Group-Active-IA/roadmap-generator/pull/3) · [stack #48](https://github.com/Group-Active-IA/active-stack/pull/48) | rg `462de73` · stack `08e48cd` | Repo externo, desde el fork `cachi001`. El bump del `ref` queda para R-20. Sin validador de campos en OpenCode/Antigravity (avisa); decisión del dueño en el informe |
 | R-10 | Gianfranco | R-06 | mergeada | [orchestrator #7](https://github.com/Group-Active-IA/active-orchestrator/pull/7) · [agent-instruction #2](https://github.com/JuanCruzRobledo/agent-instruction/pull/2) · [stack #34](https://github.com/Group-Active-IA/active-stack/pull/34) | orchestrator `32142a9` · agent-instruction `c9f371c` · stack `17a276d` | Repos externos mergeados desde forks. El bump del `ref` en `harnesses.yaml` queda para R-20. Sin validador en OpenCode/Antigravity (la fase valida con reglas escritas) |
-| R-11 | Matías | R-06 | mergeada | [PR #46](https://github.com/Group-Active-IA/active-stack/pull/46) | `f4efb7f` | [Informe](equipo/informes/R-11.md) |
-| R-12 | Matías | R-11 | PR abierto | [#49](https://github.com/Group-Active-IA/active-stack/pull/49) | | Borrador para verificar Claude. [Ficha](equipo/fichas/R-12.md) |
+| R-11 | Matías | R-06 | mergeada | [#46](https://github.com/Group-Active-IA/active-stack/pull/46) | `f4efb7f` | Entrega en modo equipo en `active-delivery`. [Informe](equipo/informes/R-11.md) |
+| R-12 | Matías | R-11 | PR abierto | [#49](https://github.com/Group-Active-IA/active-stack/pull/49) | | T-F5-10 verificada en Claude y Codex. Pendiente de revisión y merge. [Informe](equipo/informes/R-12.md) |
 | R-13 | Giuliano | R-07 | mergeada | [#45](https://github.com/Group-Active-IA/active-stack/pull/45) | `f8d677e` | Sección `engram-cloud` + golden de `Compose` de las ocho variantes. [Informe](equipo/informes/R-13.md) |
-| R-14 | Giuliano | R-13 | PR abierto | [#47](https://github.com/Group-Active-IA/active-stack/pull/47) | | Pruebas de coherencia T-F3-1 a T-F3-4; corrige la clave `opsx` de R-13; DA-11 verificado. [Informe](equipo/informes/R-14.md) |
-| R-15 | Emiliano | R-08, R-01 | pendiente | | | |
+| R-14 | Giuliano | R-13 | mergeada | [#47](https://github.com/Group-Active-IA/active-stack/pull/47) | `20c0c79` | Pruebas de coherencia T-F3-1 a T-F3-4; corrige la clave `opsx` de R-13; DA-11 verificado. [Informe](equipo/informes/R-14.md) |
+| R-15 | Emiliano | R-08, R-01 | mergeada | [#50](https://github.com/Group-Active-IA/active-stack/pull/50) | `03e6e1d` | Núcleo de etiquetado (sirve a hook y proxy) y hooks `session-start`/`pre-read`. Sin `pre-save`: el hook volvió a fallar en Claude (5/12 contra 12/12 del proxy); espera la decisión pendiente 1 del dueño. [Informe](equipo/informes/R-15.md) |
 | R-16 | Giuliano | R-15, R-14 | pendiente | | | ALTO |
 | R-17 | Giuliano | R-08, R-16 | pendiente | | | ALTO |
 | R-18 | Gianfranco | R-11, R-01, R-16 | pendiente | | | ALTO |
@@ -53,6 +53,20 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-23 | Matías | R-22 | pendiente | | | Con autorización |
 | R-24 | Juan Cruz | R-22 | pendiente | | | Con autorización |
 | R-25 | Juan Cruz | R-23, R-24 | pendiente | | | Cierre |
+
+## Quién sigue ahora (2026-11-20)
+
+| Persona | Ficha | Qué hacer |
+|---|---|---|
+| Matías | R-12 | PR #49 listo para revisión y merge por Juan Cruz |
+| Giuliano | R-16 (ALTO) | Primero **proponer** y esperar la revisión del dueño. Instalar solo los hooks de lectura (`session-start`, `pre-read`); **no** instalar un hook de guardado hasta que el dueño decida (ver abajo) |
+| Emiliano | — | Sin ficha habilitada: R-22 espera a R-20 y R-21 |
+| Gianfranco | — | R-18 espera a R-16; R-19 espera a R-17 |
+
+## Decisiones pendientes del dueño
+
+- **Cómo se etiqueta el guardado de memoria (hook o proxy).** Recomendación: proxy para Claude **y** Codex, sin hook de guardado en ninguno. Con el plugin real de Engram 0.1.22 y 12 sesiones a la vez, el hook etiquetó 5 de 12 y el proxy 12 de 12 (R-15). Prueba en Codex 0.166.0 (Windows, 2026-11-20, hooks falsos): dos hooks `PreToolUse` que reescriben el mismo comando corren a la vez y solo sobrevive una reescritura (3 corridas de 3). No se midió el plugin real de Engram en Codex ni la carga de 12 sesiones. Frena el `pre-save` y la parte de guardado de R-16; si se decide, se reescriben las Fases 5 y 6 del plan.
+- **Colisión de slugs `feat/una` vs `feat-una`** (R-08): `(TBD)`; recomendación en [el informe de R-08](equipo/informes/R-08.md).
 
 ## Autorizaciones de excepción
 

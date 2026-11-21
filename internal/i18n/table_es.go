@@ -97,7 +97,7 @@ var tableES = map[string]string{
 	"backup.source.upgrade": "actualización",
 
 	// memory.* — "active-stack memory branch" ([EN] Fase 4).
-	"memory.usage":                      "Uso: active-stack memory branch [--project <ruta>] [--json] [--lang en|es]",
+	"memory.usage":                      "Uso: active-stack memory branch [--project <ruta>] [--json] [--lang en|es]\n     active-stack memory hook session-start|pre-read  (hook del agente: evento JSON por stdin)",
 	"memory.label.mode":                 "Modo de memoria",
 	"memory.label.tagged":               "Etiqueta",
 	"memory.label.branch":               "Rama",
@@ -113,6 +113,8 @@ var tableES = map[string]string{
 	"memory.error.git_missing":          "Git no está instalado o no está en el PATH.",
 	"memory.error.empty_slug":           "La rama %q no tiene letras ni números para armar su etiqueta. Renombrá la rama.",
 	"memory.error.failed":               "No se pudo leer el estado de Git: %v",
+	"memory.hook.unknown":               "Hook de memoria desconocido: %q. Disponibles: session-start, pre-read. No se cambió nada.",
+	"memory.hook.skipped":               "Se omitió el hook de memoria %s (%v). El agente sigue sin él.",
 }
 
 func init() {

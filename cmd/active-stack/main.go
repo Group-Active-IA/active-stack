@@ -8,6 +8,7 @@
 //	active-stack install --dry-run    Print the install plan; do not execute.
 //	active-stack install --help       Show all available flags.
 //	active-stack memory branch        Show the memory mode and tag of the current Git branch.
+//	active-stack memory hook <name>   Agent hook (session-start, pre-read): event JSON on stdin.
 package main
 
 import (

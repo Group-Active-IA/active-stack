@@ -36,6 +36,9 @@ func runMemoryDispatch(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintln(stderr, i18n.T(lang, "memory.usage"))
 		return memoryExitUsage
 	}
+	if args[0] == "hook" {
+		return runMemoryHook(args[1:], lang, stdout, stderr)
+	}
 	if args[0] != "branch" {
 		fmt.Fprintln(stderr, i18n.Tf(lang, "memory.error.unknown_subcommand", args[0]))
 		fmt.Fprintln(stderr, i18n.T(lang, "memory.usage"))
