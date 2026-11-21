@@ -140,8 +140,33 @@ def merge_description(current, marker, replacement):
     return current[:opening.start()] + replacement + current[closing.end():]
 
 
+def delivery_update(task, previous):
+    item_id = task["id"]
+    branch, pr_url = task.get("branch"), task.get("pr_url")
+    branch_pattern = rf"{re.escape(item_id)}-[a-z0-9]+(?:-[a-z0-9]+)*"
+    if not isinstance(branch, str) or not re.fullmatch(branch_pattern, branch):
+        raise RoadmapError("La rama del PR debe incluir el ID exacto de la ficha")
+    if not isinstance(pr_url, str) or not re.fullmatch(
+        r"https://[A-Za-z0-9.-]+/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/pull/[1-9][0-9]*", pr_url
+    ):
+        raise RoadmapError("Falta el enlace confirmado al PR de la ficha")
+    delivery = {**previous, "pr_url": pr_url}
+    if task["operation"] == "close":
+        sha, handoff = task.get("merge_sha"), task.get("handoff")
+        if not isinstance(sha, str) or not re.fullmatch(r"[0-9a-f]{40}|[0-9a-f]{64}", sha):
+            raise RoadmapError("Falta el SHA verificado del merge")
+        if handoff != f"knowledge-base/entrega/{item_id}.md":
+            raise RoadmapError("Falta la ruta del traspaso único de la ficha")
+        delivery.update(merge_sha=sha, handoff=handoff)
+    elif previous.get("merge_sha") and previous.get("pr_url") != pr_url:
+        delivery.pop("merge_sha", None)
+        delivery.pop("handoff", None)
+    return delivery
+
+
 class Roadmap:
     def __init__(self, root):
+        self.root = root
         self.config_path = root / ".active-stack" / "roadmap.json"
         self.state_path = root / ".active-stack" / "roadmap-state.json"
 
@@ -155,8 +180,60 @@ class Roadmap:
                     raise RoadmapError(f"Falta configurar {field}")
         return settings
 
+    def team(self):
+        path = self.config_path.with_name("team.json")
+        if not path.exists():
+            return None
+        settings = load(path)
+        tracking = settings.get("tracking", "local")
+        if tracking not in {"clickup", "local"}:
+            raise RoadmapError("Seguimiento de equipo inválido")
+        members = {}
+        for member in settings.get("members", []):
+            member_id = member["id"]
+            if member_id in members:
+                raise RoadmapError("Identidad de equipo duplicada")
+            members[member_id] = member.get("clickup_id")
+        private = path.with_name("team.local.json")
+        if settings.get("names_versioned") is False and private.is_file():
+            private_ids = set()
+            for member in load(private).get("members", []):
+                member_id = member["id"]
+                if member_id not in members or member_id in private_ids:
+                    raise RoadmapError("Identidad privada inválida")
+                private_ids.add(member_id)
+                members[member_id] = member.get("clickup_id")
+        if any(value is not None and (type(value) is not int or value <= 0)
+               for value in members.values()):
+            raise RoadmapError("ID de ClickUp inválido en el contrato de equipo")
+        return {"tracking": tracking, "members": members}
+
+    def journal_path(self):
+        try:
+            output = subprocess.run(
+                ["git", "-C", str(self.root), "rev-parse", "--git-path", "active-roadmap/state.json"],
+                check=True, capture_output=True, timeout=10,
+            )
+        except (OSError, subprocess.SubprocessError) as error:
+            raise RoadmapError("No se pudo localizar el diario local de este worktree Git") from error
+        return self.root / os.fsdecode(output.stdout.rstrip(b"\r\n"))
+
     def read(self):
-        return load(self.state_path) if self.state_path.exists() else {"tasks": {}}
+        shared = load(self.state_path) if self.state_path.exists() else {"tasks": {}}
+        if not self.team():
+            return shared
+        journal = self.journal_path()
+        if not journal.exists():
+            return shared
+        local = load(journal)
+        shared_destination = shared.get("destination")
+        if shared_destination and local.get("destination") != shared_destination:
+            raise RoadmapError("El destino del diario local difiere del vínculo compartido")
+        if "destination" in local:
+            shared.setdefault("destination", local["destination"])
+        for task_id, entry in local["tasks"].items():
+            shared["tasks"].setdefault(task_id, {}).update(entry)
+        return shared
 
     def configure(self, list_id, workspace_id=None):
         """Save the approved ClickUp destination, keeping a stable project_id and known assignees."""
@@ -187,8 +264,9 @@ class Roadmap:
 
     @contextmanager
     def locked(self):
-        lock = self.state_path.with_suffix(".lock")
-        self.state_path.parent.mkdir(parents=True, exist_ok=True)
+        path = self.journal_path() if self.team() else self.state_path
+        lock = path.with_suffix(".lock")
+        path.parent.mkdir(parents=True, exist_ok=True)
         try:
             lock.mkdir()
         except FileExistsError as error:
@@ -199,8 +277,46 @@ class Roadmap:
             lock.rmdir()
 
     def write(self, state):
+        if self.team() is None:
+            self.write_state(self.state_path, state)
+            return
+        shared = {"tasks": {}}
+        local = {**state, "tasks": {}}
+        link_fields = {"remote_id", "url", "fingerprint", "delivery"}
+        for task_id, entry in state["tasks"].items():
+            link = {key: value for key, value in entry.items() if key in link_fields}
+            if link:
+                shared["tasks"][task_id] = link
+            local["tasks"][task_id] = {key: value for key, value in entry.items() if key not in link_fields}
+        if shared["tasks"] and "destination" in state:
+            shared["destination"] = state["destination"]
+        journal = self.journal_path()
+        if self.state_path.exists() or shared["tasks"]:
+            old_shared = load(self.state_path) if self.state_path.exists() else None
+            if shared != old_shared:
+                if old_shared:
+                    # Keep legacy observations and pending work recoverable until
+                    # the shared update succeeds. A new create already has a
+                    # pending local intent from begin().
+                    legacy = {
+                        task_id: {key: value for key, value in entry.items() if key not in link_fields}
+                        for task_id, entry in old_shared["tasks"].items()
+                    }
+                    if any(legacy.values()):
+                        old_local = load(journal) if journal.exists() else {"tasks": {}}
+                        before = {**old_shared, **old_local, "tasks": {}}
+                        for task_id in legacy.keys() | old_local["tasks"].keys():
+                            before["tasks"][task_id] = {
+                                **legacy.get(task_id, {}), **old_local["tasks"].get(task_id, {}),
+                            }
+                        self.write_state(journal, before)
+                self.write_state(self.state_path, shared)
+        self.write_state(journal, local)
+
+    @staticmethod
+    def write_state(path, state):
         with tempfile.NamedTemporaryFile(
-            mode="w", dir=self.state_path.parent, encoding="utf-8", delete=False
+            mode="w", dir=path.parent, encoding="utf-8", delete=False
         ) as output:
             temporary = Path(output.name)
             try:
@@ -213,15 +329,19 @@ class Roadmap:
                 temporary.unlink(missing_ok=True)
                 raise
         try:
-            temporary.replace(self.state_path)
+            temporary.replace(path)
         finally:
             temporary.unlink(missing_ok=True)
 
-    def preview(self, tasks):
-        return self._preview(tasks, self.config(), self.read())
+    def preview(self, tasks, *, selected=None, access="ok"):
+        return self._preview(tasks, self.config(), self.read(), self.team(), selected, access)
 
-    def _preview(self, tasks, settings, state):
+    def _preview(self, tasks, settings, state, team=None, selected=None, access="ok"):
         mode = settings["mode"]
+        if team and (team["tracking"] == "local" or access != "ok"):
+            mode = "local"
+        if selected is not None and (not selected or len(set(selected)) != len(selected)):
+            raise RoadmapError("Seleccioná IDs únicos de la vista previa")
         destination = {field: settings.get(field) for field in ("project_id", "workspace_id", "list_id")}
         if mode == "clickup" and state.get("destination", destination) != destination:
             raise RoadmapError("El destino cambió. Reconciliá los vínculos existentes antes de publicar.")
@@ -232,6 +352,8 @@ class Roadmap:
             if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", task_id) or task_id in seen:
                 raise RoadmapError(f"ID de tarea inválido o repetido: {task_id}")
             seen.add(task_id)
+            if selected is not None and task_id not in selected:
+                continue
             title = task["title"].strip()
             if not title:
                 raise RoadmapError(f"Título vacío: {task_id}")
@@ -239,18 +361,29 @@ class Roadmap:
             marker = "active-stack-" + digest([destination["project_id"], task_id])
             dependencies = ", ".join(task.get("dependencies", [])) or "Ninguna"
             responsible = task.get("responsible")
-            assignee = settings.get("assignees", {}).get(responsible)
+            accounts = team["members"] if team else settings.get("assignees", {})
+            assignee = accounts.get(responsible) if mode == "clickup" or not team else None
             remote_id = current.get("remote_id")
-            assignment_pending = current.get("assignment_pending", False) if remote_id else bool(responsible and not assignee)
+            assignment_pending = bool(responsible and not assignee)
+            if remote_id and not team:
+                assignment_pending = current.get("assignment_pending", False)
+            delivery = current.get("delivery", {})
+            operation = task.get("operation", "publish") if team else "publish"
+            if mode == "clickup" and team and operation in {"link_pr", "close"}:
+                delivery = delivery_update(task, delivery)
+            delivery_text = "".join(f"{label}: {delivery[key]}\n" for key, label in (
+                ("pr_url", "PR"), ("merge_sha", "SHA de merge"), ("handoff", "Traspaso"),
+            ) if key in delivery)
             description = (
                 f"[{marker}]\n"
                 f"Ficha: CHANGES.md · {task_id}\n"
                 f"Alcance: {task.get('description', '')}\n"
                 f"Dependencias: {dependencies}\n"
                 f"Responsable previsto: {responsible or 'Sin definir'}\n"
-                f"[/{marker}]"
+                f"{delivery_text}[/{marker}]"
             )
-            content_fingerprint = digest({"name": title, "description": description})
+            managed_description = description
+            content_fingerprint = digest({"name": title, "description": managed_description})
             current_description = task.get("current_description")
             if mode == "local":
                 action = "local"
@@ -266,7 +399,7 @@ class Roadmap:
                     description = merged
             else:
                 action = "create"
-            rows.append({
+            row = {
                 "id": task_id, "action": action, "title": title, "description": description,
                 "dependencies": task.get("dependencies", []), "responsible": responsible,
                 "assignee": assignee if not remote_id else None,
@@ -274,16 +407,89 @@ class Roadmap:
                 "url": current.get("url"), "marker": marker,
                 "current_description_hash": digest(current_description) if action == "update" else None,
                 "content_fingerprint": content_fingerprint,
-            })
+            }
+            if team and mode == "clickup":
+                self.team_row(row, task, current, team, delivery, operation, managed_description)
+            rows.append(row)
+        if selected is not None:
+            by_id = {row["id"]: row for row in rows}
+            if any(task_id not in by_id for task_id in selected):
+                raise RoadmapError("La selección contiene fichas inexistentes")
+            rows = [by_id[task_id] for task_id in selected]
         preview = {"mode": mode, **destination, "rows": rows}
+        if team and access != "ok":
+            preview["access"] = access
         return {**preview, "approval": digest(preview)}
+
+    def team_row(self, row, task, current, team, delivery, operation, managed_description):
+        if row["action"] == "recover":
+            return
+        if operation == "publish":
+            row["delivery"] = delivery
+            return
+        if not row["remote_id"]:
+            raise RoadmapError("La operación requiere una ficha vinculada")
+        if (task.get("current_remote_id") != row["remote_id"]
+                or merge_description(task.get("current_text"), row["marker"], "") is None):
+            raise RoadmapError("Confirmá la identidad de la tarea vinculada y su marcador")
+        if operation in {"take", "assign"}:
+            assignees = task.get("current_assignees")
+            if not isinstance(assignees, list) or any(
+                type(value) is not int or value <= 0 for value in assignees
+            ):
+                raise RoadmapError("Consultá primero los responsables actuales de ClickUp")
+            if operation == "take":
+                me_path = self.config_path.with_name("me.local.json")
+                member = load(me_path).get("id") if me_path.is_file() else None
+            else:
+                member = row["responsible"]
+            account = team["members"].get(member)
+            if account is None and operation == "take":
+                raise RoadmapError("Identificate con un integrante que tenga un ID confirmado de ClickUp")
+            row.update(
+                action="unchanged" if account is None or assignees == [account] else "update",
+                current_assignees=assignees,
+                content_fingerprint=current.get("fingerprint"),
+                changes={"assignees": [account]} if account is not None else {},
+                assignment_pending=bool(member and account is None),
+            )
+        elif operation in {"link_pr", "close"}:
+            title = task.get("current_title")
+            if not isinstance(title, str) or not title.strip():
+                raise RoadmapError("Consultá el título actual de la tarea vinculada")
+            current_description = task.get("current_description")
+            final_description = merge_description(current_description, row["marker"], managed_description)
+            changes = {}
+            if final_description is None:
+                row["action"] = "inspect"
+            elif final_description == current_description:
+                row["action"] = "unchanged"
+            else:
+                row["action"] = "update"
+                changes["description"] = final_description
+            row["current_description_hash"] = digest(current_description)
+            row["content_fingerprint"] = digest({"name": title, "description": managed_description})
+            if operation == "close":
+                status = task.get("current_status")
+                closing = task.get("closing_status")
+                if any(not isinstance(value, str) or not value.strip() for value in (status, closing)):
+                    raise RoadmapError("Consultá el estado actual y el estado de cierre disponible")
+                if row["action"] != "inspect" and status != closing:
+                    row["action"] = "update"
+                    changes["status"] = closing
+                row["current_status"] = status
+            row.update(changes=changes, delivery=delivery)
+        else:
+            raise RoadmapError("Operación de equipo inválida")
+        row["operation"] = operation
 
     def begin(self, tasks, approval, selected):
         if not selected or len(set(selected)) != len(selected):
             raise RoadmapError("Seleccioná IDs únicos de la vista previa")
         with self.locked():
             state = self.read()
-            plan = self._preview(tasks, self.config(), state)
+            team = self.team()
+            plan = self._preview(tasks, self.config(), state, team, selected if team else None)
             if approval != plan["approval"]:
                 raise RoadmapError("La vista previa cambió. Mostrá el nuevo plan y pedí confirmación.")
             rows = {row["id"]: row for row in plan["rows"]}
@@ -317,6 +523,10 @@ class Roadmap:
                         else entry.get("assignment_pending", False)
                     ),
                 })
+                if pending.get("delivery"):
+                    entry["delivery"] = pending["delivery"]
+                if "assignees" in pending.get("changes", {}):
+                    entry["assignment_pending"] = False
             elif outcome not in {"failed", "uncertain", "skipped"} or not reason:
                 raise RoadmapError("El resultado requiere un motivo de fallo, incertidumbre u omisión")
             if outcome != "uncertain":
@@ -362,6 +572,8 @@ def main():
     configure.add_argument("--workspace-id")
     preview = commands.add_parser("preview")
     preview.add_argument("tasks", type=Path)
+    preview.add_argument("--select", nargs="+")
+    preview.add_argument("--access", choices=["ok", "unauthorized", "forbidden", "not_found", "error"], default="ok")
     begin = commands.add_parser("begin")
     begin.add_argument("tasks", type=Path)
     begin.add_argument("approval")
@@ -395,7 +607,9 @@ def main():
         elif arguments.command == "configure":
             output = journal.configure(arguments.list_id, arguments.workspace_id)
         elif arguments.command == "preview":
-            output = journal.preview(load(arguments.tasks))
+            output = journal.preview(
+                load(arguments.tasks), selected=arguments.select, access=arguments.access,
+            )
         elif arguments.command == "begin":
             output = journal.begin(load(arguments.tasks), arguments.approval, arguments.ids)
         else:

@@ -49,3 +49,18 @@ Mostrá el nombre y la frase breve de cada acción. Si el usuario elige **Ver de
 - **Qué lee:** `CHANGES.md` y, si hace falta, las referencias locales de la ficha.
 - **Qué cambia:** La consulta solo muestra datos. Una edición de Markdown requiere un pedido concreto.
 - **Cuándo confirma:** Elegir esta opción no cambia archivos. Acordá cualquier edición según el flujo local del proyecto.
+
+## Entrega en equipo
+
+Para proyectos con `team.json`, el [flujo de equipo](team-roadmap.md) define
+tres acciones adicionales y mantiene la asignación conciliada separada de las
+lecturas de avance.
+
+- **Tomar una ficha.** Lee el responsable efectivo y previsualiza asignarla al
+  integrante identificado. Confirma la lista completa de responsables que
+  quedará tras el cambio.
+- **Vincular un PR.** Lee el PR y la tarea vinculada. Confirma el enlace que se
+  incorporará al bloque de Active Stack, conservando el resto de la tarea.
+- **Cerrar una ficha.** Lee el merge y el estado actual de la tarea y muestra el
+  estado de cierre, el PR, el SHA y el traspaso. Confirma esa fila antes de
+  actualizarla. El cierre local sigue disponible desde la ficha y el PR.

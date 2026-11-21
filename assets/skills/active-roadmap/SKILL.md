@@ -42,6 +42,13 @@ En Claude Code, las herramientas pueden llegar con prefijo, como `mcp__clickup__
 
 Tras la lectura real, el helper admite `setup --probe ok`, `unauthorized`, `forbidden`, `not_found` o `error` según la respuesta. Nunca guardes ni leas tokens, secretos o URLs de retorno OAuth en archivos del proyecto o en resultados de tareas. [Configuración de ClickUp](https://developer.clickup.com/docs/connect-an-ai-assistant-to-clickups-mcp-server-1)
 
+## Entrega en modo equipo
+
+Si existe `.active-stack/team.json`, validá el contrato y seguí el [flujo de
+equipo](references/team-roadmap.md) para publicar, tomar una ficha, vincular un
+PR, conciliar su responsable o cerrarla. El modo individual conserva el
+mapeo de `roadmap.json` y el flujo de abajo.
+
 ## Vista previa
 
 1. Extraé fichas de `CHANGES.md` fielmente en un archivo JSON temporal fuera del repo. Cada fila usa `id` estable y `title`, más `description`, `responsible` y `dependencies` (lista de IDs) si constan en la ficha. No inventes IDs o responsables para fichas ambiguas.
@@ -58,7 +65,7 @@ Para cada actualización, el helper primero indica `inspect`. Leé la tarea por 
 Tras recibir confirmación, ejecutá `roadmap.py --root <proyecto> begin <tareas.json> <approval> <id> [<id> ...]`. El helper comprueba el destino, las filas y el contenido aprobado y registra durablemente la intención. Solo procesá las filas devueltas por ese comando.
 
 - Para `create`, llamá una sola vez a `clickup_create_task` con el título y la descripción exactos, incluido el marcador. Enviá el ID del responsable solo si está mapeado. El modo sin asignar conserva el nombre previsto en la descripción.
-- Para `update`, usá `clickup_update_task` con el ID exacto y solo los campos aprobados de título y descripción Markdown. Conservá la identidad y texto externo al bloque.
+- Para `update` de publicación, usá `clickup_update_task` con el ID exacto y los campos aprobados de título y descripción Markdown. Para una operación de equipo, usá el campo `changes` de la fila según [su contrato](references/team-roadmap.md). Conservá la identidad y el texto externo al bloque.
 - Registrá cada resultado con `roadmap.py --root <proyecto> result <id> <respuesta.json>`. Usá `{"outcome":"created","remote_id":"...","url":"..."}` o `updated` al confirmar éxito, `{"outcome":"failed","reason":"..."}` únicamente cuando el servidor rechazó inequívocamente la escritura, y `uncertain` cuando el resultado fue ambiguo. Usá `skipped` solo para una escritura que sabés que todavía no se envió.
 - Si hubo timeout, error ambiguo o interrupción, recuperá la intención antes de reintentar. Si hay una coincidencia remota exacta y el título y bloque de descripción en `text_content` coinciden con la intención, registrá su ID y enlace como creación recuperada. Ante diferencias, conservá la intención pendiente y mostrá al operador el ID encontrado y los campos discrepantes. Si no hay coincidencia, la consulta es incompleta, o hay más de una, conservá `uncertain` y pedí resolver el caso. Para una actualización, recuperá por ID y compará el título y contenido visible del bloque en `text_content` con la intención; verificá el contenido externo en `markdown_description` si corresponde. No compares literalmente los escapes de Markdown con el texto visible. Nunca repitas una escritura incierta por el solo hecho de no recibir respuesta.
 
@@ -66,7 +73,7 @@ Mostrá la conclusión para todas las filas, incluidos los enlaces, las asignaci
 
 ## Reconciliación
 
-Reconciliá solo cuando el usuario pide sincronizar o al retomar, entregar o cerrar una ficha. Publicar, actualizar o mostrar el avance no sincroniza por sí solo: registrá el resultado de la escritura con `result` y ofrecé sincronizar. En esos casos, consultá `roadmap.py --root <proyecto> read` y leé el ID vinculado con `clickup_get_task`. Registrá `roadmap.py --root <proyecto> reconcile <id> <snapshot.json>` con `{"status":"...","assignees":["..."]}`. Ante error usá `{"reason":"..."}` para conservar el último estado confirmado y marcar verificación pendiente. Compartí el estado observado, enlace, fecha y asignación efectiva; mantené `.active-stack/roadmap-state.json` como evidencia del proyecto.
+Reconciliá solo cuando el usuario pide sincronizar o al retomar, entregar o cerrar una ficha. Publicar, actualizar o mostrar el avance no sincroniza por sí solo: registrá el resultado de la escritura con `result` y ofrecé sincronizar. En esos casos, consultá `roadmap.py --root <proyecto> read` y leé el ID vinculado con `clickup_get_task`. Registrá `roadmap.py --root <proyecto> reconcile <id> <snapshot.json>` con `{"status":"...","assignees":["..."]}`. Ante error usá `{"reason":"..."}` para conservar el último estado confirmado y marcar verificación pendiente. Compartí el estado observado, enlace, fecha y asignación efectiva; En modo individual, el estado se guarda en `.active-stack/roadmap-state.json`. En modo equipo el helper guarda las observaciones en el diario local y comparte los vínculos.
 
 El helper Python local nunca llama a ClickUp. La aprobación humana es requisito para cada escritura remota. Consultá las [herramientas oficiales de ClickUp](https://developer.clickup.com/docs/mcp-tools).
 

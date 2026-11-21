@@ -39,7 +39,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-09 | Emiliano | R-06 | mergeada | [roadmap-generator #3](https://github.com/Group-Active-IA/roadmap-generator/pull/3) · [stack #48](https://github.com/Group-Active-IA/active-stack/pull/48) | rg `462de73` · stack `08e48cd` | Repo externo, desde el fork `cachi001`. El bump del `ref` queda para R-20. Sin validador de campos en OpenCode/Antigravity (avisa); decisión del dueño en el informe |
 | R-10 | Gianfranco | R-06 | mergeada | [orchestrator #7](https://github.com/Group-Active-IA/active-orchestrator/pull/7) · [agent-instruction #2](https://github.com/JuanCruzRobledo/agent-instruction/pull/2) · [stack #34](https://github.com/Group-Active-IA/active-stack/pull/34) | orchestrator `32142a9` · agent-instruction `c9f371c` · stack `17a276d` | Repos externos mergeados desde forks. El bump del `ref` en `harnesses.yaml` queda para R-20. Sin validador en OpenCode/Antigravity (la fase valida con reglas escritas) |
 | R-11 | Matías | R-06 | mergeada | [#46](https://github.com/Group-Active-IA/active-stack/pull/46) | `f4efb7f` | Entrega en modo equipo en `active-delivery`. [Informe](equipo/informes/R-11.md) |
-| R-12 | Matías | R-11 | en curso | [#49](https://github.com/Group-Active-IA/active-stack/pull/49) (borrador) | | Falta registrar T-F5-10 en Claude: el 2026-11-20 se verificó con Claude Code (42 pruebas OK; identidad por nombre exacto y `me` coinciden; lista «List» leída; vista previa de una fila OK, sin escrituras). Matías lo anota en su ficha y saca el PR de borrador |
+| R-12 | Matías | R-11 | PR abierto | [#49](https://github.com/Group-Active-IA/active-stack/pull/49) | | T-F5-10 verificada en Claude y Codex. Pendiente de revisión y merge. [Informe](equipo/informes/R-12.md) |
 | R-13 | Giuliano | R-07 | mergeada | [#45](https://github.com/Group-Active-IA/active-stack/pull/45) | `f8d677e` | Sección `engram-cloud` + golden de `Compose` de las ocho variantes. [Informe](equipo/informes/R-13.md) |
 | R-14 | Giuliano | R-13 | mergeada | [#47](https://github.com/Group-Active-IA/active-stack/pull/47) | `20c0c79` | Pruebas de coherencia T-F3-1 a T-F3-4; corrige la clave `opsx` de R-13; DA-11 verificado. [Informe](equipo/informes/R-14.md) |
 | R-15 | Emiliano | R-08, R-01 | mergeada | [#50](https://github.com/Group-Active-IA/active-stack/pull/50) | `03e6e1d` | Núcleo de etiquetado (sirve a hook y proxy) y hooks `session-start`/`pre-read`. Sin `pre-save`: el hook volvió a fallar en Claude (5/12 contra 12/12 del proxy); espera la decisión pendiente 1 del dueño. [Informe](equipo/informes/R-15.md) |
@@ -58,7 +58,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 
 | Persona | Ficha | Qué hacer |
 |---|---|---|
-| Matías | R-12 | Registrar T-F5-10 y sacar el PR #49 de borrador; el dueño lo mergea |
+| Matías | R-12 | PR #49 listo para revisión y merge por Juan Cruz |
 | Giuliano | R-16 (ALTO) | Primero **proponer** y esperar la revisión del dueño. Instalar solo los hooks de lectura (`session-start`, `pre-read`); **no** instalar un hook de guardado hasta que el dueño decida (ver abajo) |
 | Emiliano | — | Sin ficha habilitada: R-22 espera a R-20 y R-21 |
 | Gianfranco | — | R-18 espera a R-16; R-19 espera a R-17 |
