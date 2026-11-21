@@ -1,0 +1,7 @@
+engram 3.7.1
+{"written": "active-stack", "detected": "active-stack", "source": "config"}
+{"written": "Mi-App", "detected": "mi-app", "source": "config"}
+{"written": "Proyecto-Ñandú", "detected": "proyecto-ñandú", "source": "config"}
+{"written": "MAYUSCULAS_con_guion_bajo", "detected": "mayusculas_con_guion_bajo", "source": "config"}
+{"written": "mi repo con espacios", "detected": "mi repo con espacios", "source": "config"}
+real data dir untouched check: probe used C:\Users\espej\AppData\Local\Temp\tmpmtq7qddy\db
