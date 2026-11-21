@@ -353,7 +353,7 @@ Estados: **Documentado** (leído en documentación oficial el 2026-11-19), **No 
 | Hook `PreToolUse` reescribe la entrada de herramientas MCP en Claude Code | Documentado | hooks de Claude Code; prueba V1-V3 | E4 |
 | Lo mismo en Codex (`updatedInput` con `allow`, matcher sobre `tool_name` MCP) | Documentado | hooks de Codex; prueba V1-V3 | E4 |
 | El hook corre en sub-agentes | Claude: documentado. Codex: **no explícito** | Q6, V5 | E4 |
-| Coexistencia con los hooks del plugin de Engram y reparto de `updatedInput` | **No documentado** | Q3, V10 | E4 (A) |
+| Coexistencia con los hooks del plugin de Engram y reparto de `updatedInput` | **Falló en Claude** bajo carga: el hook perdió la etiqueta 3 de 12 (R-05) y 7 de 12 (R-15); el proxy B, 0 de 12 en ambas | Q3, V10; [matriz de R-05](research/r05-windows-claude/matriz-claude-windows.md), [ficha R-15](equipo/fichas/R-15.md) | E4 (B, DA-05) |
 | El hook propio funciona sin pasos extra en Codex | Documentado: exige revisión de confianza (`/hooks`) | V8 | Guía + `verify` |
 | Autosync sube **y baja** | Documentado; **latencia no** | Q1 | Comando al iniciar |
 | Autor por observación | **No existe**; el servidor lo registra por mutación | Q13 | Autor por hook (Propuesta) |
