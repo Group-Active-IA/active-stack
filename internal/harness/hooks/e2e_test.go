@@ -166,3 +166,41 @@ func TestEndToEnd_RealSnapshotRestoresTheOriginal(t *testing.T) {
 		t.Errorf("the backup did not give the original back: %q", got)
 	}
 }
+
+// R16-6, pinned so the ficha stays true: the backup directory is fixed per
+// agent, so each write replaces the previous backup. After Remove the backup
+// holds the state before Remove (hooks installed), not the original file.
+func TestEndToEnd_BackupHoldsTheStateBeforeTheLastWrite(t *testing.T) {
+	home := t.TempDir()
+	claudePath := claude.NewAdapter().SettingsPath(home)
+	if err := os.MkdirAll(filepath.Dir(claudePath), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(claudePath, []byte(realisticClaudeSettings), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	restorePath := hooks.SetLookPath(func(string) (string, error) { return "active-stack", nil })
+	defer restorePath()
+	adapters := []hooks.Adapter{claude.NewAdapter()}
+
+	if _, err := hooks.Install(home, adapters); err != nil {
+		t.Fatal(err)
+	}
+	installed, _ := os.ReadFile(claudePath)
+	if _, err := hooks.Remove(home, adapters); err != nil {
+		t.Fatal(err)
+	}
+	manifest, err := backup.ReadManifest(filepath.Join(home, ".active-stack", "backups", "memory-hooks-claude", backup.ManifestFilename))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(claudePath, []byte("{}"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := (backup.RestoreService{}).Restore(manifest); err != nil {
+		t.Fatal(err)
+	}
+	if got, _ := os.ReadFile(claudePath); string(got) != string(installed) {
+		t.Errorf("the backup after Remove should hold the installed state (R16-6), got %q", got)
+	}
+}
