@@ -43,7 +43,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-13 | Giuliano | R-07 | mergeada | [#45](https://github.com/Group-Active-IA/active-stack/pull/45) | `f8d677e` | Sección `engram-cloud` + golden de `Compose` de las ocho variantes. [Informe](equipo/informes/R-13.md) |
 | R-14 | Giuliano | R-13 | mergeada | [#47](https://github.com/Group-Active-IA/active-stack/pull/47) | `20c0c79` | Pruebas de coherencia T-F3-1 a T-F3-4; corrige la clave `opsx` de R-13; DA-11 verificado. [Informe](equipo/informes/R-14.md) |
 | R-15 | Emiliano | R-08, R-01 | mergeada | [#50](https://github.com/Group-Active-IA/active-stack/pull/50) | `03e6e1d` | Núcleo de etiquetado (sirve a hook y proxy) y hooks `session-start`/`pre-read`. Sin `pre-save`: el hook volvió a fallar en Claude (5/12 contra 12/12 del proxy); espera la decisión pendiente 1 del dueño. [Informe](equipo/informes/R-15.md) |
-| R-16 | Giuliano | R-15, R-14 | pendiente | | | ALTO |
+| R-16 | Giuliano | R-15, R-14 | PR abierto | [#54](https://github.com/Group-Active-IA/active-stack/pull/54) | | ALTO. Instalador de los hooks de lectura (Claude y Codex), sin hook de guardado y sin conectar a `install` (R-20). Verificado con Claude real; **falta que alguien con Codex pruebe los pasos X0–X9 de la ficha**. [Informe](equipo/informes/R-16.md) |
 | R-17 | Giuliano | R-08, R-16 | pendiente | | | ALTO |
 | R-18 | Gianfranco | R-11, R-01, R-16 | pendiente | | | ALTO |
 | R-19 | Gianfranco | R-10, R-17 | pendiente | | | Repos externos |
