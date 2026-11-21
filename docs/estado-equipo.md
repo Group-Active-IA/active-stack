@@ -89,6 +89,10 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 | DA-12 | Garantía de etiquetado por agente: Claude + Windows pasa V1–V5, V7, V9, V12, V13 y vías narrativas; V8 interactivo y V9 con proxy terminado no ejecutados; Codex parcial. Nada se activa solo | 2026-11-19 |
 | DA-04 | La fundación ofrece proteger `main` solo con confirmación; si el plan o los permisos no lo permiten, lo dice y deja la convención escrita (lo que R-10 ya implementa). La cuenta del dueño es GitHub Free | 2026-11-19 |
 | DA-10 | Canal de avisos: grupo de WhatsApp del equipo; aprueba cambios de diseño: Juan Cruz | 2026-11-19 |
+| R-16 D-A | El código de los hooks va en un paquete nuevo `internal/harness/hooks`, sin tocar `filemerge` ni `backup` (se reutiliza `backup` sin modificarlo) | 2026-11-21 |
+| R-16 D-B | R-16 entrega solo el instalador (Install/Remove/Status con pruebas); R-20 lo conecta a install/uninstall/verify | 2026-11-21 |
+| R-16 D-C | Si `active-stack` no está en el PATH, los hooks se instalan igual con aviso, y `verify` lo marca | 2026-11-21 |
+| R-16 verificación | Giuliano implementa Claude y Codex con archivos y documentación y deja la rama lista; la prueba con Codex real y Claude real la hace el dueño antes de mergear | 2026-11-21 |
 
 ## Punto de reanudación
 
