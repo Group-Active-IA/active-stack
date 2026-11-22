@@ -159,7 +159,7 @@ func TestCloudHooksMissingAndPath(t *testing.T) {
 	defer restore()
 	got := e2.run(t)
 	wantStatus(t, got, "cloud:hooks:claude", verify.CheckStatusPassed)
-	wantStatus(t, got, "cloud:path:claude", verify.CheckStatusFailed)
+	wantStatus(t, got, "cloud:path:claude", verify.CheckStatusWarning)
 }
 
 // The proxy: not registered is a hard failure, no Engram entry too.
@@ -338,7 +338,7 @@ func TestCloudPathLookupWindows(t *testing.T) {
 	t.Setenv("PATH", bin)
 	wantStatus(t, e.run(t), "cloud:path:claude", verify.CheckStatusPassed)
 	t.Setenv("PATH", t.TempDir())
-	wantStatus(t, e.run(t), "cloud:path:claude", verify.CheckStatusFailed)
+	wantStatus(t, e.run(t), "cloud:path:claude", verify.CheckStatusWarning)
 }
 
 // Hooks, proxy and AUTOSYNC are user-level (D12): a Project install has none,

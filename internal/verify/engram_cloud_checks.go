@@ -93,8 +93,10 @@ func cloudChecks(adapter Adapter, homeDir string, o options) []Check {
 			},
 		},
 		{
-			// T-F10-3: hard once the harness is installed.
+			// T-F10-3 / R-16 D-C: the install proceeds without the binary on PATH, so
+			// verify marks it as a warning, never a rollback.
 			ID:          "cloud:path:" + name,
+			Soft:        true,
 			Description: o.tc("verify.cloud.path.desc", name),
 			Run: func(context.Context) error {
 				st, err := hookStatus()
