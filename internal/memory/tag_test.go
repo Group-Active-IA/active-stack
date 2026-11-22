@@ -252,7 +252,7 @@ func TestPrepareSave(t *testing.T) {
 		git(t, dir, "config", "user.name", "Ana Pérez")
 		git(t, dir, "switch", "-q", "-c", "feat/login")
 		out, changed, err := PrepareSave(dir, "mcp__engram__mem_save", saveInput())
-		if err != nil || !changed || out["topic_key"] != "branch/feat-login/auth/token" || out["title"] != "[feat-login] Arreglé el token" {
+		if err != nil || !changed || out["topic_key"] != "branch/feat-login-d668f0/auth/token" || out["title"] != "[feat-login-d668f0] Arreglé el token" {
 			t.Fatalf("err=%v changed=%v %v", err, changed, out)
 		}
 	})
