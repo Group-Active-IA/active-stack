@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"strings"
+
+	"github.com/Group-Active-IA/active-stack/internal/jsonedit"
 )
 
 // Claude Code: ~/.claude/settings.json, key "hooks" ->
@@ -72,14 +74,14 @@ func groupHasOwn(group []byte, sub string) bool {
 
 // claudeLayout is where the pieces are in the current source.
 type claudeLayout struct {
-	root      span
-	rootMs    []member
+	root      jsonedit.Span
+	rootMs    []jsonedit.Member
 	hooksIdx  int // index in rootMs, -1 when there is no "hooks"
-	hooks     span
-	hooksMs   []member
+	hooks     jsonedit.Span
+	hooksMs   []jsonedit.Member
 	eventIdx  int // index in hooksMs, -1 when the event is absent
-	event     span
-	eventElem []span
+	event     jsonedit.Span
+	eventElem []jsonedit.Span
 }
 
 // layout locates "hooks" and one event. It refuses an unexpected structure:
@@ -87,32 +89,32 @@ type claudeLayout struct {
 func layout(src []byte, event string) (claudeLayout, error) {
 	l := claudeLayout{hooksIdx: -1, eventIdx: -1}
 	var err error
-	if l.root, err = rootSpan(src); err != nil {
+	if l.root, err = jsonedit.RootSpan(src); err != nil {
 		return l, err
 	}
-	if l.rootMs, err = parseObject(src, l.root); err != nil {
+	if l.rootMs, err = jsonedit.ParseObject(src, l.root); err != nil {
 		return l, err
 	}
-	i, ok := lastMember(l.rootMs, "hooks")
+	i, ok := jsonedit.LastMember(l.rootMs, "hooks")
 	if !ok {
 		return l, nil
 	}
-	l.hooksIdx, l.hooks = i, l.rootMs[i].val
-	if src[l.hooks.start] != '{' {
-		return l, shapeErr(`"hooks" is not an object`)
+	l.hooksIdx, l.hooks = i, l.rootMs[i].Val
+	if src[l.hooks.Start] != '{' {
+		return l, jsonedit.ShapeErr(`"hooks" is not an object`)
 	}
-	if l.hooksMs, err = parseObject(src, l.hooks); err != nil {
+	if l.hooksMs, err = jsonedit.ParseObject(src, l.hooks); err != nil {
 		return l, err
 	}
-	j, ok := lastMember(l.hooksMs, event)
+	j, ok := jsonedit.LastMember(l.hooksMs, event)
 	if !ok {
 		return l, nil
 	}
-	l.eventIdx, l.event = j, l.hooksMs[j].val
-	if src[l.event.start] != '[' {
-		return l, shapeErr(`"hooks.%s" is not an array`, event)
+	l.eventIdx, l.event = j, l.hooksMs[j].Val
+	if src[l.event.Start] != '[' {
+		return l, jsonedit.ShapeErr(`"hooks.%s" is not an array`, event)
 	}
-	l.eventElem, err = parseArray(src, l.event)
+	l.eventElem, err = jsonedit.ParseArray(src, l.event)
 	return l, err
 }
 
@@ -123,7 +125,7 @@ func claudeHasOwn(src []byte, s Spec) (bool, error) {
 		return false, err
 	}
 	for _, e := range l.eventElem {
-		if groupHasOwn(src[e.start:e.end], s.Subcommand) {
+		if groupHasOwn(src[e.Start:e.End], s.Subcommand) {
 			return true, nil
 		}
 	}
@@ -136,7 +138,7 @@ func claudeInstall(src []byte, existed bool) ([]byte, error) {
 	if !existed || len(bytes.TrimSpace(src)) == 0 {
 		src = []byte("{}\n")
 	}
-	st := detectStyle(src)
+	st := jsonedit.DetectStyle(src)
 	// validate the whole structure before the first edit
 	for _, s := range Specs() {
 		if _, err := layout(src, s.Event); err != nil {
@@ -158,11 +160,11 @@ func claudeInstall(src []byte, existed bool) ([]byte, error) {
 		group := claudeGroupFor(s)
 		switch {
 		case l.hooksIdx < 0:
-			src, err = addMember(src, l.root, "hooks", map[string][]claudeGroup{s.Event: {group}}, st)
+			src, err = jsonedit.AddMember(src, l.root, "hooks", map[string][]claudeGroup{s.Event: {group}}, st)
 		case l.eventIdx < 0:
-			src, err = addMember(src, l.hooks, s.Event, []claudeGroup{group}, st)
+			src, err = jsonedit.AddMember(src, l.hooks, s.Event, []claudeGroup{group}, st)
 		default:
-			src, err = addElem(src, l.event, group, st)
+			src, err = jsonedit.AddElem(src, l.event, group, st)
 		}
 		if err != nil {
 			return nil, err
@@ -174,10 +176,10 @@ func claudeInstall(src []byte, existed bool) ([]byte, error) {
 // claudeRemove deletes only our handlers, and the containers that this left
 // empty. Nothing else is touched.
 func claudeRemove(src []byte) ([]byte, error) {
-	if _, err := rootSpan(src); err != nil {
+	if _, err := jsonedit.RootSpan(src); err != nil {
 		return nil, err
 	}
-	st := detectStyle(src)
+	st := jsonedit.DetectStyle(src)
 	for _, s := range Specs() {
 		for {
 			l, err := layout(src, s.Event)
@@ -186,7 +188,7 @@ func claudeRemove(src []byte) ([]byte, error) {
 			}
 			gi := -1
 			for i, e := range l.eventElem {
-				if groupHasOwn(src[e.start:e.end], s.Subcommand) {
+				if groupHasOwn(src[e.Start:e.End], s.Subcommand) {
 					gi = i
 					break
 				}
@@ -202,7 +204,7 @@ func claudeRemove(src []byte) ([]byte, error) {
 	return src, nil
 }
 
-func removeOwn(src []byte, l claudeLayout, gi int, s Spec, st style) ([]byte, error) {
+func removeOwn(src []byte, l claudeLayout, gi int, s Spec, st jsonedit.Style) ([]byte, error) {
 	group := l.eventElem[gi]
 	handlers, err := handlerSpans(src, group)
 	if err != nil {
@@ -210,17 +212,17 @@ func removeOwn(src []byte, l claudeLayout, gi int, s Spec, st style) ([]byte, er
 	}
 	if len(handlers) > 1 {
 		for hi, h := range handlers {
-			if isOwnHandler(src[h.start:h.end], s.Subcommand) {
+			if isOwnHandler(src[h.Start:h.End], s.Subcommand) {
 				arr, err := handlersArray(src, group)
 				if err != nil {
 					return nil, err
 				}
-				return removeElem(src, arr, hi)
+				return jsonedit.RemoveElem(src, arr, hi)
 			}
 		}
 	}
 	// the group holds only our handler: the whole group goes
-	src, err = removeElem(src, l.event, gi)
+	src, err = jsonedit.RemoveElem(src, l.event, gi)
 	if err != nil {
 		return nil, err
 	}
@@ -232,7 +234,7 @@ func removeOwn(src []byte, l claudeLayout, gi int, s Spec, st style) ([]byte, er
 	if len(l2.eventElem) > 0 {
 		return src, nil
 	}
-	if src, err = removeMember(src, l2.hooks, l2.eventIdx); err != nil {
+	if src, err = jsonedit.RemoveMember(src, l2.hooks, l2.eventIdx); err != nil {
 		return nil, err
 	}
 	l3, err := layout(src, s.Event)
@@ -242,28 +244,28 @@ func removeOwn(src []byte, l claudeLayout, gi int, s Spec, st style) ([]byte, er
 	if len(l3.hooksMs) > 0 {
 		return src, nil
 	}
-	return removeMember(src, l3.root, l3.hooksIdx)
+	return jsonedit.RemoveMember(src, l3.root, l3.hooksIdx)
 }
 
-// handlersArray is the span of the "hooks" array of a group.
-func handlersArray(src []byte, group span) (span, error) {
-	ms, err := parseObject(src, group)
+// handlersArray is the jsonedit.Span of the "hooks" array of a group.
+func handlersArray(src []byte, group jsonedit.Span) (jsonedit.Span, error) {
+	ms, err := jsonedit.ParseObject(src, group)
 	if err != nil {
-		return span{}, err
+		return jsonedit.Span{}, err
 	}
-	i, ok := lastMember(ms, "hooks")
+	i, ok := jsonedit.LastMember(ms, "hooks")
 	if !ok {
-		return span{}, shapeErr("group without hooks")
+		return jsonedit.Span{}, jsonedit.ShapeErr("group without hooks")
 	}
-	return ms[i].val, nil
+	return ms[i].Val, nil
 }
 
-func handlerSpans(src []byte, group span) ([]span, error) {
+func handlerSpans(src []byte, group jsonedit.Span) ([]jsonedit.Span, error) {
 	arr, err := handlersArray(src, group)
 	if err != nil {
 		return nil, err
 	}
-	return parseArray(src, arr)
+	return jsonedit.ParseArray(src, arr)
 }
 
 // claudeMissing lists the subcommands whose handler is not installed.

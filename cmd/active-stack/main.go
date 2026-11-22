@@ -9,6 +9,7 @@
 //	active-stack install --help       Show all available flags.
 //	active-stack memory branch        Show the memory mode and tag of the current Git branch.
 //	active-stack memory hook <name>   Agent hook (session-start, pre-read): event JSON on stdin.
+//	active-stack memory init          Set a project up for team memory (.engram files and .gitignore); proposes the commit, never runs it.
 package main
 
 import (
