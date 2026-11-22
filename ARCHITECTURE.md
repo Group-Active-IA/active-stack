@@ -127,6 +127,11 @@ que es la fuente de verdad de qué harnesses existen. Cada entrada declara:
   source: { method: embed }
   install_modes: [full]
   agents: [claude, codex, opencode, antigravity]
+- id: engram-cloud
+  type: config           # sección propia: <!-- active-stack:engram-cloud -->
+  install_modes: [full]
+  agents: [claude, codex]   # OpenCode y Antigravity quedan fuera
+  depends_on: [engram, sdd-orchestrator]
 - id: playwright
   type: external
   external: { method: mcp, mcp: { name: playwright, command: npx, args: [-y, "@playwright/mcp@<x.y.z>"] } }
@@ -195,6 +200,14 @@ internal/
   agents/                adapters por agente (claude/opencode/...)    [PORT, slim]
   harness/               install/inject por tipo de harness           [NEW]
     skill/  config/  external/
+    hooks/               hooks de lectura de memoria (Claude y Codex)  [NEW]
+    proxyreg/            registro del proxy en la entrada MCP de Engram [NEW]
+    autosync/            ENGRAM_CLOUD_AUTOSYNC en el entorno del MCP   [NEW]
+  jsonedit/              editor mínimo de JSON que conserva bytes ajenos [NEW]
+  memory/                modo de memoria por proyecto, rama y slug,     [NEW]
+                         etiquetado de guardados (PrepareSave)
+    projectinit/         `memory init`: .engram/ y .gitignore del proyecto [NEW]
+  memoryproxy/           proxy MCP stdio que etiqueta el guardado       [NEW]
   filemerge/             merge por markers (inyectar sin pisar)       [PORT]
   backup/                snapshot + restore de configs                [PORT]
   pipeline/              ejecución por etapas + rollback              [PORT]
@@ -206,6 +219,44 @@ assets/                  catálogo + configs bundleadas (sdd-orchestrator, etc.)
 `[PORT]` = traer del repo actual y limpiar. `[NEW]` = construir.
 Se descarta: `components/gga`, `components/theme`, `components/persona`
 (marketing), `components/permissions` se mantiene (seguridad no es opcional).
+
+### 5.1 Memoria de equipo con Engram Cloud (`engram-cloud`)
+
+`engram-cloud` es un harness `config` (Full automático, Custom seleccionable, solo
+Claude y Codex, depende de `engram` y `sdd-orchestrator`). Inyecta la sección propia
+`active-stack:engram-cloud` en `CLAUDE.md` / `AGENTS.md` (registrada en
+`sectionFragments`, protegida del purge por `isOwnedSection`); no edita
+`engram-protocol.md`. Nada se activa solo: el proyecto opta con el marcador
+`.engram/active-stack.json` (`{"memory_policy": "cloud-branch"}`), que crea
+`active-stack memory init`. Sin marcador, ningún guardado se reescribe.
+
+| Pieza | Paquete | Qué hace |
+|---|---|---|
+| Modo, rama y slug | `internal/memory` | `Detect(dir)` decide `off` / `cloud-branch`, la rama y el slug (git de solo lectura). `PrepareSave` etiqueta un guardado |
+| Config por proyecto | `internal/memory/projectinit` | Crea o completa `.engram/config.json` y `.engram/active-stack.json` y las reglas de `.gitignore`; solo **propone** el commit |
+| Proxy de guardado | `internal/memoryproxy` | `active-stack memory proxy -- <comando de Engram>`: proxy MCP stdio, etiqueta `mem_save` y las vías narrativas, deja pasar el resto byte a byte y falla abierto |
+| Registro del proxy | `internal/harness/proxyreg` | Reescribe la entrada `engram` de `~/.claude.json` y de `~/.codex/config.toml` para arrancar el proxy; backup, idempotente, mismos bytes al quitar |
+| Hooks de lectura | `internal/harness/hooks` | `session-start` y `pre-read` en `~/.claude/settings.json` y `~/.codex/config.toml`; agregan la rama actual como contexto y nunca bloquean |
+| Autosync | `internal/harness/autosync` | `ENGRAM_CLOUD_AUTOSYNC=1` en el entorno del MCP de Engram |
+| Edición de JSON | `internal/jsonedit` | Editor mínimo compartido por hooks, proxyreg y projectinit (no usa `filemerge`: `MergeJSONObjects` reemplaza arrays) |
+| Verificación | `internal/verify` | Checks `cloud:*` solo de lectura, solo si el harness está instalado, solo Claude y Codex, es/en |
+
+**Decisión DA-13: proxy y no hook de guardado.** El diseño original etiquetaba con
+un hook `PreToolUse` que reescribe la entrada (`updatedInput`). Se midió (R-05,
+Claude Code 2.1.327, Windows, Engram 3.7.2, plugin 0.1.22): el hook corre en
+paralelo con el `PreToolUse` del propio plugin de Engram y su reescritura se
+descarta bajo carga (9/12 contra 12/12 del proxy). Por eso el guardado se etiqueta
+con un **proxy MCP** entre el agente y Engram, en Claude y en Codex, y **no se
+instala ningún hook de guardado**. Los hooks de lectura se mantienen. El proxy no
+agrega tokens propios y, ante error o más de 3 s, reenvía el mensaje original.
+
+**Pieza de modo equipo (sin Engram).** `active-delivery` lee `.active-stack/team.json`
+(contrato en `assets/skills/active-delivery/references/team-mode.md`, validador
+`team.py`), `roadmap-generator` verifica las fichas (`fichas.py`) y
+`active-orchestrator` funda y actualiza el equipo (fase `team-mode`, acción
+`:team`; fase `memory-policy`, acción `:memory`). El harness `permissions` agrega en
+Claude `deny` de push a `main`. Guías: [docs/equipo.md](docs/equipo.md) y
+[docs/engram-cloud-equipo.md](docs/engram-cloud-equipo.md).
 
 ---
 
