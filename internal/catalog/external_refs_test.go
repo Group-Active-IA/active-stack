@@ -43,6 +43,13 @@ func TestActiveOrchestratorRefIsMemoryPolicyMerge(t *testing.T) {
 	}
 }
 
+func TestRoadmapGeneratorRefIsTeamFieldsMerge(t *testing.T) {
+	repo, ref := refOf(t, "roadmap-generator")
+	if repo != "Group-Active-IA/roadmap-generator" || ref != "462de73a73e96d2120ac8ed1c19feabd2004010b" {
+		t.Fatalf("got %s@%s", repo, ref)
+	}
+}
+
 func TestAgentInstructionRefIsNoDuplicateMerge(t *testing.T) {
 	repo, ref := refOf(t, "agent-instruction")
 	if repo != "JuanCruzRobledo/agent-instruction" || ref != "1e8ca732918fefbbc7aa58bc5ec6129f33539496" {

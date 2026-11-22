@@ -151,7 +151,7 @@ harnesses:
     description: { es: "Genera CHANGES.md (backlog técnico) desde la KB.", en: "Generates CHANGES.md (technical backlog) from the KB." }
     long_description: { es: "Genera o reutiliza CHANGES.md a partir de la base de conocimiento. Documenta el orden, las dependencias y los criterios de verificación en Markdown local.", en: "Generates or reuses CHANGES.md from the knowledge base. Records order, dependencies and verification criteria in local Markdown." }
     type: skill
-    source: { repo: Group-Active-IA/roadmap-generator, ref: d603877cbe9ce2cf4a5e8c9c201431f7a01164c0, method: clone }
+    source: { repo: Group-Active-IA/roadmap-generator, ref: 462de73a73e96d2120ac8ed1c19feabd2004010b, method: clone }
     install_modes: [full]
     depends_on: [openspec, kb-creator]
 
