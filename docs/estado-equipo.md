@@ -47,7 +47,8 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-17 | Giuliano | R-08, R-16 | mergeada | [#57](https://github.com/Group-Active-IA/active-stack/pull/57) | `c0b10ec` | ALTO. Propuesta aprobada (R17-A a R17-I) y implementada. R17-D queda como decisión abierta del dueño (Engram baja el nombre a minúsculas), no frena el merge. `active-stack memory init` con `internal/memory/projectinit`; [ficha](equipo/fichas/R-17.md) · [informe](equipo/informes/R-17.md) |
 | R-18 | Gianfranco | R-11, R-01, R-16 | mergeada | [#56](https://github.com/Group-Active-IA/active-stack/pull/56) | `ffdc541` | ALTO. `deny` de push a `main` (Claude, con equivalentes PowerShell) y lecturas de `gh` en `balanceado`; une los arrays del usuario sin tocar `filemerge`. Codex `(TBD)`: se prueba con Codex real al final, junto con R-16. [Informe](equipo/informes/R-18.md) |
 | R-19 | Gianfranco | R-10, R-17 | mergeada | [orchestrator #8](https://github.com/Group-Active-IA/active-orchestrator/pull/8) · [agent-instruction #3](https://github.com/JuanCruzRobledo/agent-instruction/pull/3) · [stack #61](https://github.com/Group-Active-IA/active-stack/pull/61) | orchestrator `5d758fc` · agent-instruction `1e8ca73` · stack `185d58d` | Fase `memory-policy` y sección que no duplica `engram-cloud`. DA-07: política solo en `.active-orchestrator-state.json`. El bump del `ref` en `harnesses.yaml` queda para R-20. [Informe](equipo/informes/R-19.md) |
-| R-20 | Juan Cruz | R-09, R-10, R-12, R-14, R-16, R-17, R-18, R-19 | pendiente | | | Integración |
+| R-20 | Juan Cruz | R-09, R-10, R-12, R-14, R-16, R-17, R-18, R-19, R-26 | mergeada | [#65](https://github.com/Group-Active-IA/active-stack/pull/65) | `2a4b439` | Bump de los tres `ref` por SHA; hooks, AUTOSYNC y proxy de guardado conectados a install/uninstall (Claude y Codex). Codex real pendiente. [Informe](equipo/informes/R-20.md) |
+| R-26 | Juan Cruz | R-15, R-08 | mergeada | [#64](https://github.com/Group-Active-IA/active-stack/pull/64) | `6d62242` | Proxy de guardado (DA-13): `active-stack memory proxy` y registro en Claude y Codex; reescribe las Fases 5 y 6 del plan. [Informe](equipo/informes/R-26-proxy-guardado.md) |
 | R-21 | Giuliano | R-20 | pendiente | | | |
 | R-22 | Emiliano | R-20, R-21 | pendiente | | | |
 | R-23 | Matías | R-22 | pendiente | | | Con autorización |
@@ -59,7 +60,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | Persona | Ficha | Qué hacer |
 |---|---|---|
 | Matías | — | Sin ficha habilitada: R-23 espera a R-22 |
-| Giuliano | — | Sin ficha habilitada: R-21 espera a R-20 |
+| Giuliano | R-21 (MEDIO) | Checks de `verify`: hooks de lectura, `active-stack` en el `PATH`, proxy registrado, AUTOSYNC |
 | Emiliano | — | Sin ficha habilitada: R-22 espera a R-20 y R-21 |
 | Gianfranco | — | Sin ficha habilitada: ya terminó R-10, R-18 y R-19 |
 
@@ -111,7 +112,7 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 
 ## Trabajo derivado de las decisiones
 
-- Proxy de guardado: implementarlo y reescribir las Fases 5 y 6 del plan [EN] (antes de R-20).
-- R-08: sufijo hex en slugs que pierden información; invertir el test que fija el comportamiento actual.
-- R-17: nombre en minúsculas (una línea y sus pruebas).
+- ~~Proxy de guardado~~: hecho (R-26, #64) y conectado (R-20, #65).
+- ~~R-08: sufijo hex en slugs~~: hecho (#62).
+- ~~R-17: nombre en minúsculas~~: hecho (#62).
 - Al final: prueba con Codex real (R-16 X0–X9) y `deny` de Codex de R-18.
