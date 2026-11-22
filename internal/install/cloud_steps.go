@@ -7,6 +7,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	"github.com/Group-Active-IA/active-stack/internal/harness/autosync"
 	"github.com/Group-Active-IA/active-stack/internal/harness/hooks"
+	"github.com/Group-Active-IA/active-stack/internal/harness/proxyreg"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 )
@@ -46,6 +47,10 @@ func cloudAgents(h model.Harness, adapters []AgentAdapter) []AgentAdapter {
 
 var hooksInstallFn = func(home string, adapters []hooks.Adapter) (hooks.Result, error) {
 	return hooks.Install(home, adapters)
+}
+
+var proxyRegisterFn = func(home string, adapters []proxyreg.Adapter) ([]proxyreg.AgentResult, error) {
+	return proxyreg.Register(home, adapters)
 }
 
 var autosyncSetFn = func(home string, adapters []autosync.Adapter) (autosync.Result, error) {
@@ -129,6 +134,39 @@ func (s *autosyncStep) Rollback() error {
 	return restoreFn(*s.manifest)
 }
 
+// proxyStep registers the save-tagging proxy (decision DA-13, ficha R-26) in
+// the existing Engram MCP entry of Claude and Codex. No entry, nothing to do.
+type proxyStep struct {
+	adapters   []AgentAdapter
+	home       string
+	onProgress pipeline.ProgressFunc
+	manifest   *backup.Manifest
+}
+
+func (s *proxyStep) ID() string                     { return "proxy:" + EngramCloudHarnessID }
+func (s *proxyStep) setManifest(m *backup.Manifest) { s.manifest = m }
+
+func (s *proxyStep) Run() error {
+	ad := make([]proxyreg.Adapter, len(s.adapters))
+	for i, a := range s.adapters {
+		ad[i] = a
+	}
+	res, err := proxyRegisterFn(s.home, ad)
+	for _, r := range res {
+		if r.Skipped && r.Reason != "" {
+			cloudNotice(s.onProgress, s.ID(), fmt.Sprintf("%s: save-tagging proxy not registered in %s (%s)", r.Agent, r.File, r.Reason))
+		}
+	}
+	return err
+}
+
+func (s *proxyStep) Rollback() error {
+	if s.manifest == nil {
+		return nil
+	}
+	return restoreFn(*s.manifest)
+}
+
 // cloudSteps returns the steps that follow the engram-cloud config step. They
 // are user-level (decision D12), so a Project target gets none.
 func cloudSteps(h model.Harness, adapters []AgentAdapter, opts Options) []pipeline.Step {
@@ -142,6 +180,7 @@ func cloudSteps(h model.Harness, adapters []AgentAdapter, opts Options) []pipeli
 	steps := []pipeline.Step{
 		&memoryHooksStep{adapters: ca, home: opts.HomeDir, onProgress: opts.OnProgress},
 		&autosyncStep{adapters: ca, home: opts.HomeDir, onProgress: opts.OnProgress},
+		&proxyStep{adapters: ca, home: opts.HomeDir, onProgress: opts.OnProgress},
 	}
 	for _, f := range cloudExtraSteps {
 		if st := f(CloudStepContext{Adapters: ca, Home: opts.HomeDir}); st != nil {

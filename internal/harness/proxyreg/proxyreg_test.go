@@ -297,3 +297,22 @@ func TestInvalidFileLeftIntactAndMissingFilesSkipped(t *testing.T) {
 		t.Fatalf("missing file: %+v %v", res, err)
 	}
 }
+
+// Regression (R-20): another managed block (the memory hooks) sits right after
+// the Engram table. Its begin marker is a comment before the next header and
+// must stay outside the proxy block, so both blocks round-trip.
+func TestCodexRegisterLeavesNeighbourManagedBlockAlone(t *testing.T) {
+	src := "model = \"gpt-5\"\n\n[mcp_servers.engram]\ncommand = \"engram\"\nargs = [\"mcp\"]\n\n" +
+		"# active-stack:memory-hooks begin\n# Managed.\n[[hooks.SessionStart]]\n# active-stack:memory-hooks end\n"
+	out, changed, err := RegisterCodex(src, "engram")
+	if err != nil || !changed {
+		t.Fatalf("register: %v changed=%v", err, changed)
+	}
+	if strings.Count(out, "# active-stack:memory-hooks begin") != 1 || strings.Contains(out, "#orig # active-stack:memory-hooks") {
+		t.Fatalf("the neighbour block was swallowed:\n%s", out)
+	}
+	back, changed, err := UnregisterCodex(out, "engram")
+	if err != nil || !changed || back != src {
+		t.Fatalf("unregister must restore the same bytes: %v\n%s", err, back)
+	}
+}

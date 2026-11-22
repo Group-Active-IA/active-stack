@@ -108,6 +108,10 @@ func TestCloudInstallClaudeAndOpenCode(t *testing.T) {
 	if strings.Count(mcp, "ENGRAM_CLOUD_AUTOSYNC") != 1 {
 		t.Errorf("AUTOSYNC missing in the engram MCP env:\n%s", mcp)
 	}
+	// DA-13: the save-tagging proxy wraps the existing Engram entry.
+	if !strings.Contains(mcp, "proxy") {
+		t.Errorf("save-tagging proxy missing in the engram MCP entry: %s", mcp)
+	}
 	for _, bad := range []string{"ENGRAM_CLOUD_TOKEN", "ENGRAM_CLOUD_SERVER", "ENGRAM_CLOUD_URL"} {
 		if strings.Contains(mcp+settings, bad) {
 			t.Errorf("%s must never be written", bad)

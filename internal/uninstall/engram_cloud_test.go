@@ -11,6 +11,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	"github.com/Group-Active-IA/active-stack/internal/harness/autosync"
 	"github.com/Group-Active-IA/active-stack/internal/harness/hooks"
+	"github.com/Group-Active-IA/active-stack/internal/harness/proxyreg"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
 	"github.com/Group-Active-IA/active-stack/internal/uninstall"
@@ -93,6 +94,9 @@ func TestUninstallCloudRemovesOwnHooksAndKeepsEverythingElse(t *testing.T) {
 		t.Fatal(err)
 	}
 	if _, err := autosync.Set(home, []autosync.Adapter{ca, cx}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := proxyreg.Register(home, []proxyreg.Adapter{ca, cx}); err != nil {
 		t.Fatal(err)
 	}
 

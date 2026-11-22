@@ -6,6 +6,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	"github.com/Group-Active-IA/active-stack/internal/harness/autosync"
 	"github.com/Group-Active-IA/active-stack/internal/harness/hooks"
+	"github.com/Group-Active-IA/active-stack/internal/harness/proxyreg"
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
@@ -45,6 +46,10 @@ var hooksRemoveFn = func(home string, adapters []hooks.Adapter) (hooks.Result, e
 	return hooks.Remove(home, adapters)
 }
 
+var proxyUnregisterFn = func(home string, adapters []proxyreg.Adapter) ([]proxyreg.AgentResult, error) {
+	return proxyreg.Unregister(home, adapters)
+}
+
 var autosyncRemoveFn = func(home string, adapters []autosync.Adapter) (autosync.Result, error) {
 	return autosync.Remove(home, adapters)
 }
@@ -73,6 +78,13 @@ func (s *cloudRemovalStep) Run() error {
 	}
 	if _, err := hooksRemoveFn(s.homeDir, ha); err != nil {
 		return fmt.Errorf("remove memory hooks: %w", err)
+	}
+	pa := make([]proxyreg.Adapter, len(ca))
+	for i, a := range ca {
+		pa[i] = autosyncAdapter{AgentAdapter: a, home: s.homeDir}
+	}
+	if _, err := proxyUnregisterFn(s.homeDir, pa); err != nil {
+		return fmt.Errorf("unregister save-tagging proxy: %w", err)
 	}
 	if _, err := autosyncRemoveFn(s.homeDir, aa); err != nil {
 		return fmt.Errorf("remove %s: %w", autosync.EnvKey, err)
