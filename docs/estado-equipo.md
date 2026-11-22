@@ -49,7 +49,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-19 | Gianfranco | R-10, R-17 | mergeada | [orchestrator #8](https://github.com/Group-Active-IA/active-orchestrator/pull/8) · [agent-instruction #3](https://github.com/JuanCruzRobledo/agent-instruction/pull/3) · [stack #61](https://github.com/Group-Active-IA/active-stack/pull/61) | orchestrator `5d758fc` · agent-instruction `1e8ca73` · stack `185d58d` | Fase `memory-policy` y sección que no duplica `engram-cloud`. DA-07: política solo en `.active-orchestrator-state.json`. El bump del `ref` en `harnesses.yaml` queda para R-20. [Informe](equipo/informes/R-19.md) |
 | R-20 | Juan Cruz | R-09, R-10, R-12, R-14, R-16, R-17, R-18, R-19, R-26 | mergeada | [#65](https://github.com/Group-Active-IA/active-stack/pull/65) | `2a4b439` | Bump de los tres `ref` por SHA; hooks, AUTOSYNC y proxy de guardado conectados a install/uninstall (Claude y Codex). Codex real pendiente. [Informe](equipo/informes/R-20.md) |
 | R-26 | Juan Cruz | R-15, R-08 | mergeada | [#64](https://github.com/Group-Active-IA/active-stack/pull/64) | `6d62242` | Proxy de guardado (DA-13): `active-stack memory proxy` y registro en Claude y Codex; reescribe las Fases 5 y 6 del plan. [Informe](equipo/informes/R-26-proxy-guardado.md) |
-| R-21 | Giuliano | R-20 | pendiente | | | |
+| R-21 | Giuliano | R-20 | mergeada | [#67](https://github.com/Group-Active-IA/active-stack/pull/67) | `e23919c` | Checks de `verify` de `engram-cloud` (marcador, hooks, `PATH` como aviso, proxy, AUTOSYNC, archivos del proyecto). Codex real pendiente. [Informe](equipo/informes/R-21.md) |
 | R-22 | Emiliano | R-20, R-21 | pendiente | | | |
 | R-23 | Matías | R-22 | pendiente | | | Con autorización |
 | R-24 | Juan Cruz | R-22 | pendiente | | | Con autorización |
@@ -60,8 +60,8 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | Persona | Ficha | Qué hacer |
 |---|---|---|
 | Matías | — | Sin ficha habilitada: R-23 espera a R-22 |
-| Giuliano | R-21 (MEDIO) | Checks de `verify`: hooks de lectura, `active-stack` en el `PATH`, proxy registrado, AUTOSYNC |
-| Emiliano | — | Sin ficha habilitada: R-22 espera a R-20 y R-21 |
+| Giuliano | — | Sin ficha habilitada: ya terminó todas las suyas |
+| Emiliano | R-22 | `ARCHITECTURE.md`, guías, láminas y espejos `CLAUDE.md`/`AGENTS.md` |
 | Gianfranco | — | Sin ficha habilitada: ya terminó R-10, R-18 y R-19 |
 
 ## Decisiones pendientes del dueño
