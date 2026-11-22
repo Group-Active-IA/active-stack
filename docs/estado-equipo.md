@@ -66,8 +66,8 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 ## Decisiones pendientes del dueño
 
 - **Verificación de R-16 con Codex real (X0–X9, [ficha](equipo/fichas/R-16.md)).** R-16 se mergeó sin ella (el instalador no está conectado a `install`, así que no cambia la configuración de nadie). Claude real sí se verificó (Claude Code 2.1.330). **Se deja para el final (decisión del dueño, 2026-11-21), junto con el `deny` de Codex de R-18; debe estar hecha antes de que R-20 conecte el instalador a Codex y, a más tardar, antes del cierre R-25.** Quien la haga pega la tabla completa en la ficha y cierra T-F6-10; si algo falla, se avisa al grupo (guía, sección 8) y Giuliano lo corrige.
-- **Cómo se etiqueta el guardado de memoria (hook o proxy).** Recomendación: proxy para Claude **y** Codex, sin hook de guardado en ninguno. Con el plugin real de Engram 0.1.22 y 12 sesiones a la vez, el hook etiquetó 5 de 12 y el proxy 12 de 12 (R-15). Prueba en Codex 0.166.0 (Windows, 2026-11-20, hooks falsos): dos hooks `PreToolUse` que reescriben el mismo comando corren a la vez y solo sobrevive una reescritura (3 corridas de 3). No se midió el plugin real de Engram en Codex ni la carga de 12 sesiones. Frena el `pre-save` y la parte de guardado de R-16; si se decide, se reescriben las Fases 5 y 6 del plan.
-- **Colisión de slugs `feat/una` vs `feat-una`** (R-08): `(TBD)`; recomendación en [el informe de R-08](equipo/informes/R-08.md).
+- **Cómo se etiqueta el guardado de memoria (hook o proxy):** decidido el 2026-11-21 (proxy). Ver «Decisiones tomadas» y «Trabajo derivado de las decisiones».
+- **Colisión de slugs:** decidido el 2026-11-21. Ver «Decisiones tomadas».
 
 ## Autorizaciones de excepción
 
@@ -94,6 +94,10 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 | R-16 D-B | R-16 entrega solo el instalador (Install/Remove/Status con pruebas); R-20 lo conecta a install/uninstall/verify | 2026-11-21 |
 | R-16 D-C | Si `active-stack` no está en el PATH, los hooks se instalan igual con aviso, y `verify` lo marca | 2026-11-21 |
 | R-16 verificación | Giuliano implementa Claude y Codex con archivos y documentación y deja la rama lista; la prueba con Codex real y Claude real la hace el dueño antes de mergear | 2026-11-21 |
+| DA-13 | Guardado de memoria etiquetado por **proxy** en Claude y Codex, sin hook de guardado en ninguno (los hooks de lectura `session-start`/`pre-read` se mantienen). Se reescriben las Fases 5 y 6 del plan [EN] | 2026-11-21 |
+| R17-D | `memory init` escribe `project_name` en minúsculas, igual que Engram | 2026-11-21 |
+| Slugs | Se agrega el sufijo de 6 hex también cuando el slug pierde información respecto de la rama (`/`, `_`, mayúsculas), no solo por largo (recomendación de R-08) | 2026-11-21 |
+| Hecho el desarrollo pendiente | El dueño pidió terminar el desarrollo pendiente con el agente; lo que requiere Codex real queda para el final y el piloto R-24 requiere su OK explícito | 2026-11-21 |
 
 ## Punto de reanudación
 
@@ -104,3 +108,10 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 **Riesgos detectados que ninguna ficha cubre todavía:** el stack no instala ni verifica el plugin de Engram para Claude (0.1.0 en vez de 0.1.22+); un `engram serve` huérfano o de otra base hace que el plugin bloquee los guardados con «identidad del servidor local sin confirmar»; falta `jq` en la máquina del dueño y el plugin lo usa. Candidatas: `verify` (Fase 10) y la instalación (Fase 9). Detalle en la [matriz de R-05](research/r05-windows-claude/matriz-claude-windows.md).
 **Bloqueos vigentes:** ninguno.
 **Autorizaciones vigentes:** ninguna de excepción.
+
+## Trabajo derivado de las decisiones
+
+- Proxy de guardado: implementarlo y reescribir las Fases 5 y 6 del plan [EN] (antes de R-20).
+- R-08: sufijo hex en slugs que pierden información; invertir el test que fija el comportamiento actual.
+- R-17: nombre en minúsculas (una línea y sus pruebas).
+- Al final: prueba con Codex real (R-16 X0–X9) y `deny` de Codex de R-18.
