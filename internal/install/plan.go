@@ -117,6 +117,7 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 			return empty, fmt.Errorf("install: build step for harness %q: %w", id, err)
 		}
 		applySteps = append(applySteps, step)
+		applySteps = append(applySteps, cloudSteps(h, adapters, opts)...)
 	}
 
 	// 5b. Emit MCP write steps from Starter.MCPs[] (D5).
@@ -345,6 +346,7 @@ func collectWritePaths(adapters []AgentAdapter, effectiveBase string, target mod
 				addDir(resolvedCommandsDir(a, effectiveBase, target))
 			}
 		}
+		cloudWritePaths(h, adapters, effectiveBase, target, addFile)
 		// permissions harness (id == "permissions") — settings paths.
 		if id == "permissions" {
 			for _, a := range adapters {
