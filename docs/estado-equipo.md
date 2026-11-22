@@ -45,7 +45,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-15 | Emiliano | R-08, R-01 | mergeada | [#50](https://github.com/Group-Active-IA/active-stack/pull/50) | `03e6e1d` | Núcleo de etiquetado (sirve a hook y proxy) y hooks `session-start`/`pre-read`. Sin `pre-save`: el hook volvió a fallar en Claude (5/12 contra 12/12 del proxy); espera la decisión pendiente 1 del dueño. [Informe](equipo/informes/R-15.md) |
 | R-16 | Giuliano | R-15, R-14 | mergeada | [#54](https://github.com/Group-Active-IA/active-stack/pull/54) | `03fa64c` | ALTO. Instalador de los hooks de lectura (Claude y Codex), sin hook de guardado y sin conectar a `install` (R-20). Verificado con Claude real; **falta que alguien con Codex pruebe los pasos X0–X9 de la ficha**. [Informe](equipo/informes/R-16.md) **Pendiente: verificación con Codex real (X0–X9 de la ficha)**; ver «Decisiones pendientes del dueño». |
 | R-17 | Giuliano | R-08, R-16 | PR abierto | [#57](https://github.com/Group-Active-IA/active-stack/pull/57) | | ALTO. Propuesta aprobada (R17-A a R17-I) y implementada. R17-D queda como decisión abierta del dueño (Engram baja el nombre a minúsculas), no frena el merge. `active-stack memory init` con `internal/memory/projectinit`; [ficha](equipo/fichas/R-17.md) · [informe](equipo/informes/R-17.md) |
-| R-18 | Gianfranco | R-11, R-01, R-16 | pendiente | | | ALTO |
+| R-18 | Gianfranco | R-11, R-01, R-16 | mergeada | [#56](https://github.com/Group-Active-IA/active-stack/pull/56) | `ffdc541` | ALTO. `deny` de push a `main` (Claude, con equivalentes PowerShell) y lecturas de `gh` en `balanceado`; une los arrays del usuario sin tocar `filemerge`. Codex `(TBD)`: se prueba con Codex real al final, junto con R-16. [Informe](equipo/informes/R-18.md) |
 | R-19 | Gianfranco | R-10, R-17 | pendiente | | | Repos externos |
 | R-20 | Juan Cruz | R-09, R-10, R-12, R-14, R-16, R-17, R-18, R-19 | pendiente | | | Integración |
 | R-21 | Giuliano | R-20 | pendiente | | | |
@@ -61,11 +61,11 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | Matías | — | Sin ficha habilitada: R-23 espera a R-22 |
 | Giuliano | R-17 (ALTO) | Primero **proponer** y esperar la revisión del dueño. Sin hook de guardado hasta que el dueño decida hook o proxy |
 | Emiliano | — | Sin ficha habilitada: R-22 espera a R-20 y R-21 |
-| Gianfranco | R-18 (ALTO) | Primero **proponer** y esperar la revisión del dueño. Probar la coexistencia con los hooks de R-16 en `settings.json`. R-19 espera a R-17 |
+| Gianfranco | — | Sin ficha habilitada: R-19 espera a R-17 |
 
 ## Decisiones pendientes del dueño
 
-- **Verificación de R-16 con Codex real (X0–X9, [ficha](equipo/fichas/R-16.md)).** R-16 se mergeó sin ella (el instalador no está conectado a `install`, así que no cambia la configuración de nadie). Claude real sí se verificó (Claude Code 2.1.330). **Debe hacerse antes de que R-20 conecte el instalador** y, a más tardar, antes del cierre R-25. Quien la haga pega la tabla completa en la ficha y cierra T-F6-10; si algo falla, se avisa al grupo (guía, sección 8) y Giuliano lo corrige.
+- **Verificación de R-16 con Codex real (X0–X9, [ficha](equipo/fichas/R-16.md)).** R-16 se mergeó sin ella (el instalador no está conectado a `install`, así que no cambia la configuración de nadie). Claude real sí se verificó (Claude Code 2.1.330). **Se deja para el final (decisión del dueño, 2026-11-21), junto con el `deny` de Codex de R-18; debe estar hecha antes de que R-20 conecte el instalador a Codex y, a más tardar, antes del cierre R-25.** Quien la haga pega la tabla completa en la ficha y cierra T-F6-10; si algo falla, se avisa al grupo (guía, sección 8) y Giuliano lo corrige.
 - **Cómo se etiqueta el guardado de memoria (hook o proxy).** Recomendación: proxy para Claude **y** Codex, sin hook de guardado en ninguno. Con el plugin real de Engram 0.1.22 y 12 sesiones a la vez, el hook etiquetó 5 de 12 y el proxy 12 de 12 (R-15). Prueba en Codex 0.166.0 (Windows, 2026-11-20, hooks falsos): dos hooks `PreToolUse` que reescriben el mismo comando corren a la vez y solo sobrevive una reescritura (3 corridas de 3). No se midió el plugin real de Engram en Codex ni la carga de 12 sesiones. Frena el `pre-save` y la parte de guardado de R-16; si se decide, se reescriben las Fases 5 y 6 del plan.
 - **Colisión de slugs `feat/una` vs `feat-una`** (R-08): `(TBD)`; recomendación en [el informe de R-08](equipo/informes/R-08.md).
 
