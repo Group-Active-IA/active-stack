@@ -42,3 +42,10 @@ func TestActiveOrchestratorRefIsMemoryPolicyMerge(t *testing.T) {
 		t.Fatalf("got %s@%s", repo, ref)
 	}
 }
+
+func TestAgentInstructionRefIsNoDuplicateMerge(t *testing.T) {
+	repo, ref := refOf(t, "agent-instruction")
+	if repo != "JuanCruzRobledo/agent-instruction" || ref != "1e8ca732918fefbbc7aa58bc5ec6129f33539496" {
+		t.Fatalf("got %s@%s", repo, ref)
+	}
+}

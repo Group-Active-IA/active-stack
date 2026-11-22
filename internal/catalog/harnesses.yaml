@@ -160,7 +160,7 @@ harnesses:
     description: { es: "Genera AGENTS.md/CLAUDE.md correcto con todas las referencias.", en: "Generates a correct AGENTS.md/CLAUDE.md with all references." }
     long_description: { es: "La skill que redacta la constitución operativa del proyecto—el `AGENTS.md`/`CLAUDE.md` con todas las referencias correctas. Se clona desde `JuanCruzRobledo/agent-instruction` al directorio de skills del agente y arma stack, convenciones, reglas duras y el mapa de navegación hacia la KB y el roadmap, sin duplicar lo que el orquestador global ya define. Elegila cuando querés que los agentes tengan reglas de proyecto claras y específicas en vez de improvisar. Es parte de la fundación (Full).", en: "The skill that writes the project's operating constitution—the `AGENTS.md`/`CLAUDE.md` with all the right references. It's cloned from `JuanCruzRobledo/agent-instruction` into the agent's skills directory and assembles the stack, conventions, hard rules, and the navigation map to the KB and roadmap, without duplicating what the global orchestrator already defines. Choose it when you want agents to have clear, project-specific rules instead of improvising. It's part of the foundation (Full)." }
     type: skill
-    source: { repo: JuanCruzRobledo/agent-instruction, ref: 71b9aa87d74a4a010335a29418e0719a0f9d9741, method: clone }
+    source: { repo: JuanCruzRobledo/agent-instruction, ref: 1e8ca732918fefbbc7aa58bc5ec6129f33539496, method: clone }
     install_modes: [full]
 
   - id: skill-registry
