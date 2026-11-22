@@ -61,7 +61,7 @@ func TestMemoryBranchJSONSchema(t *testing.T) {
 	if err := json.Unmarshal([]byte(out), &got); err != nil {
 		t.Fatalf("stdout is not JSON: %v\n%s", err, out)
 	}
-	want := map[string]any{"mode": "cloud-branch", "tagged": true, "branch": "feature/x", "slug": "feature-x"}
+	want := map[string]any{"mode": "cloud-branch", "tagged": true, "branch": "feature/x", "slug": "feature-x-217d2b"}
 	if len(got) != len(want) {
 		t.Fatalf("keys = %v; want exactly %v", got, want)
 	}
@@ -89,13 +89,13 @@ func TestMemoryBranchJSONNullsWhenNotTagged(t *testing.T) {
 func TestMemoryBranchReadableOutputIsBilingual(t *testing.T) {
 	dir := memoryRepo(t, `{"memory_policy":"cloud-branch"}`)
 	_, es, _ := runMemory("branch", "--project", dir, "--lang", "es")
-	for _, want := range []string{"Modo de memoria: cloud-branch", "Etiqueta: sí", "Rama: feature/x", "Slug: feature-x"} {
+	for _, want := range []string{"Modo de memoria: cloud-branch", "Etiqueta: sí", "Rama: feature/x", "Slug: feature-x-217d2b"} {
 		if !strings.Contains(es, want) {
 			t.Errorf("es output missing %q:\n%s", want, es)
 		}
 	}
 	_, en, _ := runMemory("branch", "--project", dir, "--lang", "en")
-	for _, want := range []string{"Memory mode: cloud-branch", "Tagged: yes", "Branch: feature/x", "Slug: feature-x"} {
+	for _, want := range []string{"Memory mode: cloud-branch", "Tagged: yes", "Branch: feature/x", "Slug: feature-x-217d2b"} {
 		if !strings.Contains(en, want) {
 			t.Errorf("en output missing %q:\n%s", want, en)
 		}

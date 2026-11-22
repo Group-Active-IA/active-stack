@@ -75,7 +75,7 @@ func TestHookSessionStart(t *testing.T) {
 	if code != 0 || errOut != "" {
 		t.Fatalf("exit %d stderr %q", code, errOut)
 	}
-	if got := additionalContext(t, out, "SessionStart"); got != "Team memory: cloud-branch. Current branch: feature/x (slug: feature-x)." {
+	if got := additionalContext(t, out, "SessionStart"); got != "Team memory: cloud-branch. Current branch: feature/x (slug: feature-x-217d2b)." {
 		t.Fatalf("additionalContext = %q", got)
 	}
 	switchBranch(t, dir, "main")
@@ -92,7 +92,7 @@ func TestHookPreRead(t *testing.T) {
 	if code != 0 || errOut != "" {
 		t.Fatalf("exit %d stderr %q", code, errOut)
 	}
-	if got := additionalContext(t, out, "PreToolUse"); got != "Current branch: feature/x (slug: feature-x)." {
+	if got := additionalContext(t, out, "PreToolUse"); got != "Current branch: feature/x (slug: feature-x-217d2b)." {
 		t.Fatalf("additionalContext = %q", got)
 	}
 	switchBranch(t, dir, "main")
@@ -151,7 +151,7 @@ func TestHookTimeoutNeverBlocks(t *testing.T) {
 	defer func() { memoryDetect, hookBudget = oldDetect, oldBudget }()
 	memoryDetect = func(string) (memory.Result, error) {
 		time.Sleep(2 * time.Second)
-		return memory.Result{Mode: memory.ModeCloudBranch, Tagged: true, Branch: "feature/x", Slug: "feature-x"}, nil
+		return memory.Result{Mode: memory.ModeCloudBranch, Tagged: true, Branch: "feature/x", Slug: "feature-x-217d2b"}, nil
 	}
 	hookBudget = 50 * time.Millisecond
 	start := time.Now()

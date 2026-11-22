@@ -111,21 +111,25 @@ func TestFeatureBranchIsTagged(t *testing.T) {
 	dir := newRepo(t, true)
 	addOrigin(t, dir, "main")
 	git(t, dir, "switch", "-q", "-c", "feature/x")
-	assertResult(t, detect(t, dir), ModeCloudBranch, true, "feature/x", "feature-x")
+	assertResult(t, detect(t, dir), ModeCloudBranch, true, "feature/x", "feature-x-217d2b")
 }
 
-// T-F4-3: slug normalization table.
+// T-F4-3: slug normalization table. A slug that lost information with respect
+// to the branch gets the 6-hex SHA-256 suffix of the branch name; one already
+// written as a slug is returned as is.
 func TestSlugTable(t *testing.T) {
 	cases := map[string]string{
-		"feature/x":      "feature-x",
-		"Feature/ABC":    "feature-abc",
-		"fix_bug":        "fix-bug",
-		"release.v1.2.3": "release-v1-2-3",
-		"mi rama nueva":  "mi-rama-nueva",
-		"feat/canción":   "feat-canci-n",
-		"feat//x///y":    "feat-x-y",
-		"-/x/-":          "x",
-		"R-08":           "r-08",
+		"feature/x": "feature-x-217d2b",
+		"Feature/ABC": "feature-abc-f718f7",
+		"fix_bug": "fix-bug-77c7b7",
+		"release.v1.2.3": "release-v1-2-3-9985d6",
+		"mi rama nueva": "mi-rama-nueva-1ae206",
+		"feat/canción": "feat-canci-n-39ad1a",
+		"feat//x///y": "feat-x-y-202ef8",
+		"-/x/-": "x-ef41c7",
+		"R-08": "r-08-414435",
+		"feat-una": "feat-una",
+		"main": "main",
 	}
 	for branch, want := range cases {
 		got, err := Slug(branch)
@@ -191,15 +195,13 @@ func TestSlugLongBranchesWithSamePrefixDoNotCollide(t *testing.T) {
 	}
 }
 
-// T-F4-4 (TBD): "feat/una" and "feat-una" still share a slug. The owner has
-// not decided the fix yet (docs/equipo/fichas/R-08.md, "Colisión de slugs").
-// This test pins the current, known behavior so the decision changes it on
-// purpose: when the owner decides, invert this assertion.
-func TestSlugShortCollisionIsPendingOwnerDecision(t *testing.T) {
+// T-F4-4: "feat/una" and "feat-una" no longer share a slug (owner decision
+// 2026-11-21: suffix when the slug loses information about the branch).
+func TestSlugShortCollisionIsResolved(t *testing.T) {
 	a, _ := Slug("feat/una")
 	b, _ := Slug("feat-una")
-	if a != b {
-		t.Fatalf("the (TBD) collision changed without a recorded decision: %q vs %q", a, b)
+	if a == b || b != "feat-una" {
+		t.Fatalf("slugs must differ: %q vs %q", a, b)
 	}
 }
 
@@ -257,7 +259,7 @@ func TestLinkedWorktreeUsesItsBranch(t *testing.T) {
 	addOrigin(t, dir, "main")
 	wt := filepath.Join(filepath.Dir(dir), "wt")
 	git(t, dir, "worktree", "add", "-q", "-b", "feature/wt", wt)
-	assertResult(t, detect(t, wt), ModeCloudBranch, true, "feature/wt", "feature-wt")
+	assertResult(t, detect(t, wt), ModeCloudBranch, true, "feature/wt", "feature-wt-ed9ec5")
 	assertResult(t, detect(t, dir), ModeCloudBranch, false, "main", "")
 }
 
@@ -303,7 +305,7 @@ func TestMarkerIsReadFromRepositoryRoot(t *testing.T) {
 	if err := os.MkdirAll(sub, 0o755); err != nil {
 		t.Fatal(err)
 	}
-	assertResult(t, detect(t, sub), ModeCloudBranch, true, "feature/x", "feature-x")
+	assertResult(t, detect(t, sub), ModeCloudBranch, true, "feature/x", "feature-x-217d2b")
 }
 
 // T-F4-10: ENGRAM_* variables do not change the result.
@@ -333,7 +335,7 @@ func TestWindowsPathsAndMarkerLineEndings(t *testing.T) {
 	addOrigin(t, dir, "main")
 	git(t, dir, "switch", "-q", "-c", "feature/x")
 	res := detect(t, dir)
-	assertResult(t, res, ModeCloudBranch, true, "feature/x", "feature-x")
+	assertResult(t, res, ModeCloudBranch, true, "feature/x", "feature-x-217d2b")
 	if len(res.Warnings) != 0 {
 		t.Fatalf("CRLF/BOM marker must be valid, got %+v", res.Warnings)
 	}

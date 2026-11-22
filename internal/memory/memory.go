@@ -73,17 +73,24 @@ type Result struct {
 }
 
 // Slug turns a branch name into a tag: lower case, every run of characters
-// outside [a-z0-9] becomes "-", no dashes at the ends. A slug longer than 40
-// characters keeps its first 33 (without a trailing dash) plus "-" and the
-// first 6 hex digits of the SHA-256 of the full branch name.
+// outside [a-z0-9] becomes "-", no dashes at the ends. When the slug loses
+// information with respect to the branch name (it had "/", "_", capitals or
+// other characters that were rewritten) or is longer than 40 characters, it
+// keeps at most its first 33 characters (without a trailing dash) plus "-" and
+// the first 6 hex digits of the SHA-256 of the full branch name, so "feat/una"
+// and "feat-una" do not share a tag. A branch already written as a slug is
+// returned as is.
 func Slug(branch string) (string, error) {
 	slug := strings.Trim(nonSlug.ReplaceAllString(strings.ToLower(branch), "-"), "-")
 	if slug == "" {
 		return "", ErrEmptySlug
 	}
-	if len(slug) > maxSlug {
+	if slug != branch || len(slug) > maxSlug {
 		sum := sha256.Sum256([]byte(branch))
-		slug = strings.TrimRight(slug[:cutSlug], "-") + "-" + hex.EncodeToString(sum[:])[:suffixHexLen]
+		if len(slug) > cutSlug {
+			slug = strings.TrimRight(slug[:cutSlug], "-")
+		}
+		slug = slug + "-" + hex.EncodeToString(sum[:])[:suffixHexLen]
 	}
 	return slug, nil
 }
