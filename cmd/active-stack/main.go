@@ -234,7 +234,7 @@ func runInstall(args []string) error {
 			}
 			verifyAdapters := resolveVerifyAdaptersForTarget(parsed.Intent.Agents, reg, verifyBase, parsed.Target)
 			selectedHarnesses := collectSelectedHarnesses(cat, parsed.Intent)
-			parsed.VerifyHookFn = verify.BuildHook(selectedHarnesses, verifyAdapters, verifyBase, verify.WithTarget(parsed.Target))
+			parsed.VerifyHookFn = verify.BuildHook(selectedHarnesses, verifyAdapters, verifyBase, verify.WithTarget(parsed.Target), verify.WithLang(verifyLang(parsed.Lang)))
 		}
 
 		// Wire the embedded skills FS into BuildPlan via BuildPlanFn.
@@ -292,7 +292,7 @@ func runInstall(args []string) error {
 			}
 			verifyAdapters := resolveVerifyAdaptersForTarget(intent.Agents, reg, verifyBase, opts.Target)
 			selectedHarnesses := collectSelectedHarnesses(c, intent)
-			opts.VerifyHook = verify.BuildHook(selectedHarnesses, verifyAdapters, verifyBase, verify.WithTarget(opts.Target))
+			opts.VerifyHook = verify.BuildHook(selectedHarnesses, verifyAdapters, verifyBase, verify.WithTarget(opts.Target), verify.WithLang(verifyLang("")))
 
 			return install.BuildPlan(c, intent, opts)
 		},

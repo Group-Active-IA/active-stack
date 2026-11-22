@@ -142,3 +142,12 @@ func preferredLang() i18n.Lang {
 	}
 	return i18n.LoadPreferred(home)
 }
+
+// verifyLang picks the language of the verify messages: the explicit --lang
+// when there is one, otherwise the saved preference.
+func verifyLang(explicit i18n.Lang) i18n.Lang {
+	if explicit != "" {
+		return explicit
+	}
+	return preferredLang()
+}
