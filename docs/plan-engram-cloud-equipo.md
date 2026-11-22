@@ -153,6 +153,8 @@ Dado `<slug>` (sección 3.5) y una memoria que, sin rama, se guardaría con `top
 
 ### 3.4 La garantía: hook en lugar de confiar en el agente
 
+> **Superado por DA-13 (2026-11-21):** el guardado se etiqueta con el **proxy MCP** `active-stack memory proxy` (Fases 5 y 6, ficha R-26), no con un hook de `PreToolUse`. Lo que sigue describe el diseño original con hook y las tablas del Apéndice B con `memory hook pre-save` ya no se instalan; los hooks de lectura sí se mantienen.
+
 El hook es código del stack que corre **fuera del modelo**: no cuesta tokens y no se "olvida". Funciona así en los dos agentes:
 
 | | Claude Code | Codex |
@@ -451,48 +453,53 @@ Estados: **Documentado** (leído en documentación oficial el 2026-11-19), **No 
 
 **Puerta:** `go test ./internal/memory/... ./cmd/... -count=1`.
 
-### Fase 5 · Lógica de los hooks (MEDIO; entrada y salida JSON)
+### Fase 5 · Lógica del guardado etiquetado y de los hooks de lectura (MEDIO)
 
-Subcomandos `active-stack memory hook pre-save`, `pre-read` y `session-start`: leen el evento por `stdin` y responden por `stdout`. Formato exacto según la documentación de cada agente (2.2); donde difiera entre Claude y Codex, **un adaptador por agente** con el mismo núcleo.
+> **Reescrita el 2026-11-22 por DA-13** (decisión del dueño, 2026-11-21): el guardado se etiqueta con un **proxy MCP** (vía B de DA-05) en Claude **y** en Codex, **sin hook de guardado en ninguno**. Un hook de `PreToolUse` no es fiable en Claude porque corre en paralelo con el del plugin de Engram y su reescritura se descarta (R-05). Los hooks de **lectura** (`session-start`, `pre-read`) se mantienen. Ficha: **R-26** (extra, debe mergearse antes de R-20).
 
-**Tests primero** (tabla con entradas capturadas de cada agente; las capturas se obtienen en la Fase 0):
+**Núcleo.** `internal/memory` (`Slug`, `Detect`, `TagInput`, `PrepareSave`; R-08/R-15) es la única lógica de etiquetado. **No hay subcomando `memory hook pre-save`.**
 
-- `T-F5-1` **Sin marcador → sin salida y código 0** (no cambia nada).
-- `T-F5-1b` **Con marcador en la rama principal → `updatedInput` que agrega solo la línea `Author: <nombre>`** (D13): sin prefijo de clave, sin cambio de título y sin línea `Branch:`; idempotente si ya tiene `Author:`.
-- `T-F5-2` En una rama → `updatedInput` con `topic_key`, `title` y primera línea de `content` reescritos.
-- `T-F5-3` **Conserva todos los demás campos** de `tool_input` (`session_id`, `project`, `scope`, `type`, `capture_prompt`…), porque `updatedInput` reemplaza el objeto entero.
-- `T-F5-4` Idempotente: una memoria ya etiquetada no se vuelve a reescribir.
-- `T-F5-5` `topic_key` ausente → se deja vacía; el título y el contenido sí se etiquetan.
-- `T-F5-6` Soporta el alias `observation` de `content`.
-- `T-F5-7` Autor: `git config user.name`; si falta, usuario del sistema; **nunca el correo**; se sanea el texto.
-- `T-F5-8` Entrada malformada, tiempo excedido o error de git → **sin salida y código 0**, mensaje en `stderr`: **jamás bloquea el guardado** (Q15).
-- `T-F5-9` Evento con `agent_id` (sub-agente) se trata igual.
-- `T-F5-10` `pre-read`: devuelve `additionalContext` con la rama actual solo en proyectos con marcador y rama no principal.
-- `T-F5-11` `session-start`: devuelve el contexto "Team memory: cloud-branch…" solo con marcador; mensaje mínimo.
-- `T-F5-12` Ningún subcomando usa red ni lee `ENGRAM_CLOUD_*`.
-- `T-F5-13` Salida de Codex: `permissionDecision: "allow"` junto con `updatedInput`, como exige su documentación; salida de Claude según la suya.
+**Proxy.** `active-stack memory proxy [--project <dir>] -- <comando de Engram> [args...]` (paquete `internal/memoryproxy`): arranca el servidor MCP real de Engram como proceso hijo por stdio, copia lo que el servidor escribe directo al agente y reenvía lo que el agente envía. Solo reescribe los argumentos de `tools/call` de `mem_save`, `mem_session_summary`, `mem_session_finalize`, `mem_capture_passive` y `mem_save_prompt` con `PrepareSave`; todo lo demás pasa **byte a byte** (ids, fin de línea, lotes, líneas no JSON).
 
-**Puerta:** `go test ./internal/memory/... -count=1`.
+**Tests primero** (hijo falso sobre pipes reales; repos Git temporales para el extremo a extremo):
 
-### Fase 6 · Instalación de hooks en Claude y Codex (governance **ALTO**: proponer y esperar review antes de codificar)
+- `T-F5-1` **Sin marcador → el mensaje pasa idéntico** (extremo a extremo, `cmd/active-stack`).
+- `T-F5-1b` **Con marcador en la rama principal → solo la línea `Author: <nombre>`** (D13); sin prefijo de clave, sin cambio de título y sin línea `Branch:` (núcleo, `internal/memory`).
+- `T-F5-2` En una rama → `topic_key`, `title` y primera línea de `content` etiquetados (extremo a extremo).
+- `T-F5-3` **Conserva todos los demás campos** de `arguments`, `_meta` e `id` (ids numéricos grandes y caracteres `& < >` sin recodificar).
+- `T-F5-4` Idempotente: una memoria ya etiquetada no se reescribe (núcleo).
+- `T-F5-5` `topic_key` ausente → se deja vacía; título y contenido sí se etiquetan (núcleo).
+- `T-F5-6` Alias `observation` de `content` (núcleo).
+- `T-F5-7` Autor: `git config user.name`; si falta, usuario del sistema; **nunca el correo**; texto saneado (núcleo).
+- `T-F5-8` Error de etiquetado o tiempo excedido (3 s) → se reenvía el original y se avisa por `stderr`: **jamás bloquea el guardado** (Q15).
+- `T-F5-9` Todas las demás herramientas y mensajes JSON-RPC (`initialize`, notificaciones, `mem_search`, `mem_update`, lotes, líneas vacías, sin salto final) pasan sin cambios y sin llamar a `PrepareSave`.
+- `T-F5-10` Fin de línea CRLF y LF se conserva; línea de 3 MiB sin límite de buffer.
+- `T-F5-11` **Hijo:** su código de salida es el del proxy, su `stderr` se reenvía, si sale con el cliente abierto el proxy termina; hijo inexistente → código 1; sin comando tras `--` → uso, código 2.
+- `T-F5-12` Los hooks de lectura `pre-read` y `session-start` (R-15) siguen devolviendo `additionalContext` solo con marcador y rama no principal; ningún subcomando usa red ni lee `ENGRAM_CLOUD_*`.
 
-**Alcance (D12: nivel usuario).** Con el harness instalado, fusionar las entradas de hook en `~/.claude/settings.json` (clave `hooks`) y en `~/.codex/config.toml` (`[[hooks.PreToolUse]]`, `[[hooks.SessionStart]]`), con backup, sin pisar los hooks existentes (incluidos los del plugin de Engram) y quitándolos limpio al desinstalar. Usa `filemerge` y `backup` (H11); no los modifica.
+**Puerta:** `go test ./internal/memory/... ./internal/memoryproxy/... ./cmd/... -count=1`.
+
+### Fase 6 · Registro del proxy en Claude y Codex (governance **ALTO**: edita archivos de configuración del usuario)
+
+**Alcance (D12: nivel usuario).** Paquete `internal/harness/proxyreg` (R-26, biblioteca **sin conectar** a `install`/`uninstall`; lo conecta R-20). Reescribe la entrada MCP **existente** de Engram para que el agente arranque `active-stack memory proxy -- <comando original y args>`:
+
+- **Claude** (`mcpServers.engram` de `~/.claude.json`): reemplaza `command` por `active-stack` y antepone `memory proxy -- <comando original>` a `args`. JSON no admite comentarios: el comando original viaja como texto JSON crudo dentro de los `args`, así quitar el proxy devuelve **los mismos bytes**.
+- **Codex** (`[mcp_servers.engram]` de `~/.codex/config.toml`): la tabla original queda **comentada** (`#orig `) dentro de un bloque con marcas `# active-stack:memory-proxy begin/end`, seguida de la tabla con el proxy; las demás claves (`env`, timeouts) se conservan.
+- Usa `backup` (snapshot antes de escribir) y `filemerge` (escritura atómica) sin modificarlos; las otras entradas MCP no se tocan; sin entrada de Engram no hace nada.
 
 **Tests primero:**
 
-- `T-F6-1` Crea la clave `hooks` si no existe; conserva el resto de `settings.json`/`config.toml`.
-- `T-F6-2` **Conserva los hooks ajenos** (los del plugin de Engram y los del usuario).
-- `T-F6-3` Idempotente: reinstalar no duplica (se identifica la entrada propia por su `command`).
-- `T-F6-4` Backup **antes**; si falla, no se toca el archivo.
-- `T-F6-5` JSON/TOML inválido → error claro, archivo intacto.
-- `T-F6-6` Uninstall dirigido quita **solo** las entradas propias.
-- `T-F6-7` Codex: no declara el mismo hook en `hooks.json` **y** en `config.toml` (Codex los carga a ambos y advierte; se duplicaría).
-- `T-F6-8` *Matcher* por agente según Q7 y Q8 (cubre ambos nombres de herramienta).
-- `T-F6-9` Claude no recibe el bloque de Codex ni al revés; OpenCode y Antigravity **no se tocan**.
-- `T-F6-10` Windows: el `command` funciona sin depender del shell (`args` en forma de exec cuando el agente lo permita).
-- `T-F6-11` Mensaje final que informa a la persona que **en Codex debe revisar y confiar el hook** (`/hooks`).
+- `T-F6-1` Round-trip **byte a byte** (registrar y quitar) en Claude y Codex: compacto, indentado, CRLF, tabuladores, `args` vacío o en varias líneas, `args` antes de `command`, sin salto final.
+- `T-F6-2` Idempotente: registrar dos veces no cambia nada (sin segundo snapshot).
+- `T-F6-3` Conserva las demás entradas MCP y las demás claves (`env`, `projects`, `[other]`).
+- `T-F6-4` Backup **antes**; si falla, el archivo no se toca.
+- `T-F6-5` JSON/TOML inválido, servidor remoto (`url`), `args` no válidos o marcas duplicadas → error claro, archivo intacto.
+- `T-F6-6` Sin entrada de Engram o sin archivo → se omite sin error.
+- `T-F6-7` OpenCode, Antigravity y adaptadores sin ruta **no se tocan**.
+- `T-F6-8` Windows: `command` sin ruta ni versión (resuelto por `PATH`), sin depender del shell.
+- `T-F6-9` Las pruebas de **hooks de lectura** de R-16 (`internal/harness/hooks`) siguen verdes: el proxy no instala ningún hook.
 
-**Puerta:** review humana del diseño; luego tests verdes.
+**Puerta:** review humana del diseño; luego tests verdes. `(TBD)` en R-26: Engram instalado como plugin de Claude (su `.mcp.json` vive en la caché del plugin, no es de usuario) y qué hace R-20 cuando no hay entrada propia; Codex real sin verificar.
 
 ### Fase 7 · `memory init` y fundación (governance **ALTO**: escribe en el repo del usuario)
 

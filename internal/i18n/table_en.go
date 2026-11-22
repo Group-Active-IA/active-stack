@@ -98,8 +98,9 @@ var tableEN = map[string]string{
 	"backup.source.upgrade": "upgrade",
 
 	// memory.* — "active-stack memory branch" ([EN] Fase 4).
-	"memory.usage":                      "Usage: active-stack memory branch [--project <path>] [--json] [--lang en|es]\n       active-stack memory hook session-start|pre-read  (agent hook: event JSON on stdin)\n       active-stack memory init [--project <path>] [--name <name>] [--yes] [--json] [--lang en|es]",
-	"memory.label.mode":                 "Memory mode",
+	"memory.usage":                      "Usage: active-stack memory branch [--project <path>] [--json] [--lang en|es]\n       active-stack memory hook session-start|pre-read  (agent hook: event JSON on stdin)\n       active-stack memory init [--project <path>] [--name <name>] [--yes] [--json] [--lang en|es]\n       active-stack memory proxy [--project <path>] -- <engram command> [args...]  (MCP proxy that tags saves)",
+	"memory.proxy.no_command":           "memory proxy needs the Engram server command after \"--\" (for example: active-stack memory proxy -- engram mcp).",
+	"memory.label.mode":                "Memory mode",
 	"memory.label.tagged":               "Tagged",
 	"memory.label.branch":               "Branch",
 	"memory.label.slug":                 "Slug",
