@@ -24,7 +24,8 @@ import (
 //   - external → MCP config parseable (hard) + binary in PATH (Soft)
 //
 // Paths are ALWAYS resolved via adapters — never hardcoded.
-func ChecksForHarness(h model.Harness, adapters []Adapter, homeDir string) []Check {
+func ChecksForHarness(h model.Harness, adapters []Adapter, homeDir string, opts ...Option) []Check {
+	o := newOptions(opts)
 	var checks []Check
 	for _, adapter := range adapters {
 		// A harness is only installed for the agents it supports; verifying it
@@ -32,19 +33,25 @@ func ChecksForHarness(h model.Harness, adapters []Adapter, homeDir string) []Che
 		if !h.SupportsAgent(adapter.Agent()) {
 			continue
 		}
-		checks = append(checks, checksForHarnessAdapter(h, adapter, homeDir)...)
+		checks = append(checks, checksForHarnessAdapter(h, adapter, homeDir, o)...)
+	}
+	if h.ID == engramCloudID && h.Type == model.HarnessConfig {
+		checks = append(checks, cloudGlobalChecks(adapters, homeDir, o)...)
 	}
 	return checks
 }
 
 // checksForHarnessAdapter derives checks for one (harness, adapter) pair.
-func checksForHarnessAdapter(h model.Harness, adapter Adapter, homeDir string) []Check {
+func checksForHarnessAdapter(h model.Harness, adapter Adapter, homeDir string, o options) []Check {
 	switch h.Type {
 	case model.HarnessSkill:
 		return checkSkill(h, adapter, homeDir)
 	case model.HarnessConfig:
 		if h.ID == "permissions" {
 			return checkPermissions(h, adapter, homeDir)
+		}
+		if h.ID == engramCloudID {
+			return append(checkConfig(h, adapter, homeDir), cloudChecks(adapter, homeDir, o)...)
 		}
 		return checkConfig(h, adapter, homeDir)
 	case model.HarnessExternal:
