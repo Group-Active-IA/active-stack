@@ -167,12 +167,12 @@ func TestNameFromRemoteURL(t *testing.T) {
 		{"https://github.com/Group-Active-IA/active-stack", "active-stack"},
 		{"https://github.com/Group-Active-IA/active-stack/", "active-stack"},
 		{"https://github.com/Group-Active-IA/active-stack.git/", "active-stack"},
-		{"git@github.com:org/Mi-Repo.git", "Mi-Repo"},
-		{"git@github.com:Mi-Repo.git", "Mi-Repo"},
+		{"git@github.com:org/Mi-Repo.git", "mi-repo"},
+		{"git@github.com:Mi-Repo.git", "mi-repo"},
 		{"ssh://git@host.example:2222/org/repo.git", "repo"},
-		{"https://host.example/org/Mi%20Repo.git", "Mi-Repo"},
-		{"https://host.example/org/Mi Repo.git", "Mi-Repo"},
-		{"https://host.example/org/Proyecto-Ñandú.git", "Proyecto-Ñandú"},
+		{"https://host.example/org/Mi%20Repo.git", "mi-repo"},
+		{"https://host.example/org/Mi Repo.git", "mi-repo"},
+		{"https://host.example/org/Proyecto-Ñandú.git", "proyecto-ñandú"},
 		{`C:\Users\persona\repos\demo.git`, "demo"},
 		{"file:///c:/repos/demo.git", "demo"},
 		{"/srv/git/demo.git", "demo"},
@@ -191,11 +191,11 @@ func TestNameFromRemoteURL(t *testing.T) {
 func TestSanitizeName(t *testing.T) {
 	cases := []struct{ in, want string }{
 		{"active-stack", "active-stack"},
-		{"Mi App", "Mi-App"},
-		{"  Mi   App  ", "Mi-App"},
+		{"Mi App", "mi-app"},
+		{"  Mi   App  ", "mi-app"},
 		{"a/b\\c", "a-b-c"},
-		{"Ñandú_2", "Ñandú_2"},
-		{"MAYÚSCULAS", "MAYÚSCULAS"},
+		{"Ñandú_2", "ñandú_2"},
+		{"MAYÚSCULAS", "mayúsculas"},
 	}
 	for _, c := range cases {
 		got, err := sanitizeName(c.in)
@@ -279,10 +279,10 @@ func TestNameConfirmation(t *testing.T) {
 func TestExplicitNameIsUsedAndSanitized(t *testing.T) {
 	root, home := newRepo(t, "r", remote)
 	res := mustRun(t, root, home, func(o *Options) { o.Yes = false; o.Name = "Mi Proyecto" })
-	if res.ProjectName != "Mi-Proyecto" || res.NameSource != SourceFlag {
+	if res.ProjectName != "mi-proyecto" || res.NameSource != SourceFlag {
 		t.Fatalf("%+v", res)
 	}
-	if !strings.Contains(read(t, root, ConfigPath), `"project_name": "Mi-Proyecto"`) {
+	if !strings.Contains(read(t, root, ConfigPath), `"project_name": "mi-proyecto"`) {
 		t.Fatalf("config.json: %s", read(t, root, ConfigPath))
 	}
 }
@@ -865,8 +865,8 @@ func TestWhatInitWritesIsWhatMemoryDetectReads(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if onFeature.Mode != memory.ModeCloudBranch || !onFeature.Tagged || onFeature.Slug != "feature-x" || len(onFeature.Warnings) != 0 {
-		t.Fatalf("on a feature branch: cloud-branch and tagged feature-x; got %+v", onFeature)
+	if onFeature.Mode != memory.ModeCloudBranch || !onFeature.Tagged || onFeature.Slug != "feature-x-217d2b" || len(onFeature.Warnings) != 0 {
+		t.Fatalf("on a feature branch: cloud-branch and tagged feature-x-217d2b; got %+v", onFeature)
 	}
 }
 

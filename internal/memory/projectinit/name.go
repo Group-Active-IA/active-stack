@@ -77,9 +77,9 @@ func nameFromRemoteURL(raw string) (string, error) {
 	return sanitizeName(seg)
 }
 
-// sanitizeName changes only what would break the name: whitespace and path
-// separators become "-". Case and Unicode are kept, because this is the name
-// Engram and ENGRAM_CLOUD_ALLOWED_PROJECTS will see (R17-D).
+// sanitizeName changes what would break the name: whitespace and path
+// separators become "-", and the name is lower-cased, because Engram lower-cases
+// the project name itself (R17-D, owner decision 2026-11-21). Unicode is kept.
 func sanitizeName(s string) (string, error) {
 	isSep := func(r rune) bool { return unicode.IsSpace(r) || r == '/' || r == '\\' }
 	s = strings.TrimFunc(s, isSep)
@@ -103,5 +103,5 @@ func sanitizeName(s string) (string, error) {
 	if !hasWord {
 		return "", ErrEmptyName
 	}
-	return b.String(), nil
+	return strings.ToLower(b.String()), nil
 }
