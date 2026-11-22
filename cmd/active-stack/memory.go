@@ -39,6 +39,9 @@ func runMemoryDispatch(args []string, stdout, stderr io.Writer) int {
 	if args[0] == "hook" {
 		return runMemoryHook(args[1:], lang, stdout, stderr)
 	}
+	if args[0] == "proxy" {
+		return runMemoryProxy(args[1:], lang, stdout, stderr)
+	}
 	if args[0] == "init" {
 		return runMemoryInit(args[1:], lang, stdout, stderr)
 	}
