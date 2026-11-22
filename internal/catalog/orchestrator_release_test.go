@@ -20,7 +20,7 @@ func TestActiveOrchestratorFullUsesApprovedClaudeFix(t *testing.T) {
 				if h.Source == nil {
 					t.Fatal("active-orchestrator has no source")
 				}
-				if h.Source.Repo != "Group-Active-IA/active-orchestrator" || h.Source.Ref != "09c841e33c33744abeafe600e88fe1c36fa0f599" {
+				if h.Source.Repo != "Group-Active-IA/active-orchestrator" || h.Source.Ref != "5d758fceb3b560b934c3348eaa20e944f79503a6" {
 					t.Fatalf("Full source = %s@%s, want approved upstream merge", h.Source.Repo, h.Source.Ref)
 				}
 				return

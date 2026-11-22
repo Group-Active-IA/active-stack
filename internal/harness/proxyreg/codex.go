@@ -189,6 +189,12 @@ func RegisterCodex(content, server string) (string, bool, error) {
 	for end < len(lines) && !isHeader(lines[end].text) {
 		end++
 	}
+	// Blank and comment lines right before the next header (for example the
+	// begin marker of another managed block, such as the memory hooks) are not
+	// part of this table: leave them where they are.
+	for end > start+1 && (strings.TrimSpace(lines[end-1].text) == "" || strings.HasPrefix(strings.TrimSpace(lines[end-1].text), "#")) {
+		end--
+	}
 	orig, _, err := serverTable(content, server)
 	if err != nil {
 		return "", false, err
