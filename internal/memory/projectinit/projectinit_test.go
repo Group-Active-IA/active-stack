@@ -48,6 +48,10 @@ func newRepo(t *testing.T, name, remote string) (root, home string) {
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		t.Fatal(err)
 	}
+	// Windows may hand out 8.3 short temp paths; the code reports long ones.
+	if long, err := filepath.EvalSymlinks(root); err == nil {
+		root = long
+	}
 	git(t, root, "init", "-q", "-b", "main")
 	if err := os.WriteFile(filepath.Join(root, "README.md"), []byte("x\n"), 0o644); err != nil {
 		t.Fatal(err)
