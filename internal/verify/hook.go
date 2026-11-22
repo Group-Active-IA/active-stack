@@ -20,14 +20,14 @@ import (
 // interface) so that internal/verify does NOT import internal/agents.
 // Concrete adapters from internal/agents satisfy verify.Adapter by structural
 // typing without modification.
-func BuildHook(harnesses []model.Harness, adapters []Adapter, homeDir string) func() error {
+func BuildHook(harnesses []model.Harness, adapters []Adapter, homeDir string, opts ...Option) func() error {
 	return func() error {
 		ctx := context.Background()
 
 		// Collect all checks for every (harness × adapter) combination.
 		var checks []Check
 		for _, h := range harnesses {
-			checks = append(checks, ChecksForHarness(h, adapters, homeDir)...)
+			checks = append(checks, ChecksForHarness(h, adapters, homeDir, opts...)...)
 		}
 
 		results := RunChecks(ctx, checks)

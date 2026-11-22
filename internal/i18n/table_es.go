@@ -99,7 +99,7 @@ var tableES = map[string]string{
 	// memory.* — "active-stack memory branch" ([EN] Fase 4).
 	"memory.usage":                      "Uso: active-stack memory branch [--project <ruta>] [--json] [--lang en|es]\n     active-stack memory hook session-start|pre-read  (hook del agente: evento JSON por stdin)\n     active-stack memory init [--project <ruta>] [--name <nombre>] [--yes] [--json] [--lang en|es]\n     active-stack memory proxy [--project <ruta>] -- <comando de engram> [args...]  (proxy MCP que etiqueta los guardados)",
 	"memory.proxy.no_command":           "memory proxy necesita el comando del servidor de Engram después de \"--\" (por ejemplo: active-stack memory proxy -- engram mcp).",
-	"memory.label.mode":                "Modo de memoria",
+	"memory.label.mode":                 "Modo de memoria",
 	"memory.label.tagged":               "Etiqueta",
 	"memory.label.branch":               "Rama",
 	"memory.label.slug":                 "Slug",
@@ -143,6 +143,24 @@ var tableES = map[string]string{
 	"memory.init.error.not_git_repo":    "Ese directorio no está dentro de un repositorio Git. No se cambió nada.",
 	"memory.init.error.empty_name":      "No se pudo armar un nombre de proyecto desde el repositorio. Pasá uno con --name <nombre>.",
 	"memory.init.error.failed":          "memory init falló: %v",
+
+	// verify.cloud.* — checks de salud de engram-cloud (R-21).
+	"verify.cloud.hooks.desc":       "Hooks de memoria de Engram Cloud instalados para %s",
+	"verify.cloud.hooks.missing":    "faltan los hooks de memoria para %s en %q (%s): reinstalá el harness engram-cloud",
+	"verify.cloud.path.desc":        "active-stack está en el PATH para que los hooks de %s puedan correr",
+	"verify.cloud.path.missing":     "active-stack no está en el PATH: los hooks de %s están instalados pero no pueden correr hasta que lo esté",
+	"verify.cloud.trust.desc":       "Confianza del hook en Codex (no se puede comprobar automáticamente)",
+	"verify.cloud.trust.notice":     "Codex: abrí /hooks y revisá y confiá el hook de active-stack; Codex no lo ejecuta hasta que lo hagas",
+	"verify.cloud.proxy.desc":       "La entrada MCP de Engram pasa por el proxy de guardado de active-stack para %s",
+	"verify.cloud.proxy.missing":    "la entrada MCP de Engram de %s en %q no pasa por el proxy de active-stack: reinstalá el harness engram-cloud",
+	"verify.cloud.proxy.noentry":    "no hay entrada MCP de Engram para %s en %q: el proxy de guardado no se registró",
+	"verify.cloud.autosync.desc":    "ENGRAM_CLOUD_AUTOSYNC activada en el entorno del MCP de Engram para %s",
+	"verify.cloud.autosync.off":     "ENGRAM_CLOUD_AUTOSYNC no vale 1 en la entrada MCP de Engram de %s (%q): la sincronización continua está apagada",
+	"verify.cloud.unsupported.desc": "%s queda fuera del alcance de engram-cloud",
+	"verify.cloud.unsupported.warn": "%s no soporta engram-cloud y este proyecto usa el modo: lo que se guarde desde %s no se etiquetará por rama",
+	"verify.cloud.project.desc":     "los archivos .engram/config.json y .engram/active-stack.json del proyecto son válidos",
+	"verify.cloud.project.invalid":  "%s no es válido: %s",
+	"verify.cloud.status_error":     "no se pudo leer el estado: %v",
 }
 
 func init() {

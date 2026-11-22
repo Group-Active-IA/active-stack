@@ -123,7 +123,7 @@ func runWindowsDispatch(args []string, cat install.Catalog, reg install.Registry
 			if registry, ok := reg.(agentRegistryAdapter); ok && registry.r != nil {
 				verifyAdapters := resolveVerifyAdaptersForTarget(parsed.Intent.Agents, registry.r, verifyBase, parsed.Target)
 				selectedHarnesses := collectSelectedHarnesses(cat, parsed.Intent)
-				parsed.VerifyHookFn = verify.BuildHook(selectedHarnesses, verifyAdapters, verifyBase)
+				parsed.VerifyHookFn = verify.BuildHook(selectedHarnesses, verifyAdapters, verifyBase, verify.WithTarget(parsed.Target))
 			}
 		}
 		parsed.BuildPlanFn = func(c install.Catalog, intent install.Intent, opts install.Options) (install.Plan, error) {

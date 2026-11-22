@@ -76,11 +76,13 @@ func TestChecksForHarness_EngramCloud_DemandsOwnMarker(t *testing.T) {
 					t.Fatal(err)
 				}
 				h := model.Harness{ID: "engram-cloud", Type: model.HarnessConfig, Agents: []model.Agent{agent}}
+				// The marker check is the first; the R-21 hook/proxy checks follow
+				// and are covered in engram_cloud_checks_test.go.
 				checks := verify.ChecksForHarness(h, []verify.Adapter{fa}, homeDir)
-				if len(checks) != 1 {
-					t.Fatalf("checks = %d, want 1", len(checks))
+				if len(checks) == 0 || checks[0].ID != "config:engram-cloud:"+string(agent) {
+					t.Fatalf("first check = %v, want the marker check", checks)
 				}
-				r := runChecks(t, checks)[0]
+				r := runChecks(t, checks[:1])[0]
 				if got := r.Status == verify.CheckStatusFailed; got != tc.wantFail {
 					t.Errorf("failed = %v (%s), want %v", got, r.Error, tc.wantFail)
 				}

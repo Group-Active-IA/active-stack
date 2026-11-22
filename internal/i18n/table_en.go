@@ -100,7 +100,7 @@ var tableEN = map[string]string{
 	// memory.* — "active-stack memory branch" ([EN] Fase 4).
 	"memory.usage":                      "Usage: active-stack memory branch [--project <path>] [--json] [--lang en|es]\n       active-stack memory hook session-start|pre-read  (agent hook: event JSON on stdin)\n       active-stack memory init [--project <path>] [--name <name>] [--yes] [--json] [--lang en|es]\n       active-stack memory proxy [--project <path>] -- <engram command> [args...]  (MCP proxy that tags saves)",
 	"memory.proxy.no_command":           "memory proxy needs the Engram server command after \"--\" (for example: active-stack memory proxy -- engram mcp).",
-	"memory.label.mode":                "Memory mode",
+	"memory.label.mode":                 "Memory mode",
 	"memory.label.tagged":               "Tagged",
 	"memory.label.branch":               "Branch",
 	"memory.label.slug":                 "Slug",
@@ -144,6 +144,24 @@ var tableEN = map[string]string{
 	"memory.init.error.not_git_repo":    "That directory is not inside a Git repository. Nothing was changed.",
 	"memory.init.error.empty_name":      "Could not build a project name from the repository. Pass one with --name <name>.",
 	"memory.init.error.failed":          "memory init failed: %v",
+
+	// verify.cloud.* — engram-cloud health checks (R-21).
+	"verify.cloud.hooks.desc":       "Engram Cloud memory hooks installed for %s",
+	"verify.cloud.hooks.missing":    "memory hooks missing for %s in %q (%s): reinstall the engram-cloud harness",
+	"verify.cloud.path.desc":        "active-stack is on PATH so the %s hooks can run",
+	"verify.cloud.path.missing":     "active-stack is not on PATH: the %s hooks are installed but cannot run until it is",
+	"verify.cloud.trust.desc":       "Codex hook trust (cannot be checked automatically)",
+	"verify.cloud.trust.notice":     "Codex: open /hooks and review and trust the active-stack hook; Codex does not run it until you do",
+	"verify.cloud.proxy.desc":       "Engram MCP entry runs through the active-stack save proxy for %s",
+	"verify.cloud.proxy.missing":    "the Engram MCP entry of %s in %q does not run through the active-stack proxy: reinstall the engram-cloud harness",
+	"verify.cloud.proxy.noentry":    "no Engram MCP entry found for %s in %q: the save proxy was not registered",
+	"verify.cloud.autosync.desc":    "ENGRAM_CLOUD_AUTOSYNC enabled in the Engram MCP environment for %s",
+	"verify.cloud.autosync.off":     "ENGRAM_CLOUD_AUTOSYNC is not set to 1 in the Engram MCP entry of %s (%q): continuous sync is off",
+	"verify.cloud.unsupported.desc": "%s is outside the engram-cloud scope",
+	"verify.cloud.unsupported.warn": "%s does not support engram-cloud and this project uses the mode: memories saved from %s will not be labeled by branch",
+	"verify.cloud.project.desc":     "project files .engram/config.json and .engram/active-stack.json are valid",
+	"verify.cloud.project.invalid":  "%s is not valid: %s",
+	"verify.cloud.status_error":     "could not read the state: %v",
 }
 
 func init() {
