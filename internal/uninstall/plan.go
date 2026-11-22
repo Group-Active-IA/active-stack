@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
+	"github.com/Group-Active-IA/active-stack/internal/harness/autosync"
 	"github.com/Group-Active-IA/active-stack/internal/harness/command"
 	"github.com/Group-Active-IA/active-stack/internal/harness/config"
 	"github.com/Group-Active-IA/active-stack/internal/model"
@@ -82,6 +83,9 @@ func BuildPlan(cat Catalog, intent Intent, opts Options) (Plan, error) {
 			return empty, fmt.Errorf("uninstall: build step for harness %q: %w", h.ID, err)
 		}
 		applySteps = append(applySteps, step)
+		if h.ID == EngramCloudHarnessID {
+			applySteps = append(applySteps, &cloudRemovalStep{adapters: adapters, homeDir: opts.HomeDir})
+		}
 	}
 
 	// 5. Collect all paths that Apply steps will touch; build the snapshot step.
@@ -176,6 +180,12 @@ func collectUninstallPaths(adapters []AgentAdapter, homeDir string, harnesses []
 	}
 
 	for _, h := range harnesses {
+		if h.ID == EngramCloudHarnessID {
+			for _, a := range cloudAgents(adapters) {
+				add(a.SettingsPath(homeDir))
+				add(autosyncAdapter{AgentAdapter: a}.MCPConfigPath(homeDir, autosync.ServerName))
+			}
+		}
 		switch h.Type {
 		case model.HarnessConfig:
 			if h.ID == "permissions" {
