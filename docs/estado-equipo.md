@@ -46,7 +46,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-16 | Giuliano | R-15, R-14 | mergeada | [#54](https://github.com/Group-Active-IA/active-stack/pull/54) | `03fa64c` | ALTO. Instalador de los hooks de lectura (Claude y Codex), sin hook de guardado y sin conectar a `install` (R-20). Verificado con Claude real; **falta que alguien con Codex pruebe los pasos X0–X9 de la ficha**. [Informe](equipo/informes/R-16.md) **Pendiente: verificación con Codex real (X0–X9 de la ficha)**; ver «Decisiones pendientes del dueño». |
 | R-17 | Giuliano | R-08, R-16 | mergeada | [#57](https://github.com/Group-Active-IA/active-stack/pull/57) | `c0b10ec` | ALTO. Propuesta aprobada (R17-A a R17-I) y implementada. R17-D queda como decisión abierta del dueño (Engram baja el nombre a minúsculas), no frena el merge. `active-stack memory init` con `internal/memory/projectinit`; [ficha](equipo/fichas/R-17.md) · [informe](equipo/informes/R-17.md) |
 | R-18 | Gianfranco | R-11, R-01, R-16 | mergeada | [#56](https://github.com/Group-Active-IA/active-stack/pull/56) | `ffdc541` | ALTO. `deny` de push a `main` (Claude, con equivalentes PowerShell) y lecturas de `gh` en `balanceado`; une los arrays del usuario sin tocar `filemerge`. Codex `(TBD)`: se prueba con Codex real al final, junto con R-16. [Informe](equipo/informes/R-18.md) |
-| R-19 | Gianfranco | R-10, R-17 | pendiente | | | Repos externos |
+| R-19 | Gianfranco | R-10, R-17 | mergeada | [orchestrator #8](https://github.com/Group-Active-IA/active-orchestrator/pull/8) · [agent-instruction #3](https://github.com/JuanCruzRobledo/agent-instruction/pull/3) · [stack #61](https://github.com/Group-Active-IA/active-stack/pull/61) | orchestrator `5d758fc` · agent-instruction `1e8ca73` · stack `185d58d` | Fase `memory-policy` y sección que no duplica `engram-cloud`. DA-07: política solo en `.active-orchestrator-state.json`. El bump del `ref` en `harnesses.yaml` queda para R-20. [Informe](equipo/informes/R-19.md) |
 | R-20 | Juan Cruz | R-09, R-10, R-12, R-14, R-16, R-17, R-18, R-19 | pendiente | | | Integración |
 | R-21 | Giuliano | R-20 | pendiente | | | |
 | R-22 | Emiliano | R-20, R-21 | pendiente | | | |
@@ -61,7 +61,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | Matías | — | Sin ficha habilitada: R-23 espera a R-22 |
 | Giuliano | — | Sin ficha habilitada: R-21 espera a R-20 |
 | Emiliano | — | Sin ficha habilitada: R-22 espera a R-20 y R-21 |
-| Gianfranco | — | Sin ficha habilitada: R-19 espera a R-17 |
+| Gianfranco | — | Sin ficha habilitada: ya terminó R-10, R-18 y R-19 |
 
 ## Decisiones pendientes del dueño
 
