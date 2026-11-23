@@ -1,6 +1,7 @@
 package hooks
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -408,5 +409,67 @@ func TestCodex_Status(t *testing.T) {
 	writeFile(t, configPath(home), strings.Replace(noMarkers, "# x", EntryMarkerBegin, 1))
 	if _, err := Status(home, []Adapter{codexFake}); err == nil {
 		t.Error("a begin marker without its end must be reported as an error")
+	}
+}
+
+// Codex TUI inserts runtime trust tables before our closing marker. These
+// hashes came from a real /hooks review, not from an installer-generated fixture.
+func TestCodex_ReinstallPreservesTUITrust(t *testing.T) {
+	raw, err := os.ReadFile("testdata/codex-trusted-hooks.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, eol := range []string{"\n", "\r\n"} {
+		t.Run(fmt.Sprintf("eol-%q", eol), func(t *testing.T) {
+			snaps := stubSnapshots(t)
+			stubLookPath(t, true)
+			home := t.TempDir()
+			original := strings.ReplaceAll(string(raw), "\n", eol)
+			writeFile(t, configPath(home), original)
+			res := installCodex(t, home)
+			if res.Agents[0].Changed {
+				t.Error("unchanged definitions must not require trusting hooks again")
+			}
+			if got := readFile(t, configPath(home)); got != original {
+				t.Error("reinstall discarded TUI trust or changed original bytes")
+			}
+			if len(snaps.calls) != 0 {
+				t.Error("unchanged definitions must not take another snapshot")
+			}
+		})
+	}
+}
+
+func TestCodex_TrustedStateDoesNotHideStaleDefinitions(t *testing.T) {
+	raw, err := os.ReadFile("testdata/codex-trusted-hooks.toml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct{ name, old, replacement string }{
+		{"timeout", "timeout = 10", "timeout = 99"},
+		{"matcher", "(mem_search|mem_context)", "(mem_search|mem_save)"},
+		{"command", "hook pre-read", "hook outdated"},
+		{"foreign table", "[hooks.state]", "[foreign]\nkeep = true\n[hooks.state]"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			snaps := stubSnapshots(t)
+			stubLookPath(t, true)
+			home := t.TempDir()
+			stale := strings.Replace(string(raw), tc.old, tc.replacement, 1)
+			if stale == string(raw) {
+				t.Fatal("test setup did not change the fixture")
+			}
+			writeFile(t, configPath(home), stale)
+			res := installCodex(t, home)
+			if !res.Agents[0].Changed {
+				t.Error("changed definition must be refreshed")
+			}
+			if got := readFile(t, configPath(home)); got != codexBlock("\n") {
+				t.Error("stale block was not replaced by expected definitions")
+			}
+			if len(snaps.calls) != 1 {
+				t.Error("changed definitions must have a snapshot")
+			}
+		})
 	}
 }

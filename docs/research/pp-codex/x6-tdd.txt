@@ -1,0 +1,721 @@
+SAFETY NET: go test ./internal/harness/hooks -count=1 -v
+=== RUN   TestClaude_CreatesSettingsWhenAbsent
+--- PASS: TestClaude_CreatesSettingsWhenAbsent (0.01s)
+=== RUN   TestClaude_KeepsOtherKeysInOrderAndBytes
+--- PASS: TestClaude_KeepsOtherKeysInOrderAndBytes (0.02s)
+=== RUN   TestClaude_KeepsForeignHooks
+--- PASS: TestClaude_KeepsForeignHooks (0.02s)
+=== RUN   TestClaude_Idempotent
+--- PASS: TestClaude_Idempotent (0.01s)
+=== RUN   TestClaude_SnapshotBeforeWrite
+--- PASS: TestClaude_SnapshotBeforeWrite (0.00s)
+=== RUN   TestClaude_SnapshotFailureLeavesFileIntact
+--- PASS: TestClaude_SnapshotFailureLeavesFileIntact (0.00s)
+=== RUN   TestClaude_NoSnapshotWhenFileAbsent
+--- PASS: TestClaude_NoSnapshotWhenFileAbsent (0.00s)
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/trailing_comma
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/truncated
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_an_object
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/two_top_level_items
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/comments
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/top_level_array
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/hooks_is_an_array
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_a_string
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/not_json_at_all
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/utf8_bom
+--- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles (0.10s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/trailing_comma (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/truncated (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_an_object (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/two_top_level_items (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/comments (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/top_level_array (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/hooks_is_an_array (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_a_string (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/not_json_at_all (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/utf8_bom (0.01s)
+=== RUN   TestClaude_RemoveRestoresOriginalBytes
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/compact_one_line
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/hooks_object_only
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/foreign_session_start
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/two_spaces
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/four_spaces
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/tabs
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/plugin_hooks
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/crlf
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/plugin_hooks_crlf
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/empty_object
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/empty_object_no_newline
+--- PASS: TestClaude_RemoveRestoresOriginalBytes (0.41s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/compact_one_line (0.02s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/hooks_object_only (0.02s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/foreign_session_start (0.02s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/two_spaces (0.25s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/four_spaces (0.02s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/tabs (0.02s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/plugin_hooks (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/crlf (0.02s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/plugin_hooks_crlf (0.02s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/empty_object (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/empty_object_no_newline (0.01s)
+=== RUN   TestClaude_RemoveCleansOnlyWhatItEmptied
+--- PASS: TestClaude_RemoveCleansOnlyWhatItEmptied (0.02s)
+=== RUN   TestClaude_RemoveWithNothingInstalledIsANoOp
+--- PASS: TestClaude_RemoveWithNothingInstalledIsANoOp (0.00s)
+=== RUN   TestClaude_RemoveKeepsForeignHandlerInSharedGroup
+--- PASS: TestClaude_RemoveKeepsForeignHandlerInSharedGroup (0.02s)
+=== RUN   TestClaude_PreReadMatcher
+--- PASS: TestClaude_PreReadMatcher (0.00s)
+=== RUN   TestClaude_HandlerShapeAndNoSaveHook
+--- PASS: TestClaude_HandlerShapeAndNoSaveHook (0.00s)
+=== RUN   TestClaude_InstallsWithWarningWhenBinaryMissing
+--- PASS: TestClaude_InstallsWithWarningWhenBinaryMissing (0.00s)
+=== RUN   TestClaude_StatusReportsWhatIsMissing
+--- PASS: TestClaude_StatusReportsWhatIsMissing (0.01s)
+=== RUN   TestClaude_KeepsFileAndDirectoryPermissions
+    claude_test.go:412: POSIX permission bits
+--- SKIP: TestClaude_KeepsFileAndDirectoryPermissions (0.00s)
+=== RUN   TestClaude_ForeignActiveStackHandlerIsNotOurs
+--- PASS: TestClaude_ForeignActiveStackHandlerIsNotOurs (0.02s)
+=== RUN   TestCodex_CreatesConfigWhenAbsent
+--- PASS: TestCodex_CreatesConfigWhenAbsent (0.01s)
+=== RUN   TestCodex_KeepsForeignContentByteForByte
+--- PASS: TestCodex_KeepsForeignContentByteForByte (0.02s)
+=== RUN   TestCodex_IdempotentAndReplacesStaleBlock
+--- PASS: TestCodex_IdempotentAndReplacesStaleBlock (0.02s)
+=== RUN   TestCodex_SnapshotBeforeWriteAndFailureLeavesFileIntact
+--- PASS: TestCodex_SnapshotBeforeWriteAndFailureLeavesFileIntact (0.01s)
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/begin_without_end
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/end_without_begin
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/two_blocks
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/end_before_begin
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/hooks_is_a_scalar
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/event_is_not_arrays
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/invalid_toml
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/static_array
+--- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles (0.10s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/begin_without_end (0.02s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/end_without_begin (0.01s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/two_blocks (0.01s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/end_before_begin (0.01s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/hooks_is_a_scalar (0.01s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/event_is_not_arrays (0.01s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/invalid_toml (0.01s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/static_array (0.01s)
+=== RUN   TestCodex_RemoveRestoresOriginalBytes
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/plugin_config_crlf
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/plugin_config
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/top_level_only
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/ends_with_blank
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/only_a_table
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/empty_file
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/comment_only
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/hooks_table_of_mine
+--- PASS: TestCodex_RemoveRestoresOriginalBytes (0.14s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/plugin_config_crlf (0.02s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/plugin_config (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/top_level_only (0.02s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/ends_with_blank (0.02s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/only_a_table (0.02s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/empty_file (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/comment_only (0.02s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/hooks_table_of_mine (0.02s)
+=== RUN   TestCodex_BlockUsesTheFileLineEnding
+--- PASS: TestCodex_BlockUsesTheFileLineEnding (0.01s)
+=== RUN   TestCodex_RemoveWithNothingInstalledIsANoOp
+--- PASS: TestCodex_RemoveWithNothingInstalledIsANoOp (0.00s)
+=== RUN   TestCodex_HooksJSONHasTheSameHook_NotDuplicated
+--- PASS: TestCodex_HooksJSONHasTheSameHook_NotDuplicated (0.01s)
+=== RUN   TestCodex_NeverWritesHooksJSON
+--- PASS: TestCodex_NeverWritesHooksJSON (0.01s)
+=== RUN   TestCodex_PreReadMatcherAndNoSaveHook
+--- PASS: TestCodex_PreReadMatcherAndNoSaveHook (0.00s)
+=== RUN   TestCodex_NoticeToReviewAndTrust
+--- PASS: TestCodex_NoticeToReviewAndTrust (0.01s)
+=== RUN   TestCodex_InstallsWithWarningWhenBinaryMissing
+--- PASS: TestCodex_InstallsWithWarningWhenBinaryMissing (0.00s)
+=== RUN   TestCodex_Status
+--- PASS: TestCodex_Status (0.02s)
+=== RUN   TestSpecs_OnlyTheTwoReadHooks
+--- PASS: TestSpecs_OnlyTheTwoReadHooks (0.00s)
+=== RUN   TestInstall_AgentsAreIndependentAndOthersUntouched
+--- PASS: TestInstall_AgentsAreIndependentAndOthersUntouched (0.01s)
+=== RUN   TestRemove_OnlyTouchesClaudeAndCodex
+--- PASS: TestRemove_OnlyTouchesClaudeAndCodex (0.01s)
+=== RUN   TestInstall_ErrorNamesTheAgentAndKeepsTheOther
+--- PASS: TestInstall_ErrorNamesTheAgentAndKeepsTheOther (0.01s)
+=== RUN   TestEndToEnd_RealAdapters
+--- PASS: TestEndToEnd_RealAdapters (0.02s)
+=== RUN   TestEndToEnd_RealSnapshotRestoresTheOriginal
+--- PASS: TestEndToEnd_RealSnapshotRestoresTheOriginal (0.03s)
+=== RUN   TestEndToEnd_BackupHoldsTheStateBeforeTheLastWrite
+--- PASS: TestEndToEnd_BackupHoldsTheStateBeforeTheLastWrite (0.04s)
+=== RUN   TestManual
+    manual_test.go:27: manual check: set AS_HOOKS_HOME and AS_HOOKS_ACTION to run it
+--- SKIP: TestManual (0.00s)
+PASS
+ok  	github.com/Group-Active-IA/active-stack/internal/harness/hooks	1.966s
+
+EXIT 0
+
+RED
+=== RUN   TestCodex_ReinstallPreservesTUITrust
+    codex_test.go:425: unchanged definitions must not require trusting hooks again
+    codex_test.go:426: reinstall discarded TUI trust or changed original bytes
+    codex_test.go:427: unchanged definitions must not take another snapshot
+--- FAIL: TestCodex_ReinstallPreservesTUITrust (0.02s)
+FAIL
+FAIL	github.com/Group-Active-IA/active-stack/internal/harness/hooks	0.819s
+FAIL
+
+EXIT 1
+
+GREEN
+=== RUN   TestCodex_ReinstallPreservesTUITrust
+--- PASS: TestCodex_ReinstallPreservesTUITrust (0.00s)
+PASS
+ok  	github.com/Group-Active-IA/active-stack/internal/harness/hooks	0.969s
+
+EXIT 0
+
+TRIANGULATE: LF/CRLF, stale timeout/matcher/command and foreign table; full package
+=== RUN   TestClaude_CreatesSettingsWhenAbsent
+--- PASS: TestClaude_CreatesSettingsWhenAbsent (0.00s)
+=== RUN   TestClaude_KeepsOtherKeysInOrderAndBytes
+--- PASS: TestClaude_KeepsOtherKeysInOrderAndBytes (0.01s)
+=== RUN   TestClaude_KeepsForeignHooks
+--- PASS: TestClaude_KeepsForeignHooks (0.01s)
+=== RUN   TestClaude_Idempotent
+--- PASS: TestClaude_Idempotent (0.01s)
+=== RUN   TestClaude_SnapshotBeforeWrite
+--- PASS: TestClaude_SnapshotBeforeWrite (0.01s)
+=== RUN   TestClaude_SnapshotFailureLeavesFileIntact
+--- PASS: TestClaude_SnapshotFailureLeavesFileIntact (0.00s)
+=== RUN   TestClaude_NoSnapshotWhenFileAbsent
+--- PASS: TestClaude_NoSnapshotWhenFileAbsent (0.00s)
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/not_json_at_all
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/two_top_level_items
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/comments
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/utf8_bom
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/trailing_comma
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/truncated
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/top_level_array
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/hooks_is_an_array
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_an_object
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_a_string
+--- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles (0.04s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/not_json_at_all (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/two_top_level_items (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/comments (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/utf8_bom (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/trailing_comma (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/truncated (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/top_level_array (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/hooks_is_an_array (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_an_object (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_a_string (0.00s)
+=== RUN   TestClaude_RemoveRestoresOriginalBytes
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/empty_object
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/compact_one_line
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/two_spaces
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/four_spaces
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/plugin_hooks
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/empty_object_no_newline
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/tabs
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/hooks_object_only
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/foreign_session_start
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/crlf
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/plugin_hooks_crlf
+--- PASS: TestClaude_RemoveRestoresOriginalBytes (0.09s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/empty_object (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/compact_one_line (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/two_spaces (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/four_spaces (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/plugin_hooks (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/empty_object_no_newline (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/tabs (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/hooks_object_only (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/foreign_session_start (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/crlf (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/plugin_hooks_crlf (0.01s)
+=== RUN   TestClaude_RemoveCleansOnlyWhatItEmptied
+--- PASS: TestClaude_RemoveCleansOnlyWhatItEmptied (0.01s)
+=== RUN   TestClaude_RemoveWithNothingInstalledIsANoOp
+--- PASS: TestClaude_RemoveWithNothingInstalledIsANoOp (0.00s)
+=== RUN   TestClaude_RemoveKeepsForeignHandlerInSharedGroup
+--- PASS: TestClaude_RemoveKeepsForeignHandlerInSharedGroup (0.00s)
+=== RUN   TestClaude_PreReadMatcher
+--- PASS: TestClaude_PreReadMatcher (0.00s)
+=== RUN   TestClaude_HandlerShapeAndNoSaveHook
+--- PASS: TestClaude_HandlerShapeAndNoSaveHook (0.00s)
+=== RUN   TestClaude_InstallsWithWarningWhenBinaryMissing
+--- PASS: TestClaude_InstallsWithWarningWhenBinaryMissing (0.00s)
+=== RUN   TestClaude_StatusReportsWhatIsMissing
+--- PASS: TestClaude_StatusReportsWhatIsMissing (0.01s)
+=== RUN   TestClaude_KeepsFileAndDirectoryPermissions
+    claude_test.go:412: POSIX permission bits
+--- SKIP: TestClaude_KeepsFileAndDirectoryPermissions (0.00s)
+=== RUN   TestClaude_ForeignActiveStackHandlerIsNotOurs
+--- PASS: TestClaude_ForeignActiveStackHandlerIsNotOurs (0.01s)
+=== RUN   TestCodex_CreatesConfigWhenAbsent
+--- PASS: TestCodex_CreatesConfigWhenAbsent (0.00s)
+=== RUN   TestCodex_KeepsForeignContentByteForByte
+--- PASS: TestCodex_KeepsForeignContentByteForByte (0.01s)
+=== RUN   TestCodex_IdempotentAndReplacesStaleBlock
+--- PASS: TestCodex_IdempotentAndReplacesStaleBlock (0.01s)
+=== RUN   TestCodex_SnapshotBeforeWriteAndFailureLeavesFileIntact
+--- PASS: TestCodex_SnapshotBeforeWriteAndFailureLeavesFileIntact (0.01s)
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/invalid_toml
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/static_array
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/begin_without_end
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/end_without_begin
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/two_blocks
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/end_before_begin
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/hooks_is_a_scalar
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/event_is_not_arrays
+--- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles (0.04s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/invalid_toml (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/static_array (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/begin_without_end (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/end_without_begin (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/two_blocks (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/end_before_begin (0.01s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/hooks_is_a_scalar (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/event_is_not_arrays (0.00s)
+=== RUN   TestCodex_RemoveRestoresOriginalBytes
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/only_a_table
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/empty_file
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/comment_only
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/hooks_table_of_mine
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/plugin_config_crlf
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/plugin_config
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/top_level_only
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/ends_with_blank
+--- PASS: TestCodex_RemoveRestoresOriginalBytes (0.06s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/only_a_table (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/empty_file (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/comment_only (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/hooks_table_of_mine (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/plugin_config_crlf (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/plugin_config (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/top_level_only (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/ends_with_blank (0.01s)
+=== RUN   TestCodex_BlockUsesTheFileLineEnding
+--- PASS: TestCodex_BlockUsesTheFileLineEnding (0.01s)
+=== RUN   TestCodex_RemoveWithNothingInstalledIsANoOp
+--- PASS: TestCodex_RemoveWithNothingInstalledIsANoOp (0.00s)
+=== RUN   TestCodex_HooksJSONHasTheSameHook_NotDuplicated
+--- PASS: TestCodex_HooksJSONHasTheSameHook_NotDuplicated (0.01s)
+=== RUN   TestCodex_NeverWritesHooksJSON
+--- PASS: TestCodex_NeverWritesHooksJSON (0.00s)
+=== RUN   TestCodex_PreReadMatcherAndNoSaveHook
+--- PASS: TestCodex_PreReadMatcherAndNoSaveHook (0.00s)
+=== RUN   TestCodex_NoticeToReviewAndTrust
+--- PASS: TestCodex_NoticeToReviewAndTrust (0.01s)
+=== RUN   TestCodex_InstallsWithWarningWhenBinaryMissing
+--- PASS: TestCodex_InstallsWithWarningWhenBinaryMissing (0.00s)
+=== RUN   TestCodex_Status
+--- PASS: TestCodex_Status (0.01s)
+=== RUN   TestCodex_ReinstallPreservesTUITrust
+=== RUN   TestCodex_ReinstallPreservesTUITrust/eol-"\n"
+=== RUN   TestCodex_ReinstallPreservesTUITrust/eol-"\r\n"
+    codex_test.go:427: Install: hooks: C:\Users\JUANCR~1\AppData\Local\Temp\TestCodex_ReinstallPreservesTUITrusteol-rn1119717853\001\.codex\config.toml (agent "codex"): invalid TOML: toml: carriage returns are not allowed in comments
+--- FAIL: TestCodex_ReinstallPreservesTUITrust (0.02s)
+    --- PASS: TestCodex_ReinstallPreservesTUITrust/eol-"\n" (0.00s)
+    --- FAIL: TestCodex_ReinstallPreservesTUITrust/eol-"\r\n" (0.02s)
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/timeout
+    codex_test.go:453: stale block was not replaced by expected definitions
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/matcher
+    codex_test.go:453: stale block was not replaced by expected definitions
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/command
+    codex_test.go:453: stale block was not replaced by expected definitions
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/foreign_table
+    codex_test.go:453: stale block was not replaced by expected definitions
+--- FAIL: TestCodex_TrustedStateDoesNotHideStaleDefinitions (0.06s)
+    --- FAIL: TestCodex_TrustedStateDoesNotHideStaleDefinitions/timeout (0.01s)
+    --- FAIL: TestCodex_TrustedStateDoesNotHideStaleDefinitions/matcher (0.02s)
+    --- FAIL: TestCodex_TrustedStateDoesNotHideStaleDefinitions/command (0.01s)
+    --- FAIL: TestCodex_TrustedStateDoesNotHideStaleDefinitions/foreign_table (0.01s)
+=== RUN   TestSpecs_OnlyTheTwoReadHooks
+--- PASS: TestSpecs_OnlyTheTwoReadHooks (0.00s)
+=== RUN   TestInstall_AgentsAreIndependentAndOthersUntouched
+--- PASS: TestInstall_AgentsAreIndependentAndOthersUntouched (0.01s)
+=== RUN   TestRemove_OnlyTouchesClaudeAndCodex
+--- PASS: TestRemove_OnlyTouchesClaudeAndCodex (0.00s)
+=== RUN   TestInstall_ErrorNamesTheAgentAndKeepsTheOther
+--- PASS: TestInstall_ErrorNamesTheAgentAndKeepsTheOther (0.00s)
+=== RUN   TestEndToEnd_RealAdapters
+--- PASS: TestEndToEnd_RealAdapters (0.02s)
+=== RUN   TestEndToEnd_RealSnapshotRestoresTheOriginal
+--- PASS: TestEndToEnd_RealSnapshotRestoresTheOriginal (0.02s)
+=== RUN   TestEndToEnd_BackupHoldsTheStateBeforeTheLastWrite
+--- PASS: TestEndToEnd_BackupHoldsTheStateBeforeTheLastWrite (0.03s)
+=== RUN   TestManual
+    manual_test.go:27: manual check: set AS_HOOKS_HOME and AS_HOOKS_ACTION to run it
+--- SKIP: TestManual (0.00s)
+FAIL
+FAIL	github.com/Group-Active-IA/active-stack/internal/harness/hooks	1.485s
+FAIL
+
+EXIT 1
+
+TRIANGULATE FIXTURE CORRECTION: Python Windows write_text translated LF to CRLF; normalized testdata bytes to LF, no production change
+=== RUN   TestClaude_CreatesSettingsWhenAbsent
+--- PASS: TestClaude_CreatesSettingsWhenAbsent (0.00s)
+=== RUN   TestClaude_KeepsOtherKeysInOrderAndBytes
+--- PASS: TestClaude_KeepsOtherKeysInOrderAndBytes (0.01s)
+=== RUN   TestClaude_KeepsForeignHooks
+--- PASS: TestClaude_KeepsForeignHooks (0.01s)
+=== RUN   TestClaude_Idempotent
+--- PASS: TestClaude_Idempotent (0.01s)
+=== RUN   TestClaude_SnapshotBeforeWrite
+--- PASS: TestClaude_SnapshotBeforeWrite (0.01s)
+=== RUN   TestClaude_SnapshotFailureLeavesFileIntact
+--- PASS: TestClaude_SnapshotFailureLeavesFileIntact (0.00s)
+=== RUN   TestClaude_NoSnapshotWhenFileAbsent
+--- PASS: TestClaude_NoSnapshotWhenFileAbsent (0.00s)
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/comments
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/truncated
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/top_level_array
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_an_object
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/utf8_bom
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/two_top_level_items
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/trailing_comma
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/hooks_is_an_array
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_a_string
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/not_json_at_all
+--- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles (0.03s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/comments (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/truncated (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/top_level_array (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_an_object (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/utf8_bom (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/two_top_level_items (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/trailing_comma (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/hooks_is_an_array (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_a_string (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/not_json_at_all (0.00s)
+=== RUN   TestClaude_RemoveRestoresOriginalBytes
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/empty_object_no_newline
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/two_spaces
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/four_spaces
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/plugin_hooks
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/hooks_object_only
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/foreign_session_start
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/crlf
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/empty_object
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/compact_one_line
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/tabs
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/plugin_hooks_crlf
+--- PASS: TestClaude_RemoveRestoresOriginalBytes (0.07s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/empty_object_no_newline (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/two_spaces (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/four_spaces (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/plugin_hooks (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/hooks_object_only (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/foreign_session_start (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/crlf (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/empty_object (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/compact_one_line (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/tabs (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/plugin_hooks_crlf (0.01s)
+=== RUN   TestClaude_RemoveCleansOnlyWhatItEmptied
+--- PASS: TestClaude_RemoveCleansOnlyWhatItEmptied (0.01s)
+=== RUN   TestClaude_RemoveWithNothingInstalledIsANoOp
+--- PASS: TestClaude_RemoveWithNothingInstalledIsANoOp (0.00s)
+=== RUN   TestClaude_RemoveKeepsForeignHandlerInSharedGroup
+--- PASS: TestClaude_RemoveKeepsForeignHandlerInSharedGroup (0.00s)
+=== RUN   TestClaude_PreReadMatcher
+--- PASS: TestClaude_PreReadMatcher (0.55s)
+=== RUN   TestClaude_HandlerShapeAndNoSaveHook
+--- PASS: TestClaude_HandlerShapeAndNoSaveHook (0.00s)
+=== RUN   TestClaude_InstallsWithWarningWhenBinaryMissing
+--- PASS: TestClaude_InstallsWithWarningWhenBinaryMissing (0.00s)
+=== RUN   TestClaude_StatusReportsWhatIsMissing
+--- PASS: TestClaude_StatusReportsWhatIsMissing (0.01s)
+=== RUN   TestClaude_KeepsFileAndDirectoryPermissions
+    claude_test.go:412: POSIX permission bits
+--- SKIP: TestClaude_KeepsFileAndDirectoryPermissions (0.00s)
+=== RUN   TestClaude_ForeignActiveStackHandlerIsNotOurs
+--- PASS: TestClaude_ForeignActiveStackHandlerIsNotOurs (0.01s)
+=== RUN   TestCodex_CreatesConfigWhenAbsent
+--- PASS: TestCodex_CreatesConfigWhenAbsent (0.00s)
+=== RUN   TestCodex_KeepsForeignContentByteForByte
+--- PASS: TestCodex_KeepsForeignContentByteForByte (0.01s)
+=== RUN   TestCodex_IdempotentAndReplacesStaleBlock
+--- PASS: TestCodex_IdempotentAndReplacesStaleBlock (0.01s)
+=== RUN   TestCodex_SnapshotBeforeWriteAndFailureLeavesFileIntact
+--- PASS: TestCodex_SnapshotBeforeWriteAndFailureLeavesFileIntact (0.01s)
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/two_blocks
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/end_before_begin
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/hooks_is_a_scalar
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/event_is_not_arrays
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/invalid_toml
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/static_array
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/begin_without_end
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/end_without_begin
+--- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles (0.04s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/two_blocks (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/end_before_begin (0.01s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/hooks_is_a_scalar (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/event_is_not_arrays (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/invalid_toml (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/static_array (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/begin_without_end (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/end_without_begin (0.00s)
+=== RUN   TestCodex_RemoveRestoresOriginalBytes
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/hooks_table_of_mine
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/plugin_config_crlf
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/plugin_config
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/top_level_only
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/ends_with_blank
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/only_a_table
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/empty_file
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/comment_only
+--- PASS: TestCodex_RemoveRestoresOriginalBytes (0.05s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/hooks_table_of_mine (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/plugin_config_crlf (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/plugin_config (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/top_level_only (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/ends_with_blank (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/only_a_table (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/empty_file (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/comment_only (0.01s)
+=== RUN   TestCodex_BlockUsesTheFileLineEnding
+--- PASS: TestCodex_BlockUsesTheFileLineEnding (0.00s)
+=== RUN   TestCodex_RemoveWithNothingInstalledIsANoOp
+--- PASS: TestCodex_RemoveWithNothingInstalledIsANoOp (0.00s)
+=== RUN   TestCodex_HooksJSONHasTheSameHook_NotDuplicated
+--- PASS: TestCodex_HooksJSONHasTheSameHook_NotDuplicated (0.00s)
+=== RUN   TestCodex_NeverWritesHooksJSON
+--- PASS: TestCodex_NeverWritesHooksJSON (0.00s)
+=== RUN   TestCodex_PreReadMatcherAndNoSaveHook
+--- PASS: TestCodex_PreReadMatcherAndNoSaveHook (0.00s)
+=== RUN   TestCodex_NoticeToReviewAndTrust
+--- PASS: TestCodex_NoticeToReviewAndTrust (0.01s)
+=== RUN   TestCodex_InstallsWithWarningWhenBinaryMissing
+--- PASS: TestCodex_InstallsWithWarningWhenBinaryMissing (0.00s)
+=== RUN   TestCodex_Status
+--- PASS: TestCodex_Status (0.01s)
+=== RUN   TestCodex_ReinstallPreservesTUITrust
+=== RUN   TestCodex_ReinstallPreservesTUITrust/eol-"\n"
+=== RUN   TestCodex_ReinstallPreservesTUITrust/eol-"\r\n"
+--- PASS: TestCodex_ReinstallPreservesTUITrust (0.02s)
+    --- PASS: TestCodex_ReinstallPreservesTUITrust/eol-"\n" (0.01s)
+    --- PASS: TestCodex_ReinstallPreservesTUITrust/eol-"\r\n" (0.00s)
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/timeout
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/matcher
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/command
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/foreign_table
+--- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions (0.05s)
+    --- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions/timeout (0.01s)
+    --- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions/matcher (0.01s)
+    --- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions/command (0.01s)
+    --- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions/foreign_table (0.01s)
+=== RUN   TestSpecs_OnlyTheTwoReadHooks
+--- PASS: TestSpecs_OnlyTheTwoReadHooks (0.00s)
+=== RUN   TestInstall_AgentsAreIndependentAndOthersUntouched
+--- PASS: TestInstall_AgentsAreIndependentAndOthersUntouched (0.00s)
+=== RUN   TestRemove_OnlyTouchesClaudeAndCodex
+--- PASS: TestRemove_OnlyTouchesClaudeAndCodex (0.00s)
+=== RUN   TestInstall_ErrorNamesTheAgentAndKeepsTheOther
+--- PASS: TestInstall_ErrorNamesTheAgentAndKeepsTheOther (0.00s)
+=== RUN   TestEndToEnd_RealAdapters
+--- PASS: TestEndToEnd_RealAdapters (0.01s)
+=== RUN   TestEndToEnd_RealSnapshotRestoresTheOriginal
+--- PASS: TestEndToEnd_RealSnapshotRestoresTheOriginal (0.02s)
+=== RUN   TestEndToEnd_BackupHoldsTheStateBeforeTheLastWrite
+--- PASS: TestEndToEnd_BackupHoldsTheStateBeforeTheLastWrite (0.04s)
+=== RUN   TestManual
+    manual_test.go:27: manual check: set AS_HOOKS_HOME and AS_HOOKS_ACTION to run it
+--- SKIP: TestManual (0.00s)
+PASS
+ok  	github.com/Group-Active-IA/active-stack/internal/harness/hooks	1.850s
+
+EXIT 0
+
+REFACTOR: gofmt, no behavior change; full package
+=== RUN   TestClaude_CreatesSettingsWhenAbsent
+--- PASS: TestClaude_CreatesSettingsWhenAbsent (0.00s)
+=== RUN   TestClaude_KeepsOtherKeysInOrderAndBytes
+--- PASS: TestClaude_KeepsOtherKeysInOrderAndBytes (0.01s)
+=== RUN   TestClaude_KeepsForeignHooks
+--- PASS: TestClaude_KeepsForeignHooks (0.01s)
+=== RUN   TestClaude_Idempotent
+--- PASS: TestClaude_Idempotent (0.01s)
+=== RUN   TestClaude_SnapshotBeforeWrite
+--- PASS: TestClaude_SnapshotBeforeWrite (0.00s)
+=== RUN   TestClaude_SnapshotFailureLeavesFileIntact
+--- PASS: TestClaude_SnapshotFailureLeavesFileIntact (0.00s)
+=== RUN   TestClaude_NoSnapshotWhenFileAbsent
+--- PASS: TestClaude_NoSnapshotWhenFileAbsent (0.00s)
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/two_top_level_items
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/comments
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/trailing_comma
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_an_object
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/truncated
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/top_level_array
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/hooks_is_an_array
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_a_string
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/not_json_at_all
+=== RUN   TestClaude_RefusesInvalidOrUnexpectedFiles/utf8_bom
+--- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles (0.04s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/two_top_level_items (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/comments (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/trailing_comma (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_an_object (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/truncated (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/top_level_array (0.01s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/hooks_is_an_array (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/event_is_a_string (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/not_json_at_all (0.00s)
+    --- PASS: TestClaude_RefusesInvalidOrUnexpectedFiles/utf8_bom (0.00s)
+=== RUN   TestClaude_RemoveRestoresOriginalBytes
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/compact_one_line
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/four_spaces
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/tabs
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/plugin_hooks_crlf
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/two_spaces
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/plugin_hooks
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/hooks_object_only
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/foreign_session_start
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/crlf
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/empty_object
+=== RUN   TestClaude_RemoveRestoresOriginalBytes/empty_object_no_newline
+--- PASS: TestClaude_RemoveRestoresOriginalBytes (0.08s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/compact_one_line (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/four_spaces (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/tabs (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/plugin_hooks_crlf (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/two_spaces (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/plugin_hooks (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/hooks_object_only (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/foreign_session_start (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/crlf (0.01s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/empty_object (0.00s)
+    --- PASS: TestClaude_RemoveRestoresOriginalBytes/empty_object_no_newline (0.01s)
+=== RUN   TestClaude_RemoveCleansOnlyWhatItEmptied
+--- PASS: TestClaude_RemoveCleansOnlyWhatItEmptied (0.01s)
+=== RUN   TestClaude_RemoveWithNothingInstalledIsANoOp
+--- PASS: TestClaude_RemoveWithNothingInstalledIsANoOp (0.00s)
+=== RUN   TestClaude_RemoveKeepsForeignHandlerInSharedGroup
+--- PASS: TestClaude_RemoveKeepsForeignHandlerInSharedGroup (0.01s)
+=== RUN   TestClaude_PreReadMatcher
+--- PASS: TestClaude_PreReadMatcher (0.00s)
+=== RUN   TestClaude_HandlerShapeAndNoSaveHook
+--- PASS: TestClaude_HandlerShapeAndNoSaveHook (0.00s)
+=== RUN   TestClaude_InstallsWithWarningWhenBinaryMissing
+--- PASS: TestClaude_InstallsWithWarningWhenBinaryMissing (0.00s)
+=== RUN   TestClaude_StatusReportsWhatIsMissing
+--- PASS: TestClaude_StatusReportsWhatIsMissing (0.01s)
+=== RUN   TestClaude_KeepsFileAndDirectoryPermissions
+    claude_test.go:412: POSIX permission bits
+--- SKIP: TestClaude_KeepsFileAndDirectoryPermissions (0.00s)
+=== RUN   TestClaude_ForeignActiveStackHandlerIsNotOurs
+--- PASS: TestClaude_ForeignActiveStackHandlerIsNotOurs (0.01s)
+=== RUN   TestCodex_CreatesConfigWhenAbsent
+--- PASS: TestCodex_CreatesConfigWhenAbsent (0.00s)
+=== RUN   TestCodex_KeepsForeignContentByteForByte
+--- PASS: TestCodex_KeepsForeignContentByteForByte (0.01s)
+=== RUN   TestCodex_IdempotentAndReplacesStaleBlock
+--- PASS: TestCodex_IdempotentAndReplacesStaleBlock (0.01s)
+=== RUN   TestCodex_SnapshotBeforeWriteAndFailureLeavesFileIntact
+--- PASS: TestCodex_SnapshotBeforeWriteAndFailureLeavesFileIntact (0.01s)
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/end_before_begin
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/hooks_is_a_scalar
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/event_is_not_arrays
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/invalid_toml
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/static_array
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/begin_without_end
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/end_without_begin
+=== RUN   TestCodex_RefusesInvalidOrUnexpectedFiles/two_blocks
+--- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles (0.04s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/end_before_begin (0.01s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/hooks_is_a_scalar (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/event_is_not_arrays (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/invalid_toml (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/static_array (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/begin_without_end (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/end_without_begin (0.00s)
+    --- PASS: TestCodex_RefusesInvalidOrUnexpectedFiles/two_blocks (0.00s)
+=== RUN   TestCodex_RemoveRestoresOriginalBytes
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/hooks_table_of_mine
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/plugin_config_crlf
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/plugin_config
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/top_level_only
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/ends_with_blank
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/only_a_table
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/empty_file
+=== RUN   TestCodex_RemoveRestoresOriginalBytes/comment_only
+--- PASS: TestCodex_RemoveRestoresOriginalBytes (0.05s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/hooks_table_of_mine (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/plugin_config_crlf (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/plugin_config (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/top_level_only (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/ends_with_blank (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/only_a_table (0.01s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/empty_file (0.00s)
+    --- PASS: TestCodex_RemoveRestoresOriginalBytes/comment_only (0.01s)
+=== RUN   TestCodex_BlockUsesTheFileLineEnding
+--- PASS: TestCodex_BlockUsesTheFileLineEnding (0.01s)
+=== RUN   TestCodex_RemoveWithNothingInstalledIsANoOp
+--- PASS: TestCodex_RemoveWithNothingInstalledIsANoOp (0.00s)
+=== RUN   TestCodex_HooksJSONHasTheSameHook_NotDuplicated
+--- PASS: TestCodex_HooksJSONHasTheSameHook_NotDuplicated (0.00s)
+=== RUN   TestCodex_NeverWritesHooksJSON
+--- PASS: TestCodex_NeverWritesHooksJSON (0.00s)
+=== RUN   TestCodex_PreReadMatcherAndNoSaveHook
+--- PASS: TestCodex_PreReadMatcherAndNoSaveHook (0.00s)
+=== RUN   TestCodex_NoticeToReviewAndTrust
+--- PASS: TestCodex_NoticeToReviewAndTrust (0.01s)
+=== RUN   TestCodex_InstallsWithWarningWhenBinaryMissing
+--- PASS: TestCodex_InstallsWithWarningWhenBinaryMissing (0.00s)
+=== RUN   TestCodex_Status
+--- PASS: TestCodex_Status (0.01s)
+=== RUN   TestCodex_ReinstallPreservesTUITrust
+=== RUN   TestCodex_ReinstallPreservesTUITrust/eol-"\n"
+=== RUN   TestCodex_ReinstallPreservesTUITrust/eol-"\r\n"
+--- PASS: TestCodex_ReinstallPreservesTUITrust (0.01s)
+    --- PASS: TestCodex_ReinstallPreservesTUITrust/eol-"\n" (0.00s)
+    --- PASS: TestCodex_ReinstallPreservesTUITrust/eol-"\r\n" (0.00s)
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/timeout
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/matcher
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/command
+=== RUN   TestCodex_TrustedStateDoesNotHideStaleDefinitions/foreign_table
+--- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions (0.02s)
+    --- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions/timeout (0.00s)
+    --- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions/matcher (0.00s)
+    --- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions/command (0.00s)
+    --- PASS: TestCodex_TrustedStateDoesNotHideStaleDefinitions/foreign_table (0.01s)
+=== RUN   TestSpecs_OnlyTheTwoReadHooks
+--- PASS: TestSpecs_OnlyTheTwoReadHooks (0.00s)
+=== RUN   TestInstall_AgentsAreIndependentAndOthersUntouched
+--- PASS: TestInstall_AgentsAreIndependentAndOthersUntouched (0.01s)
+=== RUN   TestRemove_OnlyTouchesClaudeAndCodex
+--- PASS: TestRemove_OnlyTouchesClaudeAndCodex (0.00s)
+=== RUN   TestInstall_ErrorNamesTheAgentAndKeepsTheOther
+--- PASS: TestInstall_ErrorNamesTheAgentAndKeepsTheOther (0.00s)
+=== RUN   TestEndToEnd_RealAdapters
+--- PASS: TestEndToEnd_RealAdapters (0.01s)
+=== RUN   TestEndToEnd_RealSnapshotRestoresTheOriginal
+--- PASS: TestEndToEnd_RealSnapshotRestoresTheOriginal (0.02s)
+=== RUN   TestEndToEnd_BackupHoldsTheStateBeforeTheLastWrite
+--- PASS: TestEndToEnd_BackupHoldsTheStateBeforeTheLastWrite (0.03s)
+=== RUN   TestManual
+    manual_test.go:27: manual check: set AS_HOOKS_HOME and AS_HOOKS_ACTION to run it
+--- SKIP: TestManual (0.00s)
+PASS
+ok  	github.com/Group-Active-IA/active-stack/internal/harness/hooks	1.288s
+
+EXIT 0

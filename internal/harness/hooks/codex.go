@@ -3,9 +3,11 @@ package hooks
 import (
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/Group-Active-IA/active-stack/internal/filemerge"
+	toml "github.com/pelletier/go-toml/v2"
 )
 
 // Codex: ~/.codex/config.toml, inline [[hooks.<Event>]] with nested
@@ -111,6 +113,11 @@ func codexInstall(content string) (string, error) {
 	}
 	var out string
 	if loc.found {
+		// Codex may write runtime trust tables inside our marker block. When
+		// definitions are unchanged, preserve every byte, including trust.
+		if sameCodexDefinitions(content[loc.start:loc.end], block) {
+			return content, nil
+		}
 		out = content[:loc.start] + block + content[loc.end:]
 	} else {
 		sep := ""
@@ -172,4 +179,17 @@ func codexMissing(content string) ([]string, error) {
 		}
 	}
 	return missing, nil
+}
+
+// sameCodexDefinitions ignores only Codex's runtime trust state. A changed
+// command, matcher, timeout or other definition still refreshes the block.
+func sameCodexDefinitions(current, expected string) bool {
+	var got, want map[string]any
+	if toml.Unmarshal([]byte(current), &got) != nil || toml.Unmarshal([]byte(expected), &want) != nil {
+		return false
+	}
+	if hooks, ok := got["hooks"].(map[string]any); ok {
+		delete(hooks, "state")
+	}
+	return reflect.DeepEqual(got, want)
 }
