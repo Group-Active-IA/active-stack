@@ -183,3 +183,19 @@ func TestHookCodeIsOffline(t *testing.T) {
 		}
 	}
 }
+
+// R-23 / V9: a broken marker must warn on stderr, never block, and add no context.
+func TestHookWarnsOnInvalidMarker(t *testing.T) {
+	oldDetect := memoryDetect
+	defer func() { memoryDetect = oldDetect }()
+	memoryDetect = func(string) (memory.Result, error) {
+		return memory.Result{Mode: memory.ModeOff, Warnings: []memory.Warning{{Code: memory.WarnMarkerInvalid, Path: ".engram/active-stack.json"}}}, nil
+	}
+	code, stdout, stderr := runHook(t, "session-start", sessionEvent(t, t.TempDir()))
+	if code != 0 || stdout != "" {
+		t.Fatalf("code=%d stdout=%q; want 0 and no context", code, stdout)
+	}
+	if !strings.Contains(stderr, ".engram/active-stack.json") {
+		t.Fatalf("stderr = %q; want a warning naming the marker", stderr)
+	}
+}
