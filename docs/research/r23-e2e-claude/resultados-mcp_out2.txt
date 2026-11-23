@@ -1,0 +1,16 @@
+V6 resp: {"jsonrpc": "2.0", "id": 10, "result": {"content": [{"type": "text", "text": "{\"available_projects\":null,\"error_code\":\"unknown_session\",\"hint\":\"Start the session first, omit session_id, or retry with an existing session_id.\",\"invalid_session_id\":\"s-n6\",\"message\":\"Session \\\"s-n6\\\
+V6 resp: {"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "{\"available_projects\":null,\"error_code\":\"unknown_session\",\"hint\":\"Start the session first, omit session_id, or retry with an existing session_id.\",\"invalid_session_id\":\"s-n6\",\"message\":\"Session \\\"s-n6\\\
+V6 resp: {"jsonrpc": "2.0", "id": 12, "result": {"content": [{"type": "text", "text": "{\"available_projects\":null,\"error_code\":\"unknown_session\",\"hint\":\"Start the session first, omit session_id, or retry with an existing session_id.\",\"invalid_session_id\":\"s-n6\",\"message\":\"Session \\\"s-n6\\\
+V6 obs: []
+V6 sessions: []
+V6 prompts: []
+V8 PATH tiene active-stack: False
+V8 resuelve active-stack: 0
+V8 el proxy no arranca: RecursionError maximum recursion depth exceeded
+V8 filas nuevas: 0
+V13 session-start main: (0, '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Team memory: cloud-branch. Current branch: main (untagged)."}}\n', '')
+V13 pre-read main: (0, '', '')
+V13 session-start feature/y: (0, '{"hookSpecificOutput":{"hookEventName":"SessionStart","additionalContext":"Team memory: cloud-branch. Current branch: feature/y (slug: feature-y-a2bcce)."}}\n', '')
+V13 search B en feature/y: [{"jsonrpc": "2.0", "id": 10, "result": {"content": [{"type": "text", "text": "{\"project\":\"n13\",\"project_path\":\"\",\"project_source\":\"explicit_override\",\"result\":\"Found 1 memories:\\n\\n[1] #16 (decision) — [feature-x-217d2b] decision puerto\\n    Branch: feature/x · Author: Persona A\\nr23 usamos el puerto 4381\\n    2026-11-22 23:08:43 | project: n13 | scope: project\\n\\n\",\"results\":[{\"id\":16,\"pinned\":false,\"project\":\"n13\",\"review_after\":\"2027-05-23 02:08:43\",\"sco
+V9 hook con marcador invalido: (0, '', '')
+V9 cwd inexistente en hook: 0
