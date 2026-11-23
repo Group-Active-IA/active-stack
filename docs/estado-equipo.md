@@ -102,6 +102,7 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 | DA-02 | Tope de tokens del modo equipo: hasta +35 % medido en un pedido real, no en un saludo (hoy +30 % en un saludo) | 2026-11-23 |
 | DA-03 | Detección del modo equipo: al menos 4 de 5 corridas (hoy 5/5) | 2026-11-23 |
 | Escenario 8 | ClickUp probado con una lista descartable: asignado, dependencia y estado verificados; tareas borradas. La lista vacía `ZZ-PILOTO-active-stack (borrar)` queda para borrar a mano (no hay herramienta para borrar listas) | 2026-11-23 |
+| Release v0.9.0 | Publicada el 2026-11-23 con modo equipo, memoria de equipo, proxy de guardado, aviso y `self-update` (R-27) y los arreglos de `hooks` y `filemerge`. Instalada en la PC del dueño. Guía y landing republicadas | 2026-11-23 |
 
 ## Punto de reanudación
 
