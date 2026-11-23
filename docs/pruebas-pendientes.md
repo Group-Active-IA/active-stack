@@ -29,6 +29,9 @@ Reglas para el agente, todas aprendidas en R-23 y R-24:
 | PP-14 | **Aviso de marcador inválido en el proxy** (el hook de lectura ya avisa) | Cambio de código | Aviso por `stderr` sin bloquear el guardado | informe R-23 |
 | PP-15 | **Proxy con Engram solo por el plugin de Claude** (sin entrada `engram` en `~/.claude.json`) | Claude con plugin | Hoy se saltea con aviso; decidir si se registra de otra forma | ficha R-26 |
 | PP-16 | **Aviso y actualización del binario** (ficha [R-27](equipo/fichas/R-27-autoactualizacion.md)) | Implementar la ficha y un servidor de releases falso | Avisa si hay versión nueva, `self-update` verifica SHA256 y restaura si falla | informe R-27 |
+| PP-17 | **Repetir PP-01 (X6) y PP-03 (uninstall) con el binario del release v0.9.0**: ya están los arreglos de `hooks` (#82) y `filemerge` (#83) | `codex` con login, release instalado | Reinstalar conserva la confianza de los hooks; `uninstall` devuelve el `config.toml` a sus bytes originales | informe PP-codex |
+| PP-18 | **`deny` de push a `main` para Codex** (PP-02 falló: el push pasó y el remoto cambió). Requiere una ficha de diseño propia (reglas de ejecución de Codex) | `codex`, repo descartable con remoto bare | El push a `main` queda denegado por una regla del stack, no solo por el sandbox, y el remoto no cambia | informe PP-codex y R-18 |
+| PP-19 | **Plugin de Engram en Codex (V10)**: el hook `PreToolUse` del plugin 0.1.5 bloquea `mem_save` con «Codex host session is not registered». Investigar la causa raíz y si el stack debe registrar la sesión | `codex` con el plugin real | El guardado con plugin y proxy convive y queda etiquetado | informe PP-codex |
 
 Cuando una prueba pasa, se marca en este archivo (fecha, quién, enlace a la evidencia) y se actualiza el informe correspondiente.
 
