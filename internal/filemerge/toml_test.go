@@ -170,3 +170,44 @@ command = "engram"
 		t.Fatalf("UpsertTopLevelTOMLString is not idempotent:\nfirst:\n%s\nsecond:\n%s", first, second)
 	}
 }
+
+// R-23/PP-03: the comments that sit right before the next header belong to the
+// next block (for example a managed-block marker); removing a table must not
+// take them with it.
+func TestRemoveTOMLSection_KeepsCommentsOfTheNextBlock(t *testing.T) {
+	in := "[mcp_servers.playwright]\ncommand = \"npx\"\nargs = [\"-y\"]\n\n# active-stack:memory-hooks begin\n# Managed by active-stack\n[[hooks.SessionStart]]\ntype = \"command\"\n# active-stack:memory-hooks end\n"
+	got, err := RemoveTOMLSection(in, "mcp_servers.playwright")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{"# active-stack:memory-hooks begin", "# Managed by active-stack", "[[hooks.SessionStart]]", "# active-stack:memory-hooks end"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("lost %q:\n%s", want, got)
+		}
+	}
+	if strings.Contains(got, "playwright") || strings.Contains(got, "npx") {
+		t.Errorf("table not removed:\n%s", got)
+	}
+}
+
+func TestRemoveTOMLSection_DropsCommentsInsideTheTable(t *testing.T) {
+	in := "model = \"x\"\n\n[mcp_servers.a]\n# note about a\ncommand = \"c\"\n# trailing comment of a\n\n[other]\nk = 1\n"
+	got, err := RemoveTOMLSection(in, "mcp_servers.a")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(got, "note about a") || strings.Contains(got, "command") {
+		t.Errorf("table body kept:\n%s", got)
+	}
+	if !strings.Contains(got, "[other]") || !strings.Contains(got, `model = "x"`) {
+		t.Errorf("neighbours lost:\n%s", got)
+	}
+}
+
+func TestRemoveTOMLSection_TableAtEndOfFile(t *testing.T) {
+	in := "a = 1\n\n[mcp_servers.z]\ncommand = \"c\"\n# trailing\n"
+	got, err := RemoveTOMLSection(in, "mcp_servers.z")
+	if err != nil || strings.TrimSpace(got) != "a = 1" {
+		t.Fatalf("got %q err %v", got, err)
+	}
+}

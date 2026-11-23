@@ -104,15 +104,31 @@ func RemoveTOMLSection(content, table string) (string, error) {
 	lines := strings.Split(content, "\n")
 	var kept []string
 	skipping := false
+	// Blank and comment lines that follow the removed table's last key are
+	// held back: when the next header is not part of the removed table they
+	// belong to that next block (for example a managed-block marker) and are
+	// kept; otherwise they are dropped with the table.
+	var held []string
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
 		if strings.HasPrefix(trimmed, "[") && strings.HasSuffix(trimmed, "]") {
 			name := strings.TrimSpace(strings.TrimSuffix(strings.TrimPrefix(trimmed, "["), "]"))
+			wasSkipping := skipping
 			skipping = name == table || strings.HasPrefix(name, table+".")
+			if wasSkipping && !skipping {
+				kept = append(kept, held...)
+			}
+			held = nil
 		}
-		if !skipping {
-			kept = append(kept, line)
+		if skipping {
+			if trimmed == "" || strings.HasPrefix(trimmed, "#") {
+				held = append(held, line)
+			} else {
+				held = nil
+			}
+			continue
 		}
+		kept = append(kept, line)
 	}
 	result := strings.TrimSpace(strings.Join(kept, "\n"))
 	if result != "" {
