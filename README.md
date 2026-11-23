@@ -96,6 +96,20 @@ Cada release publica su [`SHA256SUMS.txt`](https://github.com/Group-Active-IA/ac
 
 ---
 
+## Qué se puede hacer hoy (v0.9.0)
+
+| Quiero… | Cómo lo hace Active Stack |
+|---|---|
+| **Preparar mi agente de IA** | `active-stack install`: copia skills, escribe instrucciones y registra herramientas en Claude Code, Codex, OpenCode y Antigravity, con copia de seguridad previa. Modos Lite, Full y Custom. |
+| **Fundar un proyecto** | `active-orchestrator` guía la fundación por fases: descubrimiento, base de conocimiento, sistema de diseño, roadmap (`CHANGES.md`), reglas del agente (`CLAUDE.md`/`AGENTS.md`), modo equipo y política de memoria. Cada fase deja un artefacto y se puede retomar. |
+| **Desarrollar con método** | `active-delivery` elige, con vos, **ODD** (trabajo acotado, entendido y reversible) o **SDD** (cambios complejos o riesgosos, con el ciclo OPSX). Un trabajo ODD que crece se promueve a SDD. |
+| **Recordar entre sesiones** | Engram local por defecto. En un equipo, **Engram en la nube** con cada recuerdo etiquetado por rama ([ver abajo](#memoria-local-o-en-la-nube)). |
+| **Trabajar en equipo** | Modo equipo: fichas por rama y worktree, traspasos, `main` protegido por convención y por GitHub ([ver abajo](#modo-equipo)). |
+| **Seguir el roadmap** | Local en `CHANGES.md` o con ClickUp (`active-roadmap`), publicando solo lo que aprobás. |
+| **Mantenerlo al día** | `active-stack update`; además, el instalador avisa de una versión nueva una vez al día y `active-stack self-update` la instala si confirmás. |
+
+---
+
 ## Requisitos previos
 
 **Para compilar desde fuente** (`build.bat` / `build.sh`):
@@ -142,6 +156,9 @@ active-stack update                  # Actualiza binario y reaplica la selecció
 active-stack update --skills-only    # Refresca solo las skills instaladas
 active-stack update --project RUTA   # Incluye un proyecto con starters antiguos
 active-stack update --adopt-legacy-skills  # Adopta skills anteriores sin registro, tras revisarlas
+active-stack self-update             # Reemplaza solo el binario por la última release (pide confirmación, verifica SHA256)
+active-stack memory branch           # Modo de memoria y etiqueta de la rama actual
+active-stack memory init             # Prepara un proyecto para memoria compartida (solo propone el commit)
 active-stack --version               # Muestra la versión integrada en el binario
 ```
 
@@ -154,6 +171,8 @@ Pasar `--mode` o `--agent` activa el modo **headless** automáticamente (ideal p
 Disponible desde **v0.4.0**. Si usás **v0.3.0 o anterior**, descargá una vez el binario nuevo desde [Releases](https://github.com/Group-Active-IA/active-stack/releases): esas versiones todavía no tienen el comando `update`.
 
 El menú de la TUI incluye **Update stack** y ejecuta el mismo flujo que `active-stack update`. Consulta la última release, verifica el SHA256 publicado antes de sustituir únicamente el ejecutable invocado y reaplica los harnesses elegidos para cada agente. Otras copias del binario se actualizan invocándolas por separado. Guarda la selección Full/Lite/Custom y las rutas de skills gestionadas en `~/.active-stack/installation.json` después de una instalación exitosa, con snapshot antes de cada cambio de ese registro. Si se desinstala un agente o parte de sus harnesses, se invalida su selección para evitar reinstalarlos en el próximo update.
+
+**Aviso de versión nueva.** Al abrir el instalador, `install` o `update`, Active Stack consulta la última release como máximo una vez al día (2 segundos de límite; sin red no dice nada) y avisa si hay una más nueva. **Nunca actualiza solo**: `active-stack self-update` pide confirmación, verifica el SHA256 publicado, hace un respaldo del binario actual y lo restaura si el reemplazo falla. Se apaga con `ACTIVE_STACK_NO_UPDATE_CHECK=1` y no corre en CI ni en los hooks de los agentes. Hay binario publicado para Windows y Linux amd64.
 
 En Windows, el reemplazo es asincrónico: un proceso auxiliar espera a que se cierre el ejecutable anterior para sustituirlo y continuar con la actualización del stack. El mensaje de traspaso al auxiliar todavía no confirma que terminó la actualización. Consultá `~/.active-stack/logs/update.log` para comprobar si la actualización completó o falló; el mensaje inicial también muestra esa ruta. El archivo conserva la salida y los errores de las actualizaciones anteriores.
 
@@ -200,6 +219,9 @@ Lo que Active Stack puede instalar hoy (fuente de verdad: [`internal/catalog/har
 | **skill-creator** | skill (terceros) | full | Crea nuevas skills siguiendo la spec de Agent Skills |
 | **emil-design-eng** | skill (terceros) | full, Claude/Codex/OpenCode/Antigravity | Principios de ingeniería de diseño de Emil Kowalski (pineada a un commit) |
 | **design-taste-frontend-v1** | skill (terceros) | full, Claude/Codex/OpenCode/Antigravity | Criterio de diseño frontend (taste skill v1, pineada a un commit) |
+| **active-delivery** | skill | full, Claude/Codex | Elige ODD o SDD por unidad de trabajo, retoma ODD desde la evidencia del proyecto y, en modo equipo, identifica a la persona, muestra sus fichas y protege los worktrees |
+| **active-roadmap** | skill | full, Claude/Codex | Previsualiza, publica y reconcilia las tareas de `CHANGES.md` con ClickUp, con aprobación de cada escritura |
+| **engram-cloud** | config | full, Claude/Codex | Memoria compartida en la nube: hooks de lectura, proxy que etiqueta cada guardado con su rama y autor, sincronización automática y la regla de lectura para el agente. Depende de `engram` y `sdd-orchestrator` |
 
 ### Cómo ves y aprobás un mockup
 
@@ -284,14 +306,17 @@ Una vez instalado el stack, hay **una fase de fundación** (una vez por proyecto
 ```mermaid
 %%{init: {'theme':'base','themeVariables':{'primaryColor':'#f5f3ff','primaryBorderColor':'#8b5cf6','primaryTextColor':'#1e293b','lineColor':'#94a3b8','fontFamily':'sans-serif'}}}%%
 flowchart TD
-    subgraph FUND["🏗️ Fundación (una vez por proyecto)"]
+    subgraph FUND["Fundación (una vez por proyecto, retomable)"]
         direction LR
-        F1["openspec init"] --> F2["kb-creator"] --> F3["roadmap-generator"] --> F4["find-skill"] --> F5["agent-instruction"]
+        F1["discovery"] --> F2["kb-creator<br/>knowledge-base/"] --> F3["design-system"] --> F4["roadmap-generator<br/>CHANGES.md"] --> F5["agent-instruction<br/>CLAUDE.md · AGENTS.md"]
+        F5 --> F6["team-mode<br/>(opcional)"] --> F7["memory-policy<br/>(opcional)"]
     end
 
-    FUND --> CICLO
+    FUND --> ELIGE{"active-delivery<br/>¿ODD o SDD?"}
+    ELIGE -->|"trabajo acotado y reversible"| ODD["ODD<br/>criterio, prueba, cierre"]
+    ELIGE -->|"cambio complejo o riesgoso"| CICLO
 
-    subgraph CICLO["🔄 Ciclo OPSX (por cada cambio)"]
+    subgraph CICLO["Ciclo OPSX (SDD, por cada cambio)"]
         direction LR
         O1["explore"] --> O2["propose"] --> O3["apply"] --> O4["verify"] --> O5["archive"]
     end
@@ -300,7 +325,66 @@ flowchart TD
     class O1,O2,O3,O4,O5 opsx;
 ```
 
-El `active-orchestrator` coordina la fundación con lazy-loading de skills; durante el ciclo, **OpenSpec CLI es la fuente de verdad del estado** y el orquestador delega el trabajo pesado a sub-agentes.
+El `active-orchestrator` coordina la fundación con lazy-loading de skills; durante el ciclo, **OpenSpec CLI es la fuente de verdad del estado** y el orquestador delega el trabajo pesado a sub-agentes. Las fases `team-mode` y `memory-policy` son opcionales y se pueden diferir.
+
+---
+
+## Memoria: local o en la nube
+
+Al fundar un proyecto, la fase opcional `memory-policy` de `active-orchestrator` pregunta cómo se guarda la memoria. La elección queda solo en el estado de la fundación.
+
+| Política | Qué hace |
+|---|---|
+| **`local`** | Engram guarda en una base de tu máquina. Es la opción por defecto y no necesita servidor. |
+| **`cloud-branch`** | Memoria compartida en un servidor de Engram Cloud del equipo. Cada recuerdo lleva la etiqueta de su rama (`[feat-ficha-login-a3f9c1] …`) y las líneas `Branch` y `Author`. Quien lee desde `main` no toma lo de una rama como verdad hasta que se integra. |
+| **`deferred`** | Decidir más adelante. |
+| **`reuse`** | Reutilizar lo que el proyecto ya tenga. |
+
+```mermaid
+%%{init: {'theme':'base','themeVariables':{'primaryColor':'#eef2ff','primaryBorderColor':'#6366f1','primaryTextColor':'#1e293b','lineColor':'#94a3b8','fontFamily':'sans-serif'}}}%%
+flowchart LR
+    AG["Agente<br/>(Claude · Codex)"] -->|"mem_save"| PX["active-stack memory proxy<br/>etiqueta rama y autor"]
+    PX --> EN["Engram local"]
+    EN -->|"AUTOSYNC"| CL[("Engram Cloud<br/>del equipo")]
+    CL -->|"lectura"| HK["hooks session-start / pre-read<br/>inyectan la rama actual"]
+    HK --> AG
+```
+
+**Cómo se activa `cloud-branch`:**
+
+1. `active-stack memory init` escribe `.engram/config.json` (nombre del proyecto en minúsculas) y `.engram/active-stack.json`, y ajusta el `.gitignore`. **Solo propone el commit; nunca lo ejecuta.**
+2. El harness `engram-cloud` (en Full, para Claude y Codex) instala los hooks de lectura, registra el proxy de guardado sobre la entrada de Engram y activa la sincronización automática. Con copia de seguridad previa y con desinstalación que devuelve los archivos.
+3. Los chequeos de verificación comprueban hooks, proxy y sincronización; la ruta de `active-stack` en el `PATH` es un aviso, no un error. Hoy `install` no muestra ese reporte por la línea de comandos (límite conocido, [PP-13](docs/pruebas-pendientes.md)).
+
+**Lo que no hace:** no escribe credenciales de la nube (cada persona las configura con Engram), no crea el servidor del equipo y no etiqueta en OpenCode ni Antigravity. Detalle en [docs/engram-cloud-equipo.md](docs/engram-cloud-equipo.md).
+
+---
+
+## Modo equipo
+
+Es **opcional**: un proyecto sin `.active-stack/team.json` se comporta como uno individual.
+
+- **Fundar el equipo.** La fase `team-mode` pide la cantidad de integrantes (mínimo 2); los nombres son opcionales y el agente nunca los inventa. Escribe `team.json`, una plantilla de PR con los seis campos del traspaso y un ejemplo de `CODEOWNERS`, sin pisar lo existente. Ofrece, con confirmación, proteger `main`.
+- **Cada persona se identifica** en su primera sesión; `active-delivery` le muestra qué fichas le tocan, de quién dependen y avisa de cruces.
+- **Una ficha, una rama, un worktree**, con traspaso de seis campos para que otra persona o agente retome sin pedir contexto.
+- **«Actualizar equipo»** suma integrantes o completa nombres sin repetir las demás fases.
+- **Protección.** En Claude, `permissions` agrega reglas `deny` contra el push directo a `main`. Reducen riesgo pero no son una barrera: la protección real es la de GitHub. En Codex todavía no hay `deny`.
+
+Guía completa: [docs/equipo.md](docs/equipo.md).
+
+---
+
+## Qué está verificado
+
+Probamos con agentes reales y entornos aislados; lo que no está probado figura como pendiente.
+
+| | Estado |
+|---|---|
+| **Claude Code en Windows** | Matriz de memoria de equipo con agente real (etiquetado, cambio de rama, worktrees, subagentes, lectura desde `main`, coexistencia con el plugin de Engram), instalación y retiro con backup, fundación del equipo y piloto local. |
+| **Codex en Windows** | Parcial: lectura y guardados etiquetados funcionan. Se corrigieron la pérdida de confianza de los hooks al reinstalar y el fallo del retiro; falta repetirlas con esta versión. Sin `deny` de push a `main`; el plugin de Engram bloquea el guardado en una sesión no registrada. |
+| **Pendiente** | Servidor de Engram Cloud real con dos personas, máquina limpia, Linux y macOS, OpenCode y una lista real de ClickUp. |
+
+La lista de pruebas pendientes, con quién las necesita y qué se espera, está en [docs/pruebas-pendientes.md](docs/pruebas-pendientes.md).
 
 ---
 
@@ -360,7 +444,7 @@ go test ./...                          # suite completa
 
 ## Estado del proyecto
 
-🟢 **Activo.** El núcleo del instalador (catálogo, modelo, adapters P0, backup/rollback, merge por markers, pipeline, verify y la TUI) está implementado. El [roadmap actual](CHANGES.md) reúne las propuestas de mejoras de OPSX y los seguimientos de etapas anteriores.
+🟢 **Activo.** Versión actual: [v0.9.0](https://github.com/Group-Active-IA/active-stack/releases/tag/v0.9.0). El núcleo del instalador (catálogo, modelo, adapters P0, backup/rollback, merge por markers, pipeline, verify y la TUI) está implementado, junto con el modo equipo, la memoria de equipo con Engram Cloud y el aviso de versión nueva. El [roadmap actual](CHANGES.md) reúne las propuestas de mejoras de OPSX y los seguimientos de etapas anteriores; las [pruebas pendientes](docs/pruebas-pendientes.md) están registradas aparte. También hay una [guía web del equipo](https://active-stack-guia-equipo.vercel.app/) y una [landing](https://active-stack-landing.vercel.app/).
 
 ## Licencia
 

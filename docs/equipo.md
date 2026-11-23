@@ -24,10 +24,10 @@ Se pide al agente «actualizar equipo» (entrypoint `:team` de `active-orchestra
 
 ## Qué NO garantiza el stack
 
-- **Los permisos reducen riesgo; no son protección.** En Claude, el harness `permissions` agrega `deny` de `git push` a `main` (en los tres niveles, incluidas las variantes con `git -C`/`-c` y sus equivalentes de PowerShell). Es una barrera del agente: una persona, otra herramienta o una variante no contemplada pueden saltarla. En Codex no se agrega `deny` `(TBD)`; OpenCode y Antigravity quedan fuera.
+- **Los permisos reducen riesgo; no son protección.** En Claude, el harness `permissions` agrega `deny` de `git push` a `main` (en los tres niveles, incluidas las variantes con `git -C`/`-c` y sus equivalentes de PowerShell). Es una barrera del agente: una persona, otra herramienta o una variante no contemplada pueden saltarla. En Codex no se agrega `deny` (PP-02: un push a `main` pasó; ficha de diseño pendiente); OpenCode y Antigravity quedan fuera.
 - **La protección real de `main` es la de GitHub (DA-04):** rama protegida, revisión obligatoria y `CODEOWNERS`. La fundación la ofrece con confirmación; si la cuenta es GitHub Free o el plan no lo permite, solo queda la convención escrita.
 - No hay cola automática de integración ni se resuelven conflictos entre personas: los avisos son informativos.
 - La coordinación sigue necesitando acuerdos del equipo (quién aprueba, cuándo se mergea).
 - En la memoria compartida, el etiquetado por rama solo vale en Claude y Codex, y bajo las condiciones de [engram-cloud-equipo.md](engram-cloud-equipo.md).
 - ClickUp necesita conexión, autorización y acceso a la lista; sin eso se trabaja en modo local.
-- El piloto de extremo a extremo (R-24) y la matriz completa de memoria (R-23) **no se han ejecutado** `(TBD)`.
+- Verificación: la matriz de memoria (R-23) y el piloto local (R-24) se ejecutaron con Claude en Windows, aislado y con una sola persona ([R-23](equipo/informes/R-23.md), [R-24](equipo/informes/R-24.md)); Codex quedó parcial ([PP-01 a PP-04](equipo/informes/PP-codex.md)). Faltan dos personas reales, un servidor de Engram Cloud real, Linux y macOS, OpenCode y ClickUp real: ver [pruebas pendientes](pruebas-pendientes.md).
