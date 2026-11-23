@@ -1,0 +1,72 @@
+######## V1
+===== V1
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "OK", "cost": 0.007324490000000001}
+  ROW 1 r23v1 | [feature-x-217d2b] v1 decision | branch/feature-x-217d2b/k | Branch: feature/x · Author: Persona A
+######## V2V3
+===== V2V3
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save", "Bash", "mcp__engram__mem_save", "Bash", "mcp__engram__mem_save", "Bash", "mcp__engram__mem_save"], "stderr": "", "result": "OK", "cost": 0.00849664}
+  ROW 2 r23v2 | [feat-a-d54ad7] v2 paso1 | branch/feat-a-d54ad7/k | Branch: feat/a · Author: Persona A
+  ROW 3 r23v2 | [feat-otra-67e913] v2 paso2 | branch/feat-otra-67e913/k | Branch: feat/otra · Author: Persona A
+  ROW 4 r23v2 | [feat-tercera-636d4c] v2 paso3 | branch/feat-tercera-636d4c/k | Branch: feat/tercera · Author: Persona A
+  ROW 5 r23v2 | v3 paso4 | k | Author: Persona A
+######## V4
+===== V4
+{"b": {"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "OK", "cost": 0.00553627}, "a": {"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "OK", "cost": 0.005575060000000001}}
+  ROW 6 r23v4 | [feat-wb-205eba] v4 b | branch/feat-wb-205eba/k | Branch: feat/wb · Author: Persona A
+  ROW 7 r23v4 | [feat-wa-f42070] v4 a | branch/feat-wa-f42070/k | Branch: feat/wa · Author: Persona A
+######## V5
+===== V5
+{"rc": 0, "tools": ["Agent", "ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "OK", "cost": 0.010131305}
+  ROW 8 r23v5 | [feat-sub-cdf453] v5 desde subagente | branch/feat-sub-cdf453/k | Branch: feat/sub · Author: Persona A
+######## V6
+===== V6
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_session_summary", "mcp__engram__mem_capture_passive", "mcp__engram__mem_save_prompt"], "stderr": "", "result": "OK", "cost": 0.0066088200000000005}
+  ROW 9 r23v6 | Session summary: r23v6 | None | Branch: feat/narr · Author: Persona A
+  ROW 10 r23v6 | [feat-narr-82d346] r23 aprendizaje pasivo uno | None | [feat-narr-82d346] r23 aprendizaje pasivo uno
+  ROW 11 r23v6 | [feat-narr-82d346] r23 aprendizaje pasivo dos | None | [feat-narr-82d346] r23 aprendizaje pasivo dos
+  PROMPTS [('Branch: feat/narr · Author: Persona A\nr23 prompt guardado',)]
+######## V7
+===== V7
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "Listo, guardé la memoria \"v7 sin marcador\" (tipo discovery, topic_key `k`, id 12) en el proyecto `r23v7`.\n\nEngram avisó que el proyecto `r23v7` no tenía memorias antes de esta y sugiere `r23v1`, que tiene una. No lo cambié: si esta memoria debería ir a `r23v1`, decime y la muevo.", "cost": 0.00556597}
+  ROW 12 r23v7 | v7 sin marcador | k | r23 v7 sin marcador
+######## V9
+===== V9
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "Guardado: \"v9 marcador malo\" (discovery), id 13, en el proyecto `r23v9`.\n\nEngram avisa que ese proyecto no tenía memorias antes y que hay uno parecido, `r23v1`, con 1 memoria. Si esta memoria debía ir ahí, avisame y la muevo.", "cost": 0.00555447}
+  ROW 13 r23v9 | v9 marcador malo | k | r23 v9 marcador malo
+######## V11
+===== V11una
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "Listo, guardado en engram: id 14, título \"[feat-una-1e8539] v11 una\", tipo discovery, topic_key `k`.\n\nEngram avisó que el proyecto `r23v11` no tiene memorias previas y que hay uno parecido, `r23v1`, con 1 memoria. Dejé la memoria en `r23v11`, que es el proyecto de la configuración. Si esa no era la ", "cost": 0.0056190400000000005}
+  ROW 14 r23v11 | [feat-una-1e8539] v11 una | branch/feat-una-1e8539/k | Branch: feat/una · Author: Persona A
+===== V11guion
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "Guardado: \"[feat-una] v11 guion\" (discovery), con topic_key `k`.\n\nQuedó un conflicto pendiente con una memoria existente: \"[feat-una-1e8539] v11 una\" (`branch/feat-una-1e8539/k`). No lo resolví. Si querés, lo marco como no conflicto o como relacionado.", "cost": 0.005227280000000001}
+  ROW 14 r23v11 | [feat-una-1e8539] v11 una | branch/feat-una-1e8539/k | Branch: feat/una · Author: Persona A
+  ROW 15 r23v11 | [feat-una] v11 guion | branch/feat-una/k | Branch: feat-una · Author: Persona A
+===== V11detached
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "Guardado: observación 16, \"[detached-29d42da] v11 detached\" (discovery), topic_key `kd`, proyecto r23v11.", "cost": 0.00507126}
+  ROW 14 r23v11 | [feat-una-1e8539] v11 una | branch/feat-una-1e8539/k | Branch: feat/una · Author: Persona A
+  ROW 15 r23v11 | [feat-una] v11 guion | branch/feat-una/k | Branch: feat-una · Author: Persona A
+  ROW 16 r23v11 | [detached-29d42da] v11 detached | branch/detached-29d42da/kd | Branch: detached-29d42da · Author: Persona A
+===== V11largo
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "result": "Listo. Guardado en engram como `v11 largo` (discovery, topic_key `kl`), id 17, proyecto r23v11.", "cost": 0.005073220000000001}
+  ROW 14 r23v11 | [feat-una-1e8539] v11 una | branch/feat-una-1e8539/k | Branch: feat/una · Author: Persona A
+  ROW 15 r23v11 | [feat-una] v11 guion | branch/feat-una/k | Branch: feat-una · Author: Persona A
+  ROW 16 r23v11 | [detached-29d42da] v11 detached | branch/detached-29d42da/kd | Branch: detached-29d42da · Author: Persona A
+  ROW 17 r23v11 | [feature-xxxxxxxxxxxxxxxxxxxxxxxxx-ca7b9b] v11 largo | branch/feature-xxxxxxxxxxxxxxxxxxxxxxxxx-ca7b9b/kl | Branch: feature/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-final · Autho
+######## V8
+===== V8
+{"rc": 0, "tools": ["ToolSearch"], "stderr": "", "result": "No guardé nada: el servidor engram no conectó (`CONNECTION_CLOSED`), así que `mcp__engram__mem_save` no está disponible en esta sesión. Si lo reconectás (reiniciando la sesión o revisando la config del MCP), reintento el guardado con title `v8 sin active-stack en PATH`, content `r23 v8 sin active-st", "cost": 0.00464172}
+######## V13
+===== V13-main
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_search"], "stderr": "", "result": "No hay un puerto confirmado como verdad del equipo. La única memoria encontrada es la #18 de la rama `feature/x`, que dice \"r23 usamos el puerto 4381\". Como es trabajo en curso de otra rama y no está mergeado a `main`, la tomo como no verificada.", "cost": 0.00488158}
+  ROW 18 r23v13 | [feature-x-217d2b] decision puerto | branch/feature-x-217d2b/decision | Branch: feature/x · Author: Persona A
+===== V13-feat-y
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_search"], "stderr": "", "result": "Lo encontrado es **no verificado**: la memoria (#18, \"r23 usamos el puerto 4381\") está etiquetada con `branch/feature-x-217d2b`, es decir, trabajo en progreso de la rama `feature/x`, y no de la rama actual `feature/y`. Según la política de memoria del equipo en cloud-branch, eso no es un hecho confi", "cost": 0.004889300000000001}
+  ROW 18 r23v13 | [feature-x-217d2b] decision puerto | branch/feature-x-217d2b/decision | Branch: feature/x · Author: Persona A
+######## V10
+===== V10
+{"rc": 0, "tools": ["ToolSearch", "mcp__engram__mem_save"], "stderr": "", "plugins": ["engram", "cc-plugin-agents-md", "cc-plugin-telemetry", "cc-plugin-privacy", "cc-plugin-plugin-authoring"], "result": "OK", "cost": 0.00574692}
+  ROW 22 r23v10c | [feat-plugin-55137d] v10 con plugin | branch/feat-plugin-55137d/k | Branch: feat/plugin · Author: Persona A
+===== V10-sub
+{"rc": 0, "tools": ["Agent", "ToolSearch", "mcp__engram__mem_save"], "stderr": "", "plugins": ["engram", "cc-plugin-agents-md", "cc-plugin-telemetry", "cc-plugin-privacy", "cc-plugin-plugin-authoring"], "result": "OK", "cost": 0.008264635000000001}
+  ROW 22 r23v10c | [feat-plugin-55137d] v10 con plugin | branch/feat-plugin-55137d/k | Branch: feat/plugin · Author: Persona A
+  ROW 23 r23v10c | [feat-plugin2-01e62b] v10 subagente con plugin | branch/feat-plugin2-01e62b/k | Branch: feat/plugin2 · Author: Persona A

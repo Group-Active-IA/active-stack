@@ -1,14 +1,16 @@
 import json, os, sqlite3, glob, subprocess, sys, threading, shutil
 from pathlib import Path
-W = Path(r"C:/Users/Juan Cruz Robledo/AppData/Local/Temp/r23e2e")
-HOMES = {"A": W/"homeA", "B": W/"homeB"}
+W = Path(r"E:/r23c-tmp/run")  # fuera del perfil: no carga el CLAUDE.md global
+CLAUDE = r"C:/Users/Juan Cruz Robledo/.local/bin/claude.exe"  # ruta absoluta: el PATH reducido del hijo no la resuelve
+MCPCFG = os.environ.get("R23_MCPCFG", r"E:/r23c-tmp/mcp-engram.json")  # solo el MCP engram (proxy), autosync 0
+HOMES = {"A": Path(r"E:/r23c-tmp/homeA"), "B": Path(r"E:/r23c-tmp/homeA")}  # una sola credencial (B reutiliza A)
 DB = W/"db"
 SAVE = "mcp__engram__mem_save"
 
 
 def env(p, nopath=False):
     h = HOMES[p]
-    e = dict(os.environ)
+    e = {k: v for k, v in os.environ.items() if not k.startswith("CLAUDE")}
     e.update(HOME=str(h), USERPROFILE=str(h), LOCALAPPDATA=str(h/"AppData/Local"), APPDATA=str(h/"AppData/Roaming"),
              ENGRAM_DATA_DIR=str(DB), ENGRAM_CLOUD_AUTOSYNC="0")
     if nopath:
@@ -54,9 +56,11 @@ def rows():
 
 
 def claude(p, cwd, prompt, model="haiku", nopath=False, timeout=360):
-    cmd = ["claude", "-p", prompt, "--model", model, "--output-format", "stream-json", "--verbose", "--setting-sources", "user,project",
+    cmd = [CLAUDE, "-p", prompt, "--mcp-config", MCPCFG, "--strict-mcp-config", "--model", model, "--output-format", "stream-json", "--verbose", "--setting-sources", "user,project",
            "--permission-mode", "bypassPermissions", "--no-session-persistence"]
-    r = subprocess.run(cmd, cwd=str(cwd), env=env(p, nopath), capture_output=True, text=True, encoding="utf-8", timeout=timeout)
+    if os.environ.get("R23_PLUGIN_DIR"):  # V10: el plugin real engram@engram, copiado fuera del perfil
+        cmd += ["--plugin-dir", os.environ["R23_PLUGIN_DIR"]]
+    r = subprocess.run(cmd, cwd=str(cwd), env=env(p, nopath), stdin=subprocess.DEVNULL, capture_output=True, text=True, encoding="utf-8", timeout=timeout)
     out = {"rc": r.returncode, "tools": [], "stderr": r.stderr[-300:]}
     for line in r.stdout.splitlines():
         try:
@@ -67,6 +71,8 @@ def claude(p, cwd, prompt, model="haiku", nopath=False, timeout=360):
             for c in e["message"].get("content", []):
                 if c.get("type") == "tool_use":
                     out["tools"].append(c["name"])
+        if e.get("type") == "system" and e.get("subtype") == "init":
+            out["plugins"] = [x.get("name") for x in e.get("plugins", [])]
         if e.get("type") == "result":
             out["result"] = str(e.get("result"))[:300]
             out["cost"] = e.get("total_cost_usd")
@@ -151,3 +157,10 @@ if esc == "V13":
     git(r, "switch", "-qc", "feature/y")
     res = claude("B", r, "Usá mcp__engram__mem_search con query='puerto' y project='r23v13'. Después decime en una frase si lo encontrado es verdad del equipo o no verificado, y por qué.")
     show(esc+"-feat-y", res, n0)
+if esc == "V10":
+    # requiere R23_PLUGIN_DIR=<copia de ~/.claude/plugins/cache/engram/engram/0.1.23> (se carga con --plugin-dir)
+    r = repo("r23v10c")
+    git(r, "switch", "-qc", "feat/plugin")
+    show(esc, claude("A", r, "Sin explicar: "+g("v10 con plugin")+". Respondé OK."), n0)
+    git(r, "switch", "-qc", "feat/plugin2")
+    show(esc+"-sub", claude("A", r, "Usá la herramienta Agent (subagente general-purpose) y pedile que llame a "+SAVE+" con title='v10 subagente con plugin', content='r23 sub', topic_key='k', type='discovery'. Respondé OK."), n0)

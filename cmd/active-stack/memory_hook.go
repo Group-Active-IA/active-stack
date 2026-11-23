@@ -77,6 +77,14 @@ func runMemoryHook(args []string, lang i18n.Lang, stdout, stderr io.Writer) int 
 		fmt.Fprintln(stderr, i18n.Tf(lang, "memory.hook.skipped", args[0], err))
 		return memoryExitOK
 	}
+	for _, w := range res.Warnings {
+		switch w.Code {
+		case memory.WarnMarkerUnknownPolicy:
+			fmt.Fprintln(stderr, i18n.Tf(lang, "memory.warn.marker_unknown_policy", w.Path, w.Policy))
+		default:
+			fmt.Fprintln(stderr, i18n.Tf(lang, "memory.warn.marker_invalid", w.Path))
+		}
+	}
 	line := hook.context(res)
 	if line == "" {
 		return memoryExitOK
