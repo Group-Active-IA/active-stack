@@ -53,7 +53,7 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-22 | Emiliano | R-20, R-21 | mergeada | [#69](https://github.com/Group-Active-IA/active-stack/pull/69) | `4068f6d` | `ARCHITECTURE.md`, guías de equipo y de Engram Cloud, láminas de la guía externa (fuera del repo). Espejos `CLAUDE.md`/`AGENTS.md` sin tocar. [Informe](equipo/informes/R-22.md) |
 | R-23 | Matías | R-22 | parcial | | [PR #74](https://github.com/Group-Active-IA/active-stack/pull/74), [PR #76](https://github.com/Group-Active-IA/active-stack/pull/76) | Claude/Windows aislado con agente real: V1-V7, V10, V11, V13 pasan; V8 con límite (`verify` no se ve por CLI); V9 corregido en hook (falta binario nuevo y el proxy no avisa); V12 solo Windows. Faltan Codex, dos personas reales y cloud real |
 | R-24 | Juan Cruz | R-22 | parcial | | [PR #73](https://github.com/Group-Active-IA/active-stack/pull/73), [PR #77](https://github.com/Group-Active-IA/active-stack/pull/77) | Piloto local en Claude: VE-6 detecta 5/5, VE-8 +30 % de tokens en un saludo; DA-02/DA-03 sin umbral. Faltan Codex, dos personas reales, ClickUp (OK del dueño), OpenCode |
-| R-25 | Juan Cruz | R-23, R-24 | pendiente | | | Cierre |
+| R-25 | Juan Cruz | R-23, R-24 | cerrada con límites | 2026-11-23 | | Cierre documental con las pruebas que faltan registradas en [pruebas-pendientes.md](pruebas-pendientes.md). La versión sale con el release (no generado) |
 
 ## Quién sigue ahora (2026-11-21)
 
@@ -99,6 +99,9 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 | R17-D | `memory init` escribe `project_name` en minúsculas, igual que Engram | 2026-11-21 |
 | Slugs | Se agrega el sufijo de 6 hex también cuando el slug pierde información respecto de la rama (`/`, `_`, mayúsculas), no solo por largo (recomendación de R-08) | 2026-11-21 |
 | Hecho el desarrollo pendiente | El dueño pidió terminar el desarrollo pendiente con el agente; lo que requiere Codex real queda para el final y el piloto R-24 requiere su OK explícito | 2026-11-21 |
+| DA-02 | Tope de tokens del modo equipo: hasta +35 % medido en un pedido real, no en un saludo (hoy +30 % en un saludo) | 2026-11-23 |
+| DA-03 | Detección del modo equipo: al menos 4 de 5 corridas (hoy 5/5) | 2026-11-23 |
+| Escenario 8 | ClickUp probado con una lista descartable: asignado, dependencia y estado verificados; tareas borradas. La lista vacía `ZZ-PILOTO-active-stack (borrar)` queda para borrar a mano (no hay herramienta para borrar listas) | 2026-11-23 |
 
 ## Punto de reanudación
 
@@ -115,7 +118,7 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 - ~~Proxy de guardado~~: hecho (R-26, #64) y conectado (R-20, #65).
 - ~~R-08: sufijo hex en slugs~~: hecho (#62).
 - ~~R-17: nombre en minúsculas~~: hecho (#62).
-- Al final: prueba con Codex real (R-16 X0–X9) y `deny` de Codex de R-18.
+- Pruebas que faltan (Codex real, dos personas, cloud real, otros sistemas): [pruebas-pendientes.md](pruebas-pendientes.md).
 
 ### Hallazgos de R-23 (sin arreglar)
 
