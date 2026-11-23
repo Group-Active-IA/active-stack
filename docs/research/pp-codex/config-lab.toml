@@ -1,0 +1,28 @@
+model = "gpt-5.1-codex-mini"
+model_reasoning_effort = "low"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+# active-stack:memory-hooks begin
+# Managed by active-stack: reinstalling rewrites this block, removing it removes the hooks.
+[[hooks.SessionStart]]
+
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = 'active-stack memory hook session-start'
+timeout = 10
+
+[[hooks.PreToolUse]]
+matcher = '^mcp__(plugin_engram_engram|engram)__(mem_search|mem_context)$'
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'active-stack memory hook pre-read'
+timeout = 10
+# active-stack:memory-hooks end
+[mcp_servers.engram]
+command = "C:/Users/Juan Cruz Robledo/AppData/Local/active-stack/bin/active-stack.exe"
+args = ["memory","proxy","--","E:/r23c-tmp/homeC/AppData/Local/active-stack/bin/engram.exe","mcp"]
+[mcp_servers.engram.env]
+ENGRAM_CLOUD_AUTOSYNC = "0"
+ENGRAM_DATA_DIR = "E:/pp-codex-lab/db"
+ENGRAM_PORT = "17439"

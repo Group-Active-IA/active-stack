@@ -1,0 +1,23 @@
+[
+  [
+    1,
+    "manual-save-ppcodex",
+    "[feat-prueba-r16-107728] V1 rama",
+    "branch/feat-prueba-r16-107728/v1",
+    "Branch: feat/prueba-r16 · Author: PP Codex\nDecisión provisional de laboratorio"
+  ],
+  [
+    2,
+    "manual-save-ppcodex",
+    "[feat-nueva-6f9b94] V2 switch",
+    "branch/feat-nueva-6f9b94/v2",
+    "Branch: feat/nueva · Author: PP Codex\nv2"
+  ],
+  [
+    3,
+    "manual-save-ppcodex",
+    "[feat-checkout-1070a3] V2 checkout",
+    "branch/feat-checkout-1070a3/v2checkout",
+    "Branch: feat/checkout · Author: PP Codex\nv2"
+  ]
+]

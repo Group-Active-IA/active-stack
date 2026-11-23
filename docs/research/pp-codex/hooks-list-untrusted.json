@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "result": {
+      "userAgent": "Codex Desktop/0.166.0 (Windows 10.0.26300; x86_64) dumb (pp-codex; 1)",
+      "codexHome": "E:\\pp-codex-lab\\home\\.codex",
+      "platformFamily": "windows",
+      "platformOs": "windows"
+    }
+  },
+  {
+    "id": 2,
+    "result": {
+      "data": [
+        {
+          "cwd": "E:\\pp-codex-lab\\repo",
+          "hooks": [
+            {
+              "key": "E:\\pp-codex-lab\\home\\.codex\\config.toml:pre_tool_use:0:0",
+              "eventName": "preToolUse",
+              "handlerType": "command",
+              "command": "active-stack memory hook pre-read",
+              "async": false,
+              "matcher": "^mcp__(plugin_engram_engram|engram)__(mem_search|mem_context)$",
+              "timeoutSec": 10,
+              "statusMessage": null,
+              "additionalContextLimit": null,
+              "sourcePath": "E:\\pp-codex-lab\\home\\.codex\\config.toml",
+              "source": "user",
+              "pluginId": null,
+              "environmentId": null,
+              "displayOrder": 0,
+              "enabled": true,
+              "isManaged": false,
+              "currentHash": "sha256:52b7666880d63fdc6b2dca13cd1c53fb25c38f319162d12cd47befd2d6c3961b",
+              "trustStatus": "untrusted"
+            },
+            {
+              "key": "E:\\pp-codex-lab\\home\\.codex\\config.toml:session_start:0:0",
+              "eventName": "sessionStart",
+              "handlerType": "command",
+              "command": "active-stack memory hook session-start",
+              "async": false,
+              "matcher": null,
+              "timeoutSec": 10,
+              "statusMessage": null,
+              "additionalContextLimit": null,
+              "sourcePath": "E:\\pp-codex-lab\\home\\.codex\\config.toml",
+              "source": "user",
+              "pluginId": null,
+              "environmentId": null,
+              "displayOrder": 1,
+              "enabled": true,
+              "isManaged": false,
+              "currentHash": "sha256:f630513e59d41f3d2ff24e522414e072d6b2c89ecba9df73a100bedb25dcfae7",
+              "trustStatus": "untrusted"
+            }
+          ],
+          "warnings": [],
+          "errors": []
+        }
+      ]
+    }
+  }
+]

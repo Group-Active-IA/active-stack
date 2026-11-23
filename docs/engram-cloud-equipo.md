@@ -52,6 +52,8 @@ El etiquetado se declara **por agente**, no en general. Vale cuando se cumplen t
 
 **Estado de la prueba (DA-12).** Claude + Windows pasó V1–V5, V7, V9, V12, V13 y las vías narrativas; V8 interactivo y V9 con el proxy terminado no se ejecutaron; en Codex la verificación es parcial. La matriz V1–V13 completa en Claude y Codex, con evidencia, es la ficha R-23 `(TBD)`. Linux y macOS: no ejecutado.
 
+**Codex real en Windows, 2026-11-23:** [PP-01 a PP-04](equipo/informes/PP-codex.md) verificaron lectura con hooks confiados, guardados etiquetados, cambio de rama, worktrees y subagente (sin `--ephemeral`). **Límites DA-12:** el binario probado borra la confianza al reinstalar; hay corrección con TDD pendiente de revalidación con binario actualizado. El plugin Engram 0.1.5 bloquea el guardado por sesión Codex no registrada, incluso en una sesión nueva no efímera; causa raíz `(TBD)`. El deny de push de Codex no está entregado y un push al bare local pasó. Full instala proxy/hooks/AUTOSYNC, pero su retiro falla por markers de hooks desparejos y no devuelve los bytes originales. No se declara la garantía completa por agente. Cloud real y otros sistemas siguen `(TBD)`.
+
 `active-stack verify` lo comprueba sin escribir nada (solo con el harness instalado y solo en Claude y Codex): marcador una vez (`config:engram-cloud:<agente>`), hooks (`cloud:hooks`), `active-stack` en el `PATH` (`cloud:path`, **aviso**, no revierte), proxy registrado (`cloud:proxy`), `ENGRAM_CLOUD_AUTOSYNC` (`cloud:autosync`, aviso), confianza del hook en Codex (`cloud:trust`, aviso), OpenCode/Antigravity presentes (`cloud:unsupported`, aviso) y los archivos de `.engram/` (`cloud:project-files`). Ningún check lee ni imprime tokens. En una instalación Project no se exigen hooks, proxy ni autosync (son de nivel usuario).
 
 ## Cierre de ficha: promover lo durable
@@ -81,6 +83,8 @@ No están cubiertos. Lo que guarden desde una rama irá **sin etiqueta** y entra
 | Confianza del hook en Codex | **Manual, una vez** (`/hooks`) |
 
 `active-stack uninstall` quita proxy, hooks y autosync sin tocar hooks ajenos ni `.engram/`; quedan solo `.engram/config.json`, `.engram/active-stack.json` y las memorias.
+
+**Excepción observada en Codex/Windows:** el retiro Full de PP-03 falló; la afirmación anterior no está garantizada para ese caso. Conservar el backup y revisar la [evidencia de PP-03](equipo/informes/PP-codex.md#pp-03--install-y-uninstall) antes de dar por restaurada la configuración.
 
 ## Servidor (infraestructura del equipo)
 
@@ -122,7 +126,7 @@ Antes de tocar esta integración, leer la documentación vigente y anotar las ve
 ## Pendiente `(TBD)`
 
 - Matriz V1–V13 completa en Claude y Codex, con evidencia: R-23.
-- Codex real: confianza del hook y comportamiento de sub-agentes sin verificar contra un Codex real.
+- Codex real: confianza inicial y subagentes verificados en PP-codex; falta cerrar X6 con binario actualizado y resolver los límites de la matriz, especialmente la coexistencia del plugin.
 - Engram como plugin de Claude (su `.mcp.json` vive en la caché del plugin): qué hace el registro del proxy si no hay entrada `engram` en `~/.claude.json` no está decidido.
 - Idioma de los mensajes de `verify`: sale en inglés por defecto hasta que la CLI exponga el idioma.
 - Detectar el proyecto actual en una instalación Machine con el directorio de trabajo.

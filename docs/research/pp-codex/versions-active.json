@@ -1,0 +1,10 @@
+{
+  "cmd": [
+    "C:/Users/Juan Cruz Robledo/AppData/Local/active-stack/bin/active-stack.exe",
+    "--version"
+  ],
+  "cwd": "E:\\pp-codex-lab",
+  "rc": 0,
+  "stdout": "dev\n",
+  "stderr": ""
+}

@@ -1,0 +1,17 @@
+{
+  "cmd": [
+    "C:/Users/Juan Cruz Robledo/AppData/Local/active-stack/bin/active-stack.exe",
+    "uninstall",
+    "--mode",
+    "full",
+    "--agent",
+    "codex",
+    "--yes",
+    "--home",
+    "E:\\pp-codex-lab\\home"
+  ],
+  "cwd": "E:\\pp-codex-lab",
+  "rc": 1,
+  "stdout": "",
+  "stderr": "  → uninstall-snapshot running...\n  ✓ uninstall-snapshot\n  → external-skip:openspec running...\n  ✓ external-skip:openspec\n  → external-codex-mcp:engram running...\n  ✓ external-codex-mcp:engram\n  → external-codex-mcp:context7 running...\n  ✓ external-codex-mcp:context7\n  → external-codex-mcp:playwright running...\n  ✓ external-codex-mcp:playwright\n  → marker:sdd-orchestrator running...\n  ✓ marker:sdd-orchestrator\n  → permissions-removal:permissions running...\n  ✓ permissions-removal:permissions\n  → marker:design-mockups running...\n  ✓ marker:design-mockups\n  → marker:engram-cloud running...\n  ✓ marker:engram-cloud\n  → cloud:engram-cloud running...\n  ✗ cloud:engram-cloud: remove memory hooks: hooks: E:\\pp-codex-lab\\home\\.codex\\config.toml (agent \"codex\"): found 0 begin and 1 end marker lines, want exactly one of each\n\nUninstall failed: rollback step \"marker:engram-cloud\": preserved \"E:\\\\pp-codex-lab\\\\home\\\\.codex\\\\AGENTS.md\" because it changed after installation; backup at \"E:\\\\pp-codex-lab\\\\home\\\\.active-stack\\\\backups\\\\uninstall\"\nRollback: failed (rollback step \"marker:engram-cloud\": preserved \"E:\\\\pp-codex-lab\\\\home\\\\.codex\\\\AGENTS.md\" because it changed after installation; backup at \"E:\\\\pp-codex-lab\\\\home\\\\.active-stack\\\\backups\\\\uninstall\")\n"
+}

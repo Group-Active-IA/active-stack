@@ -31,3 +31,5 @@ Reglas para el agente, todas aprendidas en R-23 y R-24:
 | PP-16 | **Aviso y actualización del binario** (ficha [R-27](equipo/fichas/R-27-autoactualizacion.md)) | Implementar la ficha y un servidor de releases falso | Avisa si hay versión nueva, `self-update` verifica SHA256 y restaura si falla | informe R-27 |
 
 Cuando una prueba pasa, se marca en este archivo (fecha, quién, enlace a la evidencia) y se actualiza el informe correspondiente.
+
+**Pasada Codex real · 2026-11-23 · Juan Cruz:** PP-01 a PP-04 ejecutadas con límites; **siguen abiertas**, ninguna se marca aprobada. Fallaron confianza tras reinstalar, deny de push, retiro Full y coexistencia del plugin. El [informe PP-codex](equipo/informes/PP-codex.md) reúne X0–X9, V1–V13, traspaso histórico Claude → Codex, evidencia y costo. X6 tiene un arreglo con TDD en commit separado; falta revalidarlo con un binario actualizado (no se hizo build).

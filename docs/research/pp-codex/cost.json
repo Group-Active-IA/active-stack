@@ -1,0 +1,141 @@
+{
+  "completed_cli_runs": 18,
+  "usage_by_run": {
+    "PP02-push.json": {
+      "input_tokens": 30367,
+      "cached_input_tokens": 26624,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 163,
+      "reasoning_output_tokens": 0
+    },
+    "real-login-final.json": {
+      "input_tokens": 17676,
+      "cached_input_tokens": 0,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 6,
+      "reasoning_output_tokens": 0
+    },
+    "scenario6-Claude-to-Codex.json": {
+      "input_tokens": 67571,
+      "cached_input_tokens": 59776,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 953,
+      "reasoning_output_tokens": 0
+    },
+    "V1-X7.json": {
+      "input_tokens": 82320,
+      "cached_input_tokens": 70912,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 231,
+      "reasoning_output_tokens": 0
+    },
+    "V10-plugin-native.json": {
+      "input_tokens": 55742,
+      "cached_input_tokens": 46208,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 222,
+      "reasoning_output_tokens": 0
+    },
+    "V10-plugin.json": {
+      "input_tokens": 92587,
+      "cached_input_tokens": 77184,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 248,
+      "reasoning_output_tokens": 0
+    },
+    "V11.json": {
+      "input_tokens": 278318,
+      "cached_input_tokens": 257536,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 755,
+      "reasoning_output_tokens": 0
+    },
+    "V13.json": {
+      "input_tokens": 126605,
+      "cached_input_tokens": 110592,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 336,
+      "reasoning_output_tokens": 0
+    },
+    "V2V3.json": {
+      "input_tokens": 210325,
+      "cached_input_tokens": 182528,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 498,
+      "reasoning_output_tokens": 0
+    },
+    "V4-wa.json": {
+      "input_tokens": 90410,
+      "cached_input_tokens": 62336,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 151,
+      "reasoning_output_tokens": 0
+    },
+    "V4-wb.json": {
+      "input_tokens": 90428,
+      "cached_input_tokens": 75904,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 177,
+      "reasoning_output_tokens": 0
+    },
+    "V5V6-retry.json": {
+      "input_tokens": 112823,
+      "cached_input_tokens": 86912,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 315,
+      "reasoning_output_tokens": 0
+    },
+    "V5V6.json": {
+      "input_tokens": 165571,
+      "cached_input_tokens": 146688,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 832,
+      "reasoning_output_tokens": 139
+    },
+    "V7.json": {
+      "input_tokens": 48583,
+      "cached_input_tokens": 42496,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 117,
+      "reasoning_output_tokens": 0
+    },
+    "V8-no-path.json": {
+      "input_tokens": 27486,
+      "cached_input_tokens": 25344,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 112,
+      "reasoning_output_tokens": 0
+    },
+    "V9.json": {
+      "input_tokens": 52739,
+      "cached_input_tokens": 45184,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 175,
+      "reasoning_output_tokens": 0
+    },
+    "X3-untrusted-sol.json": {
+      "input_tokens": 14388,
+      "cached_input_tokens": 12544,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 22,
+      "reasoning_output_tokens": 13
+    },
+    "X5-trusted.json": {
+      "input_tokens": 15062,
+      "cached_input_tokens": 11776,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 24,
+      "reasoning_output_tokens": 0
+    }
+  },
+  "cli_totals": {
+    "input_tokens": 1579001,
+    "cached_input_tokens": 1340544,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 5337,
+    "reasoning_output_tokens": 152
+  },
+  "persisted_subagent_usage": [],
+  "usd": "(TBD): ChatGPT subscription, CLI exposes tokens but no dollar cost; not API billing",
+  "excluded": "Coordinator and delegated Go-test agent usage not exposed in CLI JSON"
+}

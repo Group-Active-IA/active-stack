@@ -1,0 +1,11 @@
+{
+  "cmd": [
+    "C:/Users/Juan Cruz Robledo/AppData/Roaming/npm/node_modules/@openai/codex/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+    "plugin",
+    "list"
+  ],
+  "cwd": "E:\\pp-codex-lab",
+  "rc": 1,
+  "stdout": "",
+  "stderr": "Error: failed to load configured marketplace snapshot(s):\n- `engram` at E:\\pp-codex-lab\\home\\.codex\\.tmp/marketplaces\\engram: marketplace root does not contain a supported manifest\n"
+}

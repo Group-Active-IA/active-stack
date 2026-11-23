@@ -1,0 +1,181 @@
+Warning: truncated output (original token count: 7583)
+Total output lines: 357
+
+[?2026h[0 q[?2026l[?2026h[?2026l[H[K
+  >_ [1mOpenAI Codex[22m[2m (v0.166.0)[22m[K
+     [2mE:\pp-codex-lab\repo[22m[K
+[K
+[K[1m
+›[22m [2mAsk Codex to do anything[22m[K
+                                                                                
+[K
+[K
+[K
+                                                                                
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[6;3H[?25h[?2026h[?2026l[?2026h[?2026l]0;repo]7501;state=idle:app=codex\[?2026h[?2026l[?25l[H[K
+  >_ [1mOpenAI Codex[22m[2m (v0.166.0)[22m[K
+     [2mE:\pp-codex-lab\repo[22m[K[2m
+  permissions: [22m[1mYOLO mode[22m[K
+[K
+[K
+  [1mHooks[22m                                                                           [2mLifecycle hooks from config and enabled plugins.[22m[K
+[K
+  ⚠ 2 hooks need review before they can run.[K
+                                                                                  Event                 Installed   Active      Review      Description[K
+[K[1m[7m
+› PreToolUse            1           0           1           Before a tool execut[22m[27m  PermissionRequest     [2m0           0           0           When permission is r[22m  PostToolUse           [11X[2m0           0           0           After a tool execute[22m  PreCompact            [12X[2m0           0           0           Before context compa[22m  PostCompact           [11X[2m0           0           0           After context compac[22m  SessionStart          [10X[2m1           0           [22m1           [11X[2mWhen a new session s[22m  SessionEnd            [12X[2m0           0           0           Right before a sessi[22m  UserPromptSubmit      [2m0           0           0           When the user submit[22m↓[K
+[K
+  [1mt[22m[2m trust all · [22m[1menter[22m[2m review · [22m[1mesc[22m[2m close                                        [?2026h[22m[?2026l[H[K
+  >_ [1mOpenAI Codex[22m[2m (v0.166.0)[22m[K
+     [2mE:\pp-codex-lab\repo[22m[K[2m
+  permissions: [22m[1mYOLO mode[22m[K
+[K
+[K
+  [1mHooks[22m[K
+  [2mLifecycle hooks from config and enabled plugins.[22m[K
+[K
+  ⚠ 2 hooks need review before they can run.[K
+                                                                                  Event                 Installed   Active      Review      Description[K
+[K[1m[7m
+› PreToolUse            1           0           1           Before a tool execut[22m[27m  PermissionRequest     [2m0           0           0           When permission is r[22m  PostToolUse           [11X[2m0           0           0           After a tool execute[22m  PreCompact            [12X[2m0           0           0           Before context compa[22m  PostCompact           [11X[2m0           0           0           After context compac[22m  SessionStart          [10X[2m1           0           [22m1           [11X[2mWhen a new session s[22m  SessionEnd            [12X[2m0           0           0           Right before a sessi[22m  UserPromptSubmit      [2m0           0           0           When the user submit[22m↓[K
+[K
+  [1mt[22m[2m trust all · [22m[1menter[22m[2m review · [22m[1mesc[22m[2m close                                        [?2026h[22m[?2026l]0;⠹ repo]0;⠸ repo]7501;state=working:app=codex\[2J[3J[?2026h[H[K[2m
+╭───────────────────────────────────────────────────────────────╮[22m[K[2m
+│ [22m[1m✨ Update available![22m [1m0.166.0 -> 0.171.0[22m[2m                       │[22m[K[2m
+│ [22mSee ]8;id=10772-3;https://github.com/openai/codex\[4mhttps://github.com/openai/codex]8;;\[24m for installation options.[2m │[22m[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[80C
+[2m[4;1H│                                                               │[22m               
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+[80C
+[2m[4;1H│ [22mSee full release notes:[2m                                       │[22m               
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+[80C
+[2m[4;1H│ ]8;id=10772-4;https://github.com/openai/codex/releases/latest\[22m[4mhttps://github.com/openai/codex/releases/latest]8;;\[2m[24m               │[22m               
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                                                                                
+                …3583 tokens truncated…                                                      
+                                                                                
+                                                                                
+[80C[?2026l[?2026h[?2026l[?2026h[?2026l[?2026h[?2026l
+[4;1H  performance at a lower cost.                                                  
+                                                                                
+                                                                                
+  [1mHooks[22m                                                                         
+  [2mLifecycle hooks from config and enabled plugins.[22m                              
+                                                                                
+  ⚠ 2 hooks need review before they can run.                                    
+                                                                                
+  Event                 Installed   Active      Review      Description         
+                                                                                [1m[7m
+› PreToolUse            1           0           1           Before a tool execut[22m[27m  PermissionRequest     [2m0           0           0           When permission is r[22m  PostToolUse           [2m0           0           0           After a tool execute[22m  PreCompact            [2m0           0           0           Before context compa[22m  PostCompact           [2m0           0           0           After context compac[22m  SessionStart          [2m1           0           [22m1           [2mWhen a new session s[22m  SessionEnd            [2m0           0           0           Right before a sessi[22m  UserPromptSubmit      [2m0           0           0           When the user submit[22m↓                                                                               
+                                                                                
+  [1mt[22m[2m trust all · [22m[1menter[22m[2m review · [22m[1mesc[22m[2m close                                        [?2026h[22m[?2026l]0;⠼ repo[?2026h[?2026l]0;⠴ repo[?2026h
+[4;1H                                                                                
+                                                                                
+                                                                                
+  [1mHooks[22m                                                                         
+  [2mLifecycle hooks from config and enabled plugins.[22m                              
+                                                                                
+  ⚠ 2 hooks need review before they can run.                                    
+                                                                                
+  Event                 Installed   Active      Review      Description         
+                                                                                [1m[7m
+› PreToolUse            1           0           1           Before a tool execut[22m[27m  PermissionRequest     [2m0           0           0           When permission is r[22m  PostToolUse           [2m0           0           0           After a tool execute[22m  PreCompact            [2m0           0           0           Before context compa[22m  PostCompact           [2m0           0           0           After context compac[22m  SessionStart          [2m1           0           [22m1           [2mWhen a new session s[22m  SessionEnd            [2m0           0           0           Right before a sessi[22m  UserPromptSubmit      [2m0           0           0           When the user submit[22m↓                                                                               
+                                                                                
+  [1mt[22m[2m trust all · [22m[1menter[22m[2m review · [22m[1mesc[22m[2m close                                        [22m
+[1m[4;1H⚠ Heads up, you have less than 25% of your weekly limit left. Run /status for a[22m 
+                                                                                
+                                                                                
+  [1mHooks[22m                                                                         
+  [2mLifecycle hooks from config and enabled plugins.[22m                              
+                                                                                
+  ⚠ 2 hooks need review before they can run.                                    
+                                                                                
+  Event                 Installed   Active      Review      Description         
+                                                                                [1m[7m
+› PreToolUse            1           0           1           Before a tool execut[22m[27m  PermissionRequest     [2m0           0           0           When permission is r[22m  PostToolUse           [2m0           0           0           After a tool execute[22m  PreCompact            [2m0           0           0           Before context compa[22m  PostCompact           [2m0           0           0           After context compac[22m  SessionStart          [2m1           0           [22m1           [2mWhen a new session s[22m  SessionEnd            [2m0           0           0           Right before a sessi[22m  UserPromptSubmit      [2m0           0           0           When the user submit[22m↓                                                                               
+                                                                                
+  [1mt[22m[2m trust all · [22m[1menter[22m[2m review · [22m[1mesc[22m[2m close                                        [?2026l[22m
+[4;1H  [1mbreakdown.[22m                                                                    
+                                                                                
+                                                                                
+  [1mHooks[22m                                                                         
+  [2mLifecycle hooks from config and enabled plugins.[22m                              
+                                                                                
+  ⚠ 2 hooks need review before they can run.                                    
+                                                                                
+  Event                 Installed   Active      Review      Description         
+                                                                                [1m[7m
+› PreToolUse            1           0           1           Before a tool execut[22m[27m  PermissionRequest     [2m0           0           0           When permission is r[22m  PostToolUse           [2m0           0           0           After a tool execute[22m  PreCompact            [2m0           0           0           Before context compa[22m  PostCompact           [2m0           0           0           After context compac[22m  SessionStart          [2m1           0           [22m1           [2mWhen a new session s[22m  SessionEnd            [2m0           0           0           Right before a sessi[22m  UserPromptSubmit      [2m0           0           0           When the user submit[22m↓                                                                               
+                                                                                
+  [1mt[22m[2m trust all · [22m[1menter[22m[2m review · [22m[1mesc[22m[2m close                                        [22m]0;⠦ repo[?2026h[?2026l[?2026h[?2026l]0;⠧ repo]0;⠇ repo]0;⠏ repo]0;⠋ repo

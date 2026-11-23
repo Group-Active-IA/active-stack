@@ -1,0 +1,73 @@
+[?2026h[7;1H  1. Review hooks                                                               [1m[7m› 2. Trust all and continue                                                     [?2026l[?2026h[?2026l[?2026h[?2026l[?2026h[0 q[?2026l[?2026h[?2026l[22m[27m[H[K
+  >_ [1mOpenAI Codex[22m[2m (v0.166.0)[22m[K
+     [2mE:\pp-codex-lab\wa[22m[K
+[K
+[K[1m
+›[22m [2mAsk Codex to do anything[22m[K
+                                                                                                                                                                
+[K
+[K
+                                                                                                                                                                
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[6;3H[?25h[?2026h[?2026l[?2026h[?2026l]0;wa]7501;state=idle:app=codex\[?2026h[0 q[?2026l[?25l[H[K
+  >_ [1mOpenAI Codex[22m[2m (v0.166.0)[22m[K
+     [2mE:\pp-codex-lab\wa[22m[K[2m
+  permissions: [22m[1mYOLO mode[22m[K
+[K
+[K[1m
+›[22m [2mAsk Codex to do anything[22m                                                                                                                                        GPT-6-Luna default · E:\pp-codex-lab\wa[K
+[K
+                                                                                                                                                                
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K
+[K[7;3H[?25h]0;⠼ wa]7501;state=working:app=codex\[?2026h[?25l[H[K[2m
+╭───────────────────────────────────────────────────────────────╮[22m[K[2m
+│ [22m[1m✨ Update available![22m [1m0.166.0 -> 0.171.0[22m[2m                       │[22m[K[2m
+│ [22mSee ]8;id=5896-1;https://github.com/openai/codex\[4mhttps://github.com/openai/codex]8;;\[24m for installation options.[2m │[22m[K[2m
+│                                                               │[22m[K[2m
+│ [22mSee full release notes:[2m                                       │[22m[K[2m
+│ ]8;id=5896-2;https://github.com/openai/codex/releases/latest\[22m[4mhttps://github.com/openai/codex/releases/latest]8;;\[2m[24m               │[22m[K[2m
+╰───────────────────────────────────────────────────────────────╯[22m[K
+[K
+[K
+  >_ [1mOpenAI Codex[22m[2m (v0.166.0)[22m[K
+     [2mE:\pp-codex-lab\wa[22m[K[2m
+  permissions: [22m[1mYOLO mode[22m[K
+[K
+  [1mTip:[22m Maximize usage with GPT-6.1 Sol. Try it on complex work for near-Astra   
+[K
+[K
+[K
+[K
+[K
+[K
+                                                                                                                                                                
+[K[15;1H[?25h[0 q[?2026l[?2026h[?2026l[?2026h[?2026l[?25l[24;1H
+[15;1H  performance at a lower cost.                                                  
+                                                                                
+                                                                                [1m
+›[22m [2mAsk Codex to do anything[22m                                                      
+                                                                                
+  GPT-6-Luna low · E:\pp-codex-lab\wa                                           
+                                                                                
+                                                                                                                                                                
+[18;3H[?25h[?2026h[?2026l]0;⠴ wa[?2026h[?2026l]0;⠦ wa]0;⠧ wa[?2026h[?2026l]0;⠇ wa]0;⠏ wa[?2026h[?2026l]0;⠋ wa
