@@ -28,5 +28,6 @@ Reglas para el agente, todas aprendidas en R-23 y R-24:
 | PP-13 | **`verify` visible por CLI**: hoy `install` imprime «0 checks» y no hay comando `verify` suelto | Cambio de código | Los `cloud:*` se ven al instalar | informe R-23 |
 | PP-14 | **Aviso de marcador inválido en el proxy** (el hook de lectura ya avisa) | Cambio de código | Aviso por `stderr` sin bloquear el guardado | informe R-23 |
 | PP-15 | **Proxy con Engram solo por el plugin de Claude** (sin entrada `engram` en `~/.claude.json`) | Claude con plugin | Hoy se saltea con aviso; decidir si se registra de otra forma | ficha R-26 |
+| PP-16 | **Aviso y actualización del binario** (ficha [R-27](equipo/fichas/R-27-autoactualizacion.md)) | Implementar la ficha y un servidor de releases falso | Avisa si hay versión nueva, `self-update` verifica SHA256 y restaura si falla | informe R-27 |
 
 Cuando una prueba pasa, se marca en este archivo (fecha, quién, enlace a la evidencia) y se actualiza el informe correspondiente.

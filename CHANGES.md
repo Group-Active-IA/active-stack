@@ -9,4 +9,5 @@
 - [Estado del equipo](docs/estado-equipo.md): único escritor, el dueño.
 - [Modo equipo](docs/equipo.md) y [memoria de equipo con Engram Cloud](docs/engram-cloud-equipo.md): guías de lo construido (R-22, [ficha](docs/equipo/fichas/R-22.md); PR en el [informe](docs/equipo/informes/R-22.md)).
 - [Pruebas pendientes](docs/pruebas-pendientes.md): Codex real, dos personas, cloud real y otros sistemas; se retoman con «continuar».
+- [R-27: aviso y actualización del binario](docs/equipo/fichas/R-27-autoactualizacion.md): pendiente, avisa y pide confirmación; nunca actualiza solo.
 - Planes de origen: [trabajo en equipo](docs/plan-trabajo-en-equipo.md) y [Engram Cloud](docs/plan-engram-cloud-equipo.md).
