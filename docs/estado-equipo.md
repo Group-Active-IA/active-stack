@@ -51,8 +51,8 @@ Una ficha puede empezar solo si **todas** sus dependencias figuran `mergeada` ac
 | R-26 | Juan Cruz | R-15, R-08 | mergeada | [#64](https://github.com/Group-Active-IA/active-stack/pull/64) | `6d62242` | Proxy de guardado (DA-13): `active-stack memory proxy` y registro en Claude y Codex; reescribe las Fases 5 y 6 del plan. [Informe](equipo/informes/R-26-proxy-guardado.md) |
 | R-21 | Giuliano | R-20 | mergeada | [#67](https://github.com/Group-Active-IA/active-stack/pull/67) | `e23919c` | Checks de `verify` de `engram-cloud` (marcador, hooks, `PATH` como aviso, proxy, AUTOSYNC, archivos del proyecto). Codex real pendiente. [Informe](equipo/informes/R-21.md) |
 | R-22 | Emiliano | R-20, R-21 | mergeada | [#69](https://github.com/Group-Active-IA/active-stack/pull/69) | `4068f6d` | `ARCHITECTURE.md`, guías de equipo y de Engram Cloud, láminas de la guía externa (fuera del repo). Espejos `CLAUDE.md`/`AGENTS.md` sin tocar. [Informe](equipo/informes/R-22.md) |
-| R-23 | Matías | R-22 | parcial | | [PR #74](https://github.com/Group-Active-IA/active-stack/pull/74) | Matriz mecánica en Claude/Windows aislada (V1-V4, V6, V7, V11 pasan; V9 y V13 parciales). Faltan V5, V8, V10, V12 y Codex: piden login vigente de `claude`, plugin de Engram y otro SO. Ver informe |
-| R-24 | Juan Cruz | R-22 | parcial | | [PR #73](https://github.com/Group-Active-IA/active-stack/pull/73) | Piloto local indicativo (VE-6 1/5 contaminado, VE-8 sin medir). Falta repetir con login válido, Codex, ClickUp (OK del dueño) y escenarios 2-10 |
+| R-23 | Matías | R-22 | parcial | | [PR #74](https://github.com/Group-Active-IA/active-stack/pull/74), [PR #76](https://github.com/Group-Active-IA/active-stack/pull/76) | Claude/Windows aislado con agente real: V1-V7, V10, V11, V13 pasan; V8 con límite (`verify` no se ve por CLI); V9 corregido en hook (falta binario nuevo y el proxy no avisa); V12 solo Windows. Faltan Codex, dos personas reales y cloud real |
+| R-24 | Juan Cruz | R-22 | parcial | | [PR #73](https://github.com/Group-Active-IA/active-stack/pull/73), [PR #77](https://github.com/Group-Active-IA/active-stack/pull/77) | Piloto local en Claude: VE-6 detecta 5/5, VE-8 +30 % de tokens en un saludo; DA-02/DA-03 sin umbral. Faltan Codex, dos personas reales, ClickUp (OK del dueño), OpenCode |
 | R-25 | Juan Cruz | R-23, R-24 | pendiente | | | Cierre |
 
 ## Quién sigue ahora (2026-11-21)
@@ -122,3 +122,5 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 - `install` headless Machine imprime «0 checks»: los `cloud:*` de `verify` no corren y no hay comando `verify` suelto.
 - V9: con marcador inválido el guardado no se bloquea, pero no sale aviso en `stderr` (el plan lo pide).
 - Login de `claude` caducado en la máquina del dueño (2026-11-22): hay que hacer `/login` antes de repetir R-23 y R-24.
+- Hallazgos de R-24: los agentes de ficha dicen «no existe `CHANGES.md`» cuando sí existe; un agente pisó la sección `team-mode` del `.gitignore`; los commits de ficha arrastran `__pycache__` si no se ignora.
+- Pendiente del dueño: umbrales DA-02 (tope de tokens) y DA-03; borrar `E:23c-tmp` y `C:24b`.
