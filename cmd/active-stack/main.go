@@ -52,6 +52,8 @@ func main() {
 	// before any dispatch. See wireEmbeddedFS for details (C-32 fix).
 	wireEmbeddedFS()
 
+	maybeNotifyUpdate(os.Args[1:], os.Stderr)
+
 	// Sin argumentos (caso típico: doble-click del .exe en Windows) → lanzar el
 	// flujo interactivo. JR Stack es methodology-first para usuario final: el
 	// doble-click debe ABRIR la TUI, no imprimir un usage y cerrarse. runInstall
@@ -65,6 +67,8 @@ func main() {
 	}
 
 	switch os.Args[1] {
+	case "self-update":
+		os.Exit(runSelfUpdate(os.Args[2:], os.Stdin, os.Stdout, os.Stderr))
 	case "--version", "version":
 		fmt.Fprintln(os.Stdout, buildVersion)
 	case "update":
