@@ -11,12 +11,12 @@ El bloque instalado hoy es el último renglón: Claude entrega en capas por `Con
 
 | Toggles activos | Claude | Codex |
 |---|---|---|
-| ninguno | 7.116 B · 188 L | 5.543 B · 147 L |
-| +delegation | 8.121 B · 210 L | 6.394 B · 168 L |
-| +model-routing | 8.899 B · 226 L | 6.844 B · 181 L |
-| +governance | 10.175 B · 246 L | 8.120 B · 201 L |
-| +engram | 16.268 B · 365 L | 14.213 B · 320 L |
-| +tdd (**lo que se instala hoy**) | **20.065 B · 448 L** | **18.010 B · 403 L** |
+| ninguno | 7.028 B · 183 L | 6.417 B · 153 L |
+| +delegation | 8.033 B · 205 L | 7.268 B · 174 L |
+| +model-routing | 8.811 B · 221 L | 7.718 B · 187 L |
+| +governance | 10.087 B · 241 L | 8.994 B · 207 L |
+| +engram | 16.180 B · 360 L | 15.087 B · 326 L |
+| +tdd (**lo que se instala hoy**) | **19.977 B · 443 L** | **18.884 B · 409 L** |
 
 ## 2. Atribución de bytes por fragmento
 
@@ -24,24 +24,24 @@ Cada fragmento es la diferencia entre dos combinaciones consecutivas; la base es
 
 | Fragmento | Claude | % | Codex | % |
 |---|---|---|---|---|
-| base del variante | 7.116 B | 35,5 % | 5.543 B | 30,8 % |
-| `delegation` | 1.005 B | 5,0 % | 851 B | 4,7 % |
-| `model-routing` | 778 B | 3,9 % | 450 B | 2,5 % |
-| `governance` | 1.276 B | 6,4 % | 1.276 B | 7,1 % |
-| `engram` | 6.093 B | 30,4 % | 6.093 B | 33,8 % |
-| `tdd` | 3.797 B | 18,9 % | 3.797 B | 21,1 % |
+| base del variante | 7.028 B | 35,2 % | 6.417 B | 34,0 % |
+| `delegation` | 1.005 B | 5,0 % | 851 B | 4,5 % |
+| `model-routing` | 778 B | 3,9 % | 450 B | 2,4 % |
+| `governance` | 1.276 B | 6,4 % | 1.276 B | 6,8 % |
+| `engram` | 6.093 B | 30,5 % | 6.093 B | 32,3 % |
+| `tdd` | 3.797 B | 19,0 % | 3.797 B | 20,1 % |
 
-`engram` y `tdd` juntos son 49,3 % del bloque de Claude y 54,9 % del de Codex.
+`engram` y `tdd` juntos son 49,5 % del bloque de Claude y 52,4 % del de Codex.
 
 ## 3. Otras variantes (referencia, fuera del alcance de paridad)
 
 | Variante | Base | Con los cinco toggles |
 |---|---|---|
-| antigravity | 4.923 B · 134 L | 18.102 B · 397 L |
+| antigravity | 7.015 B · 146 L | 20.195 B · 410 L |
 | cursor | 5.579 B · 147 L | 18.556 B · 411 L |
 | gemini | 5.525 B · 147 L | 17.992 B · 403 L |
 | generic | 5.461 B · 154 L | 17.847 B · 408 L |
-| opencode | 7.371 B · 187 L | 20.320 B · 447 L |
+| opencode | 8.586 B · 190 L | 21.536 B · 451 L |
 | windsurf | 5.794 B · 149 L | 18.677 B · 418 L |
 
 ## 4. Fuentes inyectadas en el archivo de instrucciones
@@ -50,8 +50,8 @@ Cada sección se mide instalándola sola en un home limpio; el total, instalando
 
 | Cliente | Bloque del orquestador | Sección design-mockups | Separador | Total inyectado |
 |---|---|---|---|---|
-| Claude | 4.601 B | 8.940 B | 1 B | 13.542 B |
-| Codex | 3.880 B | 8.940 B | 1 B | 12.821 B |
+| Claude | 5.902 B | 8.940 B | 1 B | 14.843 B |
+| Codex | 5.316 B | 8.940 B | 1 B | 14.257 B |
 
 El fragmento `design-mockups` mide 8.865 B; con los marcadores de sección de la inyección son 8.940 B.
 
@@ -79,43 +79,45 @@ Las cinco más grandes están en negrita: Skill tup-campus-navigator (60.699 B),
 | 16 | Skill api-security-best-practices | skill | 11.267 | terceros @560b762c |
 | 17 | Skill monorepo-scaffold | skill | 10.079 | terceros @782565f7 |
 | 18 | Skill ws-frontend-subscription | skill | 9.677 | terceros @782565f7 |
-| 19 | Skill test-driven-development | skill | 9.578 | terceros @22f0b463 |
-| 20 | Skill kb-creator | skill | 9.575 | terceros @0f73e9b8 |
-| 21 | Skill systematic-debugging | skill | 9.530 | terceros @22f0b463 |
-| 22 | Skill zustand-store-pattern | skill | 9.024 | terceros @782565f7 |
-| 23 | Sección design-mockups inyectada — Claude | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
-| 24 | Sección design-mockups inyectada — Codex | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
-| 25 | Skill react19-form-pattern | skill | 8.734 | terceros @782565f7 |
-| 26 | Skill redis-best-practices | skill | 8.526 | terceros @7682ca77 |
-| 27 | Skill agent-instruction | skill | 8.243 | terceros @1f7922f9 |
-| 28 | Skill help-system-content | skill | 8.039 | terceros @782565f7 |
-| 29 | Skill skill-registry | skill | 7.702 | terceros @78434d8f |
-| 30 | Skill clean-architecture | skill | 7.397 | terceros @782565f7 |
-| 31 | Skill design-system | skill | 6.948 | embebida |
-| 32 | Skill websocket-engineer | skill | 6.586 | terceros @078a25cc |
-| 33 | Skill receiving-code-review | skill | 6.203 | terceros @22f0b463 |
-| 34 | Skill discovery-research | skill | 6.148 | terceros @dd7efb7d |
-| 35 | Skill alembic-migrations | skill | 5.577 | terceros @782565f7 |
-| 36 | Skill find-skill | skill | 5.472 | terceros @b716f9dc |
-| 37 | Skill web-scraper | skill | 5.079 | terceros @1ac73c20 |
-| 38 | Bloque sdd-orchestrator inyectado — Claude | instrucción inyectada | 4.601 | bloque universal de la entrega en capas; sección con marcadores |
-| 39 | Bloque sdd-orchestrator inyectado — Codex | instrucción inyectada | 3.880 | bloque universal de la entrega en capas; sección con marcadores |
-| 40 | Skill fastapi-code-review | skill | 3.686 | terceros @782565f7 |
-| 41 | Skill requesting-code-review | skill | 2.974 | terceros @22f0b463 |
-| 42 | Skill multi-stage-dockerfile | skill | 2.314 | terceros @222eba62 |
-| 43 | Comando claude/active/starter-add.md | comando | 885 |  |
-| 44 | Comando opencode/active-starter-add.md | comando | 790 |  |
-| 45 | Skill openspec-archive | skill | 179 | embebida sin harness en el catálogo |
-| 46 | Skill openspec-explore | skill | 179 | embebida sin harness en el catálogo |
-| 47 | Skill openspec-onboard | skill | 179 | embebida sin harness en el catálogo |
-| 48 | Skill openspec-propose | skill | 179 | embebida sin harness en el catálogo |
-| 49 | Skill openspec-design | skill | 177 | embebida sin harness en el catálogo |
-| 50 | Skill openspec-verify | skill | 177 | embebida sin harness en el catálogo |
-| 51 | Skill openspec-apply | skill | 175 | embebida sin harness en el catálogo |
-| 52 | Skill openspec-tasks | skill | 175 | embebida sin harness en el catálogo |
-| 53 | Skill openspec-init | skill | 173 | embebida sin harness en el catálogo |
-| 54 | Skill openspec-spec | skill | 173 | embebida sin harness en el catálogo |
-| 55 | Skill judgment-day | skill | 171 | embebida sin harness en el catálogo |
+| 19 | Skill active-roadmap | skill | 9.643 | embebida |
+| 20 | Skill test-driven-development | skill | 9.578 | terceros @22f0b463 |
+| 21 | Skill kb-creator | skill | 9.575 | terceros @0f73e9b8 |
+| 22 | Skill systematic-debugging | skill | 9.530 | terceros @22f0b463 |
+| 23 | Skill zustand-store-pattern | skill | 9.024 | terceros @782565f7 |
+| 24 | Sección design-mockups inyectada — Claude | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
+| 25 | Sección design-mockups inyectada — Codex | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
+| 26 | Skill react19-form-pattern | skill | 8.734 | terceros @782565f7 |
+| 27 | Skill redis-best-practices | skill | 8.526 | terceros @7682ca77 |
+| 28 | Skill agent-instruction | skill | 8.243 | terceros @1f7922f9 |
+| 29 | Skill help-system-content | skill | 8.039 | terceros @782565f7 |
+| 30 | Skill skill-registry | skill | 7.702 | terceros @78434d8f |
+| 31 | Skill clean-architecture | skill | 7.397 | terceros @782565f7 |
+| 32 | Skill active-delivery | skill | 6.975 | embebida |
+| 33 | Skill design-system | skill | 6.948 | embebida |
+| 34 | Skill websocket-engineer | skill | 6.586 | terceros @078a25cc |
+| 35 | Skill receiving-code-review | skill | 6.203 | terceros @22f0b463 |
+| 36 | Skill discovery-research | skill | 6.148 | terceros @dd7efb7d |
+| 37 | Bloque sdd-orchestrator inyectado — Claude | instrucción inyectada | 5.902 | bloque universal de la entrega en capas; sección con marcadores |
+| 38 | Skill alembic-migrations | skill | 5.577 | terceros @782565f7 |
+| 39 | Skill find-skill | skill | 5.472 | terceros @b716f9dc |
+| 40 | Bloque sdd-orchestrator inyectado — Codex | instrucción inyectada | 5.316 | bloque universal de la entrega en capas; sección con marcadores |
+| 41 | Skill web-scraper | skill | 5.079 | terceros @1ac73c20 |
+| 42 | Skill fastapi-code-review | skill | 3.686 | terceros @782565f7 |
+| 43 | Skill requesting-code-review | skill | 2.974 | terceros @22f0b463 |
+| 44 | Skill multi-stage-dockerfile | skill | 2.314 | terceros @222eba62 |
+| 45 | Comando claude/active/starter-add.md | comando | 885 |  |
+| 46 | Comando opencode/active-starter-add.md | comando | 790 |  |
+| 47 | Skill openspec-archive | skill | 179 | embebida sin harness en el catálogo |
+| 48 | Skill openspec-explore | skill | 179 | embebida sin harness en el catálogo |
+| 49 | Skill openspec-onboard | skill | 179 | embebida sin harness en el catálogo |
+| 50 | Skill openspec-propose | skill | 179 | embebida sin harness en el catálogo |
+| 51 | Skill openspec-design | skill | 177 | embebida sin harness en el catálogo |
+| 52 | Skill openspec-verify | skill | 177 | embebida sin harness en el catálogo |
+| 53 | Skill openspec-apply | skill | 175 | embebida sin harness en el catálogo |
+| 54 | Skill openspec-tasks | skill | 175 | embebida sin harness en el catálogo |
+| 55 | Skill openspec-init | skill | 173 | embebida sin harness en el catálogo |
+| 56 | Skill openspec-spec | skill | 173 | embebida sin harness en el catálogo |
+| 57 | Skill judgment-day | skill | 171 | embebida sin harness en el catálogo |
 
 ### Skills del catálogo sin medición
 

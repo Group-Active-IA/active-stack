@@ -56,3 +56,5 @@ El helper Python local nunca llama a ClickUp. La aprobación humana es requisito
 Incluí un bloque Mermaid editable con delimitadores en el Markdown del roadmap cuando ayude a entender sus dependencias. Derivá los nodos y flechas de las fichas. Si el destino acordado es una tarea de ClickUp, incluí el bloque en el campo `description` de la fila antes de generar la vista previa y seguí el flujo de vista previa y confirmación de publicación.
 
 Para mostrar un diagrama guardado, leé la fuente actual y devolvé el bloque guardado exacto como Mermaid. En ClickUp usá markdown_description, que conserva los delimitadores. Usá text_content para identificar las tareas según el flujo de publicación. Acompañá el diagrama con el enlace y el contexto disponible de la tarea. Si el bloque o la fuente no está disponible, indicá qué falta. Mostrar un diagrama es una lectura.
+
+Si el pedido es ambiguo y hay varios bloques Mermaid, mostrá una opción por diagrama y esperá la selección. Usá el selector nativo de opción única si está disponible o una lista numerada. Después mostrá solo el bloque elegido.
