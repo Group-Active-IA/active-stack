@@ -15,6 +15,8 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
 5. **El informe no va al dueño: va a quien tu ficha desbloquea.** Queda en el PR y, al mergearse, en `main`. **No hace falta pasarlo por WhatsApp**: cuando el PR se mergea, el agente de esa persona lo encuentra en el repo. Juan Cruz solo mergea el PR.
 6. El agente te dice cuál es tu próxima ficha y de quién espera. Cuando el PR de esa dependencia figure mergeado en Git, empezás solo: repetí desde el paso 2.
 
+**¿Hay pruebas pendientes?** Si ya no queda ficha por implementar, seguí [pruebas-pendientes.md](pruebas-pendientes.md): dice qué falta probar y quién lo necesita.
+
 ---
 
 ## 1. Reglas que no se negocian
