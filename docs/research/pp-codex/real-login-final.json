@@ -1,0 +1,23 @@
+{
+  "cmd": [
+    "C:/Users/Juan Cruz Robledo/AppData/Roaming/npm/node_modules/@openai/codex/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+    "exec",
+    "--ignore-user-config",
+    "--disable",
+    "plugins",
+    "--json",
+    "--ephemeral",
+    "-m",
+    "gpt-6-luna",
+    "-c",
+    "model_reasoning_effort=\"low\"",
+    "--skip-git-repo-check",
+    "-C",
+    "E:\\pp-codex-lab\\plain",
+    "di ok"
+  ],
+  "cwd": "E:\\pp-codex-lab",
+  "rc": 0,
+  "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a20863-5394-7ba1-bac2-b6756f99785e\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"OK.\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":17676,\"cached_input_tokens\":0,\"cache_write_input_tokens\":0,\"output_tokens\":6,\"reasoning_output_tokens\":0}}\n",
+  "stderr": "Reading additional input from stdin...\n2026-11-23T12:30:57.608656Z  WARN codex_core::shell_snapshot: Failed to create shell snapshot for powershell: Shell snapshot not supported yet for PowerShell\n"
+}

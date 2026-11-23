@@ -1,0 +1,11 @@
+]0;⠙ repo]0;⠹ repo]0;⠸ repo]0;⠼ repo]7501;state=idle:app=codex\[?2026h[?2026l]0;repo[?2026h[?2026l[?2026h[?2026l[5;1H[K
+[K
+  [1mHooks[22m[K
+  [2mLifecycle hooks from config and enabled plugins.[22m[K
+[K
+  Event                 Installed   Active      Description[K
+[K[1m[7m
+› PreToolUse            1           1           Before a tool executes          [22m[27m  PermissionRequest     [2m0           0           When permission is requested[22m    
+  PostToolUse           [11X[2m0           0           After a tool executes[22m             PreCompact            [12X[2m0           0           Before context compaction[22m         PostCompact           [11X[2m0           0           After context compaction[22m          SessionStart          [10X[2m1           1           When a new session starts[22m         SessionEnd            [12X[2m0           0           Right before a session ends[22m       UserPromptSubmit      [2m0           0           When the user submits a prompt[22m  ↓                                                                                                                                                                 [1menter[22m[2m details · [22m[1mesc[22m[2m close                                                     [22m
+[K
+                                                                                [24;161H[?2026h[?2026l

@@ -1,0 +1,17 @@
+{
+  "cmd": [
+    "C:/Users/Juan Cruz Robledo/AppData/Roaming/npm/node_modules/@openai/codex/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe",
+    "exec",
+    "--json",
+    "--ephemeral",
+    "-c",
+    "mcp_servers.engram.command=\"active-stack\"",
+    "-C",
+    "E:\\pp-codex-lab\\wa",
+    "Intentá guardar title V8 sin path vía engram mem_save. Si MCP no conecta, avisá que no guardaste; no uses otro mecanismo."
+  ],
+  "cwd": "E:\\pp-codex-lab",
+  "rc": 0,
+  "stdout": "{\"type\":\"thread.started\",\"thread_id\":\"01a2085d-7050-7b53-b56d-6bf6234e8372\"}\n{\"type\":\"turn.started\"}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_0\",\"type\":\"agent_message\",\"text\":\"Voy a intentar la operación con `engram mem_save` y, si el MCP no está disponible, te aviso sin guardar por otro medio.\"}}\n{\"type\":\"item.completed\",\"item\":{\"id\":\"item_1\",\"type\":\"agent_message\",\"text\":\"No pude guardar `title V8 sin path`: no hay una herramienta MCP de Engram `mem_save` disponible. No lo guardé por otro medio.\"}}\n{\"type\":\"turn.completed\",\"usage\":{\"input_tokens\":27486,\"cached_input_tokens\":25344,\"cache_write_input_tokens\":0,\"output_tokens\":112,\"reasoning_output_tokens\":0}}\n",
+  "stderr": "Reading additional input from stdin...\n2026-11-23T12:24:31.068330Z  WARN codex_core::shell_snapshot: Failed to create shell snapshot for powershell: Shell snapshot not supported yet for PowerShell\n2026-11-23T12:24:31.144065Z  WARN codex_mcp::rmcp_client: MCP server startup failed server_name=\"engram\" error=program not found\n2026-11-23T12:24:31.552679Z  WARN codex_mcp::rmcp_client: MCP server startup failed server_name=\"engram\" error=program not found\n2026-11-23T12:24:41.081063Z  WARN codex_mcp::rmcp_client: failed to initialize MCP client during shutdown: MCP startup failed: program not found\n"
+}

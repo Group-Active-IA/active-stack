@@ -1,0 +1,18 @@
+{
+  "cmd": [
+    "C:/Users/Juan Cruz Robledo/AppData/Local/active-stack/bin/active-stack.exe",
+    "install",
+    "--mode",
+    "full",
+    "--agent",
+    "codex",
+    "--yes",
+    "--home",
+    "E:\\pp-codex-lab\\home",
+    "--no-self-install"
+  ],
+  "cwd": "E:\\pp-codex-lab",
+  "rc": 0,
+  "stdout": "  → snapshot running...\n  ✓ snapshot\n  → skill:active-delivery running...\n  ✓ skill:active-delivery\n  → skill:active-roadmap running...\n  ✓ skill:active-roadmap\n  → skill:agent-instruction running...\n  ✓ skill:agent-instruction\n  → external:context7 running...\n  ✓ external:context7\n  → skill:design-taste-frontend-v1 running...\n  ✓ skill:design-taste-frontend-v1\n  → skill:emil-design-eng running...\n  ✓ skill:emil-design-eng\n  → external:engram running...\n  ✓ external:engram\n  → skill:find-skill running...\n  ✓ skill:find-skill\n  → skill:kb-creator running...\n  ✓ skill:kb-creator\n  → external:openspec running...\n  ✓ external:openspec\n  → permissions:permissions running...\n  ✓ permissions:permissions\n  → external:playwright running...\n  ✓ external:playwright\n  → skill:roadmap-generator running...\n  ✓ skill:roadmap-generator\n  → config:sdd-orchestrator running...\n  ✓ config:sdd-orchestrator\n  → skill:design-system running...\n  ✓ skill:design-system\n  → skill:active-orchestrator running...\n  ✓ skill:active-orchestrator\n  → config:design-mockups running...\n  ✓ config:design-mockups\n  → config:engram-cloud running...\n  ✓ config:engram-cloud\n  → hooks:engram-cloud running...\n  ⚠ hooks:engram-cloud (degraded, best-effort): Codex: open /hooks and review and trust the active-stack hook. Codex does not run it until you do, and it asks again whenever the hook definition changes.\n  ✓ hooks:engram-cloud\n  → autosync:engram-cloud running...\n  ✓ autosync:engram-cloud\n  → proxy:engram-cloud running...\n  ✓ proxy:engram-cloud\n  → skill:skill-creator running...\n  ✓ skill:skill-creator\n  → skill:skill-registry running...\n  ✓ skill:skill-registry\n  → skill:web-scraper running...\n  ✓ skill:web-scraper\n  → skill:discovery-research running...\n  ✓ skill:discovery-research\n  → verify-hook running...\n  ✓ verify-hook\nVerification checks: 0 passed, 0 failed, 0 warnings, 0 skipped\nInstallation verified. You're ready to start building.\n\nDegraded (best-effort) harnesses:\n  ⚠ hooks:engram-cloud: Codex: open /hooks and review and trust the active-stack hook. Codex does not run it until you do, and it asks again whenever the hook definition changes.\n",
+  "stderr": ""
+}

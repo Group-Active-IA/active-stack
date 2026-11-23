@@ -1,0 +1,20 @@
+{
+  "platform": "Windows-11-10.0.26300-SP0",
+  "source_base": "eb98fc80a28f66d98405cc57f0b8067c36a146a3",
+  "env": {
+    "HOME": "E:\\pp-codex-lab\\home",
+    "USERPROFILE": "E:\\pp-codex-lab\\home",
+    "LOCALAPPDATA": "E:\\pp-codex-lab\\home\\AppData\\Local",
+    "APPDATA": "E:\\pp-codex-lab\\home\\AppData\\Roaming",
+    "CODEX_HOME": "E:\\pp-codex-lab\\home\\.codex",
+    "ENGRAM_DATA_DIR": "E:\\pp-codex-lab\\db",
+    "ENGRAM_PORT": "17439",
+    "ENGRAM_CLOUD_AUTOSYNC": "0"
+  },
+  "sha256": {
+    "C:/Users/Juan Cruz Robledo/AppData/Local/active-stack/bin/active-stack.exe": "a4352d01462fc4c7d01d25d03ad7930d07b262195191a7d4aebaef29d57c5164",
+    "C:/Users/Juan Cruz Robledo/AppData/Roaming/npm/node_modules/@openai/codex/node_modules/@openai/codex-win32-x64/vendor/x86_64-pc-windows-msvc/bin/codex.exe": "9d563ee4e0441ff9d59d612013e0460ddf8e5709735c2d9f6b98b7ef8ca4eb42"
+  },
+  "config_original_sha256": "851b63a10b53a12e1c85560a644498e2ce7383695797896470e49e44b144843f",
+  "config_uninstalled_sha256": "2e2988c7ed14a7b0be881d88cd1544c75ba4e007b2edc94d213e98b2645606c2"
+}

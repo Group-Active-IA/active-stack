@@ -1,0 +1,12 @@
+{
+  "action": "install",
+  "home": "E:\\pp-codex-lab\\home",
+  "rc": 0,
+  "stdout": "=== RUN   TestManual\n    manual_test.go:60: codex: file=E:\\pp-codex-lab\\home\\.codex\\config.toml changed=true skipped=false\n    manual_test.go:66: notice: Codex: open /hooks and review and trust the active-stack hook. Codex does not run it until you do, and it asks again whenever the hook definition changes.\n--- PASS: TestManual (0.05s)\nPASS\nok  \tgithub.com/Group-Active-IA/active-stack/internal/harness/hooks\t1.085s\n",
+  "stderr": "",
+  "before_sha256": "b6b7c2edd8191989a5838cc5edb00f9634f31e0f54bc3c498c08f3095471957e",
+  "after_sha256": "c764199064336518db21c2bdf4ed050f0d4a99df22f273753eb51ee52f484993",
+  "bytes_identical": false,
+  "before_bytes": 1480,
+  "after_bytes": 1138
+}

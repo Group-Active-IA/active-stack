@@ -1,0 +1,93 @@
+{
+  "original_sha256": "2fd944be98d0198b0d4b3a6d80a6681089def41f35a77ec6a03d5b7a71f7c500",
+  "runs": [
+    {
+      "home": "E:\\pp-codex-lab\\hooks-home",
+      "action": "status",
+      "nopath": false,
+      "rc": 0,
+      "stdout": "=== RUN   TestManual\n    manual_test.go:74: codex: file=E:\\pp-codex-lab\\hooks-home\\.codex\\config.toml installed=false missing=[session-start pre-read] active-stack-in-PATH=true\n--- PASS: TestManual (0.04s)\nPASS\nok  \tgithub.com/Group-Active-IA/active-stack/internal/harness/hooks\t0.921s\n",
+      "stderr": "go: downloading github.com/pelletier/go-toml/v2 v2.4.2\ngo: downloading gopkg.in/yaml.v3 v3.0.1\n",
+      "sha256": "2fd944be98d0198b0d4b3a6d80a6681089def41f35a77ec6a03d5b7a71f7c500",
+      "bytes": 57,
+      "matches_original": true
+    },
+    {
+      "home": "E:\\pp-codex-lab\\hooks-home",
+      "action": "install",
+      "nopath": false,
+      "rc": 0,
+      "stdout": "=== RUN   TestManual\n    manual_test.go:60: codex: file=E:\\pp-codex-lab\\hooks-home\\.codex\\config.toml changed=true skipped=false\n    manual_test.go:66: notice: Codex: open /hooks and review and trust the active-stack hook. Codex does not run it until you do, and it asks again whenever the hook definition changes.\n--- PASS: TestManual (0.04s)\nPASS\nok  \tgithub.com/Group-Active-IA/active-stack/internal/harness/hooks\t0.862s\n",
+      "stderr": "",
+      "sha256": "9f88561b4f7789646f364aac8270157a22c859cefe7f9ad16f252b63466e055d",
+      "bytes": 551,
+      "matches_original": false
+    },
+    {
+      "home": "E:\\pp-codex-lab\\hooks-home",
+      "action": "install",
+      "nopath": false,
+      "rc": 0,
+      "stdout": "=== RUN   TestManual\n    manual_test.go:60: codex: file=E:\\pp-codex-lab\\hooks-home\\.codex\\config.toml changed=false skipped=false\n    manual_test.go:66: notice: Codex: open /hooks and review and trust the active-stack hook. Codex does not run it until you do, and it asks again whenever the hook definition changes.\n--- PASS: TestManual (0.03s)\nPASS\nok  \tgithub.com/Group-Active-IA/active-stack/internal/harness/hooks\t0.859s\n",
+      "stderr": "",
+      "sha256": "9f88561b4f7789646f364aac8270157a22c859cefe7f9ad16f252b63466e055d",
+      "bytes": 551,
+      "matches_original": false
+    },
+    {
+      "home": "E:\\pp-codex-lab\\hooks-home",
+      "action": "remove",
+      "nopath": false,
+      "rc": 0,
+      "stdout": "=== RUN   TestManual\n    manual_test.go:60: codex: file=E:\\pp-codex-lab\\hooks-home\\.codex\\config.toml changed=true skipped=false\n--- PASS: TestManual (0.00s)\nPASS\nok  \tgithub.com/Group-Active-IA/active-stack/internal/harness/hooks\t0.775s\n",
+      "stderr": "",
+      "sha256": "2fd944be98d0198b0d4b3a6d80a6681089def41f35a77ec6a03d5b7a71f7c500",
+      "bytes": 57,
+      "matches_original": true
+    },
+    {
+      "home": "E:\\pp-codex-lab\\hooks-no-path",
+      "action": "status",
+      "nopath": true,
+      "rc": 0,
+      "stdout": "=== RUN   TestManual\n    manual_test.go:74: codex: file=E:\\pp-codex-lab\\hooks-no-path\\.codex\\config.toml installed=false missing=[session-start pre-read] active-stack-in-PATH=false\n--- PASS: TestManual (0.04s)\nPASS\nok  \tgithub.com/Group-Active-IA/active-stack/internal/harness/hooks\t0.799s\n",
+      "stderr": "",
+      "sha256": "2fd944be98d0198b0d4b3a6d80a6681089def41f35a77ec6a03d5b7a71f7c500",
+      "bytes": 57,
+      "matches_original": true
+    },
+    {
+      "home": "E:\\pp-codex-lab\\hooks-no-path",
+      "action": "install",
+      "nopath": true,
+      "rc": 0,
+      "stdout": "=== RUN   TestManual\n    manual_test.go:60: codex: file=E:\\pp-codex-lab\\hooks-no-path\\.codex\\config.toml changed=true skipped=false\n    manual_test.go:62:   warning: active-stack is not in PATH: the hooks are installed but cannot run until it is (they never block Claude or Codex)\n    manual_test.go:66: notice: Codex: open /hooks and review and trust the active-stack hook. Codex does not run it until you do, and it asks again whenever the hook definition changes.\n--- PASS: TestManual (0.04s)\nPASS\nok  \tgithub.com/Group-Active-IA/active-stack/internal/harness/hooks\t0.817s\n",
+      "stderr": "",
+      "sha256": "9f88561b4f7789646f364aac8270157a22c859cefe7f9ad16f252b63466e055d",
+      "bytes": 551,
+      "matches_original": false
+    },
+    {
+      "home": "E:\\pp-codex-lab\\hooks-no-path",
+      "action": "install",
+      "nopath": true,
+      "rc": 0,
+      "stdout": "=== RUN   TestManual\n    manual_test.go:60: codex: file=E:\\pp-codex-lab\\hooks-no-path\\.codex\\config.toml changed=false skipped=false\n    manual_test.go:62:   warning: active-stack is not in PATH: the hooks are installed but cannot run until it is (they never block Claude or Codex)\n    manual_test.go:66: notice: Codex: open /hooks and review and trust the active-stack hook. Codex does not run it until you do, and it asks again whenever the hook definition changes.\n--- PASS: TestManual (0.04s)\nPASS\nok  \tgithub.com/Group-Active-IA/active-stack/internal/harness/hooks\t0.830s\n",
+      "stderr": "",
+      "sha256": "9f88561b4f7789646f364aac8270157a22c859cefe7f9ad16f252b63466e055d",
+      "bytes": 551,
+      "matches_original": false
+    },
+    {
+      "home": "E:\\pp-codex-lab\\hooks-no-path",
+      "action": "remove",
+      "nopath": true,
+      "rc": 0,
+      "stdout": "=== RUN   TestManual\n    manual_test.go:60: codex: file=E:\\pp-codex-lab\\hooks-no-path\\.codex\\config.toml changed=true skipped=false\n--- PASS: TestManual (0.00s)\nPASS\nok  \tgithub.com/Group-Active-IA/active-stack/internal/harness/hooks\t0.775s\n",
+      "stderr": "",
+      "sha256": "2fd944be98d0198b0d4b3a6d80a6681089def41f35a77ec6a03d5b7a71f7c500",
+      "bytes": 57,
+      "matches_original": true
+    }
+  ]
+}

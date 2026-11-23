@@ -1,0 +1,6 @@
+# PP user config
+model = "gpt-5.1-codex-mini"
+
+[mcp_servers.engram]
+command = "E:/r23c-tmp/homeC/AppData/Local/active-stack/bin/engram.exe"
+args = ["mcp"]

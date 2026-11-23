@@ -1,0 +1,48 @@
+# PP user config
+model = "gpt-5.1-codex-mini"
+
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "--package=@upstash/context7-mcp@2.2.5", "--", "context7-mcp"]
+
+# active-stack:memory-proxy begin
+# Managed by active-stack: removing the proxy restores the commented original below.
+#orig [mcp_servers.engram]
+#orig command = "engram"
+#orig args = ["mcp"]
+[mcp_servers.engram]
+command = 'active-stack'
+args = ['memory', 'proxy', '--', 'engram', 'mcp']
+# active-stack:memory-proxy end
+
+
+[sandbox_workspace_write]
+network_access = false
+
+[mcp_servers.playwright]
+command = "npx"
+args = ["-y", "@playwright/mcp@0.0.83"]
+
+# active-stack:memory-hooks begin
+# Managed by active-stack: reinstalling rewrites this block, removing it removes the hooks.
+[[hooks.SessionStart]]
+
+[[hooks.SessionStart.hooks]]
+type = "command"
+command = 'active-stack memory hook session-start'
+timeout = 10
+
+[[hooks.PreToolUse]]
+matcher = '^mcp__(plugin_engram_engram|engram)__(mem_search|mem_context)$'
+
+[[hooks.PreToolUse.hooks]]
+type = "command"
+command = 'active-stack memory hook pre-read'
+timeout = 10
+# active-stack:memory-hooks end
+
+
+[mcp_servers.engram.env]
+ENGRAM_CLOUD_AUTOSYNC = "1"
