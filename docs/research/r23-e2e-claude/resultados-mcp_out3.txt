@@ -1,0 +1,8 @@
+V6 resp: {"jsonrpc": "2.0", "id": 10, "result": {"content": [{"type": "text", "text": "{\"id\":17,\"judgment_required\":false,\"project\":\"p6\",\"project_path\":\"C:\\\\Users\\\\Juan Cruz Robledo\\\\AppData\\\\Local\\\\Temp\\\\r23e2e\\\\p6\\\\repo con espaci
+V6 resp: {"jsonrpc": "2.0", "id": 11, "result": {"content": [{"type": "text", "text": "{\"project\":\"p6\",\"project_path\":\"C:\\\\Users\\\\Juan Cruz Robledo\\\\AppData\\\\Local\\\\Temp\\\\r23e2e\\\\p6\\\\repo con espacios\",\"project_source\":\"config\",\"r
+V6 resp: {"jsonrpc": "2.0", "id": 12, "result": {"content": [{"type": "text", "text": "{\"project\":\"p6\",\"project_path\":\"C:\\\\Users\\\\Juan Cruz Robledo\\\\AppData\\\\Local\\\\Temp\\\\r23e2e\\\\p6\\\\repo con espacios\",\"project_source\":\"config\",\"r
+V6 obs: [('Session summary: p6', None, 'Branch: feat/narr · Author: Persona A\n## Goal\nr23 resumen\n## Accomplished\nnada'), ('[feat-narr-82d346] r23 aprendizaje pasivo uno', None, '[feat-narr-82d346] r23 aprendizaje pasivo uno'), ('[feat-narr-82d346] r23 aprendizaje pasivo dos', None, '[feat-narr-82d346] r23 aprendizaje pasivo dos')]
+V6 sessions: [('manual-save-p6', '')]
+V6 prompts: [('Branch: feat/narr · Author: Persona A\nr23 prompt guardado',)]
+V8 salida: [[{"jsonrpc": "2.0", "id": 10, "result": {"content": [{"type": "text", "text": "{\"id\":20,\"judgment_required\":false,\"project\":\"p8\",\"project_path\":\"C:\\\\Users\\\\Juan Cruz Robledo\\\\AppData\\\\Local\\\\Temp\\\\r23e2e\\\\p8\\\\repo con espacios\",\"project_source\":\"explicit_override\",\"
+V8 filas nuevas: 1

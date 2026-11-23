@@ -1,0 +1,64 @@
+memory init: 0 :
+  git add -- .engram/active-stack.json .engram/config.json .gitignore
+  git commit -m "chore(engram): pin project and team memory policy" -- .engram/active-stack.json .engram/config.json .gitignore
+ 
+ok
+== V1 feature/x
+  ROW 1 manual-save-m1 | [feature-x-217d2b] v1 decision | branch/feature-x-217d2b/k | Branch: feature/x · Author: Persona A
+memory init: 0 :
+  git add -- .engram/active-stack.json .engram/config.json .gitignore
+  git commit -m "chore(engram): pin project and team memory policy" -- .engram/active-stack.json .engram/config.json .gitignore
+ 
+== V2/V3 (mismo proceso proxy)
+  ROW 2 manual-save-m2 | [feat-a-d54ad7] v2 paso1 | branch/feat-a-d54ad7/k | Branch: feat/a · Author: Persona A
+  ROW 3 manual-save-m2 | [feat-otra-67e913] v2 paso2 (git switch) | branch/feat-otra-67e913/k | Branch: feat/otra · Author: Persona A
+  ROW 4 manual-save-m2 | [feat-tercera-636d4c] v2 paso3 (git checkout -b) | branch/feat-tercera-636d4c/k | Branch: feat/tercera · Author: Persona A
+  ROW 5 manual-save-m2 | v3 paso4 main | k | Author: Persona A
+memory init: 0 :
+  git add -- .engram/active-stack.json .engram/config.json .gitignore
+  git commit -m "chore(engram): pin project and team memory policy" -- .engram/active-stack.json .engram/config.json .gitignore
+ 
+== V4 worktrees (misma clave k)
+  ROW 6 manual-save-m4 | [feat-wb-205eba] v4 b | branch/feat-wb-205eba/k | Branch: feat/wb · Author: Persona A
+  ROW 7 manual-save-m4 | [feat-wa-f42070] v4 a | branch/feat-wa-f42070/k | Branch: feat/wa · Author: Persona A
+memory init: 0 :
+  git add -- .engram/active-stack.json .engram/config.json .gitignore
+  git commit -m "chore(engram): pin project and team memory policy" -- .engram/active-stack.json .engram/config.json .gitignore
+ 
+== V6 narrativas
+  PROMPTS []
+== V7 sin marcador
+  ROW 8 manual-save-m7 | v7 sin marcador | k | r23 v7
+memory init: 0 :
+  git add -- .engram/active-stack.json .engram/config.json .gitignore
+  git commit -m "chore(engram): pin project and team memory policy" -- .engram/active-stack.json .engram/config.json .gitignore
+ 
+  V8 salida   V8 el proxy NO arranca: UnicodeEncodeError 'charmap' codec can't encode characters in position 349-350: character maps to <undefined>
+== V8 (PATH sin active-stack)
+  ROW 9 manual-save-m8 | [feat-nopath-bdee4e] v8 | branch/feat-nopath-bdee4e/k | Branch: feat/nopath · Author: Persona A
+memory init: 0 :
+  git add -- .engram/active-stack.json .engram/config.json .gitignore
+  git commit -m "chore(engram): pin project and team memory policy" -- .engram/active-stack.json .engram/config.json .gitignore
+ 
+  stderr: 
+== V9 marcador invalido
+  ROW 10 manual-save-m9 | v9 marcador malo | k | r23 v9
+memory init: 0 :
+  git add -- .engram/active-stack.json .engram/config.json .gitignore
+  git commit -m "chore(engram): pin project and team memory policy" -- .engram/active-stack.json .engram/config.json .gitignore
+ 
+== V11
+  ROW 11 manual-save-m11 | [feat-una-1e8539] v11 una | branch/feat-una-1e8539/k | Branch: feat/una · Author: Persona A
+  ROW 12 manual-save-m11 | [feat-una] v11 guion | branch/feat-una/k | Branch: feat-una · Author: Persona A
+  ROW 13 manual-save-m11 | [detached-fbb03f7] v11 detached | branch/detached-fbb03f7/kd | Branch: detached-fbb03f7 · Author: Persona A
+  ROW 14 manual-save-m11 | [feature-xxxxxxxxxxxxxxxxxxxxxxxxx-ca7b9b] v11 largo | branch/feature-xxxxxxxxxxxxxxxxxxxxxxxxx-ca7b9b/kl | Branch: feature/xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-final · Autho
+memory init: 0 :
+  git add -- .engram/active-stack.json .engram/config.json .gitignore
+  git commit -m "chore(engram): pin project and team memory policy" -- .engram/active-stack.json .engram/config.json .gitignore
+ 
+  HOOK session-start en main (B): (0, '', 'Memory hook session-start skipped (event "session-start", expected "SessionStart"). The agent continues without it.\n')
+  HOOK pre-read en main (B): (0, '', 'Memory hook pre-read skipped (event "pre-read", expected "PreToolUse"). The agent continues without it.\n')
+  HOOK session-start en feature/y (B): (0, '', 'Memory hook session-start skipped (event "session-start", expected "SessionStart"). The agent continues without it.\n')
+  SEARCH B: [{"jsonrpc": "2.0", "id": 10, "result": {"content": [{"type": "text", "text": "{\"project\":\"m13\",\"project_path\":\"\",\"project_source\":\"explicit_override\",\"result\":\"Found 1 memories:\\n\\n[1] #15 (decision) \u2014 [feature-x-217d2b] decision puerto\\n    Branch: feature/x \u00b7 Author: Persona A\\nr23 usamos el puerto 4381\\n    2026-11-22 23:08:17 | project: m13 | scope: project\\n\\n\",\"results\":[{\"id\":15,\"pinned\":false,\"project\":\"m13\",\"review_after\":\"2027-05-23 02:08:17\",\"scope\":\"project\",\"state\":\"active\",\"sync_id\":\"obs-4c672952500df900\",\"title\":\"[fe
+== V13 filas
+  ROW 15 manual-save-m13 | [feature-x-217d2b] decision puerto | branch/feature-x-217d2b/decision | Branch: feature/x · Author: Persona A
