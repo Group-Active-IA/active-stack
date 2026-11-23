@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 
 	"github.com/Group-Active-IA/active-stack/internal/backup"
 	"github.com/Group-Active-IA/active-stack/internal/pipeline"
@@ -76,6 +77,12 @@ func (s *selfInstallStep) Run() error {
 		if err != nil {
 			s.warn(fmt.Sprintf("self-install: resolve executable path: %v (skipping)", err))
 			return nil // graceful degradation
+		}
+		// A `go test` binary is never the tool: copying it over the installed
+		// active-stack would replace the user's binary with the test suite.
+		if base := strings.ToLower(filepath.Base(src)); strings.Contains(base, ".test") {
+			s.warn(fmt.Sprintf("self-install: %q is a test binary (skipping)", base))
+			return nil
 		}
 	}
 
