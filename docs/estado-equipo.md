@@ -103,6 +103,7 @@ Se registran acá **solo** las decisiones del dueño de la sección 3 del roadma
 | DA-03 | Detección del modo equipo: al menos 4 de 5 corridas (hoy 5/5) | 2026-11-23 |
 | Escenario 8 | ClickUp probado con una lista descartable: asignado, dependencia y estado verificados; tareas borradas. La lista vacía `ZZ-PILOTO-active-stack (borrar)` queda para borrar a mano (no hay herramienta para borrar listas) | 2026-11-23 |
 | Release v0.9.0 | Publicada el 2026-11-23 con modo equipo, memoria de equipo, proxy de guardado, aviso y `self-update` (R-27) y los arreglos de `hooks` y `filemerge`. Instalada en la PC del dueño. Guía y landing republicadas | 2026-11-23 |
+| Release v0.9.1 | Publicada el 2026-11-24: las reglas de entrega ya no piden ODD o SDD en las fases de la fundación ([PR #88](https://github.com/Group-Active-IA/active-stack/pull/88)); binarios de macOS subidos a mano. `self-update` probado contra la release real (v0.9.0 a v0.9.1, con backup) | 2026-11-24 |
 
 ## Punto de reanudación
 
