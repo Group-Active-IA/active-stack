@@ -2,6 +2,6 @@ package config
 
 const workflowGuidance = "Handle routine tasks directly. Recommend an OPSX proposal only when proposal, specs, design, and tasks help agree on and verify a complex change. For tool-specific work, point to the installed skill or client command."
 
-const codexDeliveryGuidance = "When installed, invoke `$active-delivery` to agree on the delivery workflow for a task."
+const codexDeliveryGuidance = "When installed, invoke `$active-delivery` to agree on the delivery workflow for a task. Phases of the project foundation run by `active-orchestrator` are not delivery units: do not ask for ODD or SDD for them."
 
-const claudeDeliveryGuidance = "Before starting or resuming a unit of project work, such as a roadmap item, a feature or a fix, invoke the `active-delivery` skill when it is installed and let it agree on ODD or SDD with the user. The guidance below on routine tasks applies only when that skill is unavailable."
+const claudeDeliveryGuidance = "Before starting or resuming a unit of project work, such as a roadmap item, a feature or a fix, invoke the `active-delivery` skill when it is installed and let it agree on ODD or SDD with the user. The guidance below on routine tasks applies only when that skill is unavailable. Phases of the project foundation run by `active-orchestrator` are not delivery units: do not ask for ODD or SDD for them."

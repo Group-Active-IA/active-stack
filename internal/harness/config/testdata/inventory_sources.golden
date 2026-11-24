@@ -1,4 +1,4 @@
 # Fuentes de instrucción inyectadas en el archivo de instrucciones (tarea 1.6)
 # client	orchestrator_section	design_mockups_section	separator	total_injected
-claude	6182	8940	1	15123
-codex	5316	8940	1	14257
+claude	6304	8940	1	15245
+codex	5438	8940	1	14379

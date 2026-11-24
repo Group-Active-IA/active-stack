@@ -16,6 +16,11 @@ changes enough to reconsider the delivery mode. Foundation defines the project
 setup. This skill chooses the delivery mode for the current work. Follow project
 governance, authorization, TDD and verification requirements in either mode.
 
+Do not use this skill for the phases of the project foundation that `active-orchestrator`
+runs (discovery, knowledge base, design system, roadmap, agent rules, team mode, memory
+policy). Those follow the approved foundation plan; ODD or SDD starts afterwards, with the
+first unit of delivery work.
+
 ## Start in a team project
 
 In a new session or when resuming, use the bundled team validator from the
