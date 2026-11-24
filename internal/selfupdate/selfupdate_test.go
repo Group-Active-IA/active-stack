@@ -144,7 +144,22 @@ func TestApplyKeepsBinaryWhenBackupFails(t *testing.T) {
 }
 
 func TestApplyUnsupportedPlatform(t *testing.T) {
-	if _, err := Apply(context.Background(), t.TempDir(), "x", "darwin", "arm64"); err == nil {
+	if _, err := Apply(context.Background(), t.TempDir(), "x", "linux", "arm64"); err == nil {
 		t.Fatal("want an error")
+	}
+}
+
+func TestAssetNameCoversPublishedPlatforms(t *testing.T) {
+	for _, c := range []struct{ os, arch, want string }{
+		{"windows", "amd64", "active-stack_windows_amd64.exe"},
+		{"linux", "amd64", "active-stack_linux_amd64"},
+		{"darwin", "amd64", "active-stack_darwin_amd64"},
+		{"darwin", "arm64", "active-stack_darwin_arm64"},
+		{"linux", "arm64", ""},
+		{"windows", "arm64", ""},
+	} {
+		if got := AssetName(c.os, c.arch); got != c.want {
+			t.Errorf("AssetName(%s,%s)=%q want %q", c.os, c.arch, got, c.want)
+		}
 	}
 }

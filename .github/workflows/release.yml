@@ -74,6 +74,12 @@ jobs:
           $env:GOOS = "linux"
           go build -trimpath -ldflags "-X main.buildVersion=$tag" -o release-assets/active-stack_linux_amd64 ./cmd/active-stack
           if ($LASTEXITCODE -ne 0) { throw "go build linux/amd64 falló" }
+          $env:GOOS = "darwin"
+          go build -trimpath -ldflags "-X main.buildVersion=$tag" -o release-assets/active-stack_darwin_amd64 ./cmd/active-stack
+          if ($LASTEXITCODE -ne 0) { throw "go build darwin/amd64 falló" }
+          $env:GOARCH = "arm64"
+          go build -trimpath -ldflags "-X main.buildVersion=$tag" -o release-assets/active-stack_darwin_arm64 ./cmd/active-stack
+          if ($LASTEXITCODE -ne 0) { throw "go build darwin/arm64 falló" }
 
           Get-ChildItem release-assets | ForEach-Object {
             "{0}  {1}" -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower(), $_.Name

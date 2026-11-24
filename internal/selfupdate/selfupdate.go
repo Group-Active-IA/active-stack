@@ -57,14 +57,13 @@ type cacheFile struct {
 
 // AssetName is the release asset for a platform ("" when none is published).
 func AssetName(goos, goarch string) string {
-	if goarch != "amd64" {
-		return ""
-	}
-	switch goos {
-	case "windows":
+	switch {
+	case goos == "windows" && goarch == "amd64":
 		return "active-stack_windows_amd64.exe"
-	case "linux":
+	case goos == "linux" && goarch == "amd64":
 		return "active-stack_linux_amd64"
+	case goos == "darwin" && (goarch == "amd64" || goarch == "arm64"):
+		return "active-stack_darwin_" + goarch
 	}
 	return ""
 }
