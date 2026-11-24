@@ -32,6 +32,7 @@ Reglas para el agente, todas aprendidas en R-23 y R-24:
 | PP-17 | **Repetir PP-01 (X6) y PP-03 (uninstall) con el binario del release v0.9.0**: ya están los arreglos de `hooks` (#82) y `filemerge` (#83) | `codex` con login, release instalado | Reinstalar conserva la confianza de los hooks; `uninstall` devuelve el `config.toml` a sus bytes originales | informe PP-codex |
 | PP-18 | **`deny` de push a `main` para Codex** (PP-02 falló: el push pasó y el remoto cambió). Requiere una ficha de diseño propia (reglas de ejecución de Codex) | `codex`, repo descartable con remoto bare | El push a `main` queda denegado por una regla del stack, no solo por el sandbox, y el remoto no cambia | informe PP-codex y R-18 |
 | PP-19 | **Plugin de Engram en Codex (V10)**: el hook `PreToolUse` del plugin 0.1.5 bloquea `mem_save` con «Codex host session is not registered». Investigar la causa raíz y si el stack debe registrar la sesión | `codex` con el plugin real | El guardado con plugin y proxy convive y queda etiquetado | informe PP-codex |
+| PP-20 | **macOS en el release y en `self-update`**: los binarios `darwin_amd64` y `darwin_arm64` de v0.9.0 se subieron a mano (sin firmar). Falta agregarlos al workflow de release, que `self-update` reconozca macOS y probar en una Mac real | Una Mac Intel y una con Apple Silicon | El release los publica solo, `self-update` los verifica con SHA256 y la instalación funciona | informe R-27 |
 
 Cuando una prueba pasa, se marca en este archivo (fecha, quién, enlace a la evidencia) y se actualiza el informe correspondiente.
 

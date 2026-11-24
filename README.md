@@ -88,7 +88,11 @@ Hay **tres tipos** de harness, y el instalador no instala "repos": instala harne
 | **Windows** (instalador gráfico) | [`ActiveStack-Setup.exe`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/ActiveStack-Setup.exe) — última versión |
 | **Windows** (solo CLI) | [`active-stack_windows_amd64.exe`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/active-stack_windows_amd64.exe) |
 | **Linux / WSL** (solo CLI) | [`active-stack_linux_amd64`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/active-stack_linux_amd64) |
+| **macOS Intel** (solo CLI) | [`active-stack_darwin_amd64`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/active-stack_darwin_amd64) |
+| **macOS Apple Silicon** (solo CLI) | [`active-stack_darwin_arm64`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/active-stack_darwin_arm64) |
 | Todas las versiones | [Releases](https://github.com/Group-Active-IA/active-stack/releases) |
+
+> **macOS:** los binarios de v0.9.0 se compilaron a mano desde el tag y no están firmados. Al abrirlos, macOS puede avisar de «desarrollador no identificado»: usá clic derecho y Abrir, o `xattr -d com.apple.quarantine active-stack_darwin_*`; después `chmod +x` y `./active-stack_darwin_amd64 install`. `self-update` todavía no reconoce macOS: se actualiza descargando el binario nuevo.
 
 Cada release publica su [`SHA256SUMS.txt`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/SHA256SUMS.txt) para verificar la integridad de lo descargado.
 
@@ -172,7 +176,7 @@ Disponible desde **v0.4.0**. Si usás **v0.3.0 o anterior**, descargá una vez e
 
 El menú de la TUI incluye **Update stack** y ejecuta el mismo flujo que `active-stack update`. Consulta la última release, verifica el SHA256 publicado antes de sustituir únicamente el ejecutable invocado y reaplica los harnesses elegidos para cada agente. Otras copias del binario se actualizan invocándolas por separado. Guarda la selección Full/Lite/Custom y las rutas de skills gestionadas en `~/.active-stack/installation.json` después de una instalación exitosa, con snapshot antes de cada cambio de ese registro. Si se desinstala un agente o parte de sus harnesses, se invalida su selección para evitar reinstalarlos en el próximo update.
 
-**Aviso de versión nueva.** Al abrir el instalador, `install` o `update`, Active Stack consulta la última release como máximo una vez al día (2 segundos de límite; sin red no dice nada) y avisa si hay una más nueva. **Nunca actualiza solo**: `active-stack self-update` pide confirmación, verifica el SHA256 publicado, hace un respaldo del binario actual y lo restaura si el reemplazo falla. Se apaga con `ACTIVE_STACK_NO_UPDATE_CHECK=1` y no corre en CI ni en los hooks de los agentes. Hay binario publicado para Windows y Linux amd64.
+**Aviso de versión nueva.** Al abrir el instalador, `install` o `update`, Active Stack consulta la última release como máximo una vez al día (2 segundos de límite; sin red no dice nada) y avisa si hay una más nueva. **Nunca actualiza solo**: `active-stack self-update` pide confirmación, verifica el SHA256 publicado, hace un respaldo del binario actual y lo restaura si el reemplazo falla. Se apaga con `ACTIVE_STACK_NO_UPDATE_CHECK=1` y no corre en CI ni en los hooks de los agentes. Hay binario publicado para Windows y Linux amd64; el aviso y `self-update` aún no cubren macOS.
 
 En Windows, el reemplazo es asincrónico: un proceso auxiliar espera a que se cierre el ejecutable anterior para sustituirlo y continuar con la actualización del stack. El mensaje de traspaso al auxiliar todavía no confirma que terminó la actualización. Consultá `~/.active-stack/logs/update.log` para comprobar si la actualización completó o falló; el mensaje inicial también muestra esa ruta. El archivo conserva la salida y los errores de las actualizaciones anteriores.
 
