@@ -1,6 +1,6 @@
 # OPSX Orchestrator Instructions (Codex)
 
-When installed, invoke `$active-delivery` to agree on the delivery workflow for a task.
+When installed, invoke `$active-delivery` to agree on the delivery workflow for a task. Phases of the project foundation run by `active-orchestrator` are not delivery units: do not ask for ODD or SDD for them.
 
 Bind this to the dedicated `sdd-orchestrator` agent only. Do NOT apply it to executor agents.
 

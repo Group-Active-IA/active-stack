@@ -11,12 +11,12 @@ El bloque instalado hoy es el último renglón: Claude entrega en capas por `Con
 
 | Toggles activos | Claude | Codex |
 |---|---|---|
-| ninguno | 7.028 B · 183 L | 6.417 B · 153 L |
-| +delegation | 8.033 B · 205 L | 7.268 B · 174 L |
-| +model-routing | 8.811 B · 221 L | 7.718 B · 187 L |
-| +governance | 10.087 B · 241 L | 8.994 B · 207 L |
-| +engram | 16.180 B · 360 L | 15.087 B · 326 L |
-| +tdd (**lo que se instala hoy**) | **19.977 B · 443 L** | **18.884 B · 409 L** |
+| ninguno | 7.028 B · 183 L | 6.539 B · 153 L |
+| +delegation | 8.033 B · 205 L | 7.390 B · 174 L |
+| +model-routing | 8.811 B · 221 L | 7.840 B · 187 L |
+| +governance | 10.087 B · 241 L | 9.116 B · 207 L |
+| +engram | 16.180 B · 360 L | 15.209 B · 326 L |
+| +tdd (**lo que se instala hoy**) | **19.977 B · 443 L** | **19.006 B · 409 L** |
 
 ## 2. Atribución de bytes por fragmento
 
@@ -24,14 +24,14 @@ Cada fragmento es la diferencia entre dos combinaciones consecutivas; la base es
 
 | Fragmento | Claude | % | Codex | % |
 |---|---|---|---|---|
-| base del variante | 7.028 B | 35,2 % | 6.417 B | 34,0 % |
+| base del variante | 7.028 B | 35,2 % | 6.539 B | 34,4 % |
 | `delegation` | 1.005 B | 5,0 % | 851 B | 4,5 % |
 | `model-routing` | 778 B | 3,9 % | 450 B | 2,4 % |
-| `governance` | 1.276 B | 6,4 % | 1.276 B | 6,8 % |
-| `engram` | 6.093 B | 30,5 % | 6.093 B | 32,3 % |
-| `tdd` | 3.797 B | 19,0 % | 3.797 B | 20,1 % |
+| `governance` | 1.276 B | 6,4 % | 1.276 B | 6,7 % |
+| `engram` | 6.093 B | 30,5 % | 6.093 B | 32,1 % |
+| `tdd` | 3.797 B | 19,0 % | 3.797 B | 20,0 % |
 
-`engram` y `tdd` juntos son 49,5 % del bloque de Claude y 52,4 % del de Codex.
+`engram` y `tdd` juntos son 49,5 % del bloque de Claude y 52,0 % del de Codex.
 
 ## 3. Otras variantes (referencia, fuera del alcance de paridad)
 
@@ -50,8 +50,8 @@ Cada sección se mide instalándola sola en un home limpio; el total, instalando
 
 | Cliente | Bloque del orquestador | Sección design-mockups | Separador | Total inyectado |
 |---|---|---|---|---|
-| Claude | 6.182 B | 8.940 B | 1 B | 15.123 B |
-| Codex | 5.316 B | 8.940 B | 1 B | 14.257 B |
+| Claude | 6.304 B | 8.940 B | 1 B | 15.245 B |
+| Codex | 5.438 B | 8.940 B | 1 B | 14.379 B |
 
 El fragmento `design-mockups` mide 8.865 B; con los marcadores de sección de la inyección son 8.940 B.
 
@@ -87,20 +87,20 @@ Las cinco más grandes están en negrita: Skill tup-campus-navigator (60.699 B),
 | 24 | Sección design-mockups inyectada — Claude | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
 | 25 | Sección design-mockups inyectada — Codex | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
 | 26 | Skill react19-form-pattern | skill | 8.734 | terceros @782565f7 |
-| 27 | Skill redis-best-practices | skill | 8.526 | terceros @7682ca77 |
-| 28 | Skill active-delivery | skill | 8.368 | embebida |
+| 27 | Skill active-delivery | skill | 8.667 | embebida |
+| 28 | Skill redis-best-practices | skill | 8.526 | terceros @7682ca77 |
 | 29 | Skill agent-instruction | skill | 8.243 | terceros @1f7922f9 |
 | 30 | Skill help-system-content | skill | 8.039 | terceros @782565f7 |
 | 31 | Skill skill-registry | skill | 7.702 | terceros @78434d8f |
 | 32 | Skill clean-architecture | skill | 7.397 | terceros @782565f7 |
 | 33 | Skill design-system | skill | 6.948 | embebida |
 | 34 | Skill websocket-engineer | skill | 6.586 | terceros @078a25cc |
-| 35 | Skill receiving-code-review | skill | 6.203 | terceros @22f0b463 |
-| 36 | Bloque sdd-orchestrator inyectado — Claude | instrucción inyectada | 6.182 | bloque universal de la entrega en capas; sección con marcadores |
+| 35 | Bloque sdd-orchestrator inyectado — Claude | instrucción inyectada | 6.304 | bloque universal de la entrega en capas; sección con marcadores |
+| 36 | Skill receiving-code-review | skill | 6.203 | terceros @22f0b463 |
 | 37 | Skill discovery-research | skill | 6.148 | terceros @dd7efb7d |
 | 38 | Skill alembic-migrations | skill | 5.577 | terceros @782565f7 |
 | 39 | Skill find-skill | skill | 5.472 | terceros @b716f9dc |
-| 40 | Bloque sdd-orchestrator inyectado — Codex | instrucción inyectada | 5.316 | bloque universal de la entrega en capas; sección con marcadores |
+| 40 | Bloque sdd-orchestrator inyectado — Codex | instrucción inyectada | 5.438 | bloque universal de la entrega en capas; sección con marcadores |
 | 41 | Skill web-scraper | skill | 5.079 | terceros @1ac73c20 |
 | 42 | Skill fastapi-code-review | skill | 3.686 | terceros @782565f7 |
 | 43 | Skill requesting-code-review | skill | 2.974 | terceros @22f0b463 |
