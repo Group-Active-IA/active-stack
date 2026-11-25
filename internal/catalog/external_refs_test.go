@@ -36,16 +36,16 @@ func TestExternalRefsAreFullSHAs(t *testing.T) {
 	}
 }
 
-func TestActiveOrchestratorRefIsMemoryPolicyMerge(t *testing.T) {
+func TestActiveOrchestratorRefIsRequiredTrackingMerge(t *testing.T) {
 	repo, ref := refOf(t, "active-orchestrator")
-	if repo != "Group-Active-IA/active-orchestrator" || ref != "5d758fceb3b560b934c3348eaa20e944f79503a6" {
+	if repo != "Group-Active-IA/active-orchestrator" || ref != "a3d6b0490940a2865beb16d3baf07a5a292eeafb" {
 		t.Fatalf("got %s@%s", repo, ref)
 	}
 }
 
-func TestRoadmapGeneratorRefIsTeamFieldsMerge(t *testing.T) {
+func TestRoadmapGeneratorRefIsSequentialReviewMerge(t *testing.T) {
 	repo, ref := refOf(t, "roadmap-generator")
-	if repo != "Group-Active-IA/roadmap-generator" || ref != "462de73a73e96d2120ac8ed1c19feabd2004010b" {
+	if repo != "Group-Active-IA/roadmap-generator" || ref != "ac1c0ef79671e990aff0c50d237e10448c95235b" {
 		t.Fatalf("got %s@%s", repo, ref)
 	}
 }
