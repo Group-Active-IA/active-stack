@@ -94,12 +94,28 @@ an existing change instead of duplicating it.
    newly applicable governance gate before extending the scope. In team mode,
    maintain the existing ficha handoff even when nobody continues.
 
+## Measure work and close the change
+
+From the first work session, collect elapsed work intervals and measured token
+usage attributed to the branch. Capture each contributor and model used during
+implementation, corrections and PR review. Pause the work timer when leaving
+the task. Follow the [usage accounting reference](references/usage-accounting.md)
+for client evidence and API rates. Keep a durable, sanitized record between
+sessions. If telemetry is unavailable, identify the missing evidence before
+continuing and arrange an evidence-capable session or a provider export.
+
+After verifying PR merge and reachability from the target, run the usage
+validator and preserve the evidence and its report with the handoff. In SDD
+put both in the active OpenSpec change before the OpenSpec CLI archives it.
+In ODD keep them with the local delivery handoff. Missing evidence leaves
+closure and the archive pending.
+
 ## Reconcile the roadmap
 
 For ODD and SDD, reconcile the roadmap item on resume, delivery and closure
 using the [reconciliation reference](references/roadmap-reconciliation.md).
 On resume, check before making decisions based on cached status or assignment.
-On delivery and closure, check before reporting the current remote status.
+At each confirmed milestone, prepare the ClickUp status preview if configured.
 Keep the work's local verification separate from the roadmap observation.
 
 ## Promote ODD to SDD

@@ -100,16 +100,16 @@ Cada release publica su [`SHA256SUMS.txt`](https://github.com/Group-Active-IA/ac
 
 ---
 
-## Qué se puede hacer hoy (v0.9.1)
+## Qué se puede hacer hoy
 
 | Quiero… | Cómo lo hace Active Stack |
 |---|---|
 | **Preparar mi agente de IA** | `active-stack install`: copia skills, escribe instrucciones y registra herramientas en Claude Code, Codex, OpenCode y Antigravity, con copia de seguridad previa. Modos Lite, Full y Custom. |
-| **Fundar un proyecto** | `active-orchestrator` guía la fundación por fases: descubrimiento, base de conocimiento, sistema de diseño, roadmap (`CHANGES.md`), reglas del agente (`CLAUDE.md`/`AGENTS.md`), modo equipo y política de memoria. Cada fase deja un artefacto y se puede retomar. |
-| **Desarrollar con método** | `active-delivery` elige, con vos, **ODD** (trabajo acotado, entendido y reversible) o **SDD** (cambios complejos o riesgosos, con el ciclo OPSX). Un trabajo ODD que crece se promueve a SDD. |
+| **Fundar un proyecto** | `active-orchestrator` guía la fundación por fases: descubrimiento, base de conocimiento, sistema de diseño, roadmap (`CHANGES.md`), reglas del agente (`CLAUDE.md`/`AGENTS.md`), decisión sobre seguimiento en ClickUp, modo equipo y política de memoria. Cada fase deja un artefacto y se puede retomar. |
+| **Desarrollar con método** | `active-delivery` elige, con vos, **ODD** (trabajo acotado, entendido y reversible) o **SDD** (cambios complejos o riesgosos, con el ciclo OPSX). Un trabajo ODD que crece se promueve a SDD. Al cerrar se registra tiempo activo, tokens y tarifas API por modelo y costo en USD. |
 | **Recordar entre sesiones** | Engram local por defecto. En un equipo, **Engram en la nube** con cada recuerdo etiquetado por rama ([ver abajo](#memoria-local-o-en-la-nube)). |
-| **Trabajar en equipo** | Modo equipo: fichas por rama y worktree, traspasos, `main` protegido por convención y por GitHub ([ver abajo](#modo-equipo)). |
-| **Seguir el roadmap** | Local en `CHANGES.md` o con ClickUp (`active-roadmap`), publicando solo lo que aprobás. |
+| **Trabajar en equipo** | Modo equipo: fichas por rama y worktree, traspasos, revisión del PR por el integrante del siguiente cambio y `main` protegido por convención y por GitHub ([ver abajo](#modo-equipo)). |
+| **Seguir el roadmap** | Local en `CHANGES.md` o con ClickUp (`active-roadmap`), con estados de desarrollo por ficha y confirmación de cada escritura. |
 | **Mantenerlo al día** | `active-stack update`; además, el instalador avisa de una versión nueva una vez al día y `active-stack self-update` la instala si confirmás. |
 
 ---

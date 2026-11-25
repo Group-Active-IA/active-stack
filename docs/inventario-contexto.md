@@ -50,8 +50,8 @@ Cada sección se mide instalándola sola en un home limpio; el total, instalando
 
 | Cliente | Bloque del orquestador | Sección design-mockups | Separador | Total inyectado |
 |---|---|---|---|---|
-| Claude | 6.304 B | 8.940 B | 1 B | 15.245 B |
-| Codex | 5.438 B | 8.940 B | 1 B | 14.379 B |
+| Claude | 6.657 B | 8.940 B | 1 B | 15.598 B |
+| Codex | 5.791 B | 8.940 B | 1 B | 14.732 B |
 
 El fragmento `design-mockups` mide 8.865 B; con los marcadores de sección de la inyección son 8.940 B.
 
@@ -69,10 +69,10 @@ Las cinco más grandes están en negrita: Skill tup-campus-navigator (60.699 B),
 | 6 | Skill pwa-development | skill | 25.315 | terceros @55aabe24 |
 | 7 | Skill design-taste-frontend-v1 | skill | 21.195 | terceros @b482f7a9 |
 | 8 | Skill typescript-advanced-types | skill | 16.806 | terceros @782565f7 |
-| 9 | Skill postgresql-table-design | skill | 16.082 | terceros @782565f7 |
-| 10 | Skill tailwind-design-system | skill | 15.730 | terceros @782565f7 |
-| 11 | Skill interface-design | skill | 14.925 | terceros @782565f7 |
-| 12 | Skill active-roadmap | skill | 13.818 | embebida |
+| 9 | Skill active-roadmap | skill | 16.790 | embebida |
+| 10 | Skill postgresql-table-design | skill | 16.082 | terceros @782565f7 |
+| 11 | Skill tailwind-design-system | skill | 15.730 | terceros @782565f7 |
+| 12 | Skill interface-design | skill | 14.925 | terceros @782565f7 |
 | 13 | Skill dashboard-crud-page | skill | 12.759 | terceros @782565f7 |
 | 14 | Skill fastapi-domain-service | skill | 12.746 | terceros @782565f7 |
 | 15 | Skill roadmap-generator | skill | 12.384 | terceros @deaabe9d |
@@ -80,27 +80,27 @@ Las cinco más grandes están en negrita: Skill tup-campus-navigator (60.699 B),
 | 17 | Skill api-security-best-practices | skill | 11.267 | terceros @560b762c |
 | 18 | Skill monorepo-scaffold | skill | 10.079 | terceros @782565f7 |
 | 19 | Skill ws-frontend-subscription | skill | 9.677 | terceros @782565f7 |
-| 20 | Skill test-driven-development | skill | 9.578 | terceros @22f0b463 |
-| 21 | Skill kb-creator | skill | 9.575 | terceros @0f73e9b8 |
-| 22 | Skill systematic-debugging | skill | 9.530 | terceros @22f0b463 |
-| 23 | Skill zustand-store-pattern | skill | 9.024 | terceros @782565f7 |
-| 24 | Sección design-mockups inyectada — Claude | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
-| 25 | Sección design-mockups inyectada — Codex | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
-| 26 | Skill react19-form-pattern | skill | 8.734 | terceros @782565f7 |
-| 27 | Skill active-delivery | skill | 8.667 | embebida |
+| 20 | Skill active-delivery | skill | 9.585 | embebida |
+| 21 | Skill test-driven-development | skill | 9.578 | terceros @22f0b463 |
+| 22 | Skill kb-creator | skill | 9.575 | terceros @0f73e9b8 |
+| 23 | Skill systematic-debugging | skill | 9.530 | terceros @22f0b463 |
+| 24 | Skill zustand-store-pattern | skill | 9.024 | terceros @782565f7 |
+| 25 | Sección design-mockups inyectada — Claude | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
+| 26 | Sección design-mockups inyectada — Codex | instrucción inyectada | 8.940 | fragmento de 8.865 B más marcadores; solo con el harness design-mockups |
+| 27 | Skill react19-form-pattern | skill | 8.734 | terceros @782565f7 |
 | 28 | Skill redis-best-practices | skill | 8.526 | terceros @7682ca77 |
 | 29 | Skill agent-instruction | skill | 8.243 | terceros @1f7922f9 |
 | 30 | Skill help-system-content | skill | 8.039 | terceros @782565f7 |
 | 31 | Skill skill-registry | skill | 7.702 | terceros @78434d8f |
 | 32 | Skill clean-architecture | skill | 7.397 | terceros @782565f7 |
 | 33 | Skill design-system | skill | 6.948 | embebida |
-| 34 | Skill websocket-engineer | skill | 6.586 | terceros @078a25cc |
-| 35 | Bloque sdd-orchestrator inyectado — Claude | instrucción inyectada | 6.304 | bloque universal de la entrega en capas; sección con marcadores |
+| 34 | Bloque sdd-orchestrator inyectado — Claude | instrucción inyectada | 6.657 | bloque universal de la entrega en capas; sección con marcadores |
+| 35 | Skill websocket-engineer | skill | 6.586 | terceros @078a25cc |
 | 36 | Skill receiving-code-review | skill | 6.203 | terceros @22f0b463 |
 | 37 | Skill discovery-research | skill | 6.148 | terceros @dd7efb7d |
-| 38 | Skill alembic-migrations | skill | 5.577 | terceros @782565f7 |
-| 39 | Skill find-skill | skill | 5.472 | terceros @b716f9dc |
-| 40 | Bloque sdd-orchestrator inyectado — Codex | instrucción inyectada | 5.438 | bloque universal de la entrega en capas; sección con marcadores |
+| 38 | Bloque sdd-orchestrator inyectado — Codex | instrucción inyectada | 5.791 | bloque universal de la entrega en capas; sección con marcadores |
+| 39 | Skill alembic-migrations | skill | 5.577 | terceros @782565f7 |
+| 40 | Skill find-skill | skill | 5.472 | terceros @b716f9dc |
 | 41 | Skill web-scraper | skill | 5.079 | terceros @1ac73c20 |
 | 42 | Skill fastapi-code-review | skill | 3.686 | terceros @782565f7 |
 | 43 | Skill requesting-code-review | skill | 2.974 | terceros @22f0b463 |

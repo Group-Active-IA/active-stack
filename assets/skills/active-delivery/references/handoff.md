@@ -70,3 +70,12 @@ On resumption, compare current work with the recorded evidence. An unchanged
 HEAD alone does not validate tests against edited files. Preserve historical
 verification results while marking stale evidence and rerun checks affected by
 the current diff.
+
+## Usage and closure
+
+Put the usage evidence and validator report beside this handoff for ODD, or
+inside the active OpenSpec change for SDD. Link to the report from this
+handoff and include the final active time, models, total billable tokens,
+USD cost and PR merge SHA. While the PR or evidence is pending, point to
+the recorded usage so far and say what still needs to be collected. Record
+any ClickUp status milestone still pending synchronization.

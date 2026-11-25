@@ -28,17 +28,17 @@ dependencies or remote fields.
    Record reconciliation as pending with the reason and continue local work
    within its agreed scope. Report status or assignment as unconfirmed if no
    successful observation exists.
-3. A message such as “ready for delivery” or a local closure does not change
-   ClickUp. If the user wants a remote change, tell `active-roadmap` to prepare
-   a read-only preview for the exact destinations and field changes. Wait for
-   explicit confirmation of that preview before any remote write, including a
-   status change, assignment or closure. Keep read reconciliation separate from
-   publication. Report local results and the confirmed remote observation or
-   pending reconciliation in the delivery summary.
+3. At each verified delivery milestone, invoke the [Active Roadmap status
+   workflow](../../active-roadmap/SKILL.md#estados-de-desarrollo) for the exact
+   linked task. Use start, review request, requested changes, resumed
+   implementation, merge, and completed archive evidence. Present the preview
+   automatically and wait for explicit confirmation before the remote write.
+   If approval, access, or a configured development status is missing,
+   record the milestone as pending sync in the local handoff and retry on
+   resume before proposing later milestones. Report the confirmed remote
+   status or pending reconciliation alongside the local results.
 
-For an authorized team write, use the `active-roadmap` team flow. Derive the ficha
-from the stable ID and branch, use `link_pr` to add a verified PR to its linked
-task, and use `close` after checking the merged PR and its reachable merge SHA.
-Preserve the local handoff even if ClickUp is unavailable. A read reconciliation
-can expose a different remote assignee. A separate authorized `assign` preview
-lets the operator reconcile the assignment from the confirmed team roster.
+Use the `active-roadmap` team flow to add a verified PR link and update the
+shared delivery evidence. Use the status workflow for the development states.
+A read reconciliation can expose a different remote assignee. A separate
+authorized `assign` preview reconciles the assignment from the confirmed roster.

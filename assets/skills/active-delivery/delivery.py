@@ -14,20 +14,26 @@ def _failure(message, **details):
     return {"ok": False, "errors": [message], **details}
 
 
-def identity(root, args, state):
+def _members(root):
     doc, error = team._read_json(root / team.TEAM_PATH)
     if error:
-        return _failure(error)
+        return None, error
     members = {member["id"]: dict(member) for member in doc.get("members", [])}
     local_path = root / team.TEAM_LOCAL_PATH
     if local_path.is_file():
         local, error = team._read_json(local_path)
         if error:
-            return _failure(error)
+            return None, error
         for member in local.get("members", []):
             if member["id"] in members:
                 members[member["id"]].update(member)
+    return members, None
 
+
+def identity(root, args, state):
+    members, error = _members(root)
+    if error:
+        return _failure(error)
     me = state["me"]
     if args.select is not None:
         me = args.select
@@ -287,6 +293,64 @@ def overview(root, evidence, state):
             if github.get("available") and "reviews" in evidence else None}
 
 
+def reviewer(root, evidence, ficha_id, state):
+    """Resolve the next review assignment from observed, ordered roadmap rows."""
+    if not evidence["sources"].get("roadmap", {}).get("available"):
+        return _failure("Read the ordered roadmap before resolving its reviewer.")
+    report = overview(root, evidence, state)
+    if not report["ok"]:
+        return report
+    members, error = _members(root)
+    if error:
+        return _failure(error)
+    fichas = {ficha["id"]: ficha for ficha in evidence["fichas"]}
+    if ficha_id not in fichas:
+        return _failure("The ficha is absent from the ordered roadmap.", ficha=ficha_id)
+    author = evidence.get("author_github")
+    if not isinstance(author, str) or not team.GITHUB_RE.fullmatch(author):
+        return _failure("Provide the observed GitHub login of the PR author.")
+    author_github = author.casefold()
+    unavailable = evidence.get("unavailable_members", [])
+    if not isinstance(unavailable, list) or any(member not in members for member in unavailable):
+        return _failure("Unavailable members must be confirmed team member IDs.")
+
+    def observed(item, field):
+        value = evidence.get("observations", {}).get(item, {})
+        source = evidence["sources"].get(value.get("source"), {})
+        return value.get(field) if source.get("available") else None
+
+    def owner(item):
+        if state["tracking"] != "clickup":
+            return fichas[item].get("Responsable")
+        observation = evidence.get("observations", {}).get(item, {})
+        if observation.get("source") != "clickup":
+            return None
+        member = observed(item, "assignee")
+        return member if member in members else None
+
+    author_member = owner(ficha_id)
+
+    def independent(member):
+        return (member in members and member not in unavailable and member != author_member
+                and members[member].get("github")
+                and members[member]["github"].casefold() != author_github)
+
+    ordered = list(fichas)
+    successor = next((item for item in ordered[ordered.index(ficha_id) + 1:]
+                      if observed(item, "status") not in ("merged", "done", "omitted")), None)
+    candidate = owner(successor) if successor else None
+    if independent(candidate):
+        return {"ok": True, "action": "next", "ficha": ficha_id, "next_ficha": successor,
+                "member": candidate, "github": members[candidate]["github"]}
+    fallback = evidence.get("fallback", {})
+    selected = fallback.get("member")
+    if fallback.get("approved") is True and independent(selected):
+        return {"ok": True, "action": "fallback", "ficha": ficha_id, "next_ficha": successor,
+                "member": selected, "github": members[selected]["github"]}
+    return _failure("An independent fallback reviewer needs team approval and a confirmed GitHub account.",
+                    action="fallback-required", ficha=ficha_id, next_ficha=successor, candidate=candidate)
+
+
 def _overlap(left, right):
     return any(a == b or a.startswith(b + "/") or b.startswith(a + "/")
                for a in left for b in right)
@@ -365,6 +429,8 @@ def inspect(root, args, state):
     try:
         if args.command == "overview":
             return overview(root, evidence, state)
+        if args.command == "reviewer":
+            return reviewer(root, evidence, args.id, state)
         return notices(evidence, state)
     except (AttributeError, KeyError, TypeError):
         return _failure("Evidence does not match the team delivery input format.")
@@ -382,6 +448,9 @@ def add_commands(sub):
     space.add_argument("--apply", action="store_true")
     space.add_argument("--expected-base")
     space.add_argument("--expected-tip")
+    review = sub.add_parser("reviewer", help="resolve a peer reviewer from ordered roadmap evidence")
+    review.add_argument("--id", required=True)
+    review.add_argument("--file", required=True)
     for name in ("overview", "notices"):
         inspection = sub.add_parser(name, help="summarize read-only team delivery evidence")
         inspection.add_argument("--file", required=True)

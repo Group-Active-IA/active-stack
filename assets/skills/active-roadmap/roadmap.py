@@ -34,6 +34,38 @@ def load(path):
 
 CLICKUP_MCP_URL = "https://mcp.clickup.com/mcp"
 
+DELIVERY_STATUSES = {
+    "pending": "Pendiente",
+    "developing": "En desarrollo",
+    "review": "En revisión",
+    "changes_requested": "Cambios solicitados",
+    "merged": "Fusionado",
+    "archived": "Archivado",
+}
+PREVIOUS_STAGES = {
+    "developing": {"pending", "changes_requested"},
+    "review": {"developing"},
+    "changes_requested": {"review"},
+    "merged": {"review"},
+    "archived": {"merged"},
+}
+
+
+def delivery_statuses(names):
+    if not isinstance(names, list) or any(not isinstance(name, str) for name in names):
+        raise RoadmapError("Ingresá los nombres de estado verificados de la lista")
+    by_normalized = {}
+    for name in names:
+        normalized = name.strip().casefold()
+        if normalized in by_normalized:
+            raise RoadmapError("La lista contiene nombres de estado ambiguos")
+        by_normalized[normalized] = name
+    missing = [name for name in DELIVERY_STATUSES.values() if name.casefold() not in by_normalized]
+    if missing:
+        raise RoadmapError("Faltan estados en ClickUp: " + ", ".join(missing))
+    return {stage: by_normalized[name.casefold()] for stage, name in DELIVERY_STATUSES.items()}
+
+
 
 def diagnose_clickup(registrations, probe=None, name=None):
     official = [
@@ -338,7 +370,7 @@ class Roadmap:
 
     def _preview(self, tasks, settings, state, team=None, selected=None, access="ok"):
         mode = settings["mode"]
-        if team and (team["tracking"] == "local" or access != "ok"):
+        if (team and team["tracking"] == "local") or access != "ok":
             mode = "local"
         if selected is not None and (not selected or len(set(selected)) != len(selected)):
             raise RoadmapError("Seleccioná IDs únicos de la vista previa")
@@ -369,6 +401,8 @@ class Roadmap:
                 assignment_pending = current.get("assignment_pending", False)
             delivery = current.get("delivery", {})
             operation = task.get("operation", "publish") if team else "publish"
+            if task.get("operation") == "status":
+                operation = "status"
             if mode == "clickup" and team and operation in {"link_pr", "close"}:
                 delivery = delivery_update(task, delivery)
             delivery_text = "".join(f"{label}: {delivery[key]}\n" for key, label in (
@@ -389,6 +423,8 @@ class Roadmap:
                 action = "local"
             elif current.get("pending"):
                 action = "recover"
+            elif operation == "status":
+                action = "inspect"
             elif remote_id and current.get("fingerprint") == content_fingerprint:
                 action = "unchanged"
             elif remote_id:
@@ -408,7 +444,9 @@ class Roadmap:
                 "current_description_hash": digest(current_description) if action == "update" else None,
                 "content_fingerprint": content_fingerprint,
             }
-            if team and mode == "clickup":
+            if operation == "status" and mode == "clickup":
+                self.status_row(row, task, current, destination)
+            elif team and mode == "clickup":
                 self.team_row(row, task, current, team, delivery, operation, managed_description)
             rows.append(row)
         if selected is not None:
@@ -417,9 +455,39 @@ class Roadmap:
                 raise RoadmapError("La selección contiene fichas inexistentes")
             rows = [by_id[task_id] for task_id in selected]
         preview = {"mode": mode, **destination, "rows": rows}
-        if team and access != "ok":
+        if access != "ok":
             preview["access"] = access
         return {**preview, "approval": digest(preview)}
+
+    def status_row(self, row, task, current, destination):
+        row["operation"] = "status"
+        if row["action"] == "recover":
+            return
+        if (not row["remote_id"] or task.get("current_remote_id") != row["remote_id"]
+                or task.get("current_list_id") != destination["list_id"]
+                or merge_description(task.get("current_text"), row["marker"], "") is None):
+            raise RoadmapError("Confirmá la tarea vinculada, su lista de origen y su marcador")
+        stage = task.get("stage")
+        if stage not in PREVIOUS_STAGES:
+            raise RoadmapError("Hito de entrega inválido")
+        statuses = delivery_statuses(task.get("list_statuses"))
+        current_status = task.get("current_status")
+        if not isinstance(current_status, str) or not current_status.strip():
+            raise RoadmapError("Consultá el estado actual de la tarea vinculada")
+        normalized = current_status.strip().casefold()
+        current_stage = next((key for key, name in statuses.items()
+                              if name.strip().casefold() == normalized), None)
+        target = statuses[stage]
+        if current_stage != stage and current_stage not in PREVIOUS_STAGES[stage]:
+            raise RoadmapError(f"Transición no permitida de {current_status} a {target}")
+        unchanged = current_stage == stage
+        row.update(
+            action="unchanged" if unchanged else "update",
+            stage=stage,
+            current_status=current_status,
+            changes={} if unchanged else {"status": target},
+            content_fingerprint=current.get("fingerprint"),
+        )
 
     def team_row(self, row, task, current, team, delivery, operation, managed_description):
         if row["action"] == "recover":
@@ -502,7 +570,7 @@ class Roadmap:
             self.write(state)
             return {**state["destination"], "rows": [rows[task_id] for task_id in selected]}
 
-    def result(self, task_id, outcome, *, remote_id=None, url=None, reason=None):
+    def result(self, task_id, outcome, *, remote_id=None, url=None, reason=None, status=None):
         with self.locked():
             state = self.read()
             entry = state["tasks"].get(task_id, {})
@@ -513,6 +581,11 @@ class Roadmap:
                 expected = "created" if pending["action"] == "create" else "updated"
                 if outcome != expected or not remote_id or not url:
                     raise RoadmapError("El resultado exitoso requiere operación, ID y enlace coherentes")
+                if pending.get("operation") == "status" and (
+                    not isinstance(status, str)
+                    or status.strip().casefold() != pending["changes"]["status"].strip().casefold()
+                ):
+                    raise RoadmapError("Confirmá el estado objetivo antes de registrar la escritura")
                 if entry.get("remote_id", remote_id) != remote_id:
                     raise RoadmapError("La respuesta cambió el ID remoto de la tarea")
                 entry.update({
@@ -582,10 +655,14 @@ def main():
         command = commands.add_parser(name)
         command.add_argument("task_id")
         command.add_argument("response", type=Path)
+    statuses = commands.add_parser("statuses")
+    statuses.add_argument("snapshot", type=Path)
     arguments = parser.parse_args()
     journal = Roadmap(arguments.root)
     try:
-        if arguments.command == "read":
+        if arguments.command == "statuses":
+            output = delivery_statuses(load(arguments.snapshot))
+        elif arguments.command == "read":
             output = journal.read()
         elif arguments.command == "setup":
             settings = journal.config()

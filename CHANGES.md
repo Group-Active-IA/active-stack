@@ -2,6 +2,10 @@
 
 [Trabajo en equipo e incorporación guiada en Active Stack](docs/research/trabajo-en-equipo-active-stack-2026-11-18.md)
 
+## Versión 0.9.2
+
+- [Fundación y cierre de cambios](openspec/changes/v0-9-2-delivery/proposal.md). Incluye elección de ClickUp, revisión por el integrante del siguiente cambio y evidencia de tiempo, tokens y costo al archivar.
+
 ## Implementación en curso: modo equipo + Engram Cloud
 
 - [Guía de implementación en equipo](docs/guia-implementacion-equipo.md): frase de inicio «Soy <nombre>, quiero implementar lo mío».
