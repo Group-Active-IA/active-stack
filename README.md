@@ -92,7 +92,7 @@ Hay **tres tipos** de harness, y el instalador no instala "repos": instala harne
 | **macOS Apple Silicon** (solo CLI) | [`active-stack_darwin_arm64`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/active-stack_darwin_arm64) |
 | Todas las versiones | [Releases](https://github.com/Group-Active-IA/active-stack/releases) |
 
-> **macOS:** los binarios de v0.9.0 y v0.9.1 se compilaron a mano desde el tag y no están firmados. Al abrirlos, macOS puede avisar de «desarrollador no identificado»: usá clic derecho y Abrir, o `xattr -d com.apple.quarantine active-stack_darwin_*`; después `chmod +x` y `./active-stack_darwin_amd64 install`. `self-update` reconoce macOS a partir de la release que incorpora este cambio; con una versión anterior se actualiza descargando el binario nuevo.
+> **macOS:** los binarios de v0.9.0 y v0.9.1 se compilaron a mano desde el tag y no están firmados. Al abrirlos, macOS puede avisar de «desarrollador no identificado»: usá clic derecho y Abrir, o `xattr -d com.apple.quarantine active-stack_darwin_*`; después `chmod +x` y `./active-stack_darwin_amd64 install`. Desde v0.9.2 los publica el workflow de release, y `update` y `self-update` actualizan el binario en macOS; con una versión anterior hay que descargar el binario nuevo una vez.
 
 Cada release publica su [`SHA256SUMS.txt`](https://github.com/Group-Active-IA/active-stack/releases/latest/download/SHA256SUMS.txt) para verificar la integridad de lo descargado.
 
@@ -448,7 +448,7 @@ go test ./...                          # suite completa
 
 ## Estado del proyecto
 
-🟢 **Activo.** Versión actual: [v0.9.1](https://github.com/Group-Active-IA/active-stack/releases/tag/v0.9.1). El núcleo del instalador (catálogo, modelo, adapters P0, backup/rollback, merge por markers, pipeline, verify y la TUI) está implementado, junto con el modo equipo, la memoria de equipo con Engram Cloud y el aviso de versión nueva. El [roadmap actual](CHANGES.md) reúne las propuestas de mejoras de OPSX y los seguimientos de etapas anteriores; las [pruebas pendientes](docs/pruebas-pendientes.md) están registradas aparte. También hay una [guía web del equipo](https://active-stack-guia-equipo.vercel.app/) y una [landing](https://active-stack-landing.vercel.app/).
+🟢 **Activo.** Versión actual: [v0.9.2](https://github.com/Group-Active-IA/active-stack/releases/tag/v0.9.2). El núcleo del instalador (catálogo, modelo, adapters P0, backup/rollback, merge por markers, pipeline, verify y la TUI) está implementado, junto con el modo equipo, la memoria de equipo con Engram Cloud y el aviso de versión nueva. El [roadmap actual](CHANGES.md) reúne las propuestas de mejoras de OPSX y los seguimientos de etapas anteriores; las [pruebas pendientes](docs/pruebas-pendientes.md) están registradas aparte. También hay una [guía web del equipo](https://active-stack-guia-equipo.vercel.app/) y una [landing](https://active-stack-landing.vercel.app/).
 
 ## Licencia
 

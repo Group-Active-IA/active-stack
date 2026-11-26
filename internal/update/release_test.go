@@ -99,6 +99,52 @@ func TestDownloadedBinaryHelperProcess(t *testing.T) {
 	os.Exit(0)
 }
 
+// Every platform the release workflow publishes must be updatable.
+func TestDownloadReleaseBinaryCoversPublishedPlatforms(t *testing.T) {
+	cases := []struct{ goos, goarch, asset string }{
+		{"windows", "amd64", "active-stack_windows_amd64.exe"},
+		{"linux", "amd64", "active-stack_linux_amd64"},
+		{"darwin", "amd64", "active-stack_darwin_amd64"},
+		{"darwin", "arm64", "active-stack_darwin_arm64"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.goos+"/"+tc.goarch, func(t *testing.T) {
+			payload := []byte("binary for " + tc.asset)
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.URL.Path {
+				case "/Group-Active-IA/active-stack/releases/download/v1.2.3/SHA256SUMS.txt":
+					fmt.Fprintf(w, "%x  %s\n", sha256.Sum256(payload), tc.asset)
+				case "/Group-Active-IA/active-stack/releases/download/v1.2.3/" + tc.asset:
+					w.Write(payload)
+				default:
+					http.NotFound(w, r)
+				}
+			}))
+			defer server.Close()
+			if !update.ReleaseBinaryAvailable(tc.goos, tc.goarch) {
+				t.Fatalf("no release binary reported for %s/%s", tc.goos, tc.goarch)
+			}
+			client := update.ReleaseClient{HTTP: server.Client(), DownloadBase: server.URL}
+			path, err := client.DownloadBinary(context.Background(), update.Release{Tag: "v1.2.3"}, tc.goos, tc.goarch, t.TempDir())
+			if err != nil {
+				t.Fatal(err)
+			}
+			got, err := os.ReadFile(path)
+			if err != nil || string(got) != string(payload) {
+				t.Fatalf("binary = %q, %v", got, err)
+			}
+		})
+	}
+}
+
+func TestReleaseBinaryUnavailableForUnpublishedPlatforms(t *testing.T) {
+	for _, p := range [][2]string{{"windows", "arm64"}, {"linux", "arm64"}, {"darwin", "386"}, {"freebsd", "amd64"}} {
+		if update.ReleaseBinaryAvailable(p[0], p[1]) {
+			t.Errorf("%s/%s reported as published", p[0], p[1])
+		}
+	}
+}
+
 func TestDownloadReleaseBinaryRejectsBadChecksum(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.HasSuffix(r.URL.Path, "SHA256SUMS.txt") {
