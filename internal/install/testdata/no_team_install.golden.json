@@ -30,7 +30,7 @@
     ".gemini/config/mcp_config.json": "ce47fff1621e9323ea84133cdbb3df229d026fde54c49a891a447b26b47735a9"
   },
   "custom-sin-cloud/codex": {
-    ".agents/skills/sdd-orchestrator/.active-stack-managed.json": "18077d59e76c7ce34fb5709037de8ea275e7728b6a656a1c610bc077404abdd4",
+    ".agents/skills/sdd-orchestrator/.active-stack-managed.json": "35cb4ea3b95ac267e5abec0cc731508c40c85fc8c4568d0b96d2bf81064e69b4",
     ".agents/skills/sdd-orchestrator/SKILL.md": "43ba7376c8e60bd523044d506073e8f4d8a9bc39bb50c46d669d6a8b90b982b9",
     ".agents/skills/sdd-orchestrator/agents/openai.yaml": "83f31288abcfbf75996693608a61b9b803c0c2a12805a750611b4ce764986f7e",
     ".agents/skills/sdd-orchestrator/modules/artifacts.md": "eec02354bf8cc3cde29974adffc4ced1ff22a2fc7043c143f2876d4adc9aecfb",
@@ -95,7 +95,7 @@
     ".gemini/config/mcp_config.json": "ce47fff1621e9323ea84133cdbb3df229d026fde54c49a891a447b26b47735a9"
   },
   "lite/codex": {
-    ".agents/skills/sdd-orchestrator/.active-stack-managed.json": "18077d59e76c7ce34fb5709037de8ea275e7728b6a656a1c610bc077404abdd4",
+    ".agents/skills/sdd-orchestrator/.active-stack-managed.json": "35cb4ea3b95ac267e5abec0cc731508c40c85fc8c4568d0b96d2bf81064e69b4",
     ".agents/skills/sdd-orchestrator/SKILL.md": "43ba7376c8e60bd523044d506073e8f4d8a9bc39bb50c46d669d6a8b90b982b9",
     ".agents/skills/sdd-orchestrator/agents/openai.yaml": "83f31288abcfbf75996693608a61b9b803c0c2a12805a750611b4ce764986f7e",
     ".agents/skills/sdd-orchestrator/modules/artifacts.md": "eec02354bf8cc3cde29974adffc4ced1ff22a2fc7043c143f2876d4adc9aecfb",
