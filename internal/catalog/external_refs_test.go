@@ -36,9 +36,9 @@ func TestExternalRefsAreFullSHAs(t *testing.T) {
 	}
 }
 
-func TestActiveOrchestratorRefIsRequiredTrackingMerge(t *testing.T) {
+func TestActiveOrchestratorRefIsChecklistBenefitsMerge(t *testing.T) {
 	repo, ref := refOf(t, "active-orchestrator")
-	if repo != "Group-Active-IA/active-orchestrator" || ref != "a3d6b0490940a2865beb16d3baf07a5a292eeafb" {
+	if repo != "Group-Active-IA/active-orchestrator" || ref != "8ac8f15d05423a8e65fb0dfb65ec9fb625e6b174" {
 		t.Fatalf("got %s@%s", repo, ref)
 	}
 }
