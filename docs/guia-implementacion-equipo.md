@@ -12,7 +12,7 @@ Esta guía la sigue el agente (Claude Code o Codex) de **cada integrante**. Reem
 2. Escribí: **«Soy Matías, quiero implementar lo mío»** (con tu nombre).
 3. El agente te dice qué ficha te toca, en qué orden y, si depende de otra persona que no terminó, **te avisa y no te deja empezar**.
 4. Implementás con el agente. Cuando termina, genera tu **informe de cierre** (un `.md` corto).
-5. **El informe no va al dueño: va a quien tu ficha desbloquea.** Queda en el PR y, al mergearse, en `main`. **No hace falta pasarlo por WhatsApp**: cuando el PR se mergea, el agente de esa persona lo encuentra en el repo. Juan Cruz solo mergea el PR.
+5. **El informe queda en el PR y llega a quien tu ficha desbloquea.** La persona a cargo del cambio siguiente en el roadmap revisa ese PR y lo fusiona si pasa la revisión.
 6. El agente te dice cuál es tu próxima ficha y de quién espera. Cuando el PR de esa dependencia figure mergeado en Git, empezás solo: repetí desde el paso 2.
 
 **¿Hay pruebas pendientes?** Si ya no queda ficha por implementar, seguí [pruebas-pendientes.md](pruebas-pendientes.md): dice qué falta probar y quién lo necesita.
@@ -98,20 +98,23 @@ Detener la ficha afectada y preparar el aviso con la plantilla del plan [EN] sec
 Cuando se cumplen los criterios:
 
 1. Verificar todos los criterios con evidencia y dejar el traspaso `docs/equipo/fichas/R-xx.md` completo.
-2. Generar el **informe de cierre** `docs/equipo/informes/R-xx.md` desde la [plantilla](equipo/informes/PLANTILLA.md). Es **corto** (menos de una pantalla): qué ficha, enlace al PR y repo, qué se hizo, cómo verificarlo, **qué tiene que hacer el dueño** (revisar el PR, decidir algo, aceptar), a quién desbloquea y decisiones que necesitan al dueño.
-3. Con el pedido de la persona: commit, push y PR (informe incluido, y su fila del estado en `PR abierto`). **Decir siempre a quién va cada informe**, con esta frase exacta por destinatario: **«Este informe va para <persona> (ficha R-yy)»**. Los destinatarios salen de la tabla del estado: son las fichas cuya columna «Depende de» incluye la que se cierra (si hay varias, una línea por cada una; si la persona cierra más de un informe, una línea por informe y destinatario). Si ninguna ficha depende de esta, decir **«Este informe no va para nadie: solo mergea Juan Cruz»**. Después: **«El informe queda en el PR y en `main` al mergear; no hace falta pasarlo por el grupo»**. El PR lleva en el cuerpo el enlace al informe y qué se verificó.
+2. Generar el **informe de cierre** `docs/equipo/informes/R-xx.md` desde la [plantilla](equipo/informes/PLANTILLA.md). Es **corto** (menos de una pantalla): qué ficha, enlace al PR y repo, qué se hizo, cómo verificarlo, **quién revisa el PR** según el roadmap, a quién desbloquea y decisiones que necesitan al dueño.
+3. Con autorización, hacer commit, push y abrir el PR con el informe, los checks y la fila de estado en `PR abierto`. Identificar la ficha siguiente en el [orden del roadmap](roadmap-implementacion-equipo.md#2-secuencia), salteando fichas fusionadas, completadas u omitidas. Pedir review a su responsable. Si esa persona es el propio autor, falta, no está disponible o la secuencia termina, registrar en el PR el reemplazo independiente acordado por el equipo. Informar a qué fichas se entrega el informe según las dependencias registradas. Usar «Este informe va para <persona> (ficha R-yy)» por destinatario. El informe queda en el PR y en `main` al fusionar.
 4. Actualizar el «Punto de reanudación» del traspaso, guardar lo durable en Engram y **recomendar compactar**.
 5. Informar la **siguiente ficha** de la persona, de quién espera y qué debe ocurrir antes (por ejemplo: «tu próxima ficha es R-12; espera a que se mergee tu PR de R-11»). **No empezarla** hasta que el PR de esa dependencia figure mergeado en Git; para enterarse, la persona escribe «continuar» y el agente lo verifica en Git y lee desde `main` **el informe de cada dependencia mergeada** (puede ser más de uno) antes de empezar. Si falta algo, el agente de la siguiente ficha lee desde `main` el informe de cada ficha de la que depende.
 
-## 10. Para el dueño (Juan Cruz)
+## 10. Revisión y fusión
 
-Tu trabajo se reduce a **mergear PR**, una vez por ficha, y a lo que solo vos podés decidir. No recibís informes, no actualizás el estado ni avisás al grupo.
+1. El revisor designado verifica el diff, los criterios de la ficha y los checks sobre el último SHA. Si encuentra errores, registra los hallazgos con «Solicitar cambios» y devuelve el PR abierto al autor. El autor corrige en la misma rama y solicita otra revisión.
+2. Si el PR pasa, el revisor aprueba y fusiona el SHA revisado cuando los checks y las reglas del repositorio lo permitan. Si el SHA cambia, revisa la nueva versión.
+3. Registrar el merge verificado en el traspaso de la ficha.
 
-1. **Mergear el PR** cuando el cuerpo del PR dice que está verificado. Si el responsable cumplió el «cierre sin huecos» (sección 5, punto 8), no hay nada más que revisar.
-2. **Solo si lo exige la ficha:** revisar la propuesta de una ficha de governance ALTO **antes** de que se codifique, o decidir un `DA-xx` de producto. El agente te lo presenta con una recomendación.
-3. Escribir una «Autorización de excepción» únicamente cuando quieras adelantar una ficha.
-4. Las puertas **R-05, R-20, R-24, R-25** son tuyas; las pruebas E2E y los pilotos requieren tu autorización expresa.
+## 11. Para el dueño (Juan Cruz)
 
-## 11. Mensaje listo para el grupo
+1. **Solo si lo exige la ficha:** revisar la propuesta de una ficha de governance ALTO **antes** de que se codifique, o decidir un `DA-xx` de producto. El agente te lo presenta con una recomendación.
+2. Escribir una «Autorización de excepción» únicamente cuando quieras adelantar una ficha.
+3. Las puertas **R-05, R-20, R-24, R-25** son tuyas; las pruebas E2E y los pilotos requieren tu autorización expresa.
 
-> Equipo: ya está la guía en `main`. Bajen el repo, abran Claude Code o Codex y escriban **«Soy <su nombre>, quiero implementar lo mío»**. El agente los guía. **Arrancan dos en paralelo:** Matías con R-01 (prueba de Engram Cloud, con apoyo de Giuliano) y Emiliano con R-06 (contrato del modo equipo). Gianfranco, tu agente te va a decir que esperes a que Emiliano termine. Al terminar, el agente arma un `.md`: pásenmelo acá y yo reviso y acepto su PR.
+## 12. Mensaje listo para el grupo
+
+> Equipo: ya está la guía en `main`. Bajen el repo, abran Claude Code o Codex y escriban **«Soy <su nombre>, quiero implementar lo mío»**. El agente los guía. **Arrancan dos en paralelo:** Matías con R-01 (prueba de Engram Cloud, con apoyo de Giuliano) y Emiliano con R-06 (contrato del modo equipo). Gianfranco, tu agente te va a decir que esperes a que Emiliano termine. Al terminar, adjunten el informe al PR y soliciten revisión al integrante de la ficha siguiente según el roadmap.

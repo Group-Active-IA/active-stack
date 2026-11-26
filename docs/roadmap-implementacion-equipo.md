@@ -1,6 +1,6 @@
 # Roadmap integrado: modo equipo + Engram Cloud
 
-**Fecha:** 2026-11-19 · **Revisión 1** · **Dueño y revisor de todo PR:** Juan Cruz Robledo
+**Fecha:** 2026-11-25 · **Revisión 2** · **Dueño:** Juan Cruz Robledo
 **Qué es:** el orden secuencial en que cuatro personas implementan los dos planes: [plan de trabajo en equipo](plan-trabajo-en-equipo.md) (**[EQ]**) y [plan de Engram Cloud](plan-engram-cloud-equipo.md) (**[EN]**). Los dos planes dicen *qué* construir y con qué pruebas; este documento dice *quién*, *en qué orden* y *tras qué*.
 **Cómo se usa:** quien implementa abre el repo y dice «soy <nombre>, quiero implementar lo mío». El agente sigue la [guía de implementación en equipo](guia-implementacion-equipo.md). El estado vive en [estado-equipo.md](estado-equipo.md).
 
@@ -9,6 +9,7 @@
 - Los IDs de tareas y decisiones de los planes **chocan** entre sí (ambos tienen `T-F1-1`, `D1`, `V1`…). Siempre se citan con prefijo: `[EQ] T-F4-3`, `[EN] Q3`, `[EN] D4`. En el equipo, las verificaciones se llaman **VE-1…VE-8** (las `V1…V8` del plan [EQ]); la matriz `V1…V13` de [EN] conserva su nombre.
 - Sin SDD: cada ficha se ejecuta con **criterios cortos** (los `T-*` de la fase indicada) y TDD estricto.
 - Una **ficha** = una rama `feat/R-xx-slug` = un PR. Si toca un repo externo, el PR va a ese repo (ver guía, sección 6).
+- **Revisión de PR.** Revisa la persona responsable de la ficha siguiente según el orden de la sección 2. Se saltean las fichas fusionadas, completadas u omitidas. Si la ficha siguiente no tiene responsable disponible, comparte autor con la ficha actual o la secuencia termina, el equipo acuerda un revisor alternativo independiente y lo registra en el PR. El revisor verifica el último SHA y fusiona con los checks requeridos aprobados. Si encuentra errores, solicita cambios y devuelve el PR abierto al autor para otra ronda.
 - Rama de partida: siempre `origin/main` actualizado (la rama `propose/codex-strict-compat` está por detrás de `main`).
 
 ---

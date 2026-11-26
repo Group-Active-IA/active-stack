@@ -121,7 +121,7 @@ harnesses:
     description: { es: "Ruta directa o fundación guiada con KB, roadmap e instrucciones.", en: "Direct work or guided foundation with knowledge base, roadmap and agent instructions." }
     long_description: { es: "Ofrece ruta directa o una checklist de fundación con aprobación previa. La base de conocimiento, el roadmap Markdown y las instrucciones del agente son obligatorios y reutilizables. Guarda el avance para retomar. Disponible en Full para Claude, Codex, OpenCode y Antigravity.", en: "Offers direct work or a foundation checklist with prior approval. The knowledge base, Markdown roadmap and agent instructions are required and reusable. Saves progress for resumption. Available in Full for Claude, Codex, OpenCode and Antigravity." }
     type: skill
-    source: { repo: Group-Active-IA/active-orchestrator, ref: 5d758fceb3b560b934c3348eaa20e944f79503a6, method: clone }
+    source: { repo: Group-Active-IA/active-orchestrator, ref: a3d6b0490940a2865beb16d3baf07a5a292eeafb, method: clone }
     # Full-only: orquesta kb-creator/roadmap-generator/agent-instruction/find-skill,
     # todas Full. En Lite quedaría huérfano. Lite = sustrato; Full = fundación guiada.
     install_modes: [full]
@@ -151,7 +151,7 @@ harnesses:
     description: { es: "Genera CHANGES.md (backlog técnico) desde la KB.", en: "Generates CHANGES.md (technical backlog) from the KB." }
     long_description: { es: "Genera o reutiliza CHANGES.md a partir de la base de conocimiento. Documenta el orden, las dependencias y los criterios de verificación en Markdown local.", en: "Generates or reuses CHANGES.md from the knowledge base. Records order, dependencies and verification criteria in local Markdown." }
     type: skill
-    source: { repo: Group-Active-IA/roadmap-generator, ref: 462de73a73e96d2120ac8ed1c19feabd2004010b, method: clone }
+    source: { repo: Group-Active-IA/roadmap-generator, ref: ac1c0ef79671e990aff0c50d237e10448c95235b, method: clone }
     install_modes: [full]
     depends_on: [openspec, kb-creator]
 

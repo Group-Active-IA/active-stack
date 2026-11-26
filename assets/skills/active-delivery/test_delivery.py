@@ -187,11 +187,11 @@ class DeliveryTest(unittest.TestCase):
         self.assertEqual(apply("R-11-other")["action"], "branch-conflict")
         self.assertFalse((self.root.parent / "R-11-other").exists())
 
-    def inspect(self, command, evidence):
+    def inspect(self, command, evidence, *arguments):
         path = pathlib.Path(self.temp.name) / "evidence.json"
         path.write_text(json.dumps(evidence), encoding="utf-8")
         before = self.git("status", "--porcelain")
-        result = self.run_team(command, "--file", str(path))
+        result = self.run_team(command, "--file", str(path), *arguments)
         self.assertEqual(self.git("status", "--porcelain"), before)
         return result
 
@@ -265,6 +265,73 @@ class DeliveryTest(unittest.TestCase):
                          {"value": "m1", "source": "GitHub", "checked_at": date})
         self.assertEqual(waiting[0]["reference"],
                          {"value": "R-11", "source": "CHANGES.md", "checked_at": date})
+
+    def reviewer_evidence(self, tracking="local"):
+        self.configure_team()
+        path = self.root / team.TEAM_PATH
+        path.write_text(json.dumps({
+            "size": 3,
+            "tracking": tracking,
+            "members": [
+                {"id": "m1", "github": "ana-dev"},
+                {"id": "m2", "github": "bea-dev"},
+                {"id": "m3", "github": "caro-dev"},
+            ],
+        }), encoding="utf-8")
+        date = "2026-11-25T10:30:00Z"
+        return {
+            "sources": {
+                "roadmap": {"source": "CHANGES.md", "available": True, "checked_at": date},
+                "github": {"source": "GitHub", "available": True, "checked_at": date},
+                "clickup": {"source": "ClickUp", "available": True, "checked_at": date},
+            },
+            "fichas": [
+                {"id": "R-11", "Responsable": "m1"},
+                {"id": "R-21", "Responsable": "m3"},
+                {"id": "R-19", "Responsable": "m2", "Depende de": "R-11"},
+                {"id": "R-12", "Responsable": "m3"},
+            ],
+            "author_github": "Ana-Dev",
+            "observations": {"R-21": {"status": "omitted", "source": "roadmap"}},
+        }
+
+    def test_reviewer_uses_roadmap_order_and_skips_confirmed_omissions(self):
+        evidence = self.reviewer_evidence()
+        status, result = self.inspect("reviewer", evidence, "--id", "R-11")
+        self.assertEqual((status, result["action"], result["next_ficha"], result["github"]),
+                         (0, "next", "R-19", "bea-dev"))
+
+    def test_reviewer_waits_for_approved_independent_fallback(self):
+        evidence = self.reviewer_evidence()
+        evidence["unavailable_members"] = ["m2"]
+        for fallback in (None, {"member": "m3", "approved": False},
+                         {"member": "m1", "approved": True}):
+            with self.subTest(fallback=fallback):
+                if fallback is not None:
+                    evidence["fallback"] = fallback
+                result = self.inspect("reviewer", evidence, "--id", "R-11")
+                self.assertEqual((result[0], result[1]["action"]), (1, "fallback-required"))
+        evidence["fallback"] = {"member": "m3", "approved": True}
+        status, result = self.inspect("reviewer", evidence, "--id", "R-11")
+        self.assertEqual((status, result["action"], result["github"]), (0, "fallback", "caro-dev"))
+
+    def test_reviewer_requires_a_fallback_for_the_last_ficha(self):
+        evidence = self.reviewer_evidence()
+        evidence["author_github"] = "caro-dev"
+        evidence["fallback"] = {"member": "m2", "approved": True}
+        status, result = self.inspect("reviewer", evidence, "--id", "R-12")
+        self.assertEqual((status, result["action"], result["next_ficha"], result["member"]),
+                         (0, "fallback", None, "m2"))
+
+    def test_reviewer_uses_only_confirmed_clickup_assignment(self):
+        evidence = self.reviewer_evidence(tracking="clickup")
+        evidence["observations"]["R-19"] = {"assignee": "m3", "source": "clickup"}
+        status, result = self.inspect("reviewer", evidence, "--id", "R-11")
+        self.assertEqual((status, result["github"]), (0, "caro-dev"))
+        evidence["sources"]["clickup"]["available"] = False
+        status, result = self.inspect("reviewer", evidence, "--id", "R-11")
+        self.assertEqual((status, result["action"], result["candidate"]),
+                         (1, "fallback-required", None))
 
     def test_notices_report_all_five_and_do_not_write(self):
         self.select()

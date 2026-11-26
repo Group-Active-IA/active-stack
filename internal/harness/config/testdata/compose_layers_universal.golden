@@ -82,6 +82,8 @@ Before starting or resuming a unit of project work, such as a roadmap item, a fe
 
 Handle routine tasks directly. Recommend an OPSX proposal only when proposal, specs, design, and tasks help agree on and verify a complex change. For tool-specific work, point to the installed skill or client command.
 
+For a delivery tracked by Active Delivery, start branch time and token accounting with the first implementation session. Before archiving the change, including direct OpenSpec archive requests, follow the active-delivery usage accounting reference and validate the evidence for the merged PR. Archive remains pending when required evidence is missing.
+
 ## Documentation diagrams
 
 Include an editable Mermaid diagram when it clarifies a roadmap dependency, an architecture flow, or another relationship supported by the documentation. Save the fenced Mermaid block in the relevant repository Markdown or ClickUp task description. Follow the project's preview and confirmation workflow for ClickUp writes.

@@ -6,7 +6,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
-func TestActiveOrchestratorFullUsesApprovedClaudeFix(t *testing.T) {
+func TestActiveOrchestratorFullUsesRequiredTrackingMerge(t *testing.T) {
 	c, err := Load()
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
@@ -20,7 +20,7 @@ func TestActiveOrchestratorFullUsesApprovedClaudeFix(t *testing.T) {
 				if h.Source == nil {
 					t.Fatal("active-orchestrator has no source")
 				}
-				if h.Source.Repo != "Group-Active-IA/active-orchestrator" || h.Source.Ref != "5d758fceb3b560b934c3348eaa20e944f79503a6" {
+				if h.Source.Repo != "Group-Active-IA/active-orchestrator" || h.Source.Ref != "a3d6b0490940a2865beb16d3baf07a5a292eeafb" {
 					t.Fatalf("Full source = %s@%s, want approved upstream merge", h.Source.Repo, h.Source.Ref)
 				}
 				return

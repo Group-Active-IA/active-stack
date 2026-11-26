@@ -34,7 +34,7 @@ func TestActiveRoadmapInstallsSkillAndHelper(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
-				files := map[string][]string{"active-roadmap": {"SKILL.md", "roadmap.py", "references/clickup-actions.md"}, "active-delivery": {"SKILL.md", "references/handoff.md"}}[id]
+				files := map[string][]string{"active-roadmap": {"SKILL.md", "roadmap.py", "references/clickup-actions.md"}, "active-delivery": {"SKILL.md", "references/handoff.md", "usage.py", "references/usage-accounting.md"}}[id]
 				for _, name := range files {
 					if _, err := os.Stat(filepath.Join(adapter.SkillsDir(home), harness.ID, filepath.FromSlash(name))); err != nil {
 						t.Error(err)

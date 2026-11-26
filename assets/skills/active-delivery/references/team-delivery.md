@@ -167,6 +167,44 @@ to `main` or any protected base, and never force-push (including with lease).
 The same authorization and branch rules apply after ODD-to-SDD promotion.
 Promotion itself never commits or moves the worktree.
 
+## Hand the PR to the next member
+
+Use the approved order in `CHANGES.md` or the sequence it links. Start immediately
+after the current ficha and pass over fichas with confirmed `merged`, `done` or
+`omitted` status. The next eligible ficha's assignee reviews the PR. This review
+can start even if a dependency still blocks their own implementation. For an
+unassigned or unavailable successor, the same author, an unresolved GitHub
+account, or the last ficha, ask the team to approve an independent fallback.
+Keep the approved reviewer and the basis for selection in the PR and handoff.
+
+Run `reviewer --id <ficha> --file <temporary-json>` with the same sources,
+fichas and observations as `overview`. Include `author_github` from `gh api user`
+before creating the PR or from the PR's `author.login` after opening it. Optionally
+include `unavailable_members` as the team IDs whose unavailability is confirmed,
+and `fallback: {"member":"m2","approved":true}` only after the team approves that
+fallback. In ClickUp mode use a fresh observation from the configured task for
+the successor's assignee. In local mode use the approved `Responsable`. If GitHub
+or the roadmap order cannot be verified, leave review assignment pending. The
+command reads evidence and reports a GitHub login. GitHub writes are separate.
+
+When the PR is ready, request review from that account with
+`gh pr edit <number> --add-reviewer <login>` for the agreed repository. The
+reviewer checks their authenticated GitHub login, the PR author, current
+`headRefOid`, diff, acceptance criteria and required checks for that head.
+Submit the decision to `POST /repos/{owner}/{repo}/pulls/{number}/reviews` with
+`commit_id` set to the reviewed head, `event` set to `APPROVE` or
+`REQUEST_CHANGES`, and actionable findings in `body` when requesting changes.
+Verify the returned reviewer, decision and commit. When changes are requested,
+keep the PR open and return it to the author. The author fixes the same branch and
+requests another review of the updated head. [GitHub review API](https://docs.github.com/en/rest/pulls/reviews#create-a-review-for-a-pull-request)
+
+After approval and once the required checks and repository rules pass, the
+reviewer merges the PR using the reviewed SHA as the guard, e.g.
+`gh pr merge <number> --match-head-commit <reviewed-sha>`. If the SHA moves,
+re-review the new head. If checks or branch rules block the merge, retain the
+open PR and report the missing evidence or permission. For repositories with
+protected paths, honor any additional required owners and approvals.
+
 After authorized delivery, look up the resulting PR and current head SHA,
 then update the handoff. On closure verify the PR is merged and the actual
 merge SHA is reachable from the agreed target. Record verification and offer

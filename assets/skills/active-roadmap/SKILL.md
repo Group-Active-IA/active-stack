@@ -42,6 +42,49 @@ En Claude Code, las herramientas pueden llegar con prefijo, como `mcp__clickup__
 
 Tras la lectura real, el helper admite `setup --probe ok`, `unauthorized`, `forbidden`, `not_found` o `error` según la respuesta. Nunca guardes ni leas tokens, secretos o URLs de retorno OAuth en archivos del proyecto o en resultados de tareas. [Configuración de ClickUp](https://developer.clickup.com/docs/connect-an-ai-assistant-to-clickups-mcp-server-1)
 
+## Estados de desarrollo
+
+En una fundación que elige ClickUp, leé la lista y verificá los estados antes
+de dar por terminada la configuración. En ClickUp, el responsable de la Lista
+puede crear o reutilizar los seis nombres de la tabla. Configurá **Pendiente**
+como estado inicial para tareas nuevas. Tomá los nombres efectivos del
+resultado de la Lista o, si el conector no los devuelve, de la configuración
+visible de esa misma Lista. Pasá el arreglo JSON de nombres a
+`roadmap.py --root <proyecto> statuses <snapshot.json>`. Si faltan estados o
+el acceso no está confirmado, informá qué falta. La elección ClickUp queda
+pendiente de configurar. [Estados personalizados en ClickUp](https://help.clickup.com/hc/en-us/articles/6309452618647-Manage-task-statuses)
+
+| Estado | Clave | Evidencia |
+| --- | --- | --- |
+| Pendiente | `pending` | Ficha publicada; estado inicial de la Lista. |
+| En desarrollo | `developing` | Inicio en la rama de la ficha o el autor retoma un PR con cambios solicitados. |
+| En revisión | `review` | PR abierto y listo, con revisión solicitada al revisor confirmado. Se repite al enviar el nuevo SHA corregido. |
+| Cambios solicitados | `changes_requested` | Revisión GitHub con cambios solicitados por el revisor designado para el SHA actual. |
+| Fusionado | `merged` | PR fusionado y SHA alcanzable desde la base acordada. |
+| Archivado | `archived` | Archivo del cambio completado con evidencia de tiempo, tokens y costo. |
+
+Al alcanzar cada hito, leé la Lista y el ticket vinculado por su ID exacto.
+Para preparar un cambio de estado, pasá al `preview` una fila con `id`,
+`title`, `operation: "status"`, `stage`, `list_statuses` (nombres de la
+Lista), `current_status` (nombre del estado actual), `current_list_id` (ID de
+la Lista de origen del ticket, como cadena), `current_remote_id` y
+`current_text` (texto visible con el marcador). No crees una tarea desde
+este flujo. Un hito atrasado se puede reconciliar en orden con evidencia. Si
+la tarea está en un estado ajeno al flujo, mostrá la discrepancia para que el
+responsable normalice su estado en ClickUp antes de reintentar.
+
+Mostrá el hito, la tarea y el estado anterior y propuesto. Releé la tarea y
+Lista antes de ejecutar `begin`. Si cambian los datos aprobados, regenerá la
+vista previa y pedí nueva confirmación. Tras la aprobación, pasá solo el
+`status` de `changes` a `clickup_update_task` con el ID exacto. Si el estado
+ya coincide, omití la escritura. Verificá el estado en la respuesta o con una
+lectura posterior. Registrá el resultado `updated` con `remote_id`, `url`
+y el `status` confirmado, o conservá la operación `uncertain` y recuperala
+por ID antes de volver a intentar. En la recuperación de una operación
+`status`, verificá específicamente el estado aprobado. Conciliá después de
+la escritura con el estado y responsables observados. Si ClickUp no
+está disponible, guardá en el traspaso el hito pendiente de sincronizar.
+
 ## Entrega en modo equipo
 
 Si existe `.active-stack/team.json`, validá el contrato y seguí el [flujo de
