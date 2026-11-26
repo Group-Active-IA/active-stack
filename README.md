@@ -448,7 +448,7 @@ go test ./...                          # suite completa
 
 ## Estado del proyecto
 
-🟢 **Activo.** Versión actual: [v0.9.2](https://github.com/Group-Active-IA/active-stack/releases/tag/v0.9.2). El núcleo del instalador (catálogo, modelo, adapters P0, backup/rollback, merge por markers, pipeline, verify y la TUI) está implementado, junto con el modo equipo, la memoria de equipo con Engram Cloud y el aviso de versión nueva. El [roadmap actual](CHANGES.md) reúne las propuestas de mejoras de OPSX y los seguimientos de etapas anteriores; las [pruebas pendientes](docs/pruebas-pendientes.md) están registradas aparte. También hay una [guía web del equipo](https://active-stack-guia-equipo.vercel.app/) y una [landing](https://active-stack-landing.vercel.app/).
+🟢 **Activo.** Versión actual: [v0.9.3](https://github.com/Group-Active-IA/active-stack/releases/tag/v0.9.3). El núcleo del instalador (catálogo, modelo, adapters P0, backup/rollback, merge por markers, pipeline, verify y la TUI) está implementado, junto con el modo equipo, la memoria de equipo con Engram Cloud y el aviso de versión nueva. El [roadmap actual](CHANGES.md) reúne las propuestas de mejoras de OPSX y los seguimientos de etapas anteriores; las [pruebas pendientes](docs/pruebas-pendientes.md) están registradas aparte. También hay una [guía web del equipo](https://active-stack-guia-equipo.vercel.app/) y una [landing](https://active-stack-landing.vercel.app/).
 
 ## Licencia
 
