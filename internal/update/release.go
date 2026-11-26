@@ -13,6 +13,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/Group-Active-IA/active-stack/internal/selfupdate"
 )
 
 const (
@@ -96,13 +98,11 @@ func (c ReleaseClient) Latest(ctx context.Context) (Release, error) {
 	return Release{Tag: release.TagName}, nil
 }
 
+// assetName shares the self-update platform list so both update paths agree.
 func assetName(goos, goarch string) (string, error) {
-	if goarch != "amd64" || (goos != "windows" && goos != "linux") {
+	name := selfupdate.AssetName(goos, goarch)
+	if name == "" {
 		return "", fmt.Errorf("no release binary for %s/%s", goos, goarch)
-	}
-	name := "active-stack_" + goos + "_" + goarch
-	if goos == "windows" {
-		name += ".exe"
 	}
 	return name, nil
 }
