@@ -17,4 +17,4 @@ está integrado en `main` y fijado en el catálogo.
 
 - [x] 3.1 Registrar intervalos y uso por modelo, calcular USD y exigir evidencia de cierre al archivar.
 - [x] 3.2 Verificar localmente las rutas de instalación y los escenarios de entrega.
-- [ ] 3.3 Entregar mediante PR y verificar la publicación de v0.9.2 desde main.
+- [x] 3.3 Entregar mediante PR y verificar la publicación de v0.9.2 desde main.

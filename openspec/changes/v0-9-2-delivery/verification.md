@@ -29,3 +29,10 @@ Para referencia, la tarifa API estándar publicada para el modelo es USD 2 por
 millón de entrada, USD 0,10 por millón de lecturas de caché y USD 10 por millón
 de salida. La escritura de caché observada fue cero en las cuatro ejecuciones.
 [Tarifas de OpenAI, consultadas el 25 de noviembre de 2026](https://developers.openai.com/api/docs/pricing)
+
+## Publicación de v0.9.2 (26 de noviembre de 2026)
+
+- Antes de publicar se corrigió que `update` no reemplazaba el binario en macOS ([PR #93](https://github.com/Group-Active-IA/active-stack/pull/93), merge `c41c387`). Los tests nuevos fallaban en darwin sin el arreglo.
+- El tag `v0.9.2` apunta a `c41c387`. El [workflow de release](https://github.com/Group-Active-IA/active-stack/actions/runs/45818874240) terminó correctamente y la [release](https://github.com/Group-Active-IA/active-stack/releases/tag/v0.9.2) quedó como Latest con el instalador de Windows (dos nombres), los binarios de Windows, Linux y macOS (amd64 y arm64) y `SHA256SUMS.txt`.
+- El binario v0.9.1 instalado en Windows detectó la versión nueva con `update --check`. No se descargaron ni ejecutaron los assets, y nada se probó en una Mac real (PP-20).
+- El cambio sigue sin archivar: faltan las métricas finales de tiempo, tokens y costo.
