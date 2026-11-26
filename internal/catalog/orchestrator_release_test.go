@@ -6,7 +6,7 @@ import (
 	"github.com/Group-Active-IA/active-stack/internal/model"
 )
 
-func TestActiveOrchestratorFullUsesRequiredTrackingMerge(t *testing.T) {
+func TestActiveOrchestratorFullUsesChecklistBenefitsMerge(t *testing.T) {
 	c, err := Load()
 	if err != nil {
 		t.Fatalf("Load(): %v", err)
@@ -20,7 +20,7 @@ func TestActiveOrchestratorFullUsesRequiredTrackingMerge(t *testing.T) {
 				if h.Source == nil {
 					t.Fatal("active-orchestrator has no source")
 				}
-				if h.Source.Repo != "Group-Active-IA/active-orchestrator" || h.Source.Ref != "a3d6b0490940a2865beb16d3baf07a5a292eeafb" {
+				if h.Source.Repo != "Group-Active-IA/active-orchestrator" || h.Source.Ref != "8ac8f15d05423a8e65fb0dfb65ec9fb625e6b174" {
 					t.Fatalf("Full source = %s@%s, want approved upstream merge", h.Source.Repo, h.Source.Ref)
 				}
 				return

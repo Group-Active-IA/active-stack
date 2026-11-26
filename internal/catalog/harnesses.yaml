@@ -121,7 +121,7 @@ harnesses:
     description: { es: "Ruta directa o fundación guiada con KB, roadmap e instrucciones.", en: "Direct work or guided foundation with knowledge base, roadmap and agent instructions." }
     long_description: { es: "Ofrece ruta directa o una checklist de fundación con aprobación previa. La base de conocimiento, el roadmap Markdown y las instrucciones del agente son obligatorios y reutilizables. Guarda el avance para retomar. Disponible en Full para Claude, Codex, OpenCode y Antigravity.", en: "Offers direct work or a foundation checklist with prior approval. The knowledge base, Markdown roadmap and agent instructions are required and reusable. Saves progress for resumption. Available in Full for Claude, Codex, OpenCode and Antigravity." }
     type: skill
-    source: { repo: Group-Active-IA/active-orchestrator, ref: a3d6b0490940a2865beb16d3baf07a5a292eeafb, method: clone }
+    source: { repo: Group-Active-IA/active-orchestrator, ref: 8ac8f15d05423a8e65fb0dfb65ec9fb625e6b174, method: clone }
     # Full-only: orquesta kb-creator/roadmap-generator/agent-instruction/find-skill,
     # todas Full. En Lite quedaría huérfano. Lite = sustrato; Full = fundación guiada.
     install_modes: [full]
